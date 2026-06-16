@@ -1,0 +1,62 @@
+"use client";
+
+import { Dialog } from "radix-ui";
+import { Sheet, SheetClose, SheetContent } from "./Sheet";
+import { Button } from "../Button";
+
+interface ConfirmSheetProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** The question — becomes the dialog title (left-aligned). */
+  title: string;
+  /** Friendly line under the title; also serves as the dialog's a11y description. */
+  message?: string;
+  cancelLabel?: string;
+  confirmLabel?: string;
+  onConfirm: () => void;
+}
+
+/**
+ * Confirmation bottom sheet: a left-aligned question + message and a
+ * Cancel / Confirm action pair, built on <Sheet>. Controlled via `open`.
+ * `Cancel` closes; `Confirm` runs `onConfirm` then closes.
+ */
+export function ConfirmSheet({
+  open,
+  onOpenChange,
+  title,
+  message,
+  cancelLabel = "Cancel",
+  confirmLabel = "Yes",
+  onConfirm,
+}: ConfirmSheetProps) {
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent title={title} titleClassName="mb-4 text-left">
+        {/* Rendering Dialog.Description here makes the visible message double as the
+            dialog's a11y description (so it's referenced, not duplicated sr-only). */}
+        {message && (
+          <Dialog.Description className="text-body-b4 text-muted-foreground text-center">{message}</Dialog.Description>
+        )}
+
+        <div className="mt-8 flex gap-3">
+          <SheetClose asChild>
+            <Button variant="outline" size="lg" className="flex-1">
+              {cancelLabel}
+            </Button>
+          </SheetClose>
+          <Button
+            size="lg"
+            className="flex-1"
+            onClick={() => {
+              onConfirm();
+              onOpenChange(false);
+            }}
+          >
+            {confirmLabel}
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}

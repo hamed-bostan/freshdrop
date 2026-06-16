@@ -1,0 +1,36 @@
+"use client";
+
+import * as React from "react";
+import { Switch as SwitchPrimitive } from "radix-ui";
+import { cn } from "@/src/lib/utils";
+
+export type SwitchProps = React.ComponentPropsWithoutRef<typeof SwitchPrimitive.Root>;
+
+/**
+ * Boolean toggle built on Radix Switch. Green (`primary`) when on, muted track
+ * when off; fully keyboard-operable and labelable via a `<label htmlFor>` or
+ * `aria-label`. Controlled (`checked` + `onCheckedChange`) or uncontrolled
+ * (`defaultChecked`).
+ */
+export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(({ className, ...props }, ref) => (
+  <SwitchPrimitive.Root
+    ref={ref}
+    className={cn(
+      "inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+      "disabled:cursor-not-allowed disabled:opacity-50",
+      "data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted-strong",
+      className,
+    )}
+    {...props}
+  >
+    <SwitchPrimitive.Thumb
+      className={cn(
+        "pointer-events-none block size-6 rounded-full bg-background shadow-md transition-transform",
+        "data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0",
+      )}
+    />
+  </SwitchPrimitive.Root>
+));
+
+Switch.displayName = "Switch";

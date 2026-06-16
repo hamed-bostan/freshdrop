@@ -1,269 +1,186 @@
-import { typography as primitives } from "../primitives/typography";
-
-const cssVar = (prefix: string, key: string) => `var(--${prefix}-${key})`;
-
-const family = Object.fromEntries(
-  Object.keys(primitives.fontFamily).map((k) => [k, cssVar("font-family", k)]),
-) as Record<keyof typeof primitives.fontFamily, string>;
-
-const weight = Object.fromEntries(
-  Object.keys(primitives.fontWeight).map((k) => [k, cssVar("font-weight", k)]),
-) as Record<keyof typeof primitives.fontWeight, string>;
-
-const size = Object.fromEntries(Object.keys(primitives.fontSize).map((k) => [k, cssVar("font-size", k)])) as Record<
-  keyof typeof primitives.fontSize,
-  string
->;
-
-const line = Object.fromEntries(Object.keys(primitives.lineHeight).map((k) => [k, cssVar("line-height", k)])) as Record<
-  keyof typeof primitives.lineHeight,
-  string
->;
+import { typography as p } from "../primitives/typography";
 
 export const typography = {
-  display: {
-    1: {
-      family: family.display,
-      size: size["7xl"],
-      lineHeight: line.normal,
-      weight: weight.bold,
-    },
-    2: {
-      family: family.display,
-      size: size["5xl"],
-      lineHeight: line.normal,
-      weight: weight.bold,
-    },
-  },
-
   heading: {
-    1: {
-      family: family.display,
-      size: size["6xl"],
-      lineHeight: line.normal,
-      weight: weight.bold,
+    h1: {
+      size: p.fontSize[32],
+      lineHeight: p.lineHeight[40],
+      weight: p.fontWeight.bold,
+      family: p.fontFamily.sans,
     },
-    2: {
-      family: family.display,
-      size: size["5xl"],
-      lineHeight: line.normal,
-      weight: weight.bold,
+
+    h2: {
+      size: p.fontSize[24],
+      lineHeight: p.lineHeight[28],
+      weight: p.fontWeight.bold,
+      family: p.fontFamily.sans,
     },
-    3: {
-      family: family.display,
-      size: size["4xl"],
-      lineHeight: line.normal,
-      weight: weight.bold,
+
+    h3: {
+      size: p.fontSize[20],
+      lineHeight: p.lineHeight[24],
+      weight: p.fontWeight.bold,
+      family: p.fontFamily.sans,
     },
-    4: {
-      family: family.display,
-      size: size["2xl"],
-      lineHeight: line.normal,
-      weight: weight.medium,
+
+    h4: {
+      size: p.fontSize[20],
+      lineHeight: p.lineHeight[24],
+      weight: p.fontWeight.medium,
+      family: p.fontFamily.sans,
     },
   },
 
   body: {
-    1: {
-      family: family.sans,
-      size: size["3xl"],
-      lineHeight: line.normal,
-      weight: weight.semibold,
+    b1: {
+      size: p.fontSize[18],
+      lineHeight: p.lineHeight[24],
+      weight: p.fontWeight.bold,
+      family: p.fontFamily.sans,
     },
-    2: {
-      family: family.sans,
-      size: size["3xl"],
-      lineHeight: line.normal,
-      weight: weight.medium,
-    },
-    3: {
-      family: family.sans,
-      size: size["2xl"],
-      lineHeight: line.normal,
-      weight: weight.bold,
-    },
-    4: {
-      family: family.sans,
-      size: size["2xl"],
-      lineHeight: line.normal,
-      weight: weight.regular,
-    },
-    5: {
-      family: family.sans,
-      size: size.xl,
-      lineHeight: line.normal,
-      weight: weight.bold,
-    },
-    6: {
-      family: family.sans,
-      size: size.xl,
-      lineHeight: line.normal,
-      weight: weight.regular,
-    },
-    7: {
-      family: family.sans,
-      size: size.xl,
-      lineHeight: line.relaxed,
-      weight: weight.regular,
-    },
-    8: {
-      family: family.sans,
-      size: size.lg,
-      lineHeight: line.normal,
-      weight: weight.medium,
-    },
-    9: {
-      family: family.sans,
-      size: size.lg,
-      lineHeight: line.normal,
-      weight: weight.medium,
-    },
-    10: {
-      family: family.sans,
-      size: size.lg,
-      lineHeight: line.normal,
-      weight: weight.regular,
-    },
-    11: {
-      family: family.sans,
-      size: size.md,
-      lineHeight: line.normal,
-      weight: weight.bold,
-    },
-    12: {
-      family: family.sans,
-      size: size.md,
-      lineHeight: line.normal,
-      weight: weight.medium,
-    },
-    13: {
-      family: family.sans,
-      size: size.md,
-      lineHeight: line.normal,
-      weight: weight.regular,
-    },
-    14: {
-      family: family.sans,
-      size: size.sm,
-      lineHeight: line.normal,
-      weight: weight.medium,
-    },
-    15: {
-      family: family.sans,
-      size: size.sm,
-      lineHeight: line.normal,
-      weight: weight.regular,
-    },
-    16: {
-      family: family.sans,
-      size: size.xs,
-      lineHeight: line.normal,
-      weight: weight.regular,
-    },
-    17: {
-      family: family.sans,
-      size: size["2xs"],
-      lineHeight: line.normal,
-      weight: weight.regular,
-    },
-  },
 
-  caption: {
-    1: {
-      family: family.sans,
-      size: size.lg,
-      lineHeight: line.normal,
-      weight: weight.medium,
+    b2: {
+      size: p.fontSize[16],
+      lineHeight: p.lineHeight[24],
+      weight: p.fontWeight.regular,
+      family: p.fontFamily.sans,
     },
-    2: {
-      family: family.sans,
-      size: size.sm,
-      lineHeight: line.normal,
-      weight: weight.regular,
+
+    b3: {
+      size: p.fontSize[16],
+      lineHeight: p.lineHeight[24],
+      weight: p.fontWeight.medium,
+      family: p.fontFamily.sans,
     },
-    3: {
-      family: family.sans,
-      size: size.xs,
-      lineHeight: line.normal,
-      weight: weight.bold,
+
+    b4: {
+      size: p.fontSize[16],
+      lineHeight: p.lineHeight[24],
+      weight: p.fontWeight.semibold,
+      family: p.fontFamily.sans,
     },
-    4: {
-      family: family.sans,
-      size: size.xs,
-      lineHeight: line.normal,
-      weight: weight.medium,
+
+    b5: {
+      size: p.fontSize[16],
+      lineHeight: p.lineHeight[24],
+      weight: p.fontWeight.bold,
+      family: p.fontFamily.sans,
     },
-    5: {
-      family: family.sans,
-      size: size.xs,
-      lineHeight: line.normal,
-      weight: weight.regular,
+
+    b6: {
+      size: p.fontSize[14],
+      lineHeight: p.lineHeight[20],
+      weight: p.fontWeight.regular,
+      family: p.fontFamily.sans,
+    },
+
+    b7: {
+      size: p.fontSize[14],
+      lineHeight: p.lineHeight[20],
+      weight: p.fontWeight.medium,
+      family: p.fontFamily.sans,
+    },
+
+    b8: {
+      size: p.fontSize[14],
+      lineHeight: p.lineHeight[20],
+      weight: p.fontWeight.semibold,
+      family: p.fontFamily.sans,
+    },
+
+    b9: {
+      size: p.fontSize[14],
+      lineHeight: p.lineHeight[20],
+      weight: p.fontWeight.bold,
+      family: p.fontFamily.sans,
+    },
+
+    b10: {
+      size: p.fontSize[12],
+      lineHeight: p.lineHeight[16],
+      weight: p.fontWeight.regular,
+      family: p.fontFamily.sans,
+    },
+
+    b11: {
+      size: p.fontSize[12],
+      lineHeight: p.lineHeight[16],
+      weight: p.fontWeight.medium,
+      family: p.fontFamily.sans,
+    },
+
+    b12: {
+      size: p.fontSize[12],
+      lineHeight: p.lineHeight[16],
+      weight: p.fontWeight.bold,
+      family: p.fontFamily.sans,
+    },
+
+    b13: {
+      size: p.fontSize[12],
+      lineHeight: p.lineHeight[24],
+      weight: p.fontWeight.bold,
+      family: p.fontFamily.sans,
     },
   },
 
   button: {
-    1: {
-      family: family.sans,
-      size: size.lg,
-      lineHeight: line.normal,
-      weight: weight.medium,
+    btn1: {
+      size: p.fontSize[16],
+      lineHeight: p.lineHeight[16],
+      weight: p.fontWeight.semibold,
+      family: p.fontFamily.sans,
     },
-    2: {
-      family: family.sans,
-      size: size.lg,
-      lineHeight: line.normal,
-      weight: weight.regular,
+
+    btn2: {
+      size: p.fontSize[14],
+      lineHeight: p.lineHeight[14],
+      weight: p.fontWeight.semibold,
+      family: p.fontFamily.sans,
     },
-    3: {
-      family: family.sans,
-      size: size.md,
-      lineHeight: line.normal,
-      weight: weight.medium,
+
+    btn3: {
+      size: p.fontSize[14],
+      lineHeight: p.lineHeight[24],
+      weight: p.fontWeight.medium,
+      family: p.fontFamily.sans,
     },
-    4: {
-      family: family.sans,
-      size: size.md,
-      lineHeight: line.normal,
-      weight: weight.regular,
-    },
-    5: {
-      family: family.sans,
-      size: size.sm,
-      lineHeight: line.normal,
-      weight: weight.medium,
-    },
-    6: {
-      family: family.sans,
-      size: size.sm,
-      lineHeight: line.normal,
-      weight: weight.regular,
+
+    btn4: {
+      size: p.fontSize[16],
+      lineHeight: p.lineHeight[24],
+      weight: p.fontWeight.medium,
+      family: p.fontFamily.sans,
     },
   },
 
-  chart: {
-    1: {
-      family: family.sans,
-      size: size.xs,
-      lineHeight: line.normal,
-      weight: weight.semibold,
+  label: {
+    l1: {
+      size: p.fontSize[12],
+      lineHeight: p.lineHeight[12],
+      weight: p.fontWeight.semibold,
+      family: p.fontFamily.sans,
     },
-    2: {
-      family: family.sans,
-      size: size.xs,
-      lineHeight: line.normal,
-      weight: weight.regular,
+
+    l2: {
+      size: p.fontSize[10],
+      lineHeight: p.lineHeight[10],
+      weight: p.fontWeight.semibold,
+      family: p.fontFamily.sans,
     },
-    3: {
-      family: family.sans,
-      size: size["2xs"],
-      lineHeight: line.normal,
-      weight: weight.bold,
+
+    l3: {
+      size: p.fontSize[10],
+      lineHeight: p.lineHeight[10],
+      weight: p.fontWeight.medium,
+      family: p.fontFamily.sans,
     },
-    4: {
-      family: family.sans,
-      size: size["2xs"],
-      lineHeight: line.normal,
-      weight: weight.semibold,
+
+    l4: {
+      size: p.fontSize[8],
+      lineHeight: p.lineHeight[10],
+      weight: p.fontWeight.medium,
+      family: p.fontFamily.sans,
     },
   },
 } as const;

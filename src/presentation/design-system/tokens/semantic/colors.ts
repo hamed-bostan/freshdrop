@@ -1,64 +1,89 @@
-import { primary, neutral, success, warning, error } from "../primitives/colors";
+import { primary, secondary, neutral, success, error, warning, info } from "../primitives/colors";
 
 export const colors = {
-  background: neutral[950],
-  foreground: neutral[0],
+  background: neutral[0],
+  foreground: neutral[950],
+  surface: neutral[75],
 
-  surface: neutral[900],
-  surface_foreground: neutral[0],
+  card: {
+    DEFAULT: neutral[50],
+    foreground: neutral[950],
+  },
 
-  card: neutral[800],
-  card_foreground: neutral[0],
-
-  popover: neutral[800],
-  popover_foreground: neutral[0],
-
-  muted: neutral[800],
-  muted_foreground: neutral[400],
-
-  border: neutral[700],
-  input: neutral[700],
-  ring: primary[300],
+  popover: {
+    DEFAULT: neutral[0],
+    foreground: neutral[950],
+  },
 
   primary: {
-    DEFAULT: primary[200],
-    hover: primary[300],
-    active: primary[400],
+    DEFAULT: primary[500],
     foreground: neutral[0],
+    pressed: primary[600],
+  },
+
+  disabled: {
+    DEFAULT: neutral[100],
+    foreground: neutral[300],
+    border: neutral[300],
   },
 
   secondary: {
-    DEFAULT: neutral[600],
-    hover: neutral[700],
-    active: neutral[800],
+    DEFAULT: secondary[500],
     foreground: neutral[0],
   },
 
+  muted: {
+    DEFAULT: neutral[50],
+    foreground: neutral[500],
+    strong: neutral[100],
+  },
+
   accent: {
-    DEFAULT: neutral[600],
-    hover: neutral[700],
-    active: neutral[800],
+    DEFAULT: primary[50],
+    foreground: primary[700],
+  },
+
+  destructive: {
+    DEFAULT: error[500],
     foreground: neutral[0],
   },
 
   success: {
-    DEFAULT: success[300],
-    hover: success[100],
-    active: success[700],
-    foreground: neutral[0],
+    DEFAULT: success[100],
+    foreground: success[700],
   },
 
   warning: {
-    DEFAULT: warning[200],
-    hover: warning[100],
-    active: warning[700],
-    foreground: neutral[900],
+    DEFAULT: warning[100],
+    foreground: warning[700],
   },
 
-  destructive: {
-    DEFAULT: error[300],
-    hover: error[100],
-    active: error[700],
+  info: {
+    DEFAULT: info[100],
+    foreground: info[700],
+  },
+
+  error: {
+    DEFAULT: error[100],
+    foreground: error[700],
+  },
+
+  icon: {
+    muted: neutral[400],
+  },
+
+  input: {
+    DEFAULT: neutral[50],
+    focus: neutral[0],
+    foreground: neutral[700],
+    placeholder: neutral[700],
+  },
+
+  discount: {
+    DEFAULT: error[500],
     foreground: neutral[0],
   },
+
+  border: neutral[200],
+  ring: primary[300],
 } as const;

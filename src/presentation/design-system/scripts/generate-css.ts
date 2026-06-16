@@ -14,39 +14,38 @@ const toKebab = (str: string) =>
     .replace(/([a-z])([A-Z])/g, "$1-$2")
     .toLowerCase();
 
-const createNestedVars = (prefix: string, obj: Record<string, any>, pathArr: string[] = []): string[] => {
-  let vars: string[] = [];
+const createNestedVars = (prefix: string, obj: Record<string, unknown>, pathArr: string[] = []): string[] => {
+  const vars: string[] = [];
 
   for (const [key, value] of Object.entries(obj)) {
-    const currentPath = [...pathArr, toKebab(key)];
+    const isDefault = key === "DEFAULT";
+    const currentPath = isDefault ? pathArr : [...pathArr, toKebab(key)];
 
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-      vars.push(...createNestedVars(prefix, value, currentPath));
+      vars.push(...createNestedVars(prefix, value as Record<string, unknown>, currentPath));
     } else {
-      const varName = `--${prefix}-${currentPath.join("-")}`;
-
-      // Special handling for DEFAULT
-      if (key === "DEFAULT") {
-        const baseName = `--${prefix}-${pathArr.join("-")}`;
-        vars.push(`${baseName}: ${value};`);
-      }
-
+      const segments = [prefix, ...currentPath].filter(Boolean);
+      const varName = `--${segments.join("-")}`;
       vars.push(`${varName}: ${value};`);
     }
   }
+
   return vars;
 };
 
 const buildTypographyTokens = () => {
   const vars: string[] = [];
 
-  for (const [group, variants] of Object.entries<any>(semanticTypography)) {
-    for (const [variant, token] of Object.entries<any>(variants)) {
-      const name = `${toKebab(group)}-${variant}`;
+  for (const [group, variants] of Object.entries(semanticTypography)) {
+    for (const [variant, token] of Object.entries(variants)) {
+      const name = `${toKebab(group)}-${toKebab(variant)}`;
 
       if (token.size) vars.push(`--text-${name}: ${token.size};`);
+
       if (token.lineHeight) vars.push(`--text-${name}--line-height: ${token.lineHeight};`);
+
       if (token.weight) vars.push(`--text-${name}--font-weight: ${token.weight};`);
+
       if (token.family) vars.push(`--text-${name}--font-family: ${token.family};`);
     }
   }
@@ -54,20 +53,22 @@ const buildTypographyTokens = () => {
   return vars;
 };
 
-// ──────────────────────────────────────────────
-// Generate all tokens
-// ──────────────────────────────────────────────
 const themeVars = [
-  // === Primitives ===
-  ...createNestedVars("font-family", typographyPrimitives.fontFamily ?? {}),
+  // Primitive typography tokens
+  // Font families use Tailwind v4's `--font-*` namespace (so `sans` → `--font-sans`,
+  // which powers the `font-sans` utility and `var(--font-sans)`).
+  ...createNestedVars("font", typographyPrimitives.fontFamily ?? {}),
   ...createNestedVars("font-weight", typographyPrimitives.fontWeight ?? {}),
   ...createNestedVars("font-size", typographyPrimitives.fontSize ?? {}),
   ...createNestedVars("line-height", typographyPrimitives.lineHeight ?? {}),
-  ...createNestedVars("letter-spacing", typographyPrimitives.letterSpacing ?? {}),
+
+  // Radius tokens
   ...createNestedVars("radius", { ...primitiveRadius, ...semanticRadius }),
 
-  // === Semantic Tokens ===
+  // Semantic color tokens
   ...createNestedVars("color", colors),
+
+  // Semantic typography tokens
   ...buildTypographyTokens(),
 ];
 
@@ -84,7 +85,10 @@ const outputPath = path.join(process.cwd(), "src/styles/tokens.css");
 
 try {
   const dir = path.dirname(outputPath);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
 
   fs.writeFileSync(outputPath, cssContent, "utf8");
   console.log("✅ Design tokens generated successfully →", outputPath);

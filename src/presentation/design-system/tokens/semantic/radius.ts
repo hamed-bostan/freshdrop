@@ -2,12 +2,12 @@ import { radius as primitiveRadius } from "../primitives/radius";
 
 export const radius = {
   button: {
-    sm: primitiveRadius.sm,
     md: primitiveRadius.md,
+    xl: primitiveRadius.xl,
   },
   input: {
-    sm: primitiveRadius.sm,
     md: primitiveRadius.md,
+    xl: primitiveRadius.xl,
   },
   card: {
     md: primitiveRadius.md,
@@ -15,9 +15,9 @@ export const radius = {
     xl: primitiveRadius.xl,
   },
   badge: {
-    sm: primitiveRadius.sm,
     md: primitiveRadius.md,
   },
   modal: primitiveRadius.lg,
+  sheet: primitiveRadius["2xl"],
   pill: primitiveRadius.full,
 } as const;
