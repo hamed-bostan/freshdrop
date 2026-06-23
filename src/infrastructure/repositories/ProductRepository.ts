@@ -29,4 +29,9 @@ export class ProductRepository implements IProductRepository {
     const res = await fetch(`${this.baseUrl}/products?specialOffer=true`);
     return res.json();
   }
+
+  async getSimilar(productId: string): Promise<Product[]> {
+    const res = await fetch(`${this.baseUrl}/products/${productId}/similar`);
+    return res.json();
+  }
 }

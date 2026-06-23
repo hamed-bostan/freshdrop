@@ -18,7 +18,7 @@ export function PasswordToggle({ show, setShow, controls }: PasswordToggleProps)
       aria-controls={controls}
       onMouseDown={(e) => e.preventDefault()}
       onClick={() => setShow(!show)}
-      className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Icon icon={show ? EyeOff : Eye} size="sm" />
     </button>

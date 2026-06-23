@@ -11,7 +11,7 @@ interface AddressCardProps {
 /** One saved address on the Manage Address screen: summary + an edit affordance. */
 export function AddressCard({ location }: AddressCardProps) {
   return (
-    <div className="flex items-center justify-between gap-5 rounded-card-xl bg-card px-4 py-2">
+    <div className="flex items-center justify-between gap-5 rounded-card-xl bg-surface px-4 py-2">
       <DeliveryLocationSummary location={location} />
 
       <Link

@@ -21,7 +21,7 @@ export default function ManageAddressesScreen({ locations }: ManageAddressesScre
         ))}
       </ul>
 
-      <Button asChild size="lg" className="mt-auto w-full rounded-2xl">
+      <Button asChild size="lg" className="mt-auto w-full rounded-button-lg">
         <Link href="/profile/addresses/new">Add New Address</Link>
       </Button>
     </div>

@@ -28,9 +28,9 @@ export function FloatingLabel({ htmlFor, label, required, offset }: FloatingLabe
         "top-0 -translate-y-1/2",
         "peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-muted-foreground",
         "peer-focus:top-0 peer-focus:text-foreground",
-        // Notch: a strip the colour of the focused field that masks the background
-        // behind the label, so it reads as sitting on the field's edge while focused.
-        "before:absolute before:inset-x-0 before:top-1/2 before:h-0 before:-translate-y-1/2 before:bg-input-focus before:content-['']",
+        // Notch: a strip the colour of the field/page background that masks the
+        // border behind the label, so it reads as sitting on the field's edge.
+        "before:absolute before:inset-x-0 before:top-1/2 before:h-0 before:-translate-y-1/2 before:bg-background before:content-['']",
         "peer-focus:before:h-1.5",
         offset,
       )}

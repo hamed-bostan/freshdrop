@@ -67,7 +67,7 @@ export default function CompleteProfileScreen() {
         ))}
       </div>
 
-      <Button type="submit" size="lg" className="mt-auto w-full rounded-2xl">
+      <Button type="submit" size="lg" className="mt-auto w-full rounded-button-lg">
         Save &amp; Continue
       </Button>
     </form>

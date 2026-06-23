@@ -1,3 +1,11 @@
 export { ProductCard } from "./ProductCard";
 export { ProductGrid } from "./ProductGrid";
 export { AddToCartButton } from "./AddToCartButton";
+export { ProductGallery } from "./ProductGallery";
+export { QuantityStepper } from "./QuantityStepper";
+export { ProductPurchasePanel } from "./ProductPurchasePanel";
+export { ProductInfoAccordion } from "./ProductInfoAccordion";
+export { SimilarProducts } from "./SimilarProducts";
+export { ReviewItem } from "./ReviewItem";
+export { ReviewSection } from "./ReviewSection";
+export { AddReviewFlow } from "./AddReviewFlow";

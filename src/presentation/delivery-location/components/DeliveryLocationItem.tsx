@@ -17,7 +17,7 @@ export function DeliveryLocationItem({ location, selected, onSelect, onEdit }: D
   return (
     <div
       className={cn(
-        "flex items-center gap-5 rounded-card-xl border px-4 py-2 bg-card justify-between",
+        "flex items-center gap-5 rounded-card-xl border px-4 py-2 bg-surface justify-between",
         selected ? "border-foreground" : "border-transparent",
       )}
     >

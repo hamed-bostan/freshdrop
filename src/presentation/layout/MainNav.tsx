@@ -21,6 +21,7 @@ const NAV_ITEMS: NavItem[] = [
 
 /** Focused task flows (forms, onboarding) hide the bottom nav for a distraction-free view. */
 const HIDE_NAV_ON_PREFIXES = [
+  "/cart/promo",
   "/profile/details",
   "/profile/addresses",
   "/profile/payment-methods",
@@ -28,6 +29,7 @@ const HIDE_NAV_ON_PREFIXES = [
   "/profile/support",
   "/profile/wallet",
   "/favorites",
+  "/onboarding",
 ];
 
 export function MainNav () {

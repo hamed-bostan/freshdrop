@@ -21,6 +21,10 @@ interface OTPInputProps {
   "aria-invalid"?: boolean;
 }
 
+/** Pads/truncates a value into fixed-length cells, preserving empty positions. */
+const toCells = (value: string | undefined, length: number) =>
+  Array.from({ length }, (_, i) => value?.[i] ?? "");
+
 export function OTPInput({
   length = 4,
   value,
@@ -32,24 +36,34 @@ export function OTPInput({
   "aria-describedby": ariaDescribedBy,
   "aria-invalid": ariaInvalid,
 }: OTPInputProps) {
-  const isControlled = value !== undefined;
-  const [internal, setInternal] = React.useState<string[]>(() => Array(length).fill(""));
+  // The cells array is the source of truth. A joined string can't represent an
+  // empty *middle* cell (["1","","3"].join() === "13"), so re-deriving cells from
+  // a string every render shifts digits left when a middle box is cleared. When
+  // controlled, we re-sync from `value` only when it changes externally (e.g. a
+  // parent reset), not when it merely echoes our own last emit.
+  const [cells, setCells] = React.useState<string[]>(() => toCells(value, length));
+  const [lastValue, setLastValue] = React.useState(value);
   const [focusedIndex, setFocusedIndex] = React.useState<number | null>(null);
 
   const refs = useRef<Array<HTMLInputElement | null>>([]);
 
-  // Controlled → derive cells from `value`; uncontrolled → use internal state.
-  const values = isControlled ? Array.from({ length }, (_, i) => value[i] ?? "") : internal;
+  // Sync from a controlled `value` only when it changes externally (not when it
+  // echoes our own emit). Reconciled during render — React's "adjusting state on
+  // a prop change" pattern — to avoid a cascading setState-in-effect.
+  if (value !== undefined && value !== lastValue) {
+    setLastValue(value);
+    if (value !== cells.join("")) setCells(toCells(value, length));
+  }
 
   const commit = (next: string[]) => {
-    if (!isControlled) setInternal(next);
+    setCells(next);
     onChange?.(next.join(""));
   };
 
   const updateValue = (i: number, v: string) => {
     if (!/^[0-9]?$/.test(v)) return;
 
-    const next = [...values];
+    const next = [...cells];
     next[i] = v;
     commit(next);
 
@@ -60,7 +74,7 @@ export function OTPInput({
     if (e.key === "Backspace") {
       e.preventDefault();
 
-      if (values[i]) updateValue(i, "");
+      if (cells[i]) updateValue(i, "");
       else if (i > 0) refs.current[i - 1]?.focus();
       return;
     }
@@ -81,16 +95,14 @@ export function OTPInput({
 
     if (!/^\d+$/.test(pasted)) return;
 
-    const next = pasted.split("");
-    const filled = [...values];
-
-    next.forEach((digit, idx) => {
-      filled[idx] = digit;
+    const next = [...cells];
+    pasted.split("").forEach((digit, idx) => {
+      next[idx] = digit;
     });
 
-    commit(filled);
+    commit(next);
 
-    const nextIndex = Math.min(next.length, length - 1);
+    const nextIndex = Math.min(pasted.length, length - 1);
     refs.current[nextIndex]?.focus();
   };
 
@@ -102,12 +114,12 @@ export function OTPInput({
     <div
       id={id}
       onPaste={handlePaste}
-      className="flex gap-4"
+      className="flex gap-6"
       role="group"
       aria-label={ariaLabelledBy ? undefined : ariaLabel}
       aria-labelledby={ariaLabelledBy}
     >
-      {values.map((v, i) => {
+      {cells.map((v, i) => {
         const isFocused = focusedIndex === i;
 
         return (
@@ -132,10 +144,10 @@ export function OTPInput({
             onKeyDown={(e) => handleKeyDown(i, e)}
             className={cn(
               baseFieldStyles(),
-              "size-12 text-center text-2xl border-2 border-input",
+              "size-12 text-center text-2xl",
               "transition-all duration-200",
+              // JS-driven focus highlight (the cell isn't the :focus target via keyboard nav alone).
               isFocused && "border-ring",
-              ariaInvalid && "border-destructive",
             )}
           />
         );

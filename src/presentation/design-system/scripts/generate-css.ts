@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 
 import { typography as typographyPrimitives } from "../tokens/primitives/typography";
-import { radius as primitiveRadius } from "../tokens/primitives/radius";
 
 import { colors } from "../tokens/semantic/colors";
 import { radius as semanticRadius } from "../tokens/semantic/radius";
@@ -62,8 +61,10 @@ const themeVars = [
   ...createNestedVars("font-size", typographyPrimitives.fontSize ?? {}),
   ...createNestedVars("line-height", typographyPrimitives.lineHeight ?? {}),
 
-  // Radius tokens
-  ...createNestedVars("radius", { ...primitiveRadius, ...semanticRadius }),
+  // Radius tokens — only the SEMANTIC layer is emitted as utilities.
+  // Primitives stay internal (consumed by semantic/radius.ts) so they neither
+  // leak into the utility namespace nor override Tailwind's built-in `rounded-*`.
+  ...createNestedVars("radius", semanticRadius),
 
   // Semantic color tokens
   ...createNestedVars("color", colors),

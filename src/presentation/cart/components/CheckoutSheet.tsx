@@ -1,0 +1,128 @@
+"use client";
+
+import Link from "next/link";
+import { Dialog, VisuallyHidden } from "radix-ui";
+import { ChevronRight, Ticket } from "lucide-react";
+import type { PromoCode } from "@/src/domain/entities/PromoCode";
+import { Button, Icon } from "@/src/presentation/design-system";
+import { cn } from "@/src/lib/utils";
+
+interface SummaryRowProps {
+  label: string;
+  value: string;
+  /** The final total — rendered larger/bolder. */
+  emphasized?: boolean;
+}
+
+function SummaryRow({ label, value, emphasized }: SummaryRowProps) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <dt className={cn(emphasized ? "text-body-b2 text-foreground" : "text-body-b7 text-muted-foreground")}>{label}</dt>
+      <dd className={emphasized ? "text-body-b4 text-foreground" : "text-body-b7 text-muted-foreground"}>{value}</dd>
+    </div>
+  );
+}
+
+interface CheckoutSheetProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  appliedPromo: PromoCode | null;
+  subtotal: number;
+  shipping: number;
+  discount: number;
+  total: number;
+  /** Final place-order action. */
+  onConfirm: () => void;
+}
+
+/**
+ * Checkout summary as an expandable bottom sheet over the cart. Built on Radix
+ * Dialog directly (not the DS `Sheet`) so it can sit *above* the bottom nav
+ * (`bottom-20`, overlay `z-40` under the nav's `z-50`) — the mockup keeps the
+ * nav visible while the rest dims, which the full-height DS sheet can't do.
+ */
+export function CheckoutSheet({
+  open,
+  onOpenChange,
+  appliedPromo,
+  subtotal,
+  shipping,
+  discount,
+  total,
+  onConfirm,
+}: CheckoutSheetProps) {
+  return (
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Overlay
+          className={cn(
+            "fixed inset-0 z-40 bg-foreground/40",
+            "data-[state=open]:animate-in data-[state=open]:fade-in-0",
+            "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
+          )}
+        />
+
+        <Dialog.Content
+          className={cn(
+            "fixed inset-x-0 bottom-20 z-40 mx-auto w-full max-w-md",
+            "rounded-t-card-xl bg-popover px-6 pb-8 pt-3 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] focus:outline-none",
+            "data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom",
+            "data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom",
+            "duration-300",
+          )}
+        >
+          <div className="mx-auto mb-5 h-1.5 w-18 rounded-pill bg-border" aria-hidden />
+
+          <VisuallyHidden.Root asChild>
+            <Dialog.Title>Checkout</Dialog.Title>
+          </VisuallyHidden.Root>
+          <VisuallyHidden.Root asChild>
+            <Dialog.Description>Review your order total and check out.</Dialog.Description>
+          </VisuallyHidden.Root>
+
+          {/* Promo code — opens the promo screen to browse/enter a code. */}
+          <Link
+            href={appliedPromo ? `/cart/promo?applied=${appliedPromo.code}` : "/cart/promo"}
+            className="flex h-12 items-center gap-3 rounded-input bg-input-filled px-4 transition-colors active:bg-muted-strong"
+          >
+            <Icon icon={Ticket} size="md" className="text-icon-muted" />
+            {appliedPromo ? (
+              <span className="flex-1 truncate text-body-b2 text-input-foreground">
+                {appliedPromo.title}
+                <span className="text-muted-foreground"> · {appliedPromo.discountPercent}% off</span>
+              </span>
+            ) : (
+              <span className="flex-1 text-body-b2 text-input-placeholder">Enter Promo Code</span>
+            )}
+            <Icon icon={ChevronRight} size="sm" className="text-icon-muted" />
+          </Link>
+
+          <dl className="mt-6 flex flex-col gap-4">
+            <SummaryRow label="Sub Total" value={`$${subtotal.toFixed(2)}`} />
+            <SummaryRow label="Shipping" value={`$${shipping.toFixed(2)}`} />
+            <SummaryRow label="Discount" value={`${discount > 0 ? "-" : ""}$${discount.toFixed(2)}`} />
+          </dl>
+
+          <div className="my-5 border-t border-dashed border-border" aria-hidden />
+
+          <dl>
+            <SummaryRow label="Total :" value={`$${total.toFixed(2)}`} emphasized />
+          </dl>
+
+          {/* UI-only — no order creation / confirmation screen yet (TODO). */}
+          <Button
+            type="button"
+            size="lg"
+            className="mt-6 w-full"
+            onClick={() => {
+              onConfirm();
+              onOpenChange(false);
+            }}
+          >
+            Check Out
+          </Button>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}

@@ -39,7 +39,7 @@ export default function AddMoneyScreen() {
           </p>
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-card-xl bg-card p-4">
+        <div className="flex items-center justify-between gap-4 rounded-card-xl bg-surface p-4">
           <div className="flex min-w-0 flex-col gap-1">
             <span className="text-body-b7 text-muted-foreground">Add Money to Wallet</span>
             <span className="truncate text-body-b4 text-foreground">${amount || "0"}</span>
@@ -50,7 +50,7 @@ export default function AddMoneyScreen() {
         </div>
       </div>
 
-      <div className="bg-muted-strong px-4 pb-6 pt-3">
+      <div className="px-4 pb-6 pt-3">
         <NumericKeypad onDigit={handleDigit} onBackspace={handleBackspace} />
       </div>
     </div>

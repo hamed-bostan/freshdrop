@@ -12,13 +12,7 @@ export default function CategoryScreen({ categories }: CategoryScreenProps) {
     <div className="flex flex-col gap-6 px-6 pb-24">
       <PageHeader title="All Categories" />
 
-      <SearchBar
-        placeholder={
-          <>
-            Search on <span className="text-body-b2 text-primary">FRESH DROP</span>
-          </>
-        }
-      />
+      <SearchBar />
 
       <CategoryGrid categories={categories} title="All Categories" />
     </div>

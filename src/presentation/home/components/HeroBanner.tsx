@@ -1,11 +1,11 @@
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import { Button, Icon } from "@/src/presentation/design-system";
-import { productImage } from "@/src/shared/assets/images";
+import { heroBanner } from "@/src/shared/assets/images";
 
 export function HeroBanner() {
   return (
-    <div className="relative overflow-hidden rounded-xl min-h-40 bg-linear-to-t from-primary/50 to-primary">
+    <div className="relative overflow-hidden rounded-card-xl min-h-40 bg-linear-to-t from-primary/50 to-primary">
       <div className="absolute top-7 left-8 z-20">
         <h4 className="mb-2 text-heading-h4 text-accent">
           Fresh Veggies
@@ -24,7 +24,7 @@ export function HeroBanner() {
       />
 
       <div className="absolute top-4 right-4 z-10">
-        <Image src={productImage} alt="Fresh vegetables" className="object-cover" priority />
+        <Image src={heroBanner} alt="Fresh vegetables" className="object-cover" priority />
       </div>
     </div>
   );

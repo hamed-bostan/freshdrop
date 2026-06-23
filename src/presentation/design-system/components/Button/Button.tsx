@@ -8,7 +8,7 @@ const buttonVariants = cva(
   [
     "flex items-center justify-center",
     "px-4",
-    "rounded-button-xl",
+    "rounded-button",
     "text-button-btn4",
     "transition-colors",
     "duration-200",

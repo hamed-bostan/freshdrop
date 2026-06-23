@@ -1,0 +1,1 @@
+export { OnboardingDots } from "./OnboardingDots";

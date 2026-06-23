@@ -6,7 +6,7 @@ import { cn } from "@/src/lib/utils";
 import { baseFieldStyles } from "../shared/baseFieldStyles";
 
 const inputVariants = cva(
-  "px-5 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+  "px-5 focus-visible:ring-2 focus-visible:ring-ring",
   {
     variants: {
       hasLeftElement: {
@@ -54,6 +54,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       className,
       inputClassName,
       size,
+      variant,
 
       leftElement,
       rightElement,
@@ -78,7 +79,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           className={cn(
             "peer",
-            baseFieldStyles({ size }),
+            baseFieldStyles({ size, variant }),
             inputVariants({
               hasLeftElement: hasLeft,
               hasRightElement: hasRight,

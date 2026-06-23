@@ -6,14 +6,37 @@ import { Button, Icon, Input } from "@/src/presentation/design-system";
 
 interface SearchBarProps {
   /**
-   * Placeholder shown while the field is empty. Accepts rich content so callers
-   * can emphasise part of it (e.g. a coloured brand name) — something a native
-   * `placeholder` attribute cannot express.
+   * Placeholder shown while the field is empty. A ReactNode (not the native
+   * `placeholder` attribute) so callers can emphasise part of it — e.g. the
+   * coloured brand name — which a plain attribute cannot express. Defaults to the
+   * Fresh Drop brand hint shared across the storefront.
    */
   placeholder?: React.ReactNode;
+  /** Invoked when the trailing filter button is pressed. */
+  onFilterClick?: () => void;
+  /** Hide the trailing filter button to render the search field on its own. */
+  hideFilter?: boolean;
 }
 
-export function SearchBar({ placeholder = "Search on" }: SearchBarProps) {
+const DEFAULT_PLACEHOLDER = (
+  <>
+    Search on <span className="text-primary">FRESH DROP</span>
+  </>
+);
+
+/**
+ * Storefront search field: the design-system `Input` in its `filled` variant —
+ * the borderless grey well that distinguishes search from the white, bordered
+ * form fields — plus an optional filter button.
+ *
+ * The placeholder is overlaid (rather than set via the native attribute) so the
+ * brand name can be coloured; it shows only while the field is empty.
+ */
+export function SearchBar({
+  placeholder = DEFAULT_PLACEHOLDER,
+  onFilterClick,
+  hideFilter = false,
+}: SearchBarProps) {
   const [value, setValue] = React.useState("");
 
   return (
@@ -21,11 +44,12 @@ export function SearchBar({ placeholder = "Search on" }: SearchBarProps) {
       <div className="relative w-full">
         <Input
           type="search"
+          variant="filled"
+          size="lg"
           value={value}
           onChange={(event) => setValue(event.target.value)}
           aria-label="Search products"
           leftElement={<Icon icon={Search} size="md" />}
-          size="lg"
         />
         {value === "" && (
           <span className="pointer-events-none absolute left-10 top-1/2 -translate-y-1/2 text-body-b2 text-input-placeholder">
@@ -34,9 +58,11 @@ export function SearchBar({ placeholder = "Search on" }: SearchBarProps) {
         )}
       </div>
 
-      <Button size="lg" iconOnly variant="outline" aria-label="Open filters">
-        <Icon icon={SlidersHorizontal} />
-      </Button>
+      {!hideFilter && (
+        <Button size="lg" iconOnly variant="outline" aria-label="Open filters" onClick={onFilterClick}>
+          <Icon icon={SlidersHorizontal} />
+        </Button>
+      )}
     </div>
   );
 }

@@ -18,7 +18,7 @@ export default function AboutScreen() {
         <Image src={aboutFreshDrop} alt="" sizes="270px" className="h-auto w-full max-w-67.5" />
       </div>
 
-      <div className="flex flex-col gap-6 rounded-card-xl bg-linear-to-b from-surface to-surface/20 px-6 py-4 text-body-b2 text-foreground">
+      <div className="flex flex-col gap-6 rounded-card-xl bg-linear-to-b from-surface-sunken to-surface-sunken/20 px-6 py-4 text-body-b2 text-foreground">
         {PARAGRAPHS.map((paragraph) => (
           <p key={paragraph}>{paragraph}</p>
         ))}

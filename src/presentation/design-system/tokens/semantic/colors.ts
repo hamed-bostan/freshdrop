@@ -1,13 +1,14 @@
-import { primary, secondary, neutral, success, error, warning, info } from "../primitives/colors";
+import { primary, secondary, neutral, success, error, warning, info, amber } from "../primitives/colors";
 
 export const colors = {
   background: neutral[0],
   foreground: neutral[950],
-  surface: neutral[75],
 
-  card: {
+  surface: {
+    // Default elevated neutral fill used across cards, panels, inputs and wells.
     DEFAULT: neutral[50],
-    foreground: neutral[950],
+    // Deeper, recessed step for sunken areas (category tiles, nested image wells).
+    sunken: neutral[75],
   },
 
   popover: {
@@ -72,11 +73,17 @@ export const colors = {
     muted: neutral[400],
   },
 
+  // Rating stars (and gold decorative glyphs such as the cash-on-delivery coin).
+  rating: amber[500],
+
   input: {
-    DEFAULT: neutral[50],
-    focus: neutral[0],
+    // Standard (outline) form field fill — white, paired with a border so it
+    // reads on white page backgrounds.
+    DEFAULT: neutral[0],
+    // Filled-variant fill — the borderless grey well used by search fields.
+    filled: neutral[50],
     foreground: neutral[700],
-    placeholder: neutral[700],
+    placeholder: neutral[500],
   },
 
   discount: {

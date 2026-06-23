@@ -90,7 +90,7 @@ export default function LocationPickerScreen({ initialCenter, initialPlace }: Lo
       </div>
 
       <footer className="bg-background p-4">
-        <Button type="button" size="lg" className="w-full rounded-2xl" onClick={handleConfirm}>
+        <Button type="button" size="lg" className="w-full rounded-button-lg" onClick={handleConfirm}>
           Add location
         </Button>
       </footer>

@@ -18,7 +18,7 @@ function PhotoAction({ icon, label, destructive, onClick }: PhotoActionProps) {
         type="button"
         onClick={onClick}
         className={cn(
-          "flex w-full items-center gap-2 rounded-md p-4 transition-colors",
+          "flex w-full items-center gap-2 rounded-card-md p-4 transition-colors",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           destructive ? "text-destructive" : "text-foreground",
         )}

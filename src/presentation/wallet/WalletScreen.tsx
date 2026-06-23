@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
 import type { Wallet } from "@/src/domain/entities/Wallet";
 import { cn } from "@/src/lib/utils";
-import { Button, Icon } from "@/src/presentation/design-system";
+import { Button } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { TransactionItem, WalletCard } from "./components";
 
-// Brand gradient shades (primary green / secondary magenta), cycled per card.
+// Decorative brand gradients (green / magenta), cycled per card. Kept as a
+// feature-level constant rather than design tokens: the token pipeline only
+// models solid `--color-*` values, not gradients. The dark stops are the
+// primary[700]/secondary[700] brand shades; the light stops are off-palette.
 const CARD_GRADIENTS = ["from-[#2EC16E] to-[#0A682F]", "from-[#C42E9D] to-[#680A43]"];
 
 interface WalletScreenProps {
@@ -43,7 +45,7 @@ export default function WalletScreen({ wallet }: WalletScreenProps) {
       </section>
 
       <section>
-        <div className="flex flex-col gap-4 rounded-card-xl bg-surface px-4 py-2">
+        <div className="flex flex-col gap-4 rounded-card-xl bg-surface-sunken px-4 py-2">
           <h2 className="text-body-b3 text-muted-foreground">Recent Transactions</h2>
           <ul className="flex flex-col gap-2">
             {wallet.transactions.map((transaction) => (

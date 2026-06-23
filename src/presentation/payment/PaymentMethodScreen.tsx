@@ -63,7 +63,7 @@ export default function PaymentMethodScreen({ methods }: PaymentMethodScreenProp
         })}
       </fieldset>
 
-      <Button type="submit" size="lg" className="mt-auto w-full rounded-2xl">
+      <Button type="submit" size="lg" className="mt-auto w-full rounded-button-lg">
         Confirm Payment
       </Button>
     </form>

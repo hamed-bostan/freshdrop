@@ -16,7 +16,7 @@ const KEYS: { digit: string; letters?: string }[] = [
 ];
 
 const keyClass =
-  "flex h-14 flex-col items-center justify-center rounded-xl bg-background shadow-sm transition-colors " +
+  "flex h-14 flex-col items-center justify-center rounded-card-xl bg-background shadow-sm transition-colors " +
   "active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 interface NumericKeypadProps {

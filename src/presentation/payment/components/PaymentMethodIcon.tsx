@@ -12,9 +12,8 @@ import { paypalIcon, applePayIcon, googlePayIcon } from "@/src/shared/assets/ima
 type IconEntry = { kind: "lucide"; icon: LucideIcon; className?: string } | { kind: "brand"; src: StaticImageData };
 
 const ICONS: Record<string, IconEntry> = {
-  // Gold coin — there is no amber semantic token, so we match the mock with a
-  // one-off brand colour (same spirit as the star colour in `ProductCard`).
-  "cash-on-delivery": { kind: "lucide", icon: Coins, className: "text-[#F4B400]" },
+  // Gold coin — reuses the app's amber `rating` token (the shared gold accent).
+  "cash-on-delivery": { kind: "lucide", icon: Coins, className: "text-rating" },
   wallet: { kind: "lucide", icon: Wallet, className: "text-muted-foreground" },
   "add-card": { kind: "lucide", icon: CreditCard, className: "text-foreground" },
   paypal: { kind: "brand", src: paypalIcon },

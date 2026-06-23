@@ -55,3 +55,8 @@ export const warning = {
   500: "#EDE10B",
   700: "#AAA005",
 };
+
+// Amber/gold accent — used for rating stars (and any gold decorative glyph).
+export const amber = {
+  500: "#FFC107",
+};
