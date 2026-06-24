@@ -8,6 +8,7 @@ import type { IDeliveryOptionRepository } from "@/src/domain/repositories/IDeliv
 import type { IGeocodingRepository } from "@/src/domain/repositories/IGeocodingRepository";
 import type { IWalletRepository } from "@/src/domain/repositories/IWalletRepository";
 import type { IOrderRepository } from "@/src/domain/repositories/IOrderRepository";
+import type { IOrderTrackingRepository } from "@/src/domain/repositories/IOrderTrackingRepository";
 import type { ICartRepository } from "@/src/domain/repositories/ICartRepository";
 import type { IPromoCodeRepository } from "@/src/domain/repositories/IPromoCodeRepository";
 import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
@@ -21,6 +22,7 @@ import { MockPaymentMethodRepository } from "./repositories/mock/MockPaymentMeth
 import { MockDeliveryOptionRepository } from "./repositories/mock/MockDeliveryOptionRepository";
 import { MockWalletRepository } from "./repositories/mock/MockWalletRepository";
 import { MockOrderRepository } from "./repositories/mock/MockOrderRepository";
+import { MockOrderTrackingRepository } from "./repositories/mock/MockOrderTrackingRepository";
 import { MockCartRepository } from "./repositories/mock/MockCartRepository";
 import { MockPromoCodeRepository } from "./repositories/mock/MockPromoCodeRepository";
 import { MockAuthRepository } from "./repositories/mock/MockAuthRepository";
@@ -51,6 +53,7 @@ export const paymentMethodRepository: IPaymentMethodRepository = new MockPayment
 export const deliveryOptionRepository: IDeliveryOptionRepository = new MockDeliveryOptionRepository();
 export const walletRepository: IWalletRepository = new MockWalletRepository();
 export const orderRepository: IOrderRepository = new MockOrderRepository(productRepository);
+export const orderTrackingRepository: IOrderTrackingRepository = new MockOrderTrackingRepository(orderRepository);
 export const cartRepository: ICartRepository = new MockCartRepository(productRepository);
 export const promoCodeRepository: IPromoCodeRepository = new MockPromoCodeRepository();
 

@@ -1,0 +1,10 @@
+[Unit]
+Description=Check ghcr for a new FreshDrop image every 2 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+Unit=freshdrop-update.service
+
+[Install]
+WantedBy=timers.target
