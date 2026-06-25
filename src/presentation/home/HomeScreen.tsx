@@ -27,6 +27,7 @@ export default function HomeScreen({
       <CategoryGrid categories={categories.slice(0, 6)} title="Category" href="/category" />
       <FeaturedProducts products={featuredProducts} />
       <SpecialOffers products={specialOffers} />
+        <p>Hello world</p>
     </div>
   );
 }
