@@ -31,14 +31,30 @@ export interface SupabaseImageStorageConfig {
  * client (anon key) read-only. The bucket is public, so reads need no key at all.
  */
 export class SupabaseImageStorageRepository implements IImageStorageRepository {
-  private readonly client: SupabaseClient;
-  private readonly bucket: string;
+  private clientInstance: SupabaseClient | null = null;
 
-  constructor(config: SupabaseImageStorageConfig) {
-    this.bucket = config.bucket;
-    this.client = createClient(config.url, config.serviceRoleKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+  constructor(private readonly config: SupabaseImageStorageConfig) {}
+
+  /**
+   * The Supabase client is created on first use, not in the constructor, so that
+   * importing the container (e.g. while `next build` collects page data) never
+   * needs the runtime Supabase env — those vars are only present once a request
+   * actually reaches an image route. Building the client eagerly would throw
+   * ("supabaseUrl is required") whenever the env is absent, as it is at build.
+   */
+  private get client(): SupabaseClient {
+    if (!this.clientInstance) {
+      const { url, serviceRoleKey } = this.config;
+      if (!url || !serviceRoleKey) {
+        throw new Error(
+          "SupabaseImageStorage: SUPABASE_URL and SUPABASE_SECRET_KEY must be set to use image storage.",
+        );
+      }
+      this.clientInstance = createClient(url, serviceRoleKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+    }
+    return this.clientInstance;
   }
 
   async upload(input: UploadImageInput): Promise<StoredImage> {
@@ -49,7 +65,7 @@ export class SupabaseImageStorageRepository implements IImageStorageRepository {
 
     const path = buildObjectPath(input.folder, extension);
 
-    const { error } = await this.client.storage.from(this.bucket).upload(path, input.data, {
+    const { error } = await this.client.storage.from(this.config.bucket).upload(path, input.data, {
       contentType: input.contentType,
       // Generated paths are unique, so this never clobbers; keep it explicit.
       upsert: false,
@@ -63,14 +79,14 @@ export class SupabaseImageStorageRepository implements IImageStorageRepository {
   }
 
   async remove(path: string): Promise<void> {
-    const { error } = await this.client.storage.from(this.bucket).remove([path]);
+    const { error } = await this.client.storage.from(this.config.bucket).remove([path]);
     if (error) {
       throw new Error(`SupabaseImageStorage: remove failed — ${error.message}`);
     }
   }
 
   getPublicUrl(path: string): string {
-    return this.client.storage.from(this.bucket).getPublicUrl(path).data.publicUrl;
+    return this.client.storage.from(this.config.bucket).getPublicUrl(path).data.publicUrl;
   }
 }
 
