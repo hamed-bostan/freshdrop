@@ -10,6 +10,10 @@ import { authRepository } from "@/src/infrastructure/container";
  */
 export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: { signIn: "/login" },
+  // Self-hosted behind nginx (not Vercel): Auth.js must be told to trust the
+  // proxied Host/X-Forwarded-Host, or it raises an `UntrustedHost` configuration
+  // error ("There was a problem with the server configuration") on auth flows.
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {
