@@ -25,4 +25,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
+  callbacks: {
+    // The user id rides on the standard `sub` claim (Auth.js sets it from
+    // `user.id` on sign-in). Surface it on the session so guards (e.g.
+    // requireAdmin) can read it — Auth.js v5 doesn't expose it by default.
+    session({ session, token }) {
+      if (token.sub) session.user.id = token.sub;
+      return session;
+    },
+  },
 });

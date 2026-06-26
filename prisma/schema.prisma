@@ -1,0 +1,23 @@
+// FreshDrop database schema.
+// Data lives in self-hosted PostgreSQL (a Docker container on the VPS).
+// Images live in Supabase Storage — a Category stores only the image's URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  iconUrl   String   @map("icon_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("categories")
+}

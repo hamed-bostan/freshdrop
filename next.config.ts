@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Emit a minimal, self-contained production server (.next/standalone) for Docker.
-  output: "standalone",
+  // Category icons are served from Supabase Storage — allow next/image to load them.
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "*.supabase.co" }],
+  },
 };
 
 export default nextConfig;

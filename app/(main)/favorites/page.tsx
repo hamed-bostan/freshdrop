@@ -4,6 +4,9 @@ import { GetCategories } from "@/src/domain/use-cases/categories/GetCategories";
 import { favoriteRepository, categoryRepository } from "@/src/infrastructure/container";
 import FavoritesScreen from "@/src/presentation/favorites/FavoritesScreen";
 
+// Categories come from Postgres at request time — render dynamically (no DB at build).
+export const dynamic = "force-dynamic";
+
 export default async function FavoritesPage() {
   await requireAuth();
 

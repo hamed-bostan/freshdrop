@@ -1,5 +1,5 @@
 import type { Category } from "@/src/domain/entities/Category";
-import type { ICategoryRepository } from "@/src/domain/repositories/ICategoryRepository";
+import type { ICategoryRepository, NewCategory } from "@/src/domain/repositories/ICategoryRepository";
 
 /**
  * Exported so the product mock can reuse each category's grid image as the image
@@ -37,5 +37,24 @@ export class MockCategoryRepository implements ICategoryRepository {
 
   async getBySlug(slug: string): Promise<Category | null> {
     return MOCK_CATEGORIES.find((c) => c.slug === slug) ?? null;
+  }
+
+  async create(input: NewCategory): Promise<Category> {
+    const category: Category = { id: String(MOCK_CATEGORIES.length + 1), ...input };
+    MOCK_CATEGORIES.push(category);
+    return category;
+  }
+
+  async update(id: string, input: NewCategory): Promise<Category> {
+    const index = MOCK_CATEGORIES.findIndex((c) => c.id === id);
+    if (index === -1) throw new Error(`MockCategoryRepository: no category with id "${id}".`);
+    const category: Category = { id, ...input };
+    MOCK_CATEGORIES[index] = category;
+    return category;
+  }
+
+  async delete(id: string): Promise<void> {
+    const index = MOCK_CATEGORIES.findIndex((c) => c.id === id);
+    if (index !== -1) MOCK_CATEGORIES.splice(index, 1);
   }
 }

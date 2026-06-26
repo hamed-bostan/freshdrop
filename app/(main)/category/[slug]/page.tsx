@@ -8,6 +8,9 @@ interface CategoryDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
+// Category looked up in Postgres at request time — render dynamically (no DB at build).
+export const dynamic = "force-dynamic";
+
 export default async function CategoryDetailPage({ params }: CategoryDetailPageProps) {
   const { slug } = await params;
 

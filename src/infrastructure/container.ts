@@ -12,8 +12,9 @@ import type { IOrderTrackingRepository } from "@/src/domain/repositories/IOrderT
 import type { ICartRepository } from "@/src/domain/repositories/ICartRepository";
 import type { IPromoCodeRepository } from "@/src/domain/repositories/IPromoCodeRepository";
 import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
+import type { IImageStorageRepository } from "@/src/domain/repositories/IImageStorageRepository";
 
-import { MockCategoryRepository } from "./repositories/mock/MockCategoryRepository";
+import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepository";
 import { MockProductRepository } from "./repositories/mock/MockProductRepository";
 import { MockFavoriteRepository } from "./repositories/mock/MockFavoriteRepository";
 import { MockReviewRepository } from "./repositories/mock/MockReviewRepository";
@@ -28,6 +29,7 @@ import { MockPromoCodeRepository } from "./repositories/mock/MockPromoCodeReposi
 import { MockAuthRepository } from "./repositories/mock/MockAuthRepository";
 import { SmsIrAuthRepository } from "./repositories/SmsIrAuthRepository";
 import { NominatimGeocodingRepository } from "./repositories/NominatimGeocodingRepository";
+import { SupabaseImageStorageRepository } from "./repositories/SupabaseImageStorageRepository";
 
 const SMS_IR_DEFAULT_TEMPLATE_ID = 562447;
 
@@ -44,7 +46,8 @@ const SMS_IR_DEFAULT_TEMPLATE_ID = 562447;
  *     new CategoryRepository(process.env.API_BASE_URL!);
  * and nothing else in the app changes.
  */
-export const categoryRepository: ICategoryRepository = new MockCategoryRepository();
+// Categories are real data now — PostgreSQL via Prisma (server-side only).
+export const categoryRepository: ICategoryRepository = new PrismaCategoryRepository();
 export const productRepository: IProductRepository = new MockProductRepository();
 export const favoriteRepository: IFavoriteRepository = new MockFavoriteRepository(productRepository);
 export const reviewRepository: IReviewRepository = new MockReviewRepository();
@@ -75,4 +78,14 @@ export const geocodingRepository: IGeocodingRepository = new NominatimGeocodingR
   baseUrl: process.env.NOMINATIM_BASE_URL,
   userAgent: process.env.NOMINATIM_USER_AGENT ?? "FreshDrop/0.1 (+https://example.com/contact)",
   language: process.env.NOMINATIM_LANGUAGE ?? "en",
+});
+
+// Supabase Storage for images. Server-side only — it holds the service-role key,
+// so it must never be imported by client components (the public bucket means
+// reads need no key anyway). `SUPABASE_URL` falls back to the public URL since
+// they're the same origin.
+export const imageStorageRepository: IImageStorageRepository = new SupabaseImageStorageRepository({
+  url: process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  serviceRoleKey: process.env.SUPABASE_SECRET_KEY!,
+  bucket: process.env.SUPABASE_IMAGES_BUCKET ?? "images",
 });

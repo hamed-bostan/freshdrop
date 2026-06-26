@@ -1,39 +1,44 @@
 # syntax=docker/dockerfile:1
 
-# ---- Stage 1: deps — install ALL deps (incl. dev; tsx is needed to build) ----
+# ---- deps: install all deps (dev included — needed to build, and the Prisma CLI at runtime) ----
 FROM node:22-alpine AS deps
 WORKDIR /app
-# Some native modules expect glibc; alpine ships musl. This shim covers them.
-RUN apk add --no-cache libc6-compat
+# libc6-compat for native modules; openssl for Prisma's query engine.
+RUN apk add --no-cache libc6-compat openssl
 COPY package.json package-lock.json ./
+COPY prisma ./prisma
 RUN npm ci
 
-# ---- Stage 2: builder — generate design tokens + next build ----
+# ---- builder: generate the Prisma client, then run prebuild (tokens) + next build ----
 FROM node:22-alpine AS builder
 WORKDIR /app
+RUN apk add --no-cache openssl
 ENV NEXT_TELEMETRY_DISABLED=1
+# Dummy URL so any build-time Prisma instantiation is satisfied; no DB is contacted
+# at build (the data pages are force-dynamic). The real URL is injected at runtime.
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build?schema=public"
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# `npm run build` auto-runs the `prebuild` hook (generate:tokens) first.
+RUN npx prisma generate
 RUN npm run build
 
-# ---- Stage 3: runner — minimal standalone runtime ----
+# ---- runner: production server. Full node_modules so Prisma's client, engine, and
+#      migrate CLI are all present — no standalone file-tracing to fight. ----
 FROM node:22-alpine AS runner
 WORKDIR /app
+RUN apk add --no-cache openssl
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-# Run as an unprivileged user, never root.
-RUN addgroup --system --gid 1001 nodejs \
- && adduser  --system --uid 1001 nextjs
-
-# Standalone output bundles a self-contained server + only the deps it uses.
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/next.config.ts ./next.config.ts
+COPY --from=builder /app/prisma ./prisma
 
-USER nextjs
 EXPOSE 3000
-CMD ["node", "server.js"]
+# Apply pending migrations (a no-op when already up to date), then start the server.
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
