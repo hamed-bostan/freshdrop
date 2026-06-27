@@ -6,6 +6,16 @@ export interface StoredImage {
   url: string;
 }
 
+/** An object discovered by listing the bucket (used by orphan cleanup). */
+export interface StoredObject {
+  /** Path within the bucket, e.g. `categories/3f9a…​.png`. */
+  path: string;
+  /** Public CDN URL. */
+  url: string;
+  /** When the object was created, or `null` when the provider didn't report it. */
+  createdAt: Date | null;
+}
+
 export interface UploadImageInput {
   /** Raw image bytes. */
   data: ArrayBuffer | Uint8Array;
@@ -27,6 +37,16 @@ export interface IImageStorageRepository {
   upload(input: UploadImageInput): Promise<StoredImage>;
   /** Delete a previously stored object by its bucket path. */
   remove(path: string): Promise<void>;
+  /**
+   * Best-effort delete by public URL: derives the bucket path from the URL and
+   * removes the object. A no-op for URLs this bucket doesn't own, and it never
+   * throws — orphan cleanup must not fail the write that triggered it.
+   */
+  removeByUrl(url: string): Promise<void>;
+  /** List every object under a bucket folder (paginated internally). */
+  list(folder: string): Promise<StoredObject[]>;
   /** Resolve a bucket path to its public URL without a round-trip. */
   getPublicUrl(path: string): string;
+  /** Inverse of {@link getPublicUrl}: the in-bucket path for one of our URLs, or null. */
+  pathForUrl(url: string): string | null;
 }

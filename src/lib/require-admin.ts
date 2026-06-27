@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import type { Session } from "next-auth";
 import { auth } from "@/auth";
 
 /** Parse the comma-separated `ADMIN_USER_IDS` allowlist into a Set. */
@@ -12,6 +13,22 @@ function adminIds(): Set<string> {
   );
 }
 
+/** True when the session belongs to a user in the `ADMIN_USER_IDS` allowlist. */
+export function isAdmin(session: Session | null): boolean {
+  return Boolean(session?.user?.id && adminIds().has(session.user.id));
+}
+
+/**
+ * Non-redirecting admin guard for route handlers, which must answer with a JSON
+ * status code rather than an HTML redirect (a `fetch` caller can't follow a login
+ * redirect). Returns the session for an allowlisted admin, or `null` otherwise —
+ * the caller decides the status (typically 401).
+ */
+export async function getAdminSession(): Promise<Session | null> {
+  const session = await auth();
+  return isAdmin(session) ? session : null;
+}
+
 /**
  * Server-side guard for the admin dashboard. Returns the session when the signed-in
  * user's id is in the `ADMIN_USER_IDS` allowlist. Anonymous visitors are sent to
@@ -21,7 +38,7 @@ function adminIds(): Set<string> {
  * Used both in the dashboard layout (navigation guard) and inside each server
  * action (defense in depth — server actions are independently reachable endpoints).
  */
-export async function requireAdmin() {
+export async function requireAdmin(): Promise<Session> {
   const session = await auth();
 
   if (!session?.user) {
@@ -29,7 +46,7 @@ export async function requireAdmin() {
     redirect(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
   }
 
-  if (!session.user.id || !adminIds().has(session.user.id)) {
+  if (!isAdmin(session)) {
     redirect("/");
   }
 

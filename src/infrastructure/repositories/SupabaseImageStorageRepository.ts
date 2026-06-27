@@ -2,8 +2,12 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type {
   IImageStorageRepository,
   StoredImage,
+  StoredObject,
   UploadImageInput,
 } from "@/src/domain/repositories/IImageStorageRepository";
+
+/** Supabase Storage's `list` caps each page at 100 objects. */
+const LIST_PAGE_SIZE = 100;
 
 const EXTENSION_BY_MIME: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -85,8 +89,71 @@ export class SupabaseImageStorageRepository implements IImageStorageRepository {
     }
   }
 
+  async removeByUrl(url: string): Promise<void> {
+    const path = this.pathForUrl(url);
+    if (!path) return; // External/legacy URL we don't own — nothing to reclaim.
+
+    try {
+      const { error } = await this.client.storage.from(this.config.bucket).remove([path]);
+      if (error) {
+        console.error(`SupabaseImageStorage: best-effort remove failed for "${path}" — ${error.message}`);
+      }
+    } catch (error) {
+      // Network/SDK failure: log and move on — cleanup must never break the caller.
+      console.error(`SupabaseImageStorage: best-effort remove threw for "${path}":`, error);
+    }
+  }
+
+  async list(folder: string): Promise<StoredObject[]> {
+    const bucket = this.client.storage.from(this.config.bucket);
+    const objects: StoredObject[] = [];
+
+    for (let offset = 0; ; offset += LIST_PAGE_SIZE) {
+      const { data, error } = await bucket.list(folder, {
+        limit: LIST_PAGE_SIZE,
+        offset,
+        sortBy: { column: "name", order: "asc" },
+      });
+      if (error) {
+        throw new Error(`SupabaseImageStorage: list failed for "${folder}" — ${error.message}`);
+      }
+      if (!data || data.length === 0) break;
+
+      for (const item of data) {
+        // Sub-folder placeholders come back with a null id and no metadata — skip them.
+        if (!item.id) continue;
+        const path = `${folder}/${item.name}`;
+        objects.push({
+          path,
+          url: this.getPublicUrl(path),
+          createdAt: item.created_at ? new Date(item.created_at) : null,
+        });
+      }
+
+      if (data.length < LIST_PAGE_SIZE) break;
+    }
+
+    return objects;
+  }
+
   getPublicUrl(path: string): string {
     return this.client.storage.from(this.config.bucket).getPublicUrl(path).data.publicUrl;
+  }
+
+  /** Extract the in-bucket path from one of our public URLs, or null if it isn't one. */
+  pathForUrl(url: string): string | null {
+    const marker = `/storage/v1/object/public/${this.config.bucket}/`;
+    const index = url.indexOf(marker);
+    if (index === -1) return null;
+
+    const encodedPath = url.slice(index + marker.length).split("?")[0];
+    if (!encodedPath) return null;
+
+    try {
+      return decodeURIComponent(encodedPath);
+    } catch {
+      return encodedPath; // Malformed escapes — fall back to the raw path.
+    }
   }
 }
 

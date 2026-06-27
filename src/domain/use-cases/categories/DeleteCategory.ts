@@ -1,10 +1,19 @@
 import type { ICategoryRepository } from "../../repositories/ICategoryRepository";
+import type { IImageStorageRepository } from "../../repositories/IImageStorageRepository";
 
 export class DeleteCategory {
-  constructor(private readonly categoryRepo: ICategoryRepository) {}
+  constructor(
+    private readonly categoryRepo: ICategoryRepository,
+    private readonly imageStorage: IImageStorageRepository,
+  ) {}
 
-  execute(id: string): Promise<void> {
+  async execute(id: string): Promise<void> {
     if (!id) throw new Error("DeleteCategory: id is required.");
-    return this.categoryRepo.delete(id);
+
+    const existing = await this.categoryRepo.getById(id);
+    await this.categoryRepo.delete(id);
+
+    // Reclaim the now-orphaned icon (best-effort: never blocks the delete).
+    if (existing) await this.imageStorage.removeByUrl(existing.iconUrl);
   }
 }

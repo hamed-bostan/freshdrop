@@ -3,8 +3,8 @@ import type {
   StoredImage,
   UploadImageInput,
 } from "../../repositories/IImageStorageRepository";
+import { detectImageType } from "../../../lib/detectImageType";
 
-const ALLOWED_CONTENT_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 /** Mirrors the bucket's server-side limit (5 MB) so we fail fast and cheaply. */
 const MAX_BYTES = 5 * 1024 * 1024;
 
@@ -12,10 +12,6 @@ export class UploadImage {
   constructor(private readonly imageStorage: IImageStorageRepository) {}
 
   execute(input: UploadImageInput): Promise<StoredImage> {
-    if (!ALLOWED_CONTENT_TYPES.has(input.contentType)) {
-      throw new Error(`UploadImage: unsupported content type "${input.contentType}".`);
-    }
-
     const byteLength = input.data.byteLength;
     if (byteLength === 0) {
       throw new Error("UploadImage: image is empty.");
@@ -24,6 +20,14 @@ export class UploadImage {
       throw new Error(`UploadImage: image exceeds the ${MAX_BYTES} byte limit.`);
     }
 
-    return this.imageStorage.upload(input);
+    // Trust the bytes, not the caller-declared content type (which is spoofable):
+    // sniff the real format and reject anything that isn't a supported image.
+    const detected = detectImageType(input.data);
+    if (!detected) {
+      throw new Error("UploadImage: file is not a supported image.");
+    }
+
+    // Store under the verified type so the stored bytes and content type can't disagree.
+    return this.imageStorage.upload({ ...input, contentType: detected });
   }
 }

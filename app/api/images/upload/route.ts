@@ -1,15 +1,24 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { UploadImage } from "@/src/domain/use-cases/images/UploadImage";
 import { imageStorageRepository } from "@/src/infrastructure/container";
+import { getAdminSession } from "@/src/lib/require-admin";
+import { MANAGED_IMAGE_FOLDERS } from "@/src/lib/imageFolders";
 
-const ALLOWED_FOLDERS = new Set(["products", "categories", "misc"]);
+const ALLOWED_FOLDERS = new Set<string>(MANAGED_IMAGE_FOLDERS);
 
 /**
  * Image upload endpoint: `POST /api/images/upload` with `multipart/form-data`
  * (`file`, optional `folder`). The actual write to Supabase Storage happens here,
  * server-side, using the service-role key (see `SupabaseImageStorageRepository`).
+ *
+ * Admin-only: it writes to a public, billable bucket with the service-role key,
+ * so it must never be reachable by anonymous callers.
  */
 export async function POST(request: NextRequest) {
+  if (!(await getAdminSession())) {
+    return NextResponse.json({ error: "Not authorized." }, { status: 401 });
+  }
+
   let formData: FormData;
   try {
     formData = await request.formData();

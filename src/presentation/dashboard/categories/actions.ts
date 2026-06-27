@@ -6,7 +6,7 @@ import { CreateCategory } from "@/src/domain/use-cases/categories/CreateCategory
 import { UpdateCategory } from "@/src/domain/use-cases/categories/UpdateCategory";
 import { DeleteCategory } from "@/src/domain/use-cases/categories/DeleteCategory";
 import { GetCategoryBySlug } from "@/src/domain/use-cases/categories/GetCategoryBySlug";
-import { categoryRepository } from "@/src/infrastructure/container";
+import { categoryRepository, imageStorageRepository } from "@/src/infrastructure/container";
 import { requireAdmin } from "@/src/lib/require-admin";
 import { categoryFormSchema, type CategoryFormValues } from "./category-schema";
 
@@ -59,7 +59,7 @@ export async function updateCategory(id: string, values: CategoryFormValues): Pr
   if (existing && existing.id !== id) return { error: "That slug is already taken." };
 
   try {
-    await new UpdateCategory(categoryRepository).execute(id, result.data);
+    await new UpdateCategory(categoryRepository, imageStorageRepository).execute(id, result.data);
   } catch (error) {
     console.error("updateCategory failed:", error);
     return { error: "Couldn't update the category. Please try again." };
@@ -74,7 +74,7 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
   if (!id) return { error: "Missing category id." };
 
   try {
-    await new DeleteCategory(categoryRepository).execute(id);
+    await new DeleteCategory(categoryRepository, imageStorageRepository).execute(id);
   } catch (error) {
     console.error("deleteCategory failed:", error);
     return { error: "Couldn't delete the category. Please try again." };
