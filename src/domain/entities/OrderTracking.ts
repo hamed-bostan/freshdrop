@@ -11,7 +11,7 @@ export type TrackingMilestone = "confirmed" | "shipped" | "arrived";
 export type TrackingStepStatus = "done" | "current" | "pending";
 
 /** A single step in the order's delivery timeline. */
-export interface TrackingStep {
+export type TrackingStep = {
   milestone: TrackingMilestone;
   /** Human-readable label, e.g. "Order shipped". */
   label: string;
@@ -21,7 +21,7 @@ export interface TrackingStep {
 }
 
 /** The courier delivering the order. */
-export interface DeliveryRider {
+export type DeliveryRider = {
   name: string;
   /** Job title shown under the name, e.g. "Delivery Man". */
   role: string;
@@ -31,7 +31,7 @@ export interface DeliveryRider {
 }
 
 /** Live tracking detail for a placed order, shown on the "Order Track" screen. */
-export interface OrderTracking {
+export type OrderTracking = {
   orderId: string;
   /** Human-readable delivery address. */
   deliveryAddress: string;

@@ -1,6 +1,6 @@
 import type { CartItem } from "../entities/Cart";
 
-export interface ICartRepository {
+export type ICartRepository = {
   getItems(): Promise<CartItem[]>;
   addItem(productId: string, quantity: number): Promise<void>;
   removeItem(productId: string): Promise<void>;

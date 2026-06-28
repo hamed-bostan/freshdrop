@@ -6,7 +6,7 @@ import { promoDiscount } from "@/src/lib/promoDiscount";
 /** Flat delivery fee while there's no zone/weight-based shipping engine. */
 const SHIPPING_FEE = 5;
 
-export interface GetCartOptions {
+export type GetCartOptions = {
   /** Applied promo code, if any — drives the discount. */
   promo?: PromoCode | null;
 }

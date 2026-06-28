@@ -1,6 +1,6 @@
 import type { Product } from "../entities/Product";
 
-export interface IProductRepository {
+export type IProductRepository = {
   getAll(): Promise<Product[]>;
   getById(id: string): Promise<Product | null>;
   getFeatured(): Promise<Product[]>;

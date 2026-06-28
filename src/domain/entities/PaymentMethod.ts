@@ -8,7 +8,7 @@
  */
 export type PaymentMethodGroup = "cash" | "wallet" | "card" | "options";
 
-export interface PaymentMethod {
+export type PaymentMethod = {
   id: string;
   label: string;
   group: PaymentMethodGroup;

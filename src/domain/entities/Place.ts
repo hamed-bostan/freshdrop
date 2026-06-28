@@ -1,5 +1,5 @@
 /** A point on the Earth, in decimal degrees (WGS 84). */
-export interface GeoPoint {
+export type GeoPoint = {
   latitude: number;
   longitude: number;
 }
@@ -10,7 +10,7 @@ export interface GeoPoint {
  * etc. all map onto this shape so nothing above the repository layer cares which
  * provider produced it.
  */
-export interface Place {
+export type Place = {
   /** Stable provider id for the result. */
   id: string;
   /** Short, human label for the result (e.g. "Queen's Park"). */

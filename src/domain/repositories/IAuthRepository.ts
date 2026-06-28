@@ -1,6 +1,6 @@
 import type { User } from "../entities/User";
 
-export interface IAuthRepository {
+export type IAuthRepository = {
   /** Generate and deliver a one-time code for the phone. Returns false if the phone is invalid. */
   requestOtp(phone: string): Promise<boolean>;
   /** Verify the code; returns the user on success, otherwise `null`. */

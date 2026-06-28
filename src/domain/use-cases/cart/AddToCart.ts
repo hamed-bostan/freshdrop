@@ -1,7 +1,7 @@
 import type { ICartRepository } from "../../repositories/ICartRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 
-export interface AddToCartRequest {
+export type AddToCartRequest = {
   productId: string;
   quantity?: number;
 }

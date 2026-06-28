@@ -1,4 +1,4 @@
-export interface PromoCode {
+export type PromoCode = {
   id: string;
   /** The code the user enters/redeems, e.g. "SNAPP15". */
   code: string;

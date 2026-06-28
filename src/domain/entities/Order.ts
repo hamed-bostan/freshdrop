@@ -15,7 +15,7 @@ export type OrderPhase = "current" | "previous";
  * the product id so the order remains a faithful record even if the catalog
  * changes later.
  */
-export interface OrderItem {
+export type OrderItem = {
   productId: string;
   name: string;
   imageUrl: string;
@@ -23,7 +23,7 @@ export interface OrderItem {
 }
 
 /** A placed order shown on the "My Order" screen. */
-export interface Order {
+export type Order = {
   id: string;
   status: OrderStatus;
   phase: OrderPhase;

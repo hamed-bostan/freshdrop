@@ -1,6 +1,6 @@
 export type DeliveryLocationKind = "home" | "office" | "gym" | "other";
 
-export interface DeliveryLocation {
+export type DeliveryLocation = {
   id: string;
   label: string;
   address: string;

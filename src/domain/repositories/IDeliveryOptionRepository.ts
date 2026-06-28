@@ -1,5 +1,5 @@
 import type { DeliveryOption } from "../entities/DeliveryOption";
 
-export interface IDeliveryOptionRepository {
+export type IDeliveryOptionRepository = {
   getAll(): Promise<DeliveryOption[]>;
 }

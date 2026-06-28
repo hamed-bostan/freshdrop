@@ -1,11 +1,11 @@
 import type { Product } from "./Product";
 
-export interface CartItem {
+export type CartItem = {
   product: Product;
   quantity: number;
 }
 
-export interface Cart {
+export type Cart = {
   items: CartItem[];
   subtotal: number;
   /** Delivery fee applied at checkout. */

@@ -8,7 +8,7 @@ import type { IImageStorageRepository } from "../../repositories/IImageStorageRe
  */
 export type ReferencedUrlSource = () => Promise<readonly string[]>;
 
-export interface SweepOrphanImagesOptions {
+export type SweepOrphanImagesOptions = {
   /** Bucket folders to scan. */
   folders: readonly string[];
   /**
@@ -21,7 +21,7 @@ export interface SweepOrphanImagesOptions {
   dryRun?: boolean;
 }
 
-export interface SweepOrphanImagesResult {
+export type SweepOrphanImagesResult = {
   /** Total objects examined across all folders. */
   scanned: number;
   /** Paths identified as orphaned and old enough to remove. */

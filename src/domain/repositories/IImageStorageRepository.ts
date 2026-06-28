@@ -1,5 +1,5 @@
 /** A successfully stored image. */
-export interface StoredImage {
+export type StoredImage = {
   /** Path within the bucket, e.g. `products/3f9a…​.webp`. */
   path: string;
   /** Public CDN URL the client can render directly. */
@@ -7,7 +7,7 @@ export interface StoredImage {
 }
 
 /** An object discovered by listing the bucket (used by orphan cleanup). */
-export interface StoredObject {
+export type StoredObject = {
   /** Path within the bucket, e.g. `categories/3f9a…​.png`. */
   path: string;
   /** Public CDN URL. */
@@ -16,7 +16,7 @@ export interface StoredObject {
   createdAt: Date | null;
 }
 
-export interface UploadImageInput {
+export type UploadImageInput = {
   /** Raw image bytes. */
   data: ArrayBuffer | Uint8Array;
   /** MIME type, e.g. `image/webp`. Used for validation and the stored object. */
@@ -32,7 +32,7 @@ export interface UploadImageInput {
  * Implementations live in `infrastructure` and are bound in the container, so
  * swapping Supabase Storage for S3/R2 never touches the domain or UI.
  */
-export interface IImageStorageRepository {
+export type IImageStorageRepository = {
   /** Store image bytes and return its path + public URL. */
   upload(input: UploadImageInput): Promise<StoredImage>;
   /** Delete a previously stored object by its bucket path. */

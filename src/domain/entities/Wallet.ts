@@ -1,6 +1,6 @@
 export type CardBrand = "Visa" | "Mastercard";
 
-export interface SavedCard {
+export type SavedCard = {
   id: string;
   brand: CardBrand;
   holderName: string;
@@ -15,7 +15,7 @@ export interface SavedCard {
 
 export type TransactionType = "credit" | "debit";
 
-export interface WalletTransaction {
+export type WalletTransaction = {
   id: string;
   description: string;
   /** ISO 8601 timestamp (UTC). Formatted for display in the presentation layer. */
@@ -26,7 +26,7 @@ export interface WalletTransaction {
 }
 
 /** Aggregate for the wallet screen: balance + saved cards + recent activity. */
-export interface Wallet {
+export type Wallet = {
   balance: number;
   cards: SavedCard[];
   transactions: WalletTransaction[];

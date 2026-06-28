@@ -24,7 +24,8 @@ Next.js (App Router) · TypeScript · Radix UI · Tailwind v4 · Swiper.js · Ne
 
 ### TypeScript
 
-- Strict mode, no `any`, use `type` (never `interface`)
+- Strict mode, no `any`
+- Default to `type` for app code — entities, repository ports, unions, props. Reserve `interface` for declaration merging only: module/global augmentation (e.g. `src/types/*.d.ts` augmenting NextAuth's `Session`), and extending external library/DOM types where `extends` ergonomics genuinely help (e.g. design-system props extending React HTML attributes)
 - All functions and components explicitly typed
 
 ### Architecture

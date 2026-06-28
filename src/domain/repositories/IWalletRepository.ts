@@ -1,5 +1,5 @@
 import type { Wallet } from "../entities/Wallet";
 
-export interface IWalletRepository {
+export type IWalletRepository = {
   getWallet(): Promise<Wallet>;
 }

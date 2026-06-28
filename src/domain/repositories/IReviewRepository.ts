@@ -1,5 +1,5 @@
 import type { Review } from "../entities/Review";
 
-export interface IReviewRepository {
+export type IReviewRepository = {
   getByProduct(productId: string): Promise<Review[]>;
 }

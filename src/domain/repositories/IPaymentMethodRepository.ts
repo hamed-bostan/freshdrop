@@ -1,5 +1,5 @@
 import type { PaymentMethod } from "../entities/PaymentMethod";
 
-export interface IPaymentMethodRepository {
+export type IPaymentMethodRepository = {
   getAll(): Promise<PaymentMethod[]>;
 }
