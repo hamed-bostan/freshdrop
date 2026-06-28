@@ -15,17 +15,27 @@ interface DeleteCategoryButtonProps {
 export function DeleteCategoryButton({ id, name }: DeleteCategoryButtonProps) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
 
   function handleConfirm() {
+    setError(null);
     startTransition(async () => {
       const result = await deleteCategory(id);
       if (result && "error" in result) {
-        window.alert(result.error);
+        // Re-open the sheet in a failure state so the error reads in context and
+        // the user can retry — instead of a disruptive window.alert.
+        setError(result.error);
+        setOpen(true);
         return;
       }
       router.refresh();
     });
+  }
+
+  function handleOpenChange(next: boolean): void {
+    setOpen(next);
+    if (!next) setError(null); // Drop a stale error once the sheet is dismissed.
   }
 
   return (
@@ -45,10 +55,10 @@ export function DeleteCategoryButton({ id, name }: DeleteCategoryButtonProps) {
 
       <ConfirmSheet
         open={open}
-        onOpenChange={setOpen}
-        title="Delete category?"
-        message={`"${name}" will be permanently removed. This can't be undone.`}
-        confirmLabel="Delete"
+        onOpenChange={handleOpenChange}
+        title={error ? "Couldn't delete category" : "Delete category?"}
+        message={error ?? `"${name}" will be permanently removed. This can't be undone.`}
+        confirmLabel={error ? "Try again" : "Delete"}
         onConfirm={handleConfirm}
       />
     </>
