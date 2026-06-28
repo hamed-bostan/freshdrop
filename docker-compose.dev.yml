@@ -1,0 +1,37 @@
+name: freshdrop-dev
+
+# Local development database only — the Next.js app runs on the host (`npm run dev`)
+# and connects via DATABASE_URL in `.env` (postgresql://freshdrop:devpassword@localhost:5432/freshdrop).
+# This is the production-grade replacement for the old hand-created `docker run` container:
+# declarative, version-controlled, auto-restarting, healthchecked, with a named volume.
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d     # start (survives reboots)
+#   docker compose -f docker-compose.dev.yml down       # stop (keeps data)
+#   docker compose -f docker-compose.dev.yml down -v    # stop AND delete data
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: freshdrop-db
+    restart: unless-stopped
+    environment:
+      # Local-dev throwaway credentials — must match DATABASE_URL in `.env`.
+      # Not a secret; never reused in production (prod uses .env.production on the VPS).
+      POSTGRES_USER: freshdrop
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: freshdrop
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U freshdrop -d freshdrop"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  pgdata:
+    name: freshdrop_dev_pgdata
