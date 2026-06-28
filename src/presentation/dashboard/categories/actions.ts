@@ -5,9 +5,9 @@ import { redirect } from "next/navigation";
 import { CreateCategory } from "@/src/domain/use-cases/categories/CreateCategory";
 import { UpdateCategory } from "@/src/domain/use-cases/categories/UpdateCategory";
 import { DeleteCategory } from "@/src/domain/use-cases/categories/DeleteCategory";
-import { GetCategoryBySlug } from "@/src/domain/use-cases/categories/GetCategoryBySlug";
 import { categoryRepository, imageStorageRepository } from "@/src/infrastructure/container";
 import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError";
+import { ValidationError } from "@/src/domain/errors/ValidationError";
 import { requireAdmin } from "@/src/lib/require-admin";
 import { categoryFormSchema, type CategoryFormValues } from "./category-schema";
 
@@ -33,18 +33,14 @@ export async function createCategory(values: CategoryFormValues): Promise<Action
   const result = firstIssue(values);
   if ("error" in result) return result;
 
-  // Friendly, repository-agnostic uniqueness check; the DB's unique constraint
-  // remains the ultimate guard (a race would surface as the generic error below).
-  const existing = await new GetCategoryBySlug(categoryRepository).execute(result.data.slug);
-  if (existing) return { error: "That slug is already taken." };
-
   try {
     await new CreateCategory(categoryRepository).execute(result.data);
   } catch (error) {
-    // Catches the race the pre-check can't: a concurrent insert with the same
-    // slug trips the DB's unique constraint. slug is Category's only unique
-    // field, so any unique violation here is a slug collision.
+    // CreateCategory enforces slug uniqueness, and the DB's unique constraint
+    // guards the check-to-insert race; both surface here as UniqueConstraintError.
+    // slug is Category's only unique field, so any such violation is a slug clash.
     if (error instanceof UniqueConstraintError) return { error: "That slug is already taken." };
+    if (error instanceof ValidationError) return { error: error.message };
     console.error("createCategory failed:", error);
     return { error: "Couldn't create the category. Please try again." };
   }
@@ -60,15 +56,14 @@ export async function updateCategory(id: string, values: CategoryFormValues): Pr
   const result = firstIssue(values);
   if ("error" in result) return result;
 
-  const existing = await new GetCategoryBySlug(categoryRepository).execute(result.data.slug);
-  if (existing && existing.id !== id) return { error: "That slug is already taken." };
-
   try {
     await new UpdateCategory(categoryRepository, imageStorageRepository).execute(id, result.data);
   } catch (error) {
-    // A concurrent rename to a slug another category just took trips the DB's
-    // unique constraint; slug is Category's only unique field (see createCategory).
+    // UpdateCategory enforces slug uniqueness, and the DB's unique constraint
+    // guards the check-to-update race; both surface here as UniqueConstraintError.
+    // slug is Category's only unique field (see createCategory).
     if (error instanceof UniqueConstraintError) return { error: "That slug is already taken." };
+    if (error instanceof ValidationError) return { error: error.message };
     console.error("updateCategory failed:", error);
     return { error: "Couldn't update the category. Please try again." };
   }
@@ -84,6 +79,7 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
   try {
     await new DeleteCategory(categoryRepository, imageStorageRepository).execute(id);
   } catch (error) {
+    if (error instanceof ValidationError) return { error: error.message };
     console.error("deleteCategory failed:", error);
     return { error: "Couldn't delete the category. Please try again." };
   }
