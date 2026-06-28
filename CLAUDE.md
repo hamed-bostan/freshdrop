@@ -8,7 +8,7 @@ Production-grade e-commerce app. Clean Architecture, design system, best practic
 
 ## Stack
 
-Next.js (App Router) · TypeScript · Radix UI · Tailwind v4 · Swiper.js · NextAuth.js
+Next.js (App Router) · TypeScript · Tailwind v4 · Radix UI · Prisma + PostgreSQL · Supabase Storage (images) · Auth.js v5 · React Hook Form + Zod · Swiper · Leaflet
 
 ---
 
@@ -30,23 +30,23 @@ Next.js (App Router) · TypeScript · Radix UI · Tailwind v4 · Swiper.js · Ne
 
 ### Architecture
 
-- Clean Architecture: Entities → Use Cases → Adapters → Next.js
+- Clean Architecture — dependencies point inward: `domain` (entities, use-cases, repository ports) is framework-free; `infrastructure` and `presentation` depend on it, never the reverse
+- `infrastructure/container.ts` is the sole composition root: it binds repository interfaces to concrete impls (Prisma / Supabase / mocks). Everything else depends on the interfaces
 - Server Components default, `"use client"` only when needed
-- No business logic in components
+- No business logic in components — server actions (`presentation/<feature>/actions.ts`) validate, then delegate to use-cases
 
 ### File Structure
 
 ```
 src/
-├── app/          # Pages & layouts
-├── features/     # Feature modules (components, hooks, types)
-├── use-cases/    # Business logic
-├── entities/     # Domain models
-├── components/ui # Design system (Radix-based)
-├── hooks/        # Shared custom hooks
-├── lib/          # Config (auth, db)
-├── utils/        # Pure utilities
-└── types/        # Global types
+├── domain/          # Entities, use-cases, repository ports (interfaces), errors — no framework imports
+├── infrastructure/  # Adapter impls: Prisma + mock repos, Supabase, prisma client, container.ts
+├── presentation/    # Feature UI modules + design-system/ (Radix-based)
+├── lib/             # Cross-cutting config & helpers (auth, guards, slugify)
+├── shared/          # Shared assets
+├── styles/          # Global styles
+└── types/           # Global types + module augmentation (*.d.ts)
+app/                 # Next.js App Router (repo root) — route groups (main)/(protected)/(dev), api/
 ```
 
 ### Styling
@@ -64,9 +64,3 @@ src/
 ## Claude Behavior
 
 - **Never run the dev server**
-
----
-
-## Current Focus
-
-_What you're working on today._
