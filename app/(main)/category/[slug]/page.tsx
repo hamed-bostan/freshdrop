@@ -1,23 +1,22 @@
 import { notFound } from "next/navigation";
-import { GetCategoryBySlug } from "@/src/domain/use-cases/categories/GetCategoryBySlug";
-import { GetProductsByCategory } from "@/src/domain/use-cases/products/GetProductsByCategory";
-import { categoryRepository, productRepository } from "@/src/infrastructure/container";
+import { categoriesServerApi } from "@/src/presentation/category/category-server-api";
+import { productServerApi } from "@/src/presentation/product/product-server-api";
 import CategoryDetailScreen from "@/src/presentation/category/CategoryDetailScreen";
 
 interface CategoryDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
-// Category looked up in Postgres at request time — render dynamically (no DB at build).
+// Category + products are fetched from the REST API at request time — render dynamically.
 export const dynamic = "force-dynamic";
 
 export default async function CategoryDetailPage({ params }: CategoryDetailPageProps) {
   const { slug } = await params;
 
-  const category = await new GetCategoryBySlug(categoryRepository).execute(slug);
+  const category = await categoriesServerApi.getBySlug(slug);
   if (!category) notFound();
 
-  const products = await new GetProductsByCategory(productRepository).execute(category.id);
+  const products = await productServerApi.getByCategory(category.id);
 
   return <CategoryDetailScreen category={category} products={products} />;
 }

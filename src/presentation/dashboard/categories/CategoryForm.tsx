@@ -2,25 +2,32 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@/src/domain/entities/Category";
 import { Button, Field, Input, TextField } from "@/src/presentation/design-system";
+import { ApiError } from "@/src/lib/api/ApiError";
 import { slugify } from "@/src/lib/slugify";
 import { categoryFormSchema, type CategoryFormValues } from "./category-schema";
-import { createCategory, updateCategory } from "./actions";
+import { categoriesApi } from "./category-api";
 import { IconUpload } from "./IconUpload";
+
+/** Fields the API can return targeted `fieldErrors` for. */
+const FORM_FIELDS = ["name", "slug", "iconUrl"] as const;
 
 type CategoryFormProps = { mode: "create" } | { mode: "edit"; category: Category };
 
 /**
  * Create/edit category form. React Hook Form + Zod (shared `categoryFormSchema`).
  * The DS fields aren't `forwardRef`, so RHF's `register` is spread onto `Input`
- * via `TextField`'s render-prop. A successful submit redirects server-side; only
- * a returned error surfaces inline.
+ * via `TextField`'s render-prop. Submits over the REST API via `categoriesApi`
+ * (Axios); on success it navigates back to the list, and an `ApiError` surfaces
+ * inline — field-specific messages on the offending fields, otherwise at the root.
  */
 export function CategoryForm(props: CategoryFormProps) {
   const editing = props.mode === "edit";
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -41,11 +48,26 @@ export function CategoryForm(props: CategoryFormProps) {
   const iconUrl = useWatch({ control, name: "iconUrl" });
 
   const onSubmit = handleSubmit(async (values) => {
-    const result = editing
-      ? await updateCategory(props.category.id, values)
-      : await createCategory(values);
-    if (result && "error" in result) {
-      setError("root", { message: result.error });
+    try {
+      if (editing) await categoriesApi.update(props.category.id, values);
+      else await categoriesApi.create(values);
+      router.push("/dashboard");
+    } catch (error) {
+      if (!(error instanceof ApiError)) {
+        setError("root", { message: "Something went wrong. Please try again." });
+        return;
+      }
+      // Prefer field-level messages (e.g. a taken slug) so they read in context;
+      // fall back to a single root message when the API didn't scope the error.
+      let appliedField = false;
+      for (const field of FORM_FIELDS) {
+        const message = error.fieldErrors?.[field];
+        if (message) {
+          setError(field, { message });
+          appliedField = true;
+        }
+      }
+      if (!appliedField) setError("root", { message: error.message });
     }
   });
 

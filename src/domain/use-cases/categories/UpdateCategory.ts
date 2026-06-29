@@ -3,6 +3,7 @@ import type { ICategoryRepository, NewCategory } from "../../repositories/ICateg
 import type { IImageStorageRepository } from "../../repositories/IImageStorageRepository";
 import { UniqueConstraintError } from "../../errors/UniqueConstraintError";
 import { ValidationError } from "../../errors/ValidationError";
+import { NotFoundError } from "../../errors/NotFoundError";
 
 export class UpdateCategory {
   constructor(
@@ -26,10 +27,12 @@ export class UpdateCategory {
     if (clash && clash.id !== id) throw new UniqueConstraintError(["slug"]);
 
     const previous = await this.categoryRepo.getById(id);
+    if (!previous) throw new NotFoundError("category", id);
+
     const updated = await this.categoryRepo.update(id, { name, slug, iconUrl: input.iconUrl });
 
     // Reclaim the previous icon when it's been swapped out (best-effort).
-    if (previous && previous.iconUrl !== updated.iconUrl) {
+    if (previous.iconUrl !== updated.iconUrl) {
       await this.imageStorage.removeByUrl(previous.iconUrl);
     }
 

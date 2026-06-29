@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import type { Category } from "@/src/domain/entities/Category";
 import type { ICategoryRepository, NewCategory } from "@/src/domain/repositories/ICategoryRepository";
 import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError";
+import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { prisma } from "@/src/infrastructure/prisma/client";
 
 /**
@@ -43,7 +44,11 @@ export class PrismaCategoryRepository implements ICategoryRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await prisma.category.delete({ where: { id } });
+    try {
+      await prisma.category.delete({ where: { id } });
+    } catch (error) {
+      throw toDomainError(error);
+    }
   }
 }
 
@@ -57,8 +62,11 @@ function toCategory(row: { id: string; name: string; slug: string; iconUrl: stri
  * error so callers never branch on Prisma codes; every other error passes through.
  */
 function toDomainError(error: unknown): unknown {
-  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-    return new UniqueConstraintError(uniqueTargetFields(error), { cause: error });
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    // P2002: unique violation. P2025: the targeted row no longer exists (lost a
+    // race between a pre-write existence check and the write).
+    if (error.code === "P2002") return new UniqueConstraintError(uniqueTargetFields(error), { cause: error });
+    if (error.code === "P2025") return new NotFoundError("category", undefined, { cause: error });
   }
   return error;
 }

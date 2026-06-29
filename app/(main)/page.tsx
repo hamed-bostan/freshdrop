@@ -1,19 +1,17 @@
-import { GetFeaturedProducts } from "@/src/domain/use-cases/products/GetFeaturedProducts";
-import { GetSpecialOffers } from "@/src/domain/use-cases/products/GetSpecialOffers";
-import { GetCategories } from "@/src/domain/use-cases/categories/GetCategories";
-import { GetDeliveryLocations } from "@/src/domain/use-cases/delivery-locations/GetDeliveryLocations";
-import { productRepository, categoryRepository, deliveryLocationRepository } from "@/src/infrastructure/container";
+import { categoriesServerApi } from "@/src/presentation/category/category-server-api";
+import { productServerApi } from "@/src/presentation/product/product-server-api";
+import { deliveryLocationsServerApi } from "@/src/presentation/delivery-location/delivery-location-server-api";
 import HomeScreen from "@/src/presentation/home/HomeScreen";
 
-// Categories come from Postgres at request time — render dynamically (no DB at build).
+// All data is fetched from the REST API at request time (BFF) — render dynamically.
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const [featuredProducts, specialOffers, categories, deliveryLocations] = await Promise.all([
-    new GetFeaturedProducts(productRepository).execute(),
-    new GetSpecialOffers(productRepository).execute(),
-    new GetCategories(categoryRepository).execute(),
-    new GetDeliveryLocations(deliveryLocationRepository).execute(),
+    productServerApi.getFeatured(),
+    productServerApi.getSpecialOffers(),
+    categoriesServerApi.list(),
+    deliveryLocationsServerApi.list(),
   ]);
 
   return (

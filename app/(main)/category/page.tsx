@@ -1,12 +1,11 @@
-import { GetCategories } from "@/src/domain/use-cases/categories/GetCategories";
-import { categoryRepository } from "@/src/infrastructure/container";
+import { categoriesServerApi } from "@/src/presentation/category/category-server-api";
 import CategoryScreen from "@/src/presentation/category/CategoryScreen";
 
-// Categories come from Postgres at request time — render dynamically (no DB at build).
+// Categories are fetched from the REST API at request time — render dynamically.
 export const dynamic = "force-dynamic";
 
 export default async function CategoryPage() {
-  const categories = await new GetCategories(categoryRepository).execute();
+  const categories = await categoriesServerApi.list();
 
   return <CategoryScreen categories={categories} />;
 }

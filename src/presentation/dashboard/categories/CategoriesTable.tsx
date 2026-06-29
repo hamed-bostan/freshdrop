@@ -5,12 +5,14 @@ import type { Category } from "@/src/domain/entities/Category";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { DeleteCategoryButton } from "./DeleteCategoryButton";
 
-interface CategoriesTableProps {
+type CategoriesTableProps = {
   categories: Category[];
-}
+  /** Called after a row is deleted via the API, so the parent can drop it from its list. */
+  onDeleted: (id: string) => void;
+};
 
 /** Admin list of categories with per-row edit + delete actions. */
-export function CategoriesTable({ categories }: CategoriesTableProps) {
+export function CategoriesTable({ categories, onDeleted }: CategoriesTableProps) {
   return (
     <div className="overflow-hidden rounded-card-lg border border-border">
       <table className="w-full text-left">
@@ -40,7 +42,11 @@ export function CategoriesTable({ categories }: CategoriesTableProps) {
                       Edit
                     </Link>
                   </Button>
-                  <DeleteCategoryButton id={category.id} name={category.name} />
+                  <DeleteCategoryButton
+                    id={category.id}
+                    name={category.name}
+                    onDeleted={() => onDeleted(category.id)}
+                  />
                 </div>
               </td>
             </tr>
