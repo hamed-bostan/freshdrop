@@ -1,6 +1,8 @@
+import { randomUUID } from "node:crypto";
 import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
-import type { IProductRepository } from "@/src/domain/repositories/IProductRepository";
+import type { IProductRepository, NewProduct } from "@/src/domain/repositories/IProductRepository";
+import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { MOCK_CATEGORIES } from "./MockCategoryRepository";
 
 /** How many related products the detail screen's "Similar To This Item" rail shows. */
@@ -167,9 +169,13 @@ const CATALOG: Record<string, ProductSeed[]> = {
 
 const CATEGORY_BY_ID = new Map(MOCK_CATEGORIES.map((category) => [category.id, category]));
 
+/** The catalog's single rule for turning an original price into a saved-percent badge value. */
+function discountFor(price: number, originalPrice?: number): number | undefined {
+  return originalPrice != null ? Math.round((1 - price / originalPrice) * 100) : undefined;
+}
+
 function buildProduct(seed: ProductSeed, category: Category, index: number, serial: number): Product {
-  const discountPercent =
-    seed.originalPrice != null ? Math.round((1 - seed.price / seed.originalPrice) * 100) : undefined;
+  const discountPercent = discountFor(seed.price, seed.originalPrice);
 
   return {
     id: `${category.id}-${index + 1}`,
@@ -245,5 +251,41 @@ export class MockProductRepository implements IProductRepository {
     const others = PRODUCTS.filter((p) => p.id !== productId && p.categoryId !== product.categoryId);
 
     return [...sameCategory, ...others].slice(0, SIMILAR_LIMIT);
+  }
+
+  // The admin write surface. The mock catalog lives in module memory, so these
+  // mutate the in-memory array — changes last until the server restarts. A real
+  // repository (Prisma) would persist instead; the use-cases don't know which.
+  async create(input: NewProduct): Promise<Product> {
+    const product: Product = {
+      ...input,
+      id: randomUUID(),
+      discountPercent: discountFor(input.price, input.originalPrice),
+      rating: 0,
+      ratingCount: 0,
+    };
+    PRODUCTS.push(product);
+    return product;
+  }
+
+  async update(id: string, input: NewProduct): Promise<Product> {
+    const index = PRODUCTS.findIndex((p) => p.id === id);
+    // The use-case re-checks existence before calling this, but guard anyway so a
+    // direct caller can't silently no-op on a stale id.
+    if (index === -1) throw new NotFoundError("product", id);
+
+    const updated: Product = {
+      ...PRODUCTS[index],
+      ...input,
+      id,
+      discountPercent: discountFor(input.price, input.originalPrice),
+    };
+    PRODUCTS[index] = updated;
+    return updated;
+  }
+
+  async delete(id: string): Promise<void> {
+    const index = PRODUCTS.findIndex((p) => p.id === id);
+    if (index !== -1) PRODUCTS.splice(index, 1);
   }
 }

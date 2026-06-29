@@ -21,3 +21,28 @@ model Category {
 
   @@map("categories")
 }
+
+model Product {
+  id            String   @id @default(uuid())
+  name          String
+  price         Float
+  originalPrice Float?   @map("original_price")
+  rating        Float    @default(0)
+  ratingCount   Int      @default(0) @map("rating_count")
+  imageUrl      String   @map("image_url")
+  // categoryId is a plain reference, not a DB foreign key: products and categories
+  // stay loosely coupled (as they were under the mock), so deleting a category
+  // never cascades into or is blocked by its products. Indexed for category reads.
+  categoryId    String   @map("category_id")
+  isFeatured    Boolean  @default(false) @map("is_featured")
+  badge         String?
+  unit          String?
+  description   String?
+  nutrition     String?
+  origin        String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([categoryId])
+  @@map("products")
+}

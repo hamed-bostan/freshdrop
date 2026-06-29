@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { Button, ConfirmSheet, Icon } from "@/src/presentation/design-system";
 import { ApiError } from "@/src/lib/api/ApiError";
@@ -9,12 +10,11 @@ import { categoriesApi } from "./category-api";
 type DeleteCategoryButtonProps = {
   id: string;
   name: string;
-  /** Called once the category is deleted, so the list can drop the row. */
-  onDeleted: () => void;
 };
 
 /** Trash action that confirms via the DS ConfirmSheet, then deletes over the API. */
-export function DeleteCategoryButton({ id, name, onDeleted }: DeleteCategoryButtonProps) {
+export function DeleteCategoryButton({ id, name }: DeleteCategoryButtonProps) {
+  const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
@@ -24,7 +24,10 @@ export function DeleteCategoryButton({ id, name, onDeleted }: DeleteCategoryButt
     startTransition(async () => {
       try {
         await categoriesApi.remove(id);
-        onDeleted();
+        setOpen(false);
+        // Re-run the server render so the list reflects the delete — the server
+        // stays the source of truth instead of patching local state.
+        router.refresh();
       } catch (err) {
         // Re-open the sheet in a failure state so the error reads in context and
         // the user can retry — instead of a disruptive window.alert.

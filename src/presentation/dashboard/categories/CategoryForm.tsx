@@ -51,7 +51,7 @@ export function CategoryForm(props: CategoryFormProps) {
     try {
       if (editing) await categoriesApi.update(props.category.id, values);
       else await categoriesApi.create(values);
-      router.push("/dashboard");
+      router.push("/dashboard/categories");
     } catch (error) {
       if (!(error instanceof ApiError)) {
         setError("root", { message: "Something went wrong. Please try again." });
@@ -133,7 +133,7 @@ export function CategoryForm(props: CategoryFormProps) {
           {editing ? "Save changes" : "Create category"}
         </Button>
         <Button asChild variant="outline" type="button">
-          <Link href="/dashboard">Cancel</Link>
+          <Link href="/dashboard/categories">Cancel</Link>
         </Button>
       </div>
     </form>

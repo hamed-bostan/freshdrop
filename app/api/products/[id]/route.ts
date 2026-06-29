@@ -1,7 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { GetProductById } from "@/src/domain/use-cases/products/GetProductById";
+import { UpdateProduct } from "@/src/domain/use-cases/products/UpdateProduct";
+import { DeleteProduct } from "@/src/domain/use-cases/products/DeleteProduct";
 import { productRepository } from "@/src/infrastructure/container";
-import { errorResponse, errorResponseFromException } from "@/src/lib/api/responses";
+import { getAdminSession } from "@/src/lib/require-admin";
+import { productFormSchema } from "@/src/presentation/dashboard/products/product-schema";
+import {
+  errorResponse,
+  errorResponseFromException,
+  firstFieldErrors,
+  parseJsonBody,
+  unauthorizedResponse,
+} from "@/src/lib/api/responses";
 
 export const dynamic = "force-dynamic";
 
@@ -18,5 +28,47 @@ export async function GET(_request: NextRequest, { params }: RouteContext): Prom
     return NextResponse.json(product);
   } catch (error) {
     return errorResponseFromException(error, `GET /api/products/${id} failed`);
+  }
+}
+
+/**
+ * PUT /api/products/:id — update a product. Admin only.
+ */
+export async function PUT(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
+  if (!(await getAdminSession())) return unauthorizedResponse();
+
+  const { id } = await params;
+  const body = await parseJsonBody(request);
+  if (!body.ok) return errorResponse(400, { message: "Expected a JSON body.", code: "BAD_REQUEST" });
+
+  const parsed = productFormSchema.safeParse(body.data);
+  if (!parsed.success) {
+    return errorResponse(400, {
+      message: "Please fix the highlighted fields.",
+      code: "VALIDATION",
+      fieldErrors: firstFieldErrors(parsed.error),
+    });
+  }
+
+  try {
+    const updated = await new UpdateProduct(productRepository).execute(id, parsed.data);
+    return NextResponse.json(updated);
+  } catch (error) {
+    return errorResponseFromException(error, `PUT /api/products/${id} failed`);
+  }
+}
+
+/**
+ * DELETE /api/products/:id — delete a product. Admin only. 204 on success.
+ */
+export async function DELETE(_request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
+  if (!(await getAdminSession())) return unauthorizedResponse();
+
+  const { id } = await params;
+  try {
+    await new DeleteProduct(productRepository).execute(id);
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    return errorResponseFromException(error, `DELETE /api/products/${id} failed`);
   }
 }

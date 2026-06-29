@@ -1,5 +1,5 @@
 import type { Product } from "@/src/domain/entities/Product";
-import type { IProductRepository } from "@/src/domain/repositories/IProductRepository";
+import type { IProductRepository, NewProduct } from "@/src/domain/repositories/IProductRepository";
 
 export class ProductRepository implements IProductRepository {
   constructor(private readonly baseUrl: string) {}
@@ -33,5 +33,27 @@ export class ProductRepository implements IProductRepository {
   async getSimilar(productId: string): Promise<Product[]> {
     const res = await fetch(`${this.baseUrl}/products/${productId}/similar`);
     return res.json();
+  }
+
+  async create(input: NewProduct): Promise<Product> {
+    const res = await fetch(`${this.baseUrl}/products`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    return res.json();
+  }
+
+  async update(id: string, input: NewProduct): Promise<Product> {
+    const res = await fetch(`${this.baseUrl}/products/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    return res.json();
+  }
+
+  async delete(id: string): Promise<void> {
+    await fetch(`${this.baseUrl}/products/${id}`, { method: "DELETE" });
   }
 }

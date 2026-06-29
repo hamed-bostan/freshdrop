@@ -27,14 +27,38 @@ const FAVORITE_IDS = [
  * Resolves the favorited ids against the product catalog. Depends on the product
  * repository (not the catalog directly) so favorites stay decoupled from how
  * products are stored — Dependency Inversion, same as the composition root.
+ *
+ * Favorites are held in a mutable in-memory Set seeded from FAVORITE_IDS. As the
+ * container binds this as a singleton, toggles persist for the life of the server
+ * process (a stand-in for a per-user store until favorites get real persistence).
  */
 export class MockFavoriteRepository implements IFavoriteRepository {
-  constructor(private readonly products: IProductRepository) {}
+  private readonly favoriteIds: Set<string>;
+
+  constructor(private readonly products: IProductRepository) {
+    this.favoriteIds = new Set(FAVORITE_IDS);
+  }
 
   async getFavorites(): Promise<Product[]> {
     const all = await this.products.getAll();
     const byId = new Map(all.map((product) => [product.id, product]));
 
-    return FAVORITE_IDS.map((id) => byId.get(id)).filter((product): product is Product => product != null);
+    // Set preserves insertion order, so seeded favorites keep their listed order
+    // and newly added ones append; ids no longer in the catalog are skipped.
+    return [...this.favoriteIds]
+      .map((id) => byId.get(id))
+      .filter((product): product is Product => product != null);
+  }
+
+  async isFavorite(productId: string): Promise<boolean> {
+    return this.favoriteIds.has(productId);
+  }
+
+  async addFavorite(productId: string): Promise<void> {
+    this.favoriteIds.add(productId);
+  }
+
+  async removeFavorite(productId: string): Promise<void> {
+    this.favoriteIds.delete(productId);
   }
 }

@@ -7,12 +7,10 @@ import { DeleteCategoryButton } from "./DeleteCategoryButton";
 
 type CategoriesTableProps = {
   categories: Category[];
-  /** Called after a row is deleted via the API, so the parent can drop it from its list. */
-  onDeleted: (id: string) => void;
 };
 
 /** Admin list of categories with per-row edit + delete actions. */
-export function CategoriesTable({ categories, onDeleted }: CategoriesTableProps) {
+export function CategoriesTable({ categories }: CategoriesTableProps) {
   return (
     <div className="overflow-hidden rounded-card-lg border border-border">
       <table className="w-full text-left">
@@ -37,16 +35,12 @@ export function CategoriesTable({ categories, onDeleted }: CategoriesTableProps)
               <td className="px-4 py-3">
                 <div className="flex items-center justify-end gap-2">
                   <Button asChild variant="outline" size="sm">
-                    <Link href={`/dashboard/${category.id}/edit`}>
+                    <Link href={`/dashboard/categories/${category.id}/edit`}>
                       <Icon icon={Pencil} size="sm" className="mr-1.5" />
                       Edit
                     </Link>
                   </Button>
-                  <DeleteCategoryButton
-                    id={category.id}
-                    name={category.name}
-                    onDeleted={() => onDeleted(category.id)}
-                  />
+                  <DeleteCategoryButton id={category.id} name={category.name} />
                 </div>
               </td>
             </tr>

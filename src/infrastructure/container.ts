@@ -15,7 +15,7 @@ import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository"
 import type { IImageStorageRepository } from "@/src/domain/repositories/IImageStorageRepository";
 
 import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepository";
-import { MockProductRepository } from "./repositories/mock/MockProductRepository";
+import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
 import { MockFavoriteRepository } from "./repositories/mock/MockFavoriteRepository";
 import { MockReviewRepository } from "./repositories/mock/MockReviewRepository";
 import { MockDeliveryLocationRepository } from "./repositories/mock/MockDeliveryLocationRepository";
@@ -46,9 +46,10 @@ const SMS_IR_DEFAULT_TEMPLATE_ID = 562447;
  *     new CategoryRepository(process.env.API_BASE_URL!);
  * and nothing else in the app changes.
  */
-// Categories are real data now — PostgreSQL via Prisma (server-side only).
+// Categories and products are real data now — PostgreSQL via Prisma (server-side
+// only). The mock catalog lives on in the seed migration that backfilled the table.
 export const categoryRepository: ICategoryRepository = new PrismaCategoryRepository();
-export const productRepository: IProductRepository = new MockProductRepository();
+export const productRepository: IProductRepository = new PrismaProductRepository();
 export const favoriteRepository: IFavoriteRepository = new MockFavoriteRepository(productRepository);
 export const reviewRepository: IReviewRepository = new MockReviewRepository();
 export const deliveryLocationRepository: IDeliveryLocationRepository = new MockDeliveryLocationRepository();

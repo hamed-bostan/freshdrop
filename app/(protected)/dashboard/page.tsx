@@ -1,7 +1,8 @@
-import { CategoriesScreen } from "@/src/presentation/dashboard/categories/CategoriesScreen";
+import { redirect } from "next/navigation";
 
-// The list is fetched client-side over the REST API (see CategoriesScreen); the
-// admin gate lives in the dashboard layout.
+// The dashboard root is just an entry point; Categories is the default section.
+// Both Categories and Products now live under their own segments
+// (`/dashboard/categories`, `/dashboard/products`) so the two are symmetrical.
 export default function DashboardPage() {
-  return <CategoriesScreen />;
+  redirect("/dashboard/categories");
 }

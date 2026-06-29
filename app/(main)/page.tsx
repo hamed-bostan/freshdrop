@@ -1,5 +1,5 @@
 import { categoriesServerApi } from "@/src/presentation/category/category-server-api";
-import { productServerApi } from "@/src/presentation/product/product-server-api";
+import { productsServerApi } from "@/src/presentation/product/product-server-api";
 import { deliveryLocationsServerApi } from "@/src/presentation/delivery-location/delivery-location-server-api";
 import HomeScreen from "@/src/presentation/home/HomeScreen";
 
@@ -8,8 +8,8 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const [featuredProducts, specialOffers, categories, deliveryLocations] = await Promise.all([
-    productServerApi.getFeatured(),
-    productServerApi.getSpecialOffers(),
+    productsServerApi.listFeatured(),
+    productsServerApi.listSpecialOffers(),
     categoriesServerApi.list(),
     deliveryLocationsServerApi.list(),
   ]);

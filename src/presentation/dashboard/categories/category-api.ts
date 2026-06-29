@@ -3,21 +3,12 @@ import { apiClient } from "@/src/lib/api/client";
 import type { CategoryFormValues } from "./category-schema";
 
 /**
- * Typed client for the category REST endpoints. UI components call these instead
+ * Typed client for the category REST *mutations*. UI components call these instead
  * of touching Axios directly; each method resolves with domain data or rejects
  * with an `ApiError` (normalized by the Axios response interceptor in `client.ts`).
+ * Reads are server-side (see `categoriesServerApi`).
  */
 export const categoriesApi = {
-  async list(): Promise<Category[]> {
-    const { data } = await apiClient.get<Category[]>("/categories");
-    return data;
-  },
-
-  async get(id: string): Promise<Category> {
-    const { data } = await apiClient.get<Category>(`/categories/${id}`);
-    return data;
-  },
-
   async create(values: CategoryFormValues): Promise<Category> {
     const { data } = await apiClient.post<Category>("/categories", values);
     return data;

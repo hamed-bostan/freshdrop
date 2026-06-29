@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { categoriesServerApi } from "@/src/presentation/category/category-server-api";
-import { productServerApi } from "@/src/presentation/product/product-server-api";
+import { productsServerApi } from "@/src/presentation/product/product-server-api";
 import CategoryDetailScreen from "@/src/presentation/category/CategoryDetailScreen";
 
 interface CategoryDetailPageProps {
@@ -16,7 +16,7 @@ export default async function CategoryDetailPage({ params }: CategoryDetailPageP
   const category = await categoriesServerApi.getBySlug(slug);
   if (!category) notFound();
 
-  const products = await productServerApi.getByCategory(category.id);
+  const products = await productsServerApi.listByCategory(category.id);
 
   return <CategoryDetailScreen category={category} products={products} />;
 }

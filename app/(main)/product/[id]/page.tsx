@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { GetProductReviews } from "@/src/domain/use-cases/reviews/GetProductReviews";
 import { reviewRepository } from "@/src/infrastructure/container";
-import { productServerApi } from "@/src/presentation/product/product-server-api";
+import { productsServerApi } from "@/src/presentation/product/product-server-api";
+import { favoritesServerApi } from "@/src/presentation/favorites/favorite-server-api";
 import ProductDetailScreen from "@/src/presentation/product/ProductDetailScreen";
 
 interface ProductDetailPageProps {
@@ -15,13 +16,16 @@ export const dynamic = "force-dynamic";
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { id } = await params;
 
-  const product = await productServerApi.getById(id);
+  const product = await productsServerApi.getById(id);
   if (!product) notFound();
 
-  const [similar, reviews] = await Promise.all([
-    productServerApi.getSimilar(id),
+  const [similar, reviews, isFavorite] = await Promise.all([
+    productsServerApi.listSimilar(id),
     new GetProductReviews(reviewRepository).execute(id),
+    favoritesServerApi.isFavorite(id),
   ]);
 
-  return <ProductDetailScreen product={product} similar={similar} reviews={reviews} />;
+  return (
+    <ProductDetailScreen product={product} similar={similar} reviews={reviews} initialFavorite={isFavorite} />
+  );
 }

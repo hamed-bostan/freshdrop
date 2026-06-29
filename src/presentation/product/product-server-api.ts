@@ -6,20 +6,20 @@ import { serverApiGet } from "@/src/lib/api/server-client";
  * Server-side product reads for Server Components (BFF) — fetched from the REST
  * API during server render, mirroring the storefront's category server service.
  */
-export const productServerApi = {
-  getFeatured(): Promise<Product[]> {
+export const productsServerApi = {
+  listFeatured(): Promise<Product[]> {
     return serverApiGet<Product[]>("/products", { params: { featured: "true" } });
   },
 
-  getSpecialOffers(): Promise<Product[]> {
+  listSpecialOffers(): Promise<Product[]> {
     return serverApiGet<Product[]>("/products", { params: { special: "true" } });
   },
 
-  getByCategory(categoryId: string): Promise<Product[]> {
+  listByCategory(categoryId: string): Promise<Product[]> {
     return serverApiGet<Product[]>("/products", { params: { categoryId } });
   },
 
-  getSimilar(id: string): Promise<Product[]> {
+  listSimilar(id: string): Promise<Product[]> {
     return serverApiGet<Product[]>(`/products/${id}/similar`);
   },
 

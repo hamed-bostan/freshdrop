@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import type { Session } from "next-auth";
 import { auth } from "@/auth";
 
 /**
@@ -13,4 +14,14 @@ export async function requireAuth() {
 
   const pathname = (await headers()).get("x-pathname") ?? "/";
   redirect(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+}
+
+/**
+ * Non-redirecting auth guard for route handlers, which must answer with a JSON
+ * status code rather than an HTML redirect (a `fetch` caller can't follow a login
+ * redirect). Returns the session for a signed-in user, or `null` otherwise — the
+ * caller decides the status (typically 401). Mirrors `getAdminSession`.
+ */
+export async function getUserSession(): Promise<Session | null> {
+  return auth();
 }

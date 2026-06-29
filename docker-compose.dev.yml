@@ -1,7 +1,10 @@
 name: freshdrop-dev
 
 # Local development database only — the Next.js app runs on the host (`npm run dev`)
-# and connects via DATABASE_URL in `.env` (postgresql://freshdrop:devpassword@localhost:5432/freshdrop).
+# and connects via DATABASE_URL in `.env` (postgresql://freshdrop:devpassword@localhost:5544/freshdrop).
+# Host port is 5544, not 5432: Windows' WinNAT reserves a TCP range covering 5432, so
+# Docker can't bind it on the host. 5544 sits outside the reserved range. Postgres
+# still listens on 5432 *inside* the container.
 # This is the production-grade replacement for the old hand-created `docker run` container:
 # declarative, version-controlled, auto-restarting, healthchecked, with a named volume.
 #
@@ -22,7 +25,8 @@ services:
       POSTGRES_PASSWORD: devpassword
       POSTGRES_DB: freshdrop
     ports:
-      - "5432:5432"
+      # Bound to loopback only — the dev DB is never exposed on the LAN.
+      - "127.0.0.1:5544:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
