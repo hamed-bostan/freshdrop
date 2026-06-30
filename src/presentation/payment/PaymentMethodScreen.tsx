@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import type { PaymentMethod, PaymentMethodGroup } from "@/src/domain/entities/PaymentMethod";
-import { PaymentMethodOption, AddCardRow } from "./components";
+import type { SavedCard } from "@/src/domain/entities/Wallet";
+import { PaymentMethodOption, SavedCardOption, AddCardRow } from "./components";
 
 /** Sections render in this fixed order; the title is a UI concern, not domain data. */
 const SECTIONS: { group: PaymentMethodGroup; title: string }[] = [
@@ -17,9 +18,11 @@ const SECTIONS: { group: PaymentMethodGroup; title: string }[] = [
 
 interface PaymentMethodScreenProps {
   methods: PaymentMethod[];
+  /** The user's saved cards, listed (and selectable) under the Credit Card section. */
+  cards: SavedCard[];
 }
 
-export default function PaymentMethodScreen({ methods }: PaymentMethodScreenProps) {
+export default function PaymentMethodScreen({ methods, cards }: PaymentMethodScreenProps) {
   const router = useRouter();
   const [selectedId, setSelectedId] = React.useState(() => methods[0]?.id);
 
@@ -40,8 +43,9 @@ export default function PaymentMethodScreen({ methods }: PaymentMethodScreenProp
         {SECTIONS.map(({ group, title }) => {
           const groupMethods = methods.filter((method) => method.group === group);
 
-          // The Credit Card section always shows the "Add Card" action, even with
-          // no saved cards; other empty sections are omitted entirely.
+          // The Credit Card section always shows the user's saved cards plus the
+          // "Add Card" action, even when there are none; other empty sections are
+          // omitted entirely.
           if (group !== "card" && groupMethods.length === 0) return null;
 
           return (
@@ -56,6 +60,16 @@ export default function PaymentMethodScreen({ methods }: PaymentMethodScreenProp
                   onSelect={setSelectedId}
                 />
               ))}
+
+              {group === "card" &&
+                cards.map((card) => (
+                  <SavedCardOption
+                    key={card.id}
+                    card={card}
+                    selected={card.id === selectedId}
+                    onSelect={setSelectedId}
+                  />
+                ))}
 
               {group === "card" && <AddCardRow />}
             </section>

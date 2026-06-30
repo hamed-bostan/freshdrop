@@ -13,6 +13,19 @@ export type SavedCard = {
   expiry: string;
 }
 
+/**
+ * The raw card details captured by the add-card form, before the domain derives
+ * the display fields. `number` is the entered PAN (digits, possibly spaced) — it
+ * is masked to a last-4 display number and never persisted in full; the brand is
+ * inferred from it. Expiry is supplied as separate month/year parts.
+ */
+export type NewCard = {
+  number: string;
+  holderName: string;
+  expiryMonth: string;
+  expiryYear: string;
+}
+
 export type TransactionType = "credit" | "debit";
 
 export type WalletTransaction = {

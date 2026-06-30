@@ -1,25 +1,51 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { CreditCard, User, Lock } from "lucide-react";
 import { Button, Icon, Input, PasswordInput, TextField } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { ApiError } from "@/src/lib/api/ApiError";
+import { walletsApi } from "@/src/presentation/wallet/wallet-api";
 
 export default function AddCardScreen() {
   const router = useRouter();
+  const pathname = usePathname();
 
   const [cardNumber, setCardNumber] = React.useState("");
   const [cardholder, setCardholder] = React.useState("");
   const [year, setYear] = React.useState("");
   const [month, setMonth] = React.useState("");
   const [cvv, setCvv] = React.useState("");
+  const [pending, startTransition] = React.useTransition();
+  const [error, setError] = React.useState<string | null>(null);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    // TODO: validate + persist via an AddPaymentCard use-case, then return to the
-    // payment methods list. For now, just navigate back.
-    router.push("/profile/payment-methods");
+    setError(null);
+    startTransition(async () => {
+      try {
+        // The server derives the brand, masks the PAN and drops the CVV — we only
+        // send the entered fields; it re-validates with the same schema.
+        await walletsApi.addCard({
+          number: cardNumber,
+          holderName: cardholder,
+          expiryMonth: month,
+          expiryYear: year,
+          cvv,
+        });
+        // Server is the source of truth — return to the list and re-render it.
+        router.push("/profile/payment-methods");
+        router.refresh();
+      } catch (caught) {
+        // Anonymous callers get a 401 — send them to login, returning here after.
+        if (caught instanceof ApiError && caught.status === 401) {
+          router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+          return;
+        }
+        setError(caught instanceof ApiError ? caught.message : "Something went wrong. Please try again.");
+      }
+    });
   };
 
   return (
@@ -95,7 +121,13 @@ export default function AddCardScreen() {
         )}
       </TextField>
 
-      <Button type="submit" size="lg" className="mt-auto w-full">
+      {error && (
+        <p role="alert" className="text-body-b10 text-destructive">
+          {error}
+        </p>
+      )}
+
+      <Button type="submit" size="lg" className="mt-auto w-full" disabled={pending}>
         Add Card
       </Button>
     </form>

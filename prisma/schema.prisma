@@ -120,6 +120,69 @@ model PromoCode {
   @@map("promo_codes")
 }
 
+// A user's wallet balance. One row per user (the id *is* the userId, since a user
+// has exactly one wallet). Balance is stored, not derived: it's adjusted together
+// with each transaction in a single DB transaction so the two never drift. Real
+// users start without a row (treated as a $0 balance) until they add money.
+model WalletAccount {
+  userId    String   @id @map("user_id")
+  balance   Float    @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("wallet_accounts")
+}
+
+// A single movement of money in a user's wallet. `type` ("credit" | "debit") is a
+// plain string matching the domain union (the app validates it), consistent with
+// the schema's enum-free style; the sign is derived from it in the UI. `date` is
+// the business timestamp shown to the user (distinct from the row's `created_at`).
+model WalletTransaction {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  description String
+  amount      Float
+  type        String
+  date        DateTime
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("wallet_transactions")
+}
+
+// A user's saved payment card. Surfaced both in the wallet carousel and as a
+// selectable option on the payment-methods screen. Only a masked, PCI-safe display
+// number is stored (never the full PAN, and never the CVV) — the add-card flow
+// masks down to the last four digits before persisting.
+model WalletCard {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  brand      String
+  holderName String   @map("holder_name")
+  number     String
+  expiry     String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("wallet_cards")
+}
+
+// A payment option the storefront offers (Cash, Wallet, PayPal, …). Reference/
+// catalog data — not user data — like promo codes: a fixed list the checkout and
+// payment screens read. `group` buckets it under a section; `position` fixes the
+// display order. The id is a stable human slug so the UI can map it to an icon.
+model PaymentMethod {
+  id        String   @id
+  label     String
+  group     String
+  position  Int
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("payment_methods")
+}
+
 // A line in a user's working cart: just a product reference + quantity, scoped to
 // the owner. The full product snapshot (name, price, image) is resolved from the
 // catalog at read time — the cart stores only what the user chose, the same loose

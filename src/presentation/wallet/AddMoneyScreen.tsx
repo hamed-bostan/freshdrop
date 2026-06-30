@@ -2,15 +2,22 @@
 
 import * as React from "react";
 import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { ApiError } from "@/src/lib/api/ApiError";
 import { addMoney } from "@/src/shared/assets/images";
+import { walletsApi } from "./wallet-api";
 import { NumericKeypad } from "./components";
 
 const MAX_DIGITS = 6;
 
 export default function AddMoneyScreen() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [amount, setAmount] = React.useState("240");
+  const [pending, startTransition] = React.useTransition();
+  const [error, setError] = React.useState<string | null>(null);
 
   const handleDigit = (digit: string) =>
     setAmount((prev) => {
@@ -22,7 +29,28 @@ export default function AddMoneyScreen() {
   const handleBackspace = () => setAmount((prev) => prev.slice(0, -1));
 
   const handleContinue = () => {
-    // TODO: proceed to confirm/charge the amount via an AddMoney use-case.
+    const value = Number(amount);
+    if (!value) {
+      setError("Enter an amount greater than zero.");
+      return;
+    }
+
+    setError(null);
+    startTransition(async () => {
+      try {
+        await walletsApi.addFunds({ amount: value });
+        // Server is the source of truth — return to the wallet and re-render it.
+        router.push("/profile/wallet");
+        router.refresh();
+      } catch (caught) {
+        // Anonymous callers get a 401 — send them to login, returning here after.
+        if (caught instanceof ApiError && caught.status === 401) {
+          router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+          return;
+        }
+        setError(caught instanceof ApiError ? caught.message : "Something went wrong. Please try again.");
+      }
+    });
   };
 
   return (
@@ -39,14 +67,21 @@ export default function AddMoneyScreen() {
           </p>
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-card-xl bg-surface p-4">
-          <div className="flex min-w-0 flex-col gap-1">
-            <span className="text-body-b7 text-muted-foreground">Add Money to Wallet</span>
-            <span className="truncate text-body-b4 text-foreground">${amount || "0"}</span>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-4 rounded-card-xl bg-surface p-4">
+            <div className="flex min-w-0 flex-col gap-1">
+              <span className="text-body-b7 text-muted-foreground">Add Money to Wallet</span>
+              <span className="truncate text-body-b4 text-foreground">${amount || "0"}</span>
+            </div>
+            <Button type="button" size="sm" onClick={handleContinue} disabled={pending}>
+              Continue
+            </Button>
           </div>
-          <Button type="button" size="sm" onClick={handleContinue}>
-            Continue
-          </Button>
+          {error && (
+            <p role="alert" className="text-body-b10 text-destructive">
+              {error}
+            </p>
+          )}
         </div>
       </div>
 
