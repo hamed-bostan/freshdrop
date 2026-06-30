@@ -13,9 +13,11 @@ import type { ICartRepository } from "@/src/domain/repositories/ICartRepository"
 import type { IPromoCodeRepository } from "@/src/domain/repositories/IPromoCodeRepository";
 import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
 import type { IImageStorageRepository } from "@/src/domain/repositories/IImageStorageRepository";
+import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
 
 import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepository";
 import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
+import { PrismaUserRepository } from "./repositories/PrismaUserRepository";
 import { MockFavoriteRepository } from "./repositories/mock/MockFavoriteRepository";
 import { MockReviewRepository } from "./repositories/mock/MockReviewRepository";
 import { MockDeliveryLocationRepository } from "./repositories/mock/MockDeliveryLocationRepository";
@@ -50,6 +52,9 @@ const SMS_IR_DEFAULT_TEMPLATE_ID = 562447;
 // only). The mock catalog lives on in the seed migration that backfilled the table.
 export const categoryRepository: ICategoryRepository = new PrismaCategoryRepository();
 export const productRepository: IProductRepository = new PrismaProductRepository();
+// Users are real data — PostgreSQL via Prisma. Rows are created on first sign-in
+// (auth `authorize` → GetOrCreateUser) and edited via the profile feature.
+export const userRepository: IUserRepository = new PrismaUserRepository();
 export const favoriteRepository: IFavoriteRepository = new MockFavoriteRepository(productRepository);
 export const reviewRepository: IReviewRepository = new MockReviewRepository();
 export const deliveryLocationRepository: IDeliveryLocationRepository = new MockDeliveryLocationRepository();

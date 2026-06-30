@@ -1,7 +1,8 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { VerifyOtp } from "@/src/domain/use-cases/auth/VerifyOtp";
-import { authRepository } from "@/src/infrastructure/container";
+import { GetOrCreateUser } from "@/src/domain/use-cases/profile/GetOrCreateUser";
+import { authRepository, userRepository } from "@/src/infrastructure/container";
 
 /**
  * NextAuth (Auth.js v5) configuration. Credentials provider only — its
@@ -24,8 +25,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const phone = typeof credentials?.phone === "string" ? credentials.phone : "";
         const code = typeof credentials?.code === "string" ? credentials.code : "";
 
-        const user = await new VerifyOtp(authRepository).execute(phone, code);
-        return user ? { id: user.id, name: user.name } : null;
+        const identity = await new VerifyOtp(authRepository).execute(phone, code);
+        if (!identity) return null;
+
+        // Persist the user on first sign-in (idempotent), so the profile row
+        // exists before any profile read — and so the session carries the
+        // user's real, completed name once they've filled it in.
+        const user = await new GetOrCreateUser(userRepository).execute(identity);
+        return { id: user.id, name: user.name };
       },
     }),
   ],

@@ -1,25 +1,34 @@
 "use client";
 
-import { User, ImagePlus, Images, Camera, Trash2, type LucideIcon } from "lucide-react";
+import * as React from "react";
+import Image from "next/image";
+import { User, ImagePlus, Images, Camera, Trash2, Loader2, type LucideIcon } from "lucide-react";
 import { Icon, Sheet, SheetTrigger, SheetContent, SheetClose } from "@/src/presentation/design-system";
+import { ApiError } from "@/src/lib/api/ApiError";
 import { cn } from "@/src/lib/utils";
+import { profilesApi } from "../profile-api";
+
+const ACCEPT = "image/png,image/jpeg,image/webp,image/avif";
 
 interface PhotoActionProps {
   icon: LucideIcon;
   label: string;
   destructive?: boolean;
+  disabled?: boolean;
   onClick?: () => void;
 }
 
-function PhotoAction({ icon, label, destructive, onClick }: PhotoActionProps) {
+function PhotoAction({ icon, label, destructive, disabled, onClick }: PhotoActionProps) {
   return (
     <SheetClose asChild>
       <button
         type="button"
         onClick={onClick}
+        disabled={disabled}
         className={cn(
           "flex w-full items-center gap-2 rounded-card-md p-4 transition-colors",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "disabled:cursor-not-allowed disabled:opacity-50",
           destructive ? "text-destructive" : "text-foreground",
         )}
       >
@@ -30,50 +39,115 @@ function PhotoAction({ icon, label, destructive, onClick }: PhotoActionProps) {
   );
 }
 
+interface ProfileAvatarUploaderProps {
+  /** Current avatar URL, or `null` when none is set. */
+  value: string | null;
+  /** Called with the new URL after an upload, or `null` when the picture is removed. */
+  onChange: (url: string | null) => void;
+}
+
 /**
- * Profile avatar with a "change photo" affordance that opens a bottom-sheet of
- * actions. The image-picker / camera / remove flows are stubbed until a User
- * entity + upload exist; selecting an action just closes the sheet for now.
+ * Profile avatar with a "change photo" bottom sheet. Picking an image uploads it
+ * to the `avatars` bucket folder and lifts the resulting public URL via
+ * `onChange`; the surrounding form persists it on save. "Take Photo" opens the
+ * camera on devices that support capture, falling back to the file picker.
  */
-export function ProfileAvatarUploader() {
+export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploaderProps) {
+  const libraryInputRef = React.useRef<HTMLInputElement>(null);
+  const cameraInputRef = React.useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  async function handleFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = ""; // let the same file be re-selected after an error
+    if (!file) return;
+
+    setError(null);
+    setUploading(true);
+    try {
+      const url = await profilesApi.uploadAvatar(file);
+      onChange(url);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
-    <Sheet>
-      <div className="relative">
-        <div className="flex size-24 items-center justify-center overflow-hidden rounded-full bg-surface">
-          <Icon icon={User} className="size-12 text-icon-muted" />
-        </div>
+    <div className="flex flex-col items-center gap-2">
+      <input ref={libraryInputRef} type="file" accept={ACCEPT} className="sr-only" onChange={handleFile} />
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept={ACCEPT}
+        capture="environment"
+        className="sr-only"
+        onChange={handleFile}
+      />
 
-        <SheetTrigger asChild>
-          <button
-            type="button"
-            aria-label="Change photo"
-            className="absolute bottom-0 right-0 flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors active:bg-primary-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Icon icon={ImagePlus} size="xs" />
-          </button>
-        </SheetTrigger>
-      </div>
-
-      <SheetContent title="Change profile photo" hideTitle>
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex size-20 items-center justify-center overflow-hidden rounded-full bg-surface">
-            <Icon icon={User} className="size-10 text-icon-muted" />
+      <Sheet>
+        <div className="relative">
+          <div className="flex size-24 items-center justify-center overflow-hidden rounded-full bg-surface">
+            {uploading ? (
+              <Icon icon={Loader2} className="size-8 animate-spin text-icon-muted" />
+            ) : value ? (
+              <Image src={value} alt="Profile photo" width={96} height={96} className="size-full object-cover" />
+            ) : (
+              <Icon icon={User} className="size-12 text-icon-muted" />
+            )}
           </div>
-          <p className="text-center text-body-b6 text-foreground">
-            Your profile picture will be visible to everyone.
-            <br />
-            You can change it now.
-          </p>
+
+          <SheetTrigger asChild>
+            <button
+              type="button"
+              aria-label="Change photo"
+              disabled={uploading}
+              className="absolute bottom-0 right-0 flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors active:bg-primary-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+            >
+              <Icon icon={ImagePlus} size="xs" />
+            </button>
+          </SheetTrigger>
         </div>
 
-        <div aria-hidden className="my-2 h-px w-full bg-border" />
+        <SheetContent title="Change profile photo" hideTitle>
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex size-20 items-center justify-center overflow-hidden rounded-full bg-surface">
+              {value ? (
+                <Image src={value} alt="Profile photo" width={80} height={80} className="size-full object-cover" />
+              ) : (
+                <Icon icon={User} className="size-10 text-icon-muted" />
+              )}
+            </div>
+            <p className="text-center text-body-b6 text-foreground">
+              Your profile picture will be visible to everyone.
+              <br />
+              You can change it now.
+            </p>
+          </div>
 
-        <div className="flex flex-col">
-          <PhotoAction icon={Images} label="Choose From Library" />
-          <PhotoAction icon={Camera} label="Take Photo" />
-          <PhotoAction icon={Trash2} label="Remove Current Picture" destructive />
-        </div>
-      </SheetContent>
-    </Sheet>
+          <div aria-hidden className="my-2 h-px w-full bg-border" />
+
+          <div className="flex flex-col">
+            <PhotoAction
+              icon={Images}
+              label="Choose From Library"
+              onClick={() => libraryInputRef.current?.click()}
+            />
+            <PhotoAction icon={Camera} label="Take Photo" onClick={() => cameraInputRef.current?.click()} />
+            <PhotoAction
+              icon={Trash2}
+              label="Remove Current Picture"
+              destructive
+              disabled={!value}
+              onClick={() => onChange(null)}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {error ? <p className="text-body-b10 text-destructive">{error}</p> : null}
+    </div>
   );
 }

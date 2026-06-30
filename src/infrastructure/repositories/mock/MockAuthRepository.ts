@@ -1,5 +1,4 @@
-import type { User } from "@/src/domain/entities/User";
-import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
+import type { AuthIdentity, IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
 import { getOtpStore } from "../otpStore";
 
 const MIN_PHONE_DIGITS = 8;
@@ -29,14 +28,14 @@ export class MockAuthRepository implements IAuthRepository {
     return true;
   }
 
-  async verifyOtp(phone: string, code: string): Promise<User | null> {
+  async verifyOtp(phone: string, code: string): Promise<AuthIdentity | null> {
     const digits = phone.replace(/\D/g, "");
     if (this.codes.get(digits) !== code) {
       return null;
     }
 
     this.codes.delete(digits); // one-time use
-    return { id: digits, name: "FreshDrop Customer", phone };
+    return { id: digits, phone, name: "FreshDrop Customer" };
   }
 
   /** Dev/mock only: surface the stored code so the UI can display it (no SMS yet). */

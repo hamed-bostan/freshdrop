@@ -2,20 +2,27 @@ import { NextResponse, type NextRequest } from "next/server";
 import { UploadImage } from "@/src/domain/use-cases/images/UploadImage";
 import { imageStorageRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
-import { MANAGED_IMAGE_FOLDERS } from "@/src/lib/imageFolders";
+import { getUserSession } from "@/src/lib/require-auth";
+import { AVATAR_IMAGE_FOLDER, MANAGED_IMAGE_FOLDERS } from "@/src/lib/imageFolders";
 
-const ALLOWED_FOLDERS = new Set<string>(MANAGED_IMAGE_FOLDERS);
+const ADMIN_FOLDERS = new Set<string>(MANAGED_IMAGE_FOLDERS);
+const ALLOWED_FOLDERS = new Set<string>([...MANAGED_IMAGE_FOLDERS, AVATAR_IMAGE_FOLDER]);
 
 /**
  * Image upload endpoint: `POST /api/images/upload` with `multipart/form-data`
  * (`file`, optional `folder`). The actual write to Supabase Storage happens here,
  * server-side, using the service-role key (see `SupabaseImageStorageRepository`).
  *
- * Admin-only: it writes to a public, billable bucket with the service-role key,
- * so it must never be reachable by anonymous callers.
+ * Authorization is per-folder: the catalog folders (products/categories/misc)
+ * are admin-only — they back the storefront and feed the orphan sweep. The
+ * `avatars` folder is open to any signed-in user uploading their own profile
+ * picture. Anonymous callers can never write to a billable, service-role bucket.
  */
 export async function POST(request: NextRequest) {
-  if (!(await getAdminSession())) {
+  // Decide which session this caller has up front; the folder check below picks
+  // the right requirement. (Admins satisfy the user check too.)
+  const [adminSession, userSession] = await Promise.all([getAdminSession(), getUserSession()]);
+  if (!adminSession && !userSession) {
     return NextResponse.json({ error: "Not authorized." }, { status: 401 });
   }
 
@@ -35,6 +42,12 @@ export async function POST(request: NextRequest) {
   const folder = typeof folderRaw === "string" && folderRaw ? folderRaw : undefined;
   if (folder && !ALLOWED_FOLDERS.has(folder)) {
     return NextResponse.json({ error: `Unknown folder "${folder}".` }, { status: 400 });
+  }
+
+  // An unspecified folder (or any managed catalog folder) is admin-only; only the
+  // `avatars` folder is reachable by a non-admin signed-in user.
+  if ((!folder || ADMIN_FOLDERS.has(folder)) && !adminSession) {
+    return NextResponse.json({ error: "Not authorized." }, { status: 401 });
   }
 
   try {

@@ -1,7 +1,6 @@
 import axios, { type AxiosInstance } from "axios";
 
-import type { User } from "@/src/domain/entities/User";
-import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
+import type { AuthIdentity, IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
 import { getOtpStore } from "./otpStore";
 
 const DEFAULT_BASE_URL = "https://api.sms.ir";
@@ -108,7 +107,7 @@ export class SmsIrAuthRepository implements IAuthRepository {
     return entry.code;
   }
 
-  async verifyOtp(phone: string, code: string): Promise<User | null> {
+  async verifyOtp(phone: string, code: string): Promise<AuthIdentity | null> {
     const mobile = normalizePhone(phone);
     const entry = this.codes.get(mobile);
 
@@ -126,7 +125,7 @@ export class SmsIrAuthRepository implements IAuthRepository {
     }
 
     this.codes.delete(mobile); // correct, and one-time use
-    return { id: mobile, name: "FreshDrop Customer", phone };
+    return { id: mobile, phone, name: "FreshDrop Customer" };
   }
 }
 

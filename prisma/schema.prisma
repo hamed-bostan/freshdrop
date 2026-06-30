@@ -22,6 +22,21 @@ model Category {
   @@map("categories")
 }
 
+model User {
+  // id is the user's normalized phone digits — the stable identifier carried on
+  // the Auth.js session (and matched against ADMIN_USER_IDS), so it is supplied
+  // at creation rather than database-generated.
+  id        String   @id
+  phone     String
+  name      String
+  email     String?
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
 model Product {
   id            String   @id @default(uuid())
   name          String

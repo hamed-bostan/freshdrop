@@ -6,3 +6,12 @@
 export const MANAGED_IMAGE_FOLDERS = ["products", "categories", "misc"] as const;
 
 export type ManagedImageFolder = (typeof MANAGED_IMAGE_FOLDERS)[number];
+
+/**
+ * Where user-uploaded profile pictures go. Deliberately *not* a managed folder:
+ * the orphan sweep reconciles against catalog references (categories/products)
+ * and knows nothing about avatars, so listing it there would delete every
+ * avatar. Avatars are reclaimed instead when a profile swaps its picture
+ * (`UpdateProfile` → `removeByUrl`).
+ */
+export const AVATAR_IMAGE_FOLDER = "avatars";
