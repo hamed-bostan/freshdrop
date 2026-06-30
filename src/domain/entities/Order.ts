@@ -1,3 +1,5 @@
+import type { TrackingMilestone } from "./OrderTracking";
+
 /** Lifecycle status of an order — drives the status badge on the order card. */
 export type OrderStatus = "completed" | "processing" | "cancelled";
 
@@ -25,6 +27,8 @@ export type OrderItem = {
 /** A placed order shown on the "My Order" screen. */
 export type Order = {
   id: string;
+  /** The user who placed the order — orders are read back scoped to their owner. */
+  userId: string;
   status: OrderStatus;
   phase: OrderPhase;
   /** ISO 8601 timestamp (UTC) the order was placed. Formatted in the presentation layer. */
@@ -34,4 +38,10 @@ export type Order = {
   items: OrderItem[];
   /** Order total in the store currency. */
   total: number;
+  /**
+   * The delivery milestone the order is currently at — the single field an admin
+   * advances from the dashboard, and what the tracking stepper is derived from.
+   * `undefined` when the order isn't trackable (archived or cancelled).
+   */
+  stage?: TrackingMilestone;
 }

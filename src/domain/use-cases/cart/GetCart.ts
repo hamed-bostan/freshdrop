@@ -7,6 +7,8 @@ import { promoDiscount } from "@/src/lib/promoDiscount";
 const SHIPPING_FEE = 5;
 
 export type GetCartOptions = {
+  /** The owner whose cart to read. */
+  userId: string;
   /** Applied promo code, if any — drives the discount. */
   promo?: PromoCode | null;
 }
@@ -14,8 +16,8 @@ export type GetCartOptions = {
 export class GetCart {
   constructor(private readonly cartRepo: ICartRepository) {}
 
-  async execute({ promo }: GetCartOptions = {}): Promise<Cart> {
-    const items = await this.cartRepo.getItems();
+  async execute({ userId, promo }: GetCartOptions): Promise<Cart> {
+    const items = await this.cartRepo.getItems(userId);
     return this.buildCart(items, promo ?? null);
   }
 

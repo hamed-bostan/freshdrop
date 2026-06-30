@@ -1,5 +1,3 @@
-import axios, { type AxiosInstance } from "axios";
-
 import type { AuthIdentity, IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
 import { getOtpStore } from "./otpStore";
 
@@ -48,20 +46,14 @@ export class SmsIrAuthRepository implements IAuthRepository {
   // Shared across module re-evaluations so a code stored on `/login` is still
   // there when `/login/verify` reads it. See getOtpStore.
   private readonly codes = getOtpStore<StoredCode>("sms-ir");
-  private readonly client: AxiosInstance;
+  private readonly baseUrl: string;
+  private readonly apiKey: string;
   private readonly templateId: number;
 
   constructor(config: SmsIrConfig) {
     this.templateId = config.templateId;
-    this.client = axios.create({
-      baseURL: config.baseUrl ?? DEFAULT_BASE_URL,
-      timeout: REQUEST_TIMEOUT_MS,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "x-api-key": config.apiKey,
-      },
-    });
+    this.apiKey = config.apiKey;
+    this.baseUrl = (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, "");
   }
 
   async requestOtp(phone: string): Promise<boolean> {
@@ -73,19 +65,33 @@ export class SmsIrAuthRepository implements IAuthRepository {
     const code = String(Math.floor(1000 + Math.random() * 9000));
 
     try {
-      const { data } = await this.client.post<SmsIrSendResponse>("/v1/send/verify", {
-        mobile,
-        templateId: this.templateId,
-        parameters: [{ name: "CODE", value: code }],
+      const response = await fetch(`${this.baseUrl}/v1/send/verify`, {
+        method: "POST",
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "x-api-key": this.apiKey,
+        },
+        body: JSON.stringify({
+          mobile,
+          templateId: this.templateId,
+          parameters: [{ name: "CODE", value: code }],
+        }),
       });
 
+      if (!response.ok) {
+        console.error(`[sms.ir] send failed: HTTP ${response.status}`);
+        return false;
+      }
+
+      const data = (await response.json()) as SmsIrSendResponse;
       if (data.status !== SMS_IR_OK) {
         console.error(`[sms.ir] send rejected: ${data.message ?? "unknown error"}`);
         return false;
       }
     } catch (error) {
-      const detail = axios.isAxiosError(error) ? (error.response?.data ?? error.message) : error;
-      console.error("[sms.ir] send failed:", detail);
+      console.error("[sms.ir] send failed:", error instanceof Error ? error.message : error);
       return false;
     }
 

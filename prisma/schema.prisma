@@ -37,6 +37,49 @@ model User {
   @@map("users")
 }
 
+// An order is a faithful historical record: each line snapshots the product's
+// name + image at purchase time, so the order reads correctly even if the catalog
+// changes later. `productId` is a plain reference (not a DB foreign key) — same
+// loose coupling as products↔categories. `stage`/`status`/`phase` are stored as
+// plain strings matching the domain unions (the app validates them), consistent
+// with the rest of the schema's enum-free style.
+model Order {
+  id        String      @id @default(uuid())
+  // The user who placed the order. A plain reference (not a DB foreign key),
+  // same loose coupling as the rest of the schema. Indexed for the per-user read.
+  userId    String      @map("user_id")
+  status    String
+  phase     String
+  placedAt  DateTime    @map("placed_at")
+  location  String
+  total     Float
+  // Current delivery milestone (confirmed/shipped/arrived). Null when the order
+  // isn't trackable (archived or cancelled). Advanced from the admin dashboard.
+  stage     String?
+  items     OrderItem[]
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String @id @default(uuid())
+  orderId   String @map("order_id")
+  productId String @map("product_id")
+  // Display snapshot captured at purchase time (see Order).
+  name      String
+  imageUrl  String @map("image_url")
+  quantity  Int
+  // Preserves the authored line order for the thumbnails on the order card.
+  position  Int
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
 model Product {
   id            String   @id @default(uuid())
   name          String
@@ -60,4 +103,37 @@ model Product {
 
   @@index([categoryId])
   @@map("products")
+}
+
+// A redeemable promo code — reference/catalog data (like products/categories),
+// not user data. `discountPercent` is a whole-number percentage taken off the
+// subtotal. `code` is unique and matched case-insensitively at redemption time.
+model PromoCode {
+  id              String   @id @default(uuid())
+  code            String   @unique
+  title           String
+  description     String
+  discountPercent Int      @map("discount_percent")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("promo_codes")
+}
+
+// A line in a user's working cart: just a product reference + quantity, scoped to
+// the owner. The full product snapshot (name, price, image) is resolved from the
+// catalog at read time — the cart stores only what the user chose, the same loose
+// coupling the rest of the schema uses (`productId`/`userId` are plain references,
+// not DB foreign keys). One row per (user, product); adding again bumps quantity.
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  quantity  Int
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@map("cart_items")
 }

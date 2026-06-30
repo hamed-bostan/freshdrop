@@ -1,7 +1,9 @@
 import type { ICartRepository } from "../../repositories/ICartRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
+import { NotFoundError } from "../../errors/NotFoundError";
 
 export type AddToCartRequest = {
+  userId: string;
   productId: string;
   quantity?: number;
 }
@@ -12,10 +14,10 @@ export class AddToCart {
     private readonly productRepo: IProductRepository,
   ) {}
 
-  async execute({ productId, quantity = 1 }: AddToCartRequest): Promise<void> {
+  async execute({ userId, productId, quantity = 1 }: AddToCartRequest): Promise<void> {
     const product = await this.productRepo.getById(productId);
-    if (!product) throw new Error(`Product not found: ${productId}`);
+    if (!product) throw new NotFoundError("product");
 
-    await this.cartRepo.addItem(productId, quantity);
+    await this.cartRepo.addItem(userId, productId, quantity);
   }
 }

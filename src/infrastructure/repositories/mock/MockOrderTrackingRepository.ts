@@ -1,5 +1,10 @@
-import type { OrderTracking, TrackingStep } from "@/src/domain/entities/OrderTracking";
-import type { IOrderTrackingRepository } from "@/src/domain/repositories/IOrderTrackingRepository";
+import type {
+  OrderTracking,
+  TrackingMilestone,
+  TrackingStep,
+  TrackingStepStatus,
+} from "@/src/domain/entities/OrderTracking";
+import type { IOrderTrackingRepository, TrackingViewer } from "@/src/domain/repositories/IOrderTrackingRepository";
 import type { IOrderRepository } from "@/src/domain/repositories/IOrderRepository";
 import type { GeoPoint } from "@/src/domain/entities/Place";
 
@@ -26,47 +31,60 @@ const ROUTE: GeoPoint[] = [
 
 const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
 
+/** The timeline, in order, with the human label and minutes-after-placement each milestone is reached. */
+const TIMELINE: { milestone: TrackingMilestone; label: string; offsetMs: number }[] = [
+  { milestone: "confirmed", label: "Order confirmed", offsetMs: 0 },
+  { milestone: "shipped", label: "Order shipped", offsetMs: FIFTEEN_MINUTES_MS },
+  { milestone: "arrived", label: "Order arrived", offsetMs: 3 * FIFTEEN_MINUTES_MS },
+];
+
+/**
+ * Build the stepper from the order's current `stage`. Milestones before the stage
+ * are `done`, the stage itself is the live `current` step, and later ones are
+ * `pending` (with no timestamp yet).
+ */
+function buildSteps(stage: TrackingMilestone, placedAt: Date): TrackingStep[] {
+  const stageIndex = TIMELINE.findIndex((step) => step.milestone === stage);
+
+  return TIMELINE.map(({ milestone, label, offsetMs }, index) => {
+    const status: TrackingStepStatus = index < stageIndex ? "done" : index === stageIndex ? "current" : "pending";
+    const reached = index <= stageIndex;
+    return {
+      milestone,
+      label,
+      status,
+      ...(reached ? { occurredAt: new Date(placedAt.getTime() + offsetMs).toISOString() } : {}),
+    };
+  });
+}
+
 /**
  * Resolves live tracking for an order. Depends on the order repository (not the
  * order store directly) so tracking stays decoupled from how orders are
  * persisted — Dependency Inversion, same as the rest of the composition root.
  *
  * Only "current" orders that haven't been cancelled are trackable; everything
- * else returns `null` so the route can 404.
+ * else returns `null` so the route can 404. Tracking is scoped to the order's
+ * owner (admins excepted) — another user's order reads as untrackable so its
+ * existence isn't leaked.
  */
 export class MockOrderTrackingRepository implements IOrderTrackingRepository {
   constructor(private readonly orders: IOrderRepository) {}
 
-  async getByOrderId(orderId: string): Promise<OrderTracking | null> {
-    const all = await this.orders.getOrders();
-    const order = all.find((candidate) => candidate.id === orderId);
+  async getByOrderId(orderId: string, viewer: TrackingViewer): Promise<OrderTracking | null> {
+    const order = await this.orders.getById(orderId);
 
     if (!order || order.phase !== "current" || order.status === "cancelled") {
       return null;
     }
 
-    const placedAt = new Date(order.placedAt);
-    const shippedAt = new Date(placedAt.getTime() + FIFTEEN_MINUTES_MS);
+    if (!viewer.isAdmin && order.userId !== viewer.userId) {
+      return null;
+    }
 
-    const steps: TrackingStep[] = [
-      {
-        milestone: "confirmed",
-        label: "Order confirmed",
-        occurredAt: placedAt.toISOString(),
-        status: "done",
-      },
-      {
-        milestone: "shipped",
-        label: "Order shipped",
-        occurredAt: shippedAt.toISOString(),
-        status: "current",
-      },
-      {
-        milestone: "arrived",
-        label: "Order arrived",
-        status: "pending",
-      },
-    ];
+    // Trackable orders always carry a stage (seeded in the order repo); default to
+    // the first milestone if one is somehow missing.
+    const steps = buildSteps(order.stage ?? "confirmed", new Date(order.placedAt));
 
     return {
       orderId: order.id,

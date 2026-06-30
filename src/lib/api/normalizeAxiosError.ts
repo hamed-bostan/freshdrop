@@ -2,7 +2,7 @@ import type { AxiosError } from "axios";
 import { ApiError, type FieldErrors } from "./ApiError";
 
 /** The JSON error envelope every REST route handler returns on failure. */
-type ErrorEnvelope = {
+export type ErrorEnvelope = {
   error?: { message?: string; code?: string; fieldErrors?: FieldErrors };
 };
 
@@ -38,7 +38,7 @@ export function normalizeAxiosError(error: AxiosError): ApiError {
 }
 
 /** Last-resort message when the server didn't include one in the envelope. */
-function defaultMessageForStatus(status: number): string {
+export function defaultMessageForStatus(status: number): string {
   if (status === 401 || status === 403) return "You're not authorized to do that.";
   if (status === 404) return "Not found.";
   if (status >= 500) return "Something went wrong on the server. Please try again.";

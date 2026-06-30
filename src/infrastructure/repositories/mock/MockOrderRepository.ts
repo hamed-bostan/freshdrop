@@ -1,6 +1,11 @@
 import type { Order, OrderItem, OrderPhase, OrderStatus } from "@/src/domain/entities/Order";
-import type { IOrderRepository } from "@/src/domain/repositories/IOrderRepository";
+import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
+import type { IOrderRepository, NewOrder, OrderTrackingUpdate } from "@/src/domain/repositories/IOrderRepository";
 import type { IProductRepository } from "@/src/domain/repositories/IProductRepository";
+import { NotFoundError } from "@/src/domain/errors/NotFoundError";
+
+/** The seeded demo orders predate real accounts, so they belong to a sentinel owner. */
+const DEMO_USER_ID = "demo";
 
 /**
  * The editable surface of a seeded order: just the facts that differ. The item
@@ -14,6 +19,8 @@ type OrderSeed = {
   placedAt: string;
   location: string;
   total: number;
+  /** Starting delivery milestone. Omitted for orders that aren't trackable. */
+  stage?: TrackingMilestone;
   lines: { productId: string; quantity: number }[];
 };
 
@@ -25,6 +32,7 @@ const ORDER_SEEDS: OrderSeed[] = [
     placedAt: "2023-10-09T15:22:00Z",
     location: "Toronto, 23rd Street, No. 5",
     total: 129.9,
+    stage: "arrived",
     lines: [
       { productId: "10-1", quantity: 1 }, // Sourdough Loaf
       { productId: "2-1", quantity: 2 }, // Cage-Free Eggs
@@ -40,6 +48,7 @@ const ORDER_SEEDS: OrderSeed[] = [
     placedAt: "2023-10-08T11:05:00Z",
     location: "Toronto, 23rd Street, No. 5",
     total: 86.4,
+    stage: "shipped",
     lines: [
       { productId: "1-1", quantity: 2 }, // Organic Baby Spinach
       { productId: "5-1", quantity: 4 }, // Sparkling Spring Water
@@ -84,15 +93,34 @@ const ORDER_SEEDS: OrderSeed[] = [
  * Resolves seeded orders against the product catalog. Depends on the product
  * repository (not the catalog directly) so orders stay decoupled from how
  * products are stored — Dependency Inversion, same as the composition root.
+ *
+ * Delivery stage lives in a mutable in-memory map seeded from `ORDER_SEEDS`. As
+ * the container binds this as a singleton, dashboard stage changes persist for
+ * the life of the server process — a stand-in for real persistence, mirroring
+ * how `MockFavoriteRepository` keeps its toggles.
  */
 export class MockOrderRepository implements IOrderRepository {
+  private readonly stages = new Map<string, TrackingMilestone>(
+    ORDER_SEEDS.flatMap((seed) => (seed.stage ? [[seed.id, seed.stage] as const] : [])),
+  );
+  private readonly statuses = new Map<string, OrderStatus>(
+    ORDER_SEEDS.map((seed) => [seed.id, seed.status] as const),
+  );
+  /** Orders placed at runtime (via checkout), newest appended last. */
+  private readonly created: Order[] = [];
+  private nextId = 1;
+
   constructor(private readonly products: IProductRepository) {}
 
-  async getOrders(): Promise<Order[]> {
+  async getOrders(userId: string): Promise<Order[]> {
+    return (await this.getAllOrders()).filter((order) => order.userId === userId);
+  }
+
+  async getAllOrders(): Promise<Order[]> {
     const all = await this.products.getAll();
     const byId = new Map(all.map((product) => [product.id, product]));
 
-    return ORDER_SEEDS.map((seed) => {
+    const seeded: Order[] = ORDER_SEEDS.map((seed) => {
       const items: OrderItem[] = seed.lines
         .map(({ productId, quantity }) => {
           const product = byId.get(productId);
@@ -103,13 +131,47 @@ export class MockOrderRepository implements IOrderRepository {
 
       return {
         id: seed.id,
-        status: seed.status,
+        userId: DEMO_USER_ID,
+        status: this.statuses.get(seed.id) ?? seed.status,
         phase: seed.phase,
         placedAt: seed.placedAt,
         location: seed.location,
         total: seed.total,
+        stage: this.stages.get(seed.id),
         items,
       };
     });
+
+    // Runtime orders honour the same stage/status overrides as the seeds.
+    const runtime: Order[] = this.created.map((order) => ({
+      ...order,
+      status: this.statuses.get(order.id) ?? order.status,
+      stage: this.stages.get(order.id) ?? order.stage,
+    }));
+
+    // Newest first — runtime orders carry the latest timestamps.
+    return [...seeded, ...runtime].sort((a, b) => b.placedAt.localeCompare(a.placedAt));
+  }
+
+  async getById(orderId: string): Promise<Order | null> {
+    return (await this.getAllOrders()).find((order) => order.id === orderId) ?? null;
+  }
+
+  async createOrder(input: NewOrder): Promise<Order> {
+    const order: Order = { ...input, id: `FD-${String(this.nextId++).padStart(5, "0")}` };
+    this.created.push(order);
+    return order;
+  }
+
+  async setTrackingStage(orderId: string, update: OrderTrackingUpdate): Promise<Order> {
+    if (!(await this.getById(orderId))) throw new NotFoundError("order", orderId);
+
+    this.stages.set(orderId, update.stage);
+    this.statuses.set(orderId, update.status);
+
+    const order = await this.getById(orderId);
+    // Unreachable — existence was just checked — but keeps the return type honest.
+    if (!order) throw new NotFoundError("order", orderId);
+    return order;
   }
 }

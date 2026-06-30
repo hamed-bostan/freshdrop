@@ -12,6 +12,7 @@ import { cn } from "@/src/lib/utils";
 const SECTIONS = [
   { href: "/dashboard/categories", label: "Categories" },
   { href: "/dashboard/products", label: "Products" },
+  { href: "/dashboard/orders", label: "Orders" },
 ] as const;
 
 export function DashboardNav() {

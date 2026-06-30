@@ -24,10 +24,10 @@ import { MockDeliveryLocationRepository } from "./repositories/mock/MockDelivery
 import { MockPaymentMethodRepository } from "./repositories/mock/MockPaymentMethodRepository";
 import { MockDeliveryOptionRepository } from "./repositories/mock/MockDeliveryOptionRepository";
 import { MockWalletRepository } from "./repositories/mock/MockWalletRepository";
-import { MockOrderRepository } from "./repositories/mock/MockOrderRepository";
+import { PrismaOrderRepository } from "./repositories/PrismaOrderRepository";
 import { MockOrderTrackingRepository } from "./repositories/mock/MockOrderTrackingRepository";
-import { MockCartRepository } from "./repositories/mock/MockCartRepository";
-import { MockPromoCodeRepository } from "./repositories/mock/MockPromoCodeRepository";
+import { PrismaCartRepository } from "./repositories/PrismaCartRepository";
+import { PrismaPromoCodeRepository } from "./repositories/PrismaPromoCodeRepository";
 import { MockAuthRepository } from "./repositories/mock/MockAuthRepository";
 import { SmsIrAuthRepository } from "./repositories/SmsIrAuthRepository";
 import { NominatimGeocodingRepository } from "./repositories/NominatimGeocodingRepository";
@@ -61,10 +61,19 @@ export const deliveryLocationRepository: IDeliveryLocationRepository = new MockD
 export const paymentMethodRepository: IPaymentMethodRepository = new MockPaymentMethodRepository();
 export const deliveryOptionRepository: IDeliveryOptionRepository = new MockDeliveryOptionRepository();
 export const walletRepository: IWalletRepository = new MockWalletRepository();
-export const orderRepository: IOrderRepository = new MockOrderRepository(productRepository);
+// Orders are real data now — PostgreSQL via Prisma. The demo order history lives
+// on in the seed migration that backfilled the table; orders advance through
+// delivery stages from the dashboard.
+export const orderRepository: IOrderRepository = new PrismaOrderRepository();
+// Tracking composes the real order (its persisted stage drives the stepper) with
+// a still-stubbed courier feed: the map destination/courier point/route and the
+// rider remain static placeholders until a realtime routing provider is wired in.
 export const orderTrackingRepository: IOrderTrackingRepository = new MockOrderTrackingRepository(orderRepository);
-export const cartRepository: ICartRepository = new MockCartRepository(productRepository);
-export const promoCodeRepository: IPromoCodeRepository = new MockPromoCodeRepository();
+// Carts and promo codes are real data now — PostgreSQL via Prisma. The cart is
+// per-user (one `cart_items` row per user+product); the demo cart and the promo
+// catalog live on in the seed migration that backfilled the tables.
+export const cartRepository: ICartRepository = new PrismaCartRepository(productRepository);
+export const promoCodeRepository: IPromoCodeRepository = new PrismaPromoCodeRepository();
 
 // Real SMS OTP when an SMS.ir key is configured; the in-memory mock otherwise so
 // local dev works without credentials (the mock surfaces the code in the UI).

@@ -1,19 +1,24 @@
-import { GetCart } from "@/src/domain/use-cases/cart/GetCart";
-import { FindPromoCode } from "@/src/domain/use-cases/promo-codes/FindPromoCode";
-import { cartRepository, promoCodeRepository } from "@/src/infrastructure/container";
+import { cartsServerApi } from "@/src/presentation/cart/cart-server-api";
+import { promoCodesServerApi } from "@/src/presentation/cart/promo-code-server-api";
 import CartScreen from "@/src/presentation/cart/CartScreen";
 
 interface CartPageProps {
   searchParams: Promise<{ promo?: string }>;
 }
 
+// Cart + promo are fetched from the REST API at request time (BFF) — render dynamically.
+export const dynamic = "force-dynamic";
+
 export default async function CartPage({ searchParams }: CartPageProps) {
   const { promo: code } = await searchParams;
 
-  // A promo applied from the promo screen arrives as a `?promo=` code; resolve
-  // it so the discount is reflected in the cart total and checkout summary.
-  const appliedPromo = code ? await new FindPromoCode(promoCodeRepository).execute(code) : null;
-  const cart = await new GetCart(cartRepository).execute({ promo: appliedPromo });
+  // A promo applied from the promo screen arrives as a `?promo=` code: the cart is
+  // fetched with it applied (so totals reflect the discount) and resolved
+  // separately for display in the checkout summary.
+  const [cart, appliedPromo] = await Promise.all([
+    cartsServerApi.get({ promo: code }),
+    code ? promoCodesServerApi.getByCode(code) : Promise.resolve(null),
+  ]);
 
   return <CartScreen cart={cart} appliedPromo={appliedPromo} />;
 }

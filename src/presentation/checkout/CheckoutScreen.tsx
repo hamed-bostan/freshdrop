@@ -12,13 +12,17 @@ import { Button } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { DeliveryLocationItem } from "@/src/presentation/delivery-location/components/DeliveryLocationItem";
 import { PaymentMethodOption } from "@/src/presentation/payment/components";
+import { ApiError } from "@/src/lib/api/ApiError";
 import { CheckoutSection, DeliveryOptionItem, OrderSummaryCard, OrderTotals } from "./components";
+import { checkoutApi } from "./checkout-api";
 
 interface CheckoutScreenProps {
   cart: Cart;
   deliveryLocations: DeliveryLocation[];
   deliveryOptions: DeliveryOption[];
   paymentMethods: PaymentMethod[];
+  /** Promo code applied in the cart, forwarded so the server's totals match. */
+  promoCode?: string;
 }
 
 /**
@@ -32,15 +36,35 @@ export default function CheckoutScreen({
   deliveryLocations,
   deliveryOptions,
   paymentMethods,
+  promoCode,
 }: CheckoutScreenProps) {
   const router = useRouter();
   const [addressId, setAddressId] = React.useState(() => deliveryLocations[0]?.id);
   const [optionId, setOptionId] = React.useState(() => deliveryOptions[0]?.id);
   const [paymentId, setPaymentId] = React.useState(() => paymentMethods[0]?.id);
+  const [error, setError] = React.useState<string | null>(null);
+  const [pending, startTransition] = React.useTransition();
 
   const placeOrder = (event: React.FormEvent) => {
     event.preventDefault();
-    router.push("/cart/checkout/confirmed");
+    if (!addressId) {
+      setError("Select a delivery address.");
+      return;
+    }
+
+    setError(null);
+    startTransition(async () => {
+      try {
+        await checkoutApi.placeOrder({ addressId, promo: promoCode });
+        // The server cleared the cart and recorded the order; the confirmation
+        // screen re-reads from the server, so just navigate.
+        router.push("/cart/checkout/confirmed");
+      } catch (err) {
+        setError(
+          err instanceof ApiError ? err.message : "Couldn't place your order. Please try again.",
+        );
+      }
+    });
   };
 
   return (
@@ -106,8 +130,14 @@ export default function CheckoutScreen({
         total={cart.total}
       />
 
-      <Button type="submit" size="lg" className="mt-auto w-full">
-        Place Order
+      {error && (
+        <p role="alert" className="text-center text-body-b8 text-destructive">
+          {error}
+        </p>
+      )}
+
+      <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full">
+        {pending ? "Placing Order…" : "Place Order"}
       </Button>
     </form>
   );
