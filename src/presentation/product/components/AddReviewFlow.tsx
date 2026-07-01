@@ -1,24 +1,53 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/src/presentation/design-system";
+import { ApiError } from "@/src/lib/api/ApiError";
+import { reviewsApi } from "../review-api";
 import { AddReviewSheet, type ReviewDraft } from "./AddReviewSheet";
 import { ReviewSubmittedModal } from "./ReviewSubmittedModal";
 
+interface AddReviewFlowProps {
+  /** The product the review is written for. */
+  productId: string;
+}
+
 /**
  * Drives the "Add Review" flow: a trigger button → the review form sheet →
- * a success modal. Submission is UI-only for now (no SubmitReview use-case yet).
+ * a success modal. Submitting POSTs the review over the REST API (author taken from
+ * the session server-side); on success we refresh the RSC so the new review appears
+ * in the list, then show the confirmation. A 401 means the user isn't signed in.
  */
-export function AddReviewFlow() {
+export function AddReviewFlow({ productId }: AddReviewFlowProps) {
+  const router = useRouter();
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [successOpen, setSuccessOpen] = React.useState(false);
   const [submittedRating, setSubmittedRating] = React.useState(0);
+  const [error, setError] = React.useState<string | null>(null);
+  const [pending, startTransition] = React.useTransition();
 
   function handleSubmit(draft: ReviewDraft) {
-    // TODO: dispatch a SubmitReview use-case once the review write path exists.
-    setSubmittedRating(draft.rating);
-    setSheetOpen(false);
-    setSuccessOpen(true);
+    setError(null);
+    startTransition(async () => {
+      try {
+        await reviewsApi.create({ productId, rating: draft.rating, comment: draft.feedback });
+        // The server persisted the review; re-run the server render so the list
+        // reflects it, then surface the confirmation.
+        router.refresh();
+        setSubmittedRating(draft.rating);
+        setSheetOpen(false);
+        setSuccessOpen(true);
+      } catch (err) {
+        setError(
+          err instanceof ApiError && err.status === 401
+            ? "Please sign in to leave a review."
+            : err instanceof ApiError
+              ? err.message
+              : "Couldn't submit your review. Please try again.",
+        );
+      }
+    });
   }
 
   return (
@@ -27,7 +56,13 @@ export function AddReviewFlow() {
         Add Review
       </Button>
 
-      <AddReviewSheet open={sheetOpen} onOpenChange={setSheetOpen} onSubmit={handleSubmit} />
+      <AddReviewSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        onSubmit={handleSubmit}
+        pending={pending}
+        error={error}
+      />
 
       <ReviewSubmittedModal open={successOpen} onOpenChange={setSuccessOpen} rating={submittedRating} />
     </>

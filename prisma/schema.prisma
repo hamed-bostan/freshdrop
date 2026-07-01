@@ -183,6 +183,61 @@ model PaymentMethod {
   @@map("payment_methods")
 }
 
+// A delivery speed/time the storefront offers at checkout (Fast, Standard, …).
+// Reference/catalog data — not user data — like payment methods: a fixed, ordered
+// list the checkout screen reads. `position` fixes the display order; the id is a
+// stable human slug. Pricing isn't modelled yet, so `eta` is just a display string.
+model DeliveryOption {
+  id        String   @id
+  label     String
+  eta       String
+  position  Int
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("delivery_options")
+}
+
+// A customer review of a product. `productId` is a plain reference (not a DB
+// foreign key) — the same loose coupling the rest of the schema uses. The author's
+// name/avatar are snapshotted at write time (from the session), so the review reads
+// correctly even if the user later changes their profile. `rating` is 1–5.
+model Review {
+  id              String   @id @default(uuid())
+  productId       String   @map("product_id")
+  authorName      String   @map("author_name")
+  authorAvatarUrl String?  @map("author_avatar_url")
+  rating          Int
+  comment         String
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([productId])
+  @@map("reviews")
+}
+
+// A user's saved delivery address. Per-user data (scoped by `userId`, a plain
+// reference like the rest of the schema). `kind` ("home" | "office" | "gym" |
+// "other") is stored as a plain string matching the domain union — the app
+// validates it, consistent with the schema's enum-free style. `detailAddress`,
+// `phone` and the picked `latitude`/`longitude` are captured by the add-address
+// flow; only `label`/`address`/`kind` are surfaced on the cards today.
+model DeliveryLocation {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  label         String
+  address       String
+  detailAddress String?  @map("detail_address")
+  phone         String?
+  kind          String
+  latitude      Float?
+  longitude     Float?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("delivery_locations")
+}
+
 // A line in a user's working cart: just a product reference + quantity, scoped to
 // the owner. The full product snapshot (name, price, image) is resolved from the
 // catalog at read time — the cart stores only what the user chose, the same loose

@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
-import { GetProductReviews } from "@/src/domain/use-cases/reviews/GetProductReviews";
-import { reviewRepository } from "@/src/infrastructure/container";
 import { productsServerApi } from "@/src/presentation/product/product-server-api";
+import { reviewsServerApi } from "@/src/presentation/product/review-server-api";
 import { favoritesServerApi } from "@/src/presentation/favorites/favorite-server-api";
 import ProductDetailScreen from "@/src/presentation/product/ProductDetailScreen";
 
@@ -9,8 +8,8 @@ interface ProductDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-// Product is fetched from the REST API at request time — render dynamically.
-// NOTE: reviews still read the data layer directly until their REST stage lands.
+// Product and reviews are fetched from the REST API at request time (BFF) — render
+// dynamically.
 export const dynamic = "force-dynamic";
 
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
@@ -21,7 +20,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
   const [similar, reviews, isFavorite] = await Promise.all([
     productsServerApi.listSimilar(id),
-    new GetProductReviews(reviewRepository).execute(id),
+    reviewsServerApi.listByProduct(id),
     favoritesServerApi.isFavorite(id),
   ]);
 

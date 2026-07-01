@@ -1,0 +1,12 @@
+import type { Review } from "@/src/domain/entities/Review";
+import { serverApiGet } from "@/src/lib/api/server-client";
+
+/**
+ * Server-side review reads for Server Components (BFF). The storefront mirror of
+ * the browser `reviewsApi` — same REST endpoint, fetched during server render.
+ */
+export const reviewsServerApi = {
+  listByProduct(productId: string): Promise<Review[]> {
+    return serverApiGet<Review[]>("/reviews", { params: { productId } });
+  },
+};

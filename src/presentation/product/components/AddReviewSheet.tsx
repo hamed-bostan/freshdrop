@@ -12,6 +12,10 @@ interface AddReviewSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (draft: ReviewDraft) => void;
+  /** True while the submission is in flight — disables the submit button. */
+  pending?: boolean;
+  /** A submission error to surface (e.g. "sign in to review"); the sheet stays open. */
+  error?: string | null;
 }
 
 /**
@@ -19,7 +23,7 @@ interface AddReviewSheetProps {
  * Controlled via `open`; resets itself each time it closes. A rating is
  * required before the review can be submitted.
  */
-export function AddReviewSheet({ open, onOpenChange, onSubmit }: AddReviewSheetProps) {
+export function AddReviewSheet({ open, onOpenChange, onSubmit, pending = false, error = null }: AddReviewSheetProps) {
   const [rating, setRating] = React.useState(0);
   const [feedback, setFeedback] = React.useState("");
 
@@ -31,11 +35,11 @@ export function AddReviewSheet({ open, onOpenChange, onSubmit }: AddReviewSheetP
     }
   }, [open]);
 
-  const canSubmit = rating > 0;
+  const canSubmit = rating > 0 && !pending;
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!canSubmit) return;
+    if (rating <= 0 || pending) return;
     onSubmit({ rating, feedback: feedback.trim() });
   }
 
@@ -59,8 +63,14 @@ export function AddReviewSheet({ open, onOpenChange, onSubmit }: AddReviewSheetP
             className="h-40"
           />
 
+          {error && (
+            <p role="alert" className="text-center text-body-b8 text-destructive">
+              {error}
+            </p>
+          )}
+
           <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>
-            Submit
+            {pending ? "Submitting…" : "Submit"}
           </Button>
         </form>
       </SheetContent>

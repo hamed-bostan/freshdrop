@@ -33,10 +33,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
         {product.name}
       </Link>
 
-      <div className="flex items-center gap-1 px-2 mb-1">
-        <Icon icon={Star} size="xs" className="fill-rating text-rating" />
-        <span className="text-body-b8 text-foreground">{product.rating}</span>
-      </div>
+      {product.ratingCount > 0 && (
+        <div className="flex items-center gap-1 px-2 mb-1">
+          <Icon icon={Star} size="xs" className="fill-rating text-rating" />
+          <span className="text-body-b8 text-foreground">{product.rating}</span>
+        </div>
+      )}
 
       <div className="flex justify-between items-center px-2">
         <div className="flex flex-col">

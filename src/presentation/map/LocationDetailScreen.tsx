@@ -7,6 +7,8 @@ import { Button, TextField, Textarea } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import type { GeoPoint } from "@/src/domain/entities/Place";
 import type { DeliveryLocationKind } from "@/src/domain/entities/DeliveryLocation";
+import { deliveryLocationsApi } from "@/src/presentation/delivery-location/delivery-location-api";
+import { ApiError } from "@/src/lib/api/ApiError";
 import { AddressLabelChips } from "./components";
 
 // Leaflet is client-only; load the preview lazily and keep it out of the SSR bundle.
@@ -30,12 +32,39 @@ export default function LocationDetailScreen({ center }: LocationDetailScreenPro
   const [detailAddress, setDetailAddress] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [label, setLabel] = React.useState<DeliveryLocationKind>("home");
+  const [error, setError] = React.useState<string | null>(null);
+  const [pending, startTransition] = React.useTransition();
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    // TODO: persist via an AddDeliveryLocation use-case (address, detailAddress,
-    // phone, label, center), then return to the list. For now, just navigate back.
-    router.push("/profile/addresses");
+    if (!address.trim()) {
+      setError("Enter an address.");
+      return;
+    }
+
+    setError(null);
+    startTransition(async () => {
+      try {
+        await deliveryLocationsApi.create({
+          address: address.trim(),
+          detailAddress: detailAddress.trim(),
+          phone: phone.trim(),
+          kind: label,
+          latitude: center.latitude,
+          longitude: center.longitude,
+        });
+        // Saved — the list screen re-reads from the server on navigation.
+        router.push("/profile/addresses");
+      } catch (err) {
+        setError(
+          err instanceof ApiError && err.status === 401
+            ? "Please sign in to save an address."
+            : err instanceof ApiError
+              ? err.message
+              : "Couldn't save your address. Please try again.",
+        );
+      }
+    });
   };
 
   const handleAddCustomLabel = () => {
@@ -87,8 +116,14 @@ export default function LocationDetailScreen({ center }: LocationDetailScreenPro
         </div>
       </div>
 
-      <Button type="submit" size="lg" className="mt-auto w-full">
-        Add new location
+      {error && (
+        <p role="alert" className="text-center text-body-b8 text-destructive">
+          {error}
+        </p>
+      )}
+
+      <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full">
+        {pending ? "Saving…" : "Add new location"}
       </Button>
     </form>
   );

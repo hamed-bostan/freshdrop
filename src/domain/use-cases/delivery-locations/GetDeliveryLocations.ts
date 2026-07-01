@@ -4,7 +4,7 @@ import type { IDeliveryLocationRepository } from "../../repositories/IDeliveryLo
 export class GetDeliveryLocations {
   constructor(private readonly deliveryLocationRepo: IDeliveryLocationRepository) {}
 
-  execute(): Promise<DeliveryLocation[]> {
-    return this.deliveryLocationRepo.getAll();
+  execute(userId: string): Promise<DeliveryLocation[]> {
+    return this.deliveryLocationRepo.getByUser(userId);
   }
 }

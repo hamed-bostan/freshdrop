@@ -19,10 +19,10 @@ import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepositor
 import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
 import { PrismaUserRepository } from "./repositories/PrismaUserRepository";
 import { MockFavoriteRepository } from "./repositories/mock/MockFavoriteRepository";
-import { MockReviewRepository } from "./repositories/mock/MockReviewRepository";
-import { MockDeliveryLocationRepository } from "./repositories/mock/MockDeliveryLocationRepository";
+import { PrismaReviewRepository } from "./repositories/PrismaReviewRepository";
+import { PrismaDeliveryLocationRepository } from "./repositories/PrismaDeliveryLocationRepository";
 import { PrismaPaymentMethodRepository } from "./repositories/PrismaPaymentMethodRepository";
-import { MockDeliveryOptionRepository } from "./repositories/mock/MockDeliveryOptionRepository";
+import { PrismaDeliveryOptionRepository } from "./repositories/PrismaDeliveryOptionRepository";
 import { PrismaWalletRepository } from "./repositories/PrismaWalletRepository";
 import { PrismaOrderRepository } from "./repositories/PrismaOrderRepository";
 import { MockOrderTrackingRepository } from "./repositories/mock/MockOrderTrackingRepository";
@@ -56,13 +56,22 @@ export const productRepository: IProductRepository = new PrismaProductRepository
 // (auth `authorize` → GetOrCreateUser) and edited via the profile feature.
 export const userRepository: IUserRepository = new PrismaUserRepository();
 export const favoriteRepository: IFavoriteRepository = new MockFavoriteRepository(productRepository);
-export const reviewRepository: IReviewRepository = new MockReviewRepository();
-export const deliveryLocationRepository: IDeliveryLocationRepository = new MockDeliveryLocationRepository();
+// Reviews are real data now — PostgreSQL via Prisma. The demo reviews live on in
+// the seed migration that backfilled the table; new reviews are written by
+// signed-in users from the product screen.
+export const reviewRepository: IReviewRepository = new PrismaReviewRepository();
+// Addresses are real data now — PostgreSQL via Prisma. Per-user: real users start
+// with none and add them via the "Add New Address" flow; the demo addresses live on
+// in the seed migration, owned by the sentinel `demo` user.
+export const deliveryLocationRepository: IDeliveryLocationRepository = new PrismaDeliveryLocationRepository();
 // Payment options are real data now — PostgreSQL via Prisma. The fixed catalog
 // (Cash, Wallet, PayPal, Apple/Google Pay) lives on in the seed migration that
 // backfilled the table; it's reference data, like promo codes.
 export const paymentMethodRepository: IPaymentMethodRepository = new PrismaPaymentMethodRepository();
-export const deliveryOptionRepository: IDeliveryOptionRepository = new MockDeliveryOptionRepository();
+// Delivery options are real data now — PostgreSQL via Prisma. The fixed catalog
+// (Fast, Standard) lives on in the seed migration that backfilled the table; it's
+// reference data, like payment methods.
+export const deliveryOptionRepository: IDeliveryOptionRepository = new PrismaDeliveryOptionRepository();
 // Wallets are real data now — PostgreSQL via Prisma. Balance, saved cards and
 // transactions are per-user; real users start empty and fill the wallet via the
 // "Add Money" / "Add Card" flows. The demo wallet lives on in the seed migration.

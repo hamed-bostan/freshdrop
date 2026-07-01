@@ -3,10 +3,11 @@ import { ReviewItem } from "./ReviewItem";
 import { AddReviewFlow } from "./AddReviewFlow";
 
 interface ReviewSectionProps {
+  productId: string;
   reviews: Review[];
 }
 
-export function ReviewSection({ reviews }: ReviewSectionProps) {
+export function ReviewSection({ productId, reviews }: ReviewSectionProps) {
   return (
     <section aria-labelledby="reviews-heading" className="flex flex-col gap-4">
       <h2 id="reviews-heading" className="text-body-b1 text-foreground">
@@ -23,7 +24,7 @@ export function ReviewSection({ reviews }: ReviewSectionProps) {
         <p className="text-body-b6 text-muted-foreground">No reviews yet. Be the first to share your thoughts.</p>
       )}
 
-      <AddReviewFlow />
+      <AddReviewFlow productId={productId} />
     </section>
   );
 }

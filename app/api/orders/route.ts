@@ -66,7 +66,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const locations = await new GetDeliveryLocations(deliveryLocationRepository).execute();
+    const locations = await new GetDeliveryLocations(deliveryLocationRepository).execute(session.user.id);
     const address = locations.find((location) => location.id === parsed.data.addressId);
     if (!address) {
       return errorResponse(400, {

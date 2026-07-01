@@ -42,7 +42,7 @@ export default function ProductDetailScreen({
 
       {similar.length > 0 && <SimilarProducts products={similar} />}
 
-      <ReviewSection reviews={reviews} />
+      <ReviewSection productId={product.id} reviews={reviews} />
     </div>
   );
 }

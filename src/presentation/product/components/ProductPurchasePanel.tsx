@@ -44,10 +44,12 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
       <div className="rounded-card-xl bg-surface p-4">
         <div className="flex items-start justify-between gap-2">
           <h2 className="text-body-b1 text-foreground">{product.name}</h2>
-          <span className="flex shrink-0 items-center gap-1">
-            <Icon icon={Star} size="xs" className="fill-rating text-rating" />
-            <span className="text-body-b8 text-foreground">{product.rating}</span>
-          </span>
+          {product.ratingCount > 0 && (
+            <span className="flex shrink-0 items-center gap-1">
+              <Icon icon={Star} size="xs" className="fill-rating text-rating" />
+              <span className="text-body-b8 text-foreground">{product.rating}</span>
+            </span>
+          )}
         </div>
 
         {product.unit && <p className="mt-1 text-body-b6 text-muted-foreground">{product.unit}</p>}

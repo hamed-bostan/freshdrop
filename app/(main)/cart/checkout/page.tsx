@@ -1,17 +1,17 @@
-import { GetDeliveryOptions } from "@/src/domain/use-cases/delivery-options/GetDeliveryOptions";
 import { GetPaymentMethods } from "@/src/domain/use-cases/payment-methods/GetPaymentMethods";
-import { deliveryOptionRepository, paymentMethodRepository } from "@/src/infrastructure/container";
+import { paymentMethodRepository } from "@/src/infrastructure/container";
 import { cartsServerApi } from "@/src/presentation/cart/cart-server-api";
 import { promoCodesServerApi } from "@/src/presentation/cart/promo-code-server-api";
 import { deliveryLocationsServerApi } from "@/src/presentation/delivery-location/delivery-location-server-api";
+import { deliveryOptionsServerApi } from "@/src/presentation/checkout/delivery-option-server-api";
 import CheckoutScreen from "@/src/presentation/checkout/CheckoutScreen";
 
 interface CheckoutPageProps {
   searchParams: Promise<{ promo?: string }>;
 }
 
-// Cart, promo & delivery locations come from the REST API (BFF); delivery options
-// & payment methods still read the data layer directly until their stages.
+// Cart, promo, delivery locations & delivery options come from the REST API (BFF);
+// payment methods still read the data layer directly until their stage.
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
@@ -23,7 +23,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     cartsServerApi.get({ promo: code }),
     code ? promoCodesServerApi.getByCode(code) : Promise.resolve(null),
     deliveryLocationsServerApi.list(),
-    new GetDeliveryOptions(deliveryOptionRepository).execute(),
+    deliveryOptionsServerApi.list(),
     new GetPaymentMethods(paymentMethodRepository).execute(),
   ]);
 
