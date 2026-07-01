@@ -16,8 +16,10 @@ interface AddReviewFlowProps {
 /**
  * Drives the "Add Review" flow: a trigger button → the review form sheet →
  * a success modal. Submitting POSTs the review over the REST API (author taken from
- * the session server-side); on success we refresh the RSC so the new review appears
- * in the list, then show the confirmation. A 401 means the user isn't signed in.
+ * the session server-side); the review starts pending admin approval, so it won't
+ * show in the list yet — we refresh the RSC (harmless, keeps the page current) and
+ * show the confirmation, which sets that expectation. A 401 means the user isn't
+ * signed in.
  */
 export function AddReviewFlow({ productId }: AddReviewFlowProps) {
   const router = useRouter();

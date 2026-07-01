@@ -209,9 +209,14 @@ model Review {
   authorAvatarUrl String?  @map("author_avatar_url")
   rating          Int
   comment         String
+  // Moderation state: "pending" | "approved" | "rejected". Stored as a plain string
+  // matching the domain union (enum-free schema); new reviews default to "pending"
+  // and stay hidden from the storefront until an admin approves them.
+  status          String   @default("pending")
   createdAt       DateTime @default(now()) @map("created_at")
 
   @@index([productId])
+  @@index([status])
   @@map("reviews")
 }
 

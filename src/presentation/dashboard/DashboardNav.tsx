@@ -13,6 +13,7 @@ const SECTIONS = [
   { href: "/dashboard/categories", label: "Categories" },
   { href: "/dashboard/products", label: "Products" },
   { href: "/dashboard/orders", label: "Orders" },
+  { href: "/dashboard/reviews", label: "Reviews" },
 ] as const;
 
 export function DashboardNav() {

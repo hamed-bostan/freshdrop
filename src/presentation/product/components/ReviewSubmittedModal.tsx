@@ -25,7 +25,9 @@ export function ReviewSubmittedModal({ open, onOpenChange, rating }: ReviewSubmi
 
           <div className="flex flex-col gap-1">
             <p className="text-heading-h2 text-foreground">Done!</p>
-            <p className="text-body-b6 text-muted-foreground">Thanks You For Your Review</p>
+            <p className="text-body-b6 text-muted-foreground">
+              Thanks for your review — it&apos;ll appear once our team approves it.
+            </p>
           </div>
 
           <RatingStars value={rating} size="md" />
