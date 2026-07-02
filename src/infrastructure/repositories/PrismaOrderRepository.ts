@@ -1,7 +1,12 @@
 import { Prisma } from "@prisma/client";
 import type { Order, OrderItem, OrderPhase, OrderStatus } from "@/src/domain/entities/Order";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
-import type { IOrderRepository, NewOrder, OrderTrackingUpdate } from "@/src/domain/repositories/IOrderRepository";
+import type {
+  IOrderRepository,
+  NewOrder,
+  OrderStatusTransition,
+  OrderTrackingUpdate,
+} from "@/src/domain/repositories/IOrderRepository";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { prisma } from "@/src/infrastructure/prisma/client";
 
@@ -74,6 +79,30 @@ export class PrismaOrderRepository implements IOrderRepository {
     } catch (error) {
       throw toDomainError(error);
     }
+  }
+
+  async transitionStatus(orderId: string, transition: OrderStatusTransition): Promise<Order | null> {
+    const { from, to } = transition;
+
+    // The `from` precondition is folded into the WHERE clause, so the match and
+    // the write are one atomic statement — `count` is 1 only when this call is
+    // the one that actually moved the order out of the expected state.
+    const result = await prisma.order.updateMany({
+      where: {
+        id: orderId,
+        status: from.status,
+        ...(from.stage !== undefined ? { stage: from.stage } : {}),
+      },
+      data: {
+        status: to.status,
+        ...(to.phase !== undefined ? { phase: to.phase } : {}),
+        // `null` clears the stage; `undefined` leaves it untouched.
+        ...(to.stage !== undefined ? { stage: to.stage } : {}),
+      },
+    });
+
+    if (result.count === 0) return null;
+    return this.getById(orderId);
   }
 }
 

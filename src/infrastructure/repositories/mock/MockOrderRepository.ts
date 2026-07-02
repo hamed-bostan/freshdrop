@@ -1,6 +1,11 @@
 import type { Order, OrderItem, OrderPhase, OrderStatus } from "@/src/domain/entities/Order";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
-import type { IOrderRepository, NewOrder, OrderTrackingUpdate } from "@/src/domain/repositories/IOrderRepository";
+import type {
+  IOrderRepository,
+  NewOrder,
+  OrderStatusTransition,
+  OrderTrackingUpdate,
+} from "@/src/domain/repositories/IOrderRepository";
 import type { IProductRepository } from "@/src/domain/repositories/IProductRepository";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 
@@ -100,12 +105,16 @@ const ORDER_SEEDS: OrderSeed[] = [
  * how `MockFavoriteRepository` keeps its toggles.
  */
 export class MockOrderRepository implements IOrderRepository {
-  private readonly stages = new Map<string, TrackingMilestone>(
+  // `null` is a distinct override meaning "stage explicitly cleared" (e.g. a
+  // cancelled order); an absent key falls back to the seed/runtime stage.
+  private readonly stages = new Map<string, TrackingMilestone | null>(
     ORDER_SEEDS.flatMap((seed) => (seed.stage ? [[seed.id, seed.stage] as const] : [])),
   );
   private readonly statuses = new Map<string, OrderStatus>(
     ORDER_SEEDS.map((seed) => [seed.id, seed.status] as const),
   );
+  /** Phase overrides written by lifecycle transitions (cancel/refund archive the order). */
+  private readonly phases = new Map<string, OrderPhase>();
   /** Orders placed at runtime (via checkout), newest appended last. */
   private readonly created: Order[] = [];
   private nextId = 1;
@@ -133,20 +142,22 @@ export class MockOrderRepository implements IOrderRepository {
         id: seed.id,
         userId: DEMO_USER_ID,
         status: this.statuses.get(seed.id) ?? seed.status,
-        phase: seed.phase,
+        phase: this.phases.get(seed.id) ?? seed.phase,
         placedAt: seed.placedAt,
         location: seed.location,
         total: seed.total,
-        stage: this.stages.get(seed.id),
+        stage: this.stages.get(seed.id) ?? undefined,
         items,
       };
     });
 
-    // Runtime orders honour the same stage/status overrides as the seeds.
+    // Runtime orders honour the same status/phase/stage overrides as the seeds.
+    // `stages.has` distinguishes a cleared stage (mapped to null) from no override.
     const runtime: Order[] = this.created.map((order) => ({
       ...order,
       status: this.statuses.get(order.id) ?? order.status,
-      stage: this.stages.get(order.id) ?? order.stage,
+      phase: this.phases.get(order.id) ?? order.phase,
+      stage: this.stages.has(order.id) ? (this.stages.get(order.id) ?? undefined) : order.stage,
     }));
 
     // Newest first — runtime orders carry the latest timestamps.
@@ -173,5 +184,23 @@ export class MockOrderRepository implements IOrderRepository {
     // Unreachable — existence was just checked — but keeps the return type honest.
     if (!order) throw new NotFoundError("order", orderId);
     return order;
+  }
+
+  async transitionStatus(orderId: string, transition: OrderStatusTransition): Promise<Order | null> {
+    const { from, to } = transition;
+
+    const order = await this.getById(orderId);
+    // Precondition check (single-threaded JS makes this read-then-write atomic):
+    // the transition only lands when the order is still in the expected state.
+    if (!order) return null;
+    if (order.status !== from.status) return null;
+    if (from.stage !== undefined && order.stage !== from.stage) return null;
+
+    this.statuses.set(orderId, to.status);
+    if (to.phase !== undefined) this.phases.set(orderId, to.phase);
+    // `null` clears the stage; `undefined` leaves the existing override untouched.
+    if (to.stage !== undefined) this.stages.set(orderId, to.stage);
+
+    return this.getById(orderId);
   }
 }

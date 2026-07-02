@@ -35,4 +35,12 @@ export type IProductRepository = {
    * concurrent orders can't both pass a stale read and drive stock negative.
    */
   decrementStock(lines: readonly StockAdjustment[]): Promise<void>;
+
+  /**
+   * Return stock to the shelf — the inverse of {@link decrementStock}, used when
+   * an order is cancelled or a return is approved. Adds each line's units back to
+   * on-hand stock; lines whose product no longer exists are skipped (nothing to
+   * credit), so restocking never fails on a since-deleted product.
+   */
+  incrementStock(lines: readonly StockAdjustment[]): Promise<void>;
 }

@@ -1,4 +1,4 @@
-import type { Order, OrderStatus } from "../entities/Order";
+import type { Order, OrderPhase, OrderStatus } from "../entities/Order";
 import type { TrackingMilestone } from "../entities/OrderTracking";
 
 /** The fields a delivery-stage transition writes (computed by the use-case, persisted by the repo). */
@@ -11,6 +11,22 @@ export type OrderTrackingUpdate = {
 
 /** Everything needed to persist a new order — an `Order` minus its generated id. */
 export type NewOrder = Omit<Order, "id">;
+
+/**
+ * A guarded lifecycle transition. `from` (status, and optionally stage) is a
+ * precondition matched *atomically* with the write, so a transition only lands
+ * when the order is still in the expected state — the guard against double
+ * cancels/refunds and races with a concurrent stage advance. `to` is the new
+ * status; `phase`/`stage` are set when provided (`stage: null` clears it).
+ */
+export type OrderStatusTransition = {
+  from: { status: OrderStatus; stage?: TrackingMilestone };
+  to: {
+    status: OrderStatus;
+    phase?: OrderPhase;
+    stage?: TrackingMilestone | null;
+  };
+};
 
 export type IOrderRepository = {
   /** A user's orders, newest first. */
@@ -30,4 +46,13 @@ export type IOrderRepository = {
    * Throws `NotFoundError` when no order matches `orderId`.
    */
   setTrackingStage(orderId: string, update: OrderTrackingUpdate): Promise<Order>;
+
+  /**
+   * Atomically apply a guarded lifecycle transition (see {@link OrderStatusTransition}).
+   * Returns the updated order when the `from` precondition matched, or `null`
+   * when it didn't (unknown id, or the order had already moved on) — so a caller
+   * that also moves money/stock only does so when it observes a real transition,
+   * making cancel/return idempotent under double-submit and safe under races.
+   */
+  transitionStatus(orderId: string, transition: OrderStatusTransition): Promise<Order | null>;
 }

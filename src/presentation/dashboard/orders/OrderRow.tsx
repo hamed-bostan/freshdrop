@@ -9,6 +9,7 @@ import { Icon } from "@/src/presentation/design-system";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatOrderDate } from "@/src/lib/formatOrderDate";
 import { OrderStageSelect } from "./OrderStageSelect";
+import { OrderReturnControl } from "./OrderReturnControl";
 
 type OrderRowProps = {
   order: Order;
@@ -67,7 +68,9 @@ export function OrderRow({ order, customer, columnCount }: OrderRowProps) {
         <td className="px-4 py-3 text-body-b6 text-muted-foreground">{order.location}</td>
         <td className="px-4 py-3">
           <div className="flex justify-end">
-            {isTrackable(order) && order.stage ? (
+            {order.status === "return_requested" ? (
+              <OrderReturnControl orderId={order.id} />
+            ) : isTrackable(order) && order.stage ? (
               <OrderStageSelect orderId={order.id} stage={order.stage} />
             ) : (
               <span className="text-body-b8 text-muted-foreground">Not trackable</span>

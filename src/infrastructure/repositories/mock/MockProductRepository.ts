@@ -396,4 +396,13 @@ export class MockProductRepository implements IProductRepository {
       if (product) product.stockQuantity -= line.quantity;
     }
   }
+
+  async incrementStock(lines: readonly StockAdjustment[]): Promise<void> {
+    // The inverse of `decrementStock` — always succeeds. A since-deleted product
+    // has nothing to credit, so it's skipped.
+    for (const line of lines) {
+      const product = PRODUCTS.find((p) => p.id === line.productId);
+      if (product) product.stockQuantity += line.quantity;
+    }
+  }
 }

@@ -146,6 +146,23 @@ export class PrismaProductRepository implements IProductRepository {
       if (shortfalls.length > 0) throw new InsufficientStockError(shortfalls);
     });
   }
+
+  async incrementStock(lines: readonly StockAdjustment[]): Promise<void> {
+    if (lines.length === 0) return;
+
+    // The inverse of `decrementStock`: returning stock always succeeds, so there's
+    // no guard and no shortfall path. One transaction keeps the lines atomic;
+    // `updateMany` silently matches nothing for a since-deleted product (count 0),
+    // so a missing product is skipped rather than erroring.
+    await prisma.$transaction(
+      lines.map((line) =>
+        prisma.product.updateMany({
+          where: { id: line.productId },
+          data: { stockQuantity: { increment: line.quantity } },
+        }),
+      ),
+    );
+  }
 }
 
 /** Map a sort option to a Prisma `orderBy`; defaults to alphabetical by name. */

@@ -1,9 +1,8 @@
 import Image from "next/image";
-import Link from "next/link";
 import type { Order } from "@/src/domain/entities/Order";
-import { Button } from "@/src/presentation/design-system";
 import { formatOrderDate, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { OrderStatusBadge } from "./OrderStatusBadge";
+import { OrderCardActions } from "./OrderCardActions";
 
 /** Thumbnails shown before collapsing the rest into a "+N" count. */
 const MAX_VISIBLE_THUMBNAILS = 4;
@@ -29,10 +28,6 @@ interface OrderCardProps {
 export function OrderCard({ order }: OrderCardProps) {
   const visibleItems = order.items.slice(0, MAX_VISIBLE_THUMBNAILS);
   const extraCount = order.items.length - visibleItems.length;
-
-  // Only live (current, not cancelled) orders can be tracked — the track route
-  // 404s otherwise, so previous/cancelled orders get a disabled button.
-  const isTrackable = order.phase === "current" && order.status !== "cancelled";
 
   return (
     <article className="flex flex-col gap-4 rounded-card-xl bg-surface p-4">
@@ -67,21 +62,7 @@ export function OrderCard({ order }: OrderCardProps) {
         </p>
       </div>
 
-      {/* Reorder is UI-only for now — no reorder→cart flow yet (TODO). */}
-      <div className="grid grid-cols-2 gap-2">
-        {isTrackable ? (
-          <Button asChild size="sm">
-            <Link href={`/orders/${order.id}/track`}>Track Order</Link>
-          </Button>
-        ) : (
-          <Button type="button" size="sm" disabled>
-            Track Order
-          </Button>
-        )}
-        <Button type="button" variant="outline" size="sm">
-          Reorder
-        </Button>
-      </div>
+      <OrderCardActions order={order} />
     </article>
   );
 }

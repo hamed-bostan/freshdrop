@@ -61,7 +61,7 @@ export class PrismaWalletRepository implements IWalletRepository {
     };
   }
 
-  async addFunds(userId: string, amount: number): Promise<void> {
+  async addFunds(userId: string, amount: number, description = "Added to Wallet"): Promise<void> {
     // Balance change and its transaction are written together so the two never
     // drift; the account row is created on first top-up (upsert).
     await prisma.$transaction([
@@ -71,7 +71,7 @@ export class PrismaWalletRepository implements IWalletRepository {
         update: { balance: { increment: amount } },
       }),
       prisma.walletTransaction.create({
-        data: { userId, description: "Added to Wallet", amount, type: "credit", date: new Date() },
+        data: { userId, description, amount, type: "credit", date: new Date() },
       }),
     ]);
   }

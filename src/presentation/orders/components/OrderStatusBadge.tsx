@@ -4,13 +4,21 @@ import { cn } from "@/src/lib/utils";
 /**
  * Tinted status pill. A dedicated component (not the filled design-system
  * `Badge`) because the mockup uses a coloured outline over a tint fill and the
- * colour must track the order status. `completed` maps to the brand primary
- * green per the design; the other states reuse the semantic info/error tints.
+ * colour must track the order status. `completed`/`refunded` map to the brand
+ * primary green per the design; `processing`/`return_requested` reuse the info
+ * tint (in progress / awaiting a decision) and `cancelled` the error tint.
  */
 const STATUS_STYLES: Record<OrderStatus, string> = {
   completed: "border-primary text-primary bg-accent",
   processing: "border-info-foreground text-info-foreground bg-info",
   cancelled: "border-error-foreground text-error-foreground bg-error",
+  return_requested: "border-info-foreground text-info-foreground bg-info",
+  refunded: "border-primary text-primary bg-accent",
+};
+
+/** Display labels; single-word statuses fall back to `capitalize` on the raw value. */
+const STATUS_LABELS: Partial<Record<OrderStatus, string>> = {
+  return_requested: "Return requested",
 };
 
 interface OrderStatusBadgeProps {
@@ -26,7 +34,7 @@ export function OrderStatusBadge({ status }: OrderStatusBadgeProps) {
         STATUS_STYLES[status],
       )}
     >
-      {status}
+      {STATUS_LABELS[status] ?? status}
     </span>
   );
 }
