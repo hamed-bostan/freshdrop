@@ -30,20 +30,61 @@ const BIKE_GLYPH = `<svg xmlns="http://www.w3.org/2000/svg" ${SVG_ATTRS}><circle
 const destinationIcon = badgeIcon("#11A94D", HOME_GLYPH);
 const courierIcon = badgeIcon("#A9116D", BIKE_GLYPH);
 
-/** Frames the map so both the courier and destination are visible. */
-function FitToRoute({ from, to }: { from: GeoPoint; to: GeoPoint }) {
+/**
+ * Frames the map to the whole route once, on mount. The route is fixed, so the
+ * viewport stays put while the courier glides inside it — you "watch the driver
+ * approach" instead of the map re-panning on every position update.
+ */
+function FitToRoute({ line }: { line: [number, number][] }) {
   const map = useMap();
 
   React.useEffect(() => {
     // Leaflet mis-measures inside flex/rounded containers that size after init.
     map.invalidateSize();
-    map.fitBounds([toLatLng(from), toLatLng(to)], { padding: [48, 48] });
-    // Depend on the coordinate values, not the object identities, so the fit
-    // doesn't re-fire on every render with fresh-but-equal point props.
+    map.fitBounds(line, { padding: [48, 48] });
+    // Fit only once; the frame is intentionally stable across courier updates.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, from.latitude, from.longitude, to.latitude, to.longitude]);
+  }, [map]);
 
   return null;
+}
+
+const COURIER_TWEEN_MS = 1200;
+
+/**
+ * The courier marker, animated. On each new `position` (a fresh poll) it eases
+ * from where it was to the new point over {@link COURIER_TWEEN_MS}, so the
+ * marker glides along the road rather than teleporting every 10 seconds.
+ */
+function CourierMarker({ position }: { position: GeoPoint }) {
+  const markerRef = React.useRef<L.Marker>(null);
+  const fromRef = React.useRef(position);
+
+  React.useEffect(() => {
+    const marker = markerRef.current;
+    if (!marker) return;
+
+    const from = fromRef.current;
+    const start = performance.now();
+    let frame = 0;
+
+    const step = (now: number): void => {
+      const t = Math.min((now - start) / COURIER_TWEEN_MS, 1);
+      marker.setLatLng([
+        from.latitude + (position.latitude - from.latitude) * t,
+        from.longitude + (position.longitude - from.longitude) * t,
+      ]);
+      if (t < 1) frame = requestAnimationFrame(step);
+      else fromRef.current = position;
+    };
+
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+    // Tween on coordinate *values*; `position` identity changes every poll.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [position.latitude, position.longitude]);
+
+  return <Marker ref={markerRef} position={toLatLng(position)} icon={courierIcon} />;
 }
 
 interface OrderTrackingMapProps {
@@ -65,8 +106,8 @@ export function OrderTrackingMap({ destination, courier, route }: OrderTrackingM
       />
       <Polyline positions={line} pathOptions={{ color: "#11A94D", weight: 4, dashArray: "6 10" }} />
       <Marker position={toLatLng(destination)} icon={destinationIcon} />
-      <Marker position={toLatLng(courier)} icon={courierIcon} />
-      <FitToRoute from={courier} to={destination} />
+      <CourierMarker position={courier} />
+      <FitToRoute line={line} />
     </MapContainer>
   );
 }

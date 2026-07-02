@@ -1,15 +1,23 @@
+"use client";
+
 import type { OrderTracking } from "@/src/domain/entities/OrderTracking";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
-import { TrackingMap, DeliveryAddressRow, TrackingStepper, RiderCard } from "./components";
+import { TrackingMap, TrackingEta, DeliveryAddressRow, TrackingStepper, RiderCard } from "./components";
+import { useLiveTracking } from "./useLiveTracking";
 
 interface OrderTrackScreenProps {
-  tracking: OrderTracking;
+  /** Server-rendered tracking; the screen then polls to keep the courier live. */
+  initialTracking: OrderTracking;
 }
 
-export default function OrderTrackScreen({ tracking }: OrderTrackScreenProps) {
+export default function OrderTrackScreen({ initialTracking }: OrderTrackScreenProps) {
+  const tracking = useLiveTracking(initialTracking);
+
   return (
     <div className="flex min-h-dvh flex-col gap-4 px-6 pb-24">
       <PageHeader title="Order Track" />
+
+      <TrackingEta etaMinutes={tracking.etaMinutes} steps={tracking.steps} />
 
       <TrackingMap destination={tracking.destination} courier={tracking.courier} route={tracking.route} />
 

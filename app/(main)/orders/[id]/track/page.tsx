@@ -18,5 +18,5 @@ export default async function OrderTrackPage({ params }: OrderTrackPageProps) {
   const tracking = await ordersServerApi.getTracking(id);
   if (!tracking) notFound();
 
-  return <OrderTrackScreen tracking={tracking} />;
+  return <OrderTrackScreen initialTracking={tracking} />;
 }

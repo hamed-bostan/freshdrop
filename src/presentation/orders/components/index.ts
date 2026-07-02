@@ -4,6 +4,7 @@ export { OrderTabs } from "./OrderTabs";
 export { OrderCard } from "./OrderCard";
 export { OrderStatusBadge } from "./OrderStatusBadge";
 export { TrackingMap } from "./TrackingMap";
+export { TrackingEta } from "./TrackingEta";
 export { DeliveryAddressRow } from "./DeliveryAddressRow";
 export { TrackingStepper } from "./TrackingStepper";
 export { RiderCard } from "./RiderCard";

@@ -38,11 +38,18 @@ export type OrderTracking = {
   /** The delivery destination coordinate. */
   destination: GeoPoint;
   /**
-   * The courier's current position. In production this is fed by a realtime
-   * channel (websocket / polling) and changes over the life of the delivery;
-   * the mock supplies a fixed point.
+   * The courier's current position. Changes over the life of the delivery: fed
+   * by a realtime GPS channel in production, and interpolated along the route
+   * from elapsed trip time in the mock. Clients poll for it and glide the map
+   * marker between updates.
    */
   courier: GeoPoint;
+  /**
+   * Minutes until the courier reaches the destination, or `null` when there's no
+   * live estimate — before dispatch (`confirmed`) and once `arrived`. Derived
+   * from the courier's remaining distance along the route.
+   */
+  etaMinutes: number | null;
   /**
    * Path drawn from the courier to the destination. A road-following geometry
    * from a routing provider in production; an approximating set of waypoints in

@@ -98,8 +98,19 @@ export const walletRepository: IWalletRepository = new PrismaWalletRepository();
 // delivery stages from the dashboard.
 export const orderRepository: IOrderRepository = new PrismaOrderRepository();
 // Tracking composes the real order (its persisted stage drives the stepper) with
-// a still-stubbed courier feed: the map destination/courier point/route and the
-// rider remain static placeholders until a realtime routing provider is wired in.
+// a SIMULATED courier feed. The stage is production data; everything spatial is a
+// stand-in — the courier position/ETA are interpolated from a synthetic trip
+// clock (see MockOrderTrackingRepository), and the destination, route geometry
+// and rider are static placeholders.
+//
+// Going live is a single swap here: bind `orderTrackingRepository` to a real
+// adapter implementing `IOrderTrackingRepository`, fed by two paid services —
+//   1. a courier GPS/telematics feed (the live `courier` point), and
+//   2. a routing provider (Google Directions / Mapbox) for road-following
+//      `route` geometry and a real `etaMinutes`.
+// No caller changes: the port, route handler, polling hook and map are all
+// provider-agnostic. Until then the mock's synthetic trip loops (~18 min) — a
+// stand-in artifact documented on the mock, not a behaviour to preserve.
 export const orderTrackingRepository: IOrderTrackingRepository = new MockOrderTrackingRepository(orderRepository);
 // Carts and promo codes are real data now — PostgreSQL via Prisma. The cart is
 // per-user (one `cart_items` row per user+product); the demo cart and the promo
