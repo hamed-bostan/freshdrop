@@ -1,9 +1,35 @@
 import { randomUUID } from "node:crypto";
 import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
+import type { ProductFilters, ProductSort } from "@/src/domain/entities/ProductFilters";
+import { PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
 import type { IProductRepository, NewProduct } from "@/src/domain/repositories/IProductRepository";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { MOCK_CATEGORIES } from "./MockCategoryRepository";
+
+/**
+ * Dietary tags per category — the source the DB backfill migration mirrors in SQL.
+ * Non-food categories (Soaps) stay untagged.
+ */
+const DIETARY_BY_CATEGORY: Record<string, string[]> = {
+  "1": ["Vegan", "Vegetarian", "Organic", "Gluten-Free"],
+  "2": ["Vegetarian", "Gluten-Free"],
+  "3": ["Gluten-Free", "Dairy-Free"],
+  "4": ["Vegan", "Vegetarian"],
+  "5": ["Vegan", "Vegetarian", "Gluten-Free", "Dairy-Free"],
+  "6": ["Vegan", "Vegetarian", "Organic", "Gluten-Free", "Dairy-Free"],
+  "7": ["Vegan", "Vegetarian", "Gluten-Free", "Organic", "Dairy-Free"],
+  "8": ["Vegetarian", "Dairy-Free"],
+  "9": ["Vegetarian"],
+  "10": ["Vegetarian"],
+  "11": ["Vegetarian"],
+  "12": ["Vegan", "Vegetarian", "Gluten-Free", "Dairy-Free"],
+  "13": ["Vegan", "Vegetarian", "Gluten-Free", "Dairy-Free"],
+  "14": ["Vegan", "Vegetarian", "Gluten-Free", "Organic", "Dairy-Free"],
+  "15": ["Dairy-Free"],
+  "16": ["Vegetarian"],
+  "18": ["Vegan", "Vegetarian", "Gluten-Free", "Dairy-Free"],
+};
 
 /** How many related products the detail screen's "Similar To This Item" rail shows. */
 const SIMILAR_LIMIT = 6;
@@ -169,6 +195,20 @@ const CATALOG: Record<string, ProductSeed[]> = {
 
 const CATEGORY_BY_ID = new Map(MOCK_CATEGORIES.map((category) => [category.id, category]));
 
+/** Mirror the Prisma repo's `orderByFor`: map a sort option to a comparator. */
+function comparatorFor(sort: ProductSort | undefined): (a: Product, b: Product) => number {
+  switch (sort) {
+    case "price-asc":
+      return (a, b) => a.price - b.price;
+    case "price-desc":
+      return (a, b) => b.price - a.price;
+    case "rating":
+      return (a, b) => b.rating - a.rating;
+    default:
+      return (a, b) => a.name.localeCompare(b.name);
+  }
+}
+
 /** The catalog's single rule for turning an original price into a saved-percent badge value. */
 function discountFor(price: number, originalPrice?: number): number | undefined {
   return originalPrice != null ? Math.round((1 - price / originalPrice) * 100) : undefined;
@@ -191,6 +231,10 @@ function buildProduct(seed: ProductSeed, category: Category, index: number, seri
     isFeatured: seed.featured ?? false,
     badge: seed.badge,
     unit: seed.unit,
+    // Assigned from the same pool + rule the DB backfill uses: brand by per-category
+    // index, dietary tags by category — so mock and Postgres stay in parity.
+    brand: PRODUCT_BRANDS[index % PRODUCT_BRANDS.length],
+    dietary: DIETARY_BY_CATEGORY[category.id] ?? [],
     description:
       seed.description ??
       `${seed.name} — a quality pick from our ${category.name} range, sourced for freshness and everyday value.`,
@@ -233,12 +277,34 @@ export class MockProductRepository implements IProductRepository {
     return PRODUCTS.filter((p) => p.isFeatured);
   }
 
-  async getByCategory(categoryId: string): Promise<Product[]> {
-    return PRODUCTS.filter((p) => p.categoryId === categoryId);
-  }
-
   async getSpecialOffers(): Promise<Product[]> {
     return PRODUCTS.filter((p) => p.badge != null);
+  }
+
+  async search(filters: ProductFilters): Promise<Product[]> {
+    // Mirror the Prisma repo: every supplied filter must match (AND), dietary/brand
+    // match ANY of their values; results sorted alphabetically by name.
+    const needle = filters.query?.toLowerCase() ?? "";
+
+    return PRODUCTS.filter((p) => {
+      if (
+        needle &&
+        !p.name.toLowerCase().includes(needle) &&
+        !(p.description?.toLowerCase().includes(needle) ?? false)
+      ) {
+        return false;
+      }
+      if (filters.categoryId && p.categoryId !== filters.categoryId) return false;
+      if (filters.minPrice != null && p.price < filters.minPrice) return false;
+      if (filters.maxPrice != null && p.price > filters.maxPrice) return false;
+      if (filters.dietary?.length && !filters.dietary.some((tag) => p.dietary?.includes(tag))) {
+        return false;
+      }
+      if (filters.brands?.length && !(p.brand != null && filters.brands.includes(p.brand))) {
+        return false;
+      }
+      return true;
+    }).sort(comparatorFor(filters.sort));
   }
 
   async getSimilar(productId: string): Promise<Product[]> {

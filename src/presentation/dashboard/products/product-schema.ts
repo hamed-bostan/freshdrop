@@ -1,4 +1,8 @@
 import { z } from "zod";
+import { DIETARY_TAGS, PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
+
+const DIETARY_SET = new Set<string>(DIETARY_TAGS);
+const BRAND_SET = new Set<string>(PRODUCT_BRANDS);
 
 /**
  * The single source of truth for product form input, shared by the client form
@@ -36,6 +40,19 @@ const optionalText = z
   .trim()
   .transform((value) => (value.length > 0 ? value : undefined));
 
+/** Optional brand: blank → `undefined`; otherwise must be a known catalog brand. */
+const brandField = z
+  .string()
+  .trim()
+  .transform((value) => (value.length > 0 ? value : undefined))
+  .refine((value) => value === undefined || BRAND_SET.has(value), "Choose a valid brand.");
+
+/** Dietary tags: a set of known tags (blank list allowed); the storefront filter reads these. */
+const dietaryField = z
+  .array(z.string())
+  .default([])
+  .refine((tags) => tags.every((tag) => DIETARY_SET.has(tag)), "Unknown dietary tag.");
+
 export const productFormSchema = z
   .object({
     name: z.string().trim().min(1, "Name is required.").max(120, "Name is too long."),
@@ -49,6 +66,8 @@ export const productFormSchema = z
     description: optionalText,
     nutrition: optionalText,
     origin: optionalText,
+    brand: brandField,
+    dietary: dietaryField,
   })
   .refine((data) => data.originalPrice === undefined || data.originalPrice > data.price, {
     path: ["originalPrice"],

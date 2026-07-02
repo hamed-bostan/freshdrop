@@ -7,8 +7,10 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
+import { DIETARY_TAGS, PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
 import { Button, Field, Input, Switch, TextField, Textarea } from "@/src/presentation/design-system";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { cn } from "@/src/lib/utils";
 import { productFormSchema, type ProductFormInput } from "./product-schema";
 import { productsApi } from "./product-api";
 import { ProductImageUpload } from "./ProductImageUpload";
@@ -25,6 +27,8 @@ const FORM_FIELDS = [
   "description",
   "nutrition",
   "origin",
+  "brand",
+  "dietary",
 ] as const satisfies readonly (keyof ProductFormInput)[];
 
 /** Native-select styling that matches the DS field family (no DS Select yet). */
@@ -49,6 +53,8 @@ function toDefaults(product?: Product): ProductFormInput {
     description: product?.description ?? "",
     nutrition: product?.nutrition ?? "",
     origin: product?.origin ?? "",
+    brand: product?.brand ?? "",
+    dietary: product?.dietary ?? [],
   };
 }
 
@@ -187,6 +193,74 @@ export function ProductForm(props: ProductFormProps) {
           {(control) => <Input {...control} {...register("badge")} placeholder="e.g. Sale" />}
         </TextField>
       </div>
+
+      <Field error={errors.brand?.message}>
+        {({ id, ariaDescribedBy, ariaInvalid }) => (
+          <>
+            <label htmlFor={id} className="text-body-b7 text-input-foreground">
+              Brand
+            </label>
+            <select
+              id={id}
+              className={SELECT_CLASSES}
+              aria-invalid={ariaInvalid}
+              aria-describedby={ariaDescribedBy}
+              {...register("brand")}
+            >
+              <option value="">No brand</option>
+              {PRODUCT_BRANDS.map((brand) => (
+                <option key={brand} value={brand}>
+                  {brand}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
+      </Field>
+
+      <Controller
+        control={control}
+        name="dietary"
+        render={({ field }) => (
+          <fieldset>
+            <legend className="text-body-b7 text-input-foreground">Dietary</legend>
+            <p className="mb-2 text-body-b10 text-muted-foreground">
+              Tags shown as storefront search filters.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {DIETARY_TAGS.map((tag) => {
+                const checked = field.value?.includes(tag) ?? false;
+                return (
+                  <label
+                    key={tag}
+                    className={cn(
+                      "flex h-10 cursor-pointer items-center rounded-full border px-4 text-button-btn4 transition-colors",
+                      "focus-within:ring-2 focus-within:ring-ring",
+                      checked
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border text-muted-foreground",
+                    )}
+                  >
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={checked}
+                      onChange={(event) =>
+                        field.onChange(
+                          event.target.checked
+                            ? [...(field.value ?? []), tag]
+                            : (field.value ?? []).filter((item: string) => item !== tag),
+                        )
+                      }
+                    />
+                    {tag}
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+        )}
+      />
 
       <Controller
         control={control}

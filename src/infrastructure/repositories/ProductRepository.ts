@@ -1,5 +1,7 @@
 import type { Product } from "@/src/domain/entities/Product";
+import type { ProductFilters } from "@/src/domain/entities/ProductFilters";
 import type { IProductRepository, NewProduct } from "@/src/domain/repositories/IProductRepository";
+import { buildProductFilterParams } from "@/src/lib/api/product-search-params";
 
 export class ProductRepository implements IProductRepository {
   constructor(private readonly baseUrl: string) {}
@@ -20,13 +22,13 @@ export class ProductRepository implements IProductRepository {
     return res.json();
   }
 
-  async getByCategory(categoryId: string): Promise<Product[]> {
-    const res = await fetch(`${this.baseUrl}/products?categoryId=${categoryId}`);
+  async getSpecialOffers(): Promise<Product[]> {
+    const res = await fetch(`${this.baseUrl}/products?specialOffer=true`);
     return res.json();
   }
 
-  async getSpecialOffers(): Promise<Product[]> {
-    const res = await fetch(`${this.baseUrl}/products?specialOffer=true`);
+  async search(filters: ProductFilters): Promise<Product[]> {
+    const res = await fetch(`${this.baseUrl}/products?${buildProductFilterParams(filters).toString()}`);
     return res.json();
   }
 

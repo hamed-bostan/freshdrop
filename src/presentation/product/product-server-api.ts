@@ -1,5 +1,7 @@
 import type { Product } from "@/src/domain/entities/Product";
+import type { ProductFilters } from "@/src/domain/entities/ProductFilters";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { buildProductFilterParams } from "@/src/lib/api/product-search-params";
 import { serverApiGet } from "@/src/lib/api/server-client";
 
 /**
@@ -17,6 +19,15 @@ export const productsServerApi = {
 
   listByCategory(categoryId: string): Promise<Product[]> {
     return serverApiGet<Product[]>("/products", { params: { categoryId } });
+  },
+
+  /**
+   * Catalog search with filters (query, category, price, dietary, brand). An
+   * all-empty filter resolves to no results. Filters are serialised into the URL
+   * (`serverApiGet`'s `params` can't express the repeatable dietary/brand keys).
+   */
+  search(filters: ProductFilters): Promise<Product[]> {
+    return serverApiGet<Product[]>(`/products?${buildProductFilterParams(filters).toString()}`);
   },
 
   listSimilar(id: string): Promise<Product[]> {

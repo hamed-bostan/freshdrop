@@ -20,4 +20,8 @@ export type Product = {
   nutrition?: string;
   /** "Origins" accordion copy. */
   origin?: string;
+  /** Brand the product is sold under; drives the brand filter. Optional — not every product has one. */
+  brand?: string;
+  /** Dietary tags the product satisfies (see `DIETARY_TAGS`); drives the dietary filter. */
+  dietary?: string[];
 }

@@ -98,6 +98,11 @@ model Product {
   description   String?
   nutrition     String?
   origin        String?
+  // Brand is a plain optional label (like `categoryId`, not a FK) — it drives the
+  // brand filter. `dietary` is a set of tags (see DIETARY_TAGS) for the dietary
+  // filter; defaults to empty so existing writes need no change.
+  brand         String?
+  dietary       String[] @default([])
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 

@@ -3,11 +3,13 @@ import type { Product } from "@/src/domain/entities/Product";
 import { GetProducts } from "@/src/domain/use-cases/products/GetProducts";
 import { GetFeaturedProducts } from "@/src/domain/use-cases/products/GetFeaturedProducts";
 import { GetSpecialOffers } from "@/src/domain/use-cases/products/GetSpecialOffers";
-import { GetProductsByCategory } from "@/src/domain/use-cases/products/GetProductsByCategory";
+import { SearchProducts } from "@/src/domain/use-cases/products/SearchProducts";
 import { CreateProduct } from "@/src/domain/use-cases/products/CreateProduct";
+import { hasProductSearchCriteria } from "@/src/domain/entities/ProductFilters";
 import { productRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import { productFormSchema } from "@/src/presentation/dashboard/products/product-schema";
+import { parseProductFilters } from "@/src/lib/api/product-search-params";
 import {
   errorResponse,
   errorResponseFromException,
@@ -22,20 +24,26 @@ export const dynamic = "force-dynamic";
 /**
  * GET /api/products — list products. Public.
  *
- * Filtered via query params (most specific wins):
- *   ?categoryId=<id> → products in a category
+ * Filtered via query params:
+ *   ?q / ?categoryId / ?minPrice / ?maxPrice / ?dietary (repeatable) /
+ *   ?brand (repeatable) / ?sort
+ *                    → catalog search (any filter, incl. a lone category, routes here)
  *   ?featured=true   → featured products
  *   ?special=true    → products on special offer
  *   (none)           → every product
+ *
+ * Every filtered read — including a lone `categoryId` — goes through the one
+ * search pipeline so ordering has a single source of truth (its `sort`, default
+ * name A–Z) and never diverges by which branch served the request.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const params = request.nextUrl.searchParams;
-  const categoryId = params.get("categoryId");
+  const filters = parseProductFilters(params);
 
   try {
     let products: Product[];
-    if (categoryId) {
-      products = await new GetProductsByCategory(productRepository).execute(categoryId);
+    if (hasProductSearchCriteria(filters)) {
+      products = await new SearchProducts(productRepository).execute(filters);
     } else if (params.get("featured") === "true") {
       products = await new GetFeaturedProducts(productRepository).execute();
     } else if (params.get("special") === "true") {

@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import type { Product } from "@/src/domain/entities/Product";
+import type { ProductFilters, ProductSort } from "@/src/domain/entities/ProductFilters";
 import type { IProductRepository, NewProduct } from "@/src/domain/repositories/IProductRepository";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { prisma } from "@/src/infrastructure/prisma/client";
@@ -27,14 +28,36 @@ export class PrismaProductRepository implements IProductRepository {
     return rows.map(toProduct);
   }
 
-  async getByCategory(categoryId: string): Promise<Product[]> {
-    const rows = await prisma.product.findMany({ where: { categoryId }, orderBy: { createdAt: "asc" } });
-    return rows.map(toProduct);
-  }
-
   async getSpecialOffers(): Promise<Product[]> {
     // "Special offers" are products carrying a badge — mirrors the mock's rule.
     const rows = await prisma.product.findMany({ where: { badge: { not: null } }, orderBy: { createdAt: "asc" } });
+    return rows.map(toProduct);
+  }
+
+  async search(filters: ProductFilters): Promise<Product[]> {
+    // Each supplied filter is one AND clause; the text term matches name OR
+    // description (case-insensitive), dietary/brand match ANY of their values.
+    // Alphabetical by name is a stable default; relevance ranking and sort follow.
+    const and: Prisma.ProductWhereInput[] = [];
+
+    if (filters.query) {
+      and.push({
+        OR: [
+          { name: { contains: filters.query, mode: "insensitive" } },
+          { description: { contains: filters.query, mode: "insensitive" } },
+        ],
+      });
+    }
+    if (filters.categoryId) and.push({ categoryId: filters.categoryId });
+    if (filters.minPrice != null) and.push({ price: { gte: filters.minPrice } });
+    if (filters.maxPrice != null) and.push({ price: { lte: filters.maxPrice } });
+    if (filters.dietary?.length) and.push({ dietary: { hasSome: filters.dietary } });
+    if (filters.brands?.length) and.push({ brand: { in: filters.brands } });
+
+    const rows = await prisma.product.findMany({
+      where: and.length ? { AND: and } : {},
+      orderBy: orderByFor(filters.sort),
+    });
     return rows.map(toProduct);
   }
 
@@ -86,6 +109,20 @@ export class PrismaProductRepository implements IProductRepository {
   }
 }
 
+/** Map a sort option to a Prisma `orderBy`; defaults to alphabetical by name. */
+function orderByFor(sort: ProductSort | undefined): Prisma.ProductOrderByWithRelationInput {
+  switch (sort) {
+    case "price-asc":
+      return { price: "asc" };
+    case "price-desc":
+      return { price: "desc" };
+    case "rating":
+      return { rating: "desc" };
+    default:
+      return { name: "asc" };
+  }
+}
+
 /** The persisted columns a Product maps from (DB-only timestamps dropped). */
 type ProductRow = {
   id: string;
@@ -102,6 +139,8 @@ type ProductRow = {
   description: string | null;
   nutrition: string | null;
   origin: string | null;
+  brand: string | null;
+  dietary: string[];
 };
 
 /**
@@ -127,6 +166,8 @@ function toProduct(row: ProductRow): Product {
     description: row.description ?? undefined,
     nutrition: row.nutrition ?? undefined,
     origin: row.origin ?? undefined,
+    brand: row.brand ?? undefined,
+    dietary: row.dietary,
   };
 }
 
