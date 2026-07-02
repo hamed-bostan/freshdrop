@@ -34,6 +34,14 @@ const optionalPriceField = z
   .refine((value) => value === undefined || PRICE_PATTERN.test(value), "Enter a valid price.")
   .transform((value) => (value === undefined ? undefined : Number(value)));
 
+/** Required stock: a string the form emits, validated as a non-negative whole number. */
+const stockField = z
+  .string()
+  .trim()
+  .min(1, "Enter a stock quantity.")
+  .regex(/^\d+$/, "Enter a whole number (0 or more).")
+  .transform(Number);
+
 /** Optional free text: trimmed, blank → `undefined` so it isn't stored as "". */
 const optionalText = z
   .string()
@@ -60,6 +68,7 @@ export const productFormSchema = z
     price: priceField,
     originalPrice: optionalPriceField,
     imageUrl: z.string().min(1, "A product image is required.").url("Upload a valid image."),
+    stockQuantity: stockField,
     isFeatured: z.boolean(),
     badge: optionalText,
     unit: optionalText,

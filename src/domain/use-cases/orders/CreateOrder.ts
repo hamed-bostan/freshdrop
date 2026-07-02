@@ -2,6 +2,7 @@ import type { Cart } from "../../entities/Cart";
 import type { Order, OrderItem } from "../../entities/Order";
 import type { ICartRepository } from "../../repositories/ICartRepository";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
+import type { IProductRepository } from "../../repositories/IProductRepository";
 import { ValidationError } from "../../errors/ValidationError";
 
 export type CreateOrderInput = {
@@ -19,11 +20,16 @@ export type CreateOrderInput = {
  * and at the first delivery milestone (`confirmed`). Totals and item prices come
  * from the server-computed cart — never the client — so the recorded amount can't
  * be tampered with.
+ *
+ * Stock is claimed before the order is recorded: the atomic decrement is the
+ * overselling guard, and refusing here (throwing `InsufficientStockError`) means
+ * an oversold cart never produces an order in the first place.
  */
 export class CreateOrder {
   constructor(
     private readonly orderRepo: IOrderRepository,
     private readonly cartRepo: ICartRepository,
+    private readonly productRepo: IProductRepository,
   ) {}
 
   async execute({ userId, location, cart }: CreateOrderInput): Promise<Order> {
@@ -37,6 +43,16 @@ export class CreateOrder {
       imageUrl: product.imageUrl,
       quantity,
     }));
+
+    // Claim the stock first (all-or-nothing). If anything is short this throws
+    // before the order is created, so we never record an oversold order.
+    await this.productRepo.decrementStock(
+      cart.items.map(({ product, quantity }) => ({
+        productId: product.id,
+        name: product.name,
+        quantity,
+      })),
+    );
 
     const order = await this.orderRepo.createOrder({
       userId,

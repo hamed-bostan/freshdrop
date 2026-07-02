@@ -15,6 +15,8 @@ interface ProductDetailScreenProps {
   reviews: Review[];
   /** Whether the signed-in user has favorited this product (false when anonymous). */
   initialFavorite: boolean;
+  /** Whether the signed-in user is subscribed to this product's back-in-stock alert. */
+  initialStockAlert: boolean;
 }
 
 export default function ProductDetailScreen({
@@ -22,6 +24,7 @@ export default function ProductDetailScreen({
   similar,
   reviews,
   initialFavorite,
+  initialStockAlert,
 }: ProductDetailScreenProps) {
   const galleryImages = product.images?.length ? product.images : [product.imageUrl];
 
@@ -36,7 +39,7 @@ export default function ProductDetailScreen({
         initialFavorite={initialFavorite}
       />
 
-      <ProductPurchasePanel product={product} />
+      <ProductPurchasePanel product={product} initialStockAlert={initialStockAlert} />
 
       <ProductInfoAccordion product={product} />
 

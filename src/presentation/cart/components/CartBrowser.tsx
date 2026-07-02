@@ -52,8 +52,9 @@ export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBro
     });
   };
 
-  const increment = (productId: string, quantity: number) => {
-    if (quantity >= MAX_QUANTITY) return;
+  const increment = (productId: string, quantity: number, stock: number) => {
+    // Never past the line cap or what's on hand — the server enforces both.
+    if (quantity >= MAX_QUANTITY || quantity >= stock) return;
     mutate(() => cartsApi.setQuantity(productId, quantity + 1));
   };
 
@@ -77,7 +78,7 @@ export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBro
               <li key={item.product.id}>
                 <CartItemCard
                   item={item}
-                  onIncrement={() => increment(item.product.id, item.quantity)}
+                  onIncrement={() => increment(item.product.id, item.quantity, item.product.stockQuantity)}
                   onRemove={() => setPendingRemovalId(item.product.id)}
                 />
               </li>

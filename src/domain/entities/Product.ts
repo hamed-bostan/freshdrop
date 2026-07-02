@@ -6,6 +6,8 @@ export type Product = {
   discountPercent?: number;
   rating: number;
   ratingCount: number;
+  /** Units on hand available to sell. 0 = out of stock; the storefront blocks add-to-cart and checkout can't oversell. */
+  stockQuantity: number;
   imageUrl: string;
   categoryId: string;
   isFeatured: boolean;

@@ -18,6 +18,9 @@ interface CartItemCardProps {
 export function CartItemCard({ item, onIncrement, onRemove }: CartItemCardProps) {
   const { product, quantity } = item;
   const subtitle = product.description ?? product.unit;
+  // Can't add past what's on hand — the server enforces the same cap, this just
+  // reflects it so the ＋ can't be tapped into a guaranteed rejection.
+  const atStockLimit = quantity >= product.stockQuantity;
 
   return (
     <article className="flex items-center gap-3 rounded-card-xl bg-surface p-3">
@@ -32,6 +35,11 @@ export function CartItemCard({ item, onIncrement, onRemove }: CartItemCardProps)
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <h2 className="truncate text-body-b4 text-foreground">{product.name}</h2>
         {subtitle && <p className="truncate text-body-b6 text-muted-foreground">{subtitle}</p>}
+        {atStockLimit && (
+          <p className="text-body-b10 text-warning-foreground">
+            {product.stockQuantity > 0 ? "Max available in stock" : "Out of stock"}
+          </p>
+        )}
 
         <div className="mt-1 flex items-center justify-between gap-2">
           <span className="text-body-b9 text-muted-foreground">${product.price.toFixed(2)}</span>
@@ -56,8 +64,9 @@ export function CartItemCard({ item, onIncrement, onRemove }: CartItemCardProps)
             <button
               type="button"
               onClick={onIncrement}
+              disabled={atStockLimit}
               aria-label={`Increase ${product.name} quantity`}
-              className="grid size-8 place-items-center rounded-full text-primary transition-colors active:bg-accent"
+              className="grid size-8 place-items-center rounded-full text-primary transition-colors active:bg-accent disabled:text-disabled-foreground disabled:active:bg-transparent"
             >
               <Icon icon={Plus} size="sm" />
             </button>

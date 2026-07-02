@@ -1,6 +1,7 @@
 import type { ICartRepository } from "../../repositories/ICartRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 import { NotFoundError } from "../../errors/NotFoundError";
+import { InsufficientStockError } from "../../errors/InsufficientStockError";
 
 /** Upper bound for a single line's quantity (mirrors the cart UI's stepper cap). */
 const MAX_QUANTITY = 99;
@@ -31,6 +32,15 @@ export class UpdateCartItemQuantity {
     const product = await this.productRepo.getById(productId);
     if (!product) throw new NotFoundError("product");
 
-    await this.cartRepo.updateQuantity(userId, productId, Math.min(quantity, MAX_QUANTITY));
+    // The cart may never hold more units than are on hand — refuse a set that
+    // would exceed stock (mirrors the accumulating guard in AddToCart).
+    const clamped = Math.min(quantity, MAX_QUANTITY);
+    if (clamped > product.stockQuantity) {
+      throw new InsufficientStockError([
+        { productId, name: product.name, available: product.stockQuantity, requested: clamped },
+      ]);
+    }
+
+    await this.cartRepo.updateQuantity(userId, productId, clamped);
   }
 }

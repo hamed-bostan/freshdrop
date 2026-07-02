@@ -10,6 +10,8 @@ import type { IWalletRepository } from "@/src/domain/repositories/IWalletReposit
 import type { IOrderRepository } from "@/src/domain/repositories/IOrderRepository";
 import type { IOrderTrackingRepository } from "@/src/domain/repositories/IOrderTrackingRepository";
 import type { ICartRepository } from "@/src/domain/repositories/ICartRepository";
+import type { IStockAlertRepository } from "@/src/domain/repositories/IStockAlertRepository";
+import type { IStockAlertNotifier } from "@/src/domain/repositories/IStockAlertNotifier";
 import type { IPromoCodeRepository } from "@/src/domain/repositories/IPromoCodeRepository";
 import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
 import type { IImageStorageRepository } from "@/src/domain/repositories/IImageStorageRepository";
@@ -27,6 +29,8 @@ import { PrismaWalletRepository } from "./repositories/PrismaWalletRepository";
 import { PrismaOrderRepository } from "./repositories/PrismaOrderRepository";
 import { MockOrderTrackingRepository } from "./repositories/mock/MockOrderTrackingRepository";
 import { PrismaCartRepository } from "./repositories/PrismaCartRepository";
+import { PrismaStockAlertRepository } from "./repositories/PrismaStockAlertRepository";
+import { LoggingStockAlertNotifier } from "./notifications/LoggingStockAlertNotifier";
 import { PrismaPromoCodeRepository } from "./repositories/PrismaPromoCodeRepository";
 import { MockAuthRepository } from "./repositories/mock/MockAuthRepository";
 import { SmsIrAuthRepository } from "./repositories/SmsIrAuthRepository";
@@ -89,6 +93,12 @@ export const orderTrackingRepository: IOrderTrackingRepository = new MockOrderTr
 // catalog live on in the seed migration that backfilled the tables.
 export const cartRepository: ICartRepository = new PrismaCartRepository(productRepository);
 export const promoCodeRepository: IPromoCodeRepository = new PrismaPromoCodeRepository();
+// Back-in-stock alerts are real data — PostgreSQL via Prisma (per-user, one row per
+// user+product). Delivery is stubbed: `LoggingStockAlertNotifier` logs the restock
+// notification server-side; swap it for an email/SMS/push adapter here when a real
+// channel is available — no use-case changes.
+export const stockAlertRepository: IStockAlertRepository = new PrismaStockAlertRepository();
+export const stockAlertNotifier: IStockAlertNotifier = new LoggingStockAlertNotifier();
 
 // Real SMS OTP when an SMS.ir key is configured; the in-memory mock otherwise so
 // local dev works without credentials (the mock surfaces the code in the UI).

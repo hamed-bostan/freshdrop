@@ -21,6 +21,7 @@ const FORM_FIELDS = [
   "categoryId",
   "price",
   "originalPrice",
+  "stockQuantity",
   "imageUrl",
   "badge",
   "unit",
@@ -46,6 +47,7 @@ function toDefaults(product?: Product): ProductFormInput {
     categoryId: product?.categoryId ?? "",
     price: product != null ? String(product.price) : "",
     originalPrice: product?.originalPrice != null ? String(product.originalPrice) : "",
+    stockQuantity: product != null ? String(product.stockQuantity) : "",
     imageUrl: product?.imageUrl ?? "",
     isFeatured: product?.isFeatured ?? false,
     badge: product?.badge ?? "",
@@ -163,6 +165,17 @@ export function ProductForm(props: ProductFormProps) {
           )}
         </TextField>
       </div>
+
+      <TextField
+        label="Stock"
+        required
+        description="Units on hand. 0 marks the product out of stock."
+        error={errors.stockQuantity?.message}
+      >
+        {(control) => (
+          <Input {...control} {...register("stockQuantity")} inputMode="numeric" placeholder="0" />
+        )}
+      </TextField>
 
       <Field error={errors.imageUrl?.message}>
         {({ id, ariaDescribedBy, ariaInvalid }) => (

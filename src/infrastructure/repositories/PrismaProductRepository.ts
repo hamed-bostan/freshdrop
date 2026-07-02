@@ -1,8 +1,9 @@
 import { Prisma } from "@prisma/client";
 import type { Product } from "@/src/domain/entities/Product";
 import type { ProductFilters, ProductSort } from "@/src/domain/entities/ProductFilters";
-import type { IProductRepository, NewProduct } from "@/src/domain/repositories/IProductRepository";
+import type { IProductRepository, NewProduct, StockAdjustment } from "@/src/domain/repositories/IProductRepository";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
+import { InsufficientStockError, type StockShortfall } from "@/src/domain/errors/InsufficientStockError";
 import { prisma } from "@/src/infrastructure/prisma/client";
 
 /** How many related products the detail screen's "Similar To This Item" rail shows. */
@@ -107,6 +108,44 @@ export class PrismaProductRepository implements IProductRepository {
       throw toDomainError(error);
     }
   }
+
+  async decrementStock(lines: readonly StockAdjustment[]): Promise<void> {
+    if (lines.length === 0) return;
+
+    // One interactive transaction so all lines commit together or not at all.
+    // Each decrement is a conditional `updateMany` guarded by `stockQuantity >=
+    // quantity`: the guard and the write are a single atomic statement, so two
+    // concurrent orders can't both read the same stock and oversell — the loser's
+    // guard fails (0 rows) and we roll the whole order back. Throwing out of the
+    // callback aborts the transaction, undoing any decrements already applied.
+    await prisma.$transaction(async (tx) => {
+      const shortfalls: StockShortfall[] = [];
+
+      for (const line of lines) {
+        const result = await tx.product.updateMany({
+          where: { id: line.productId, stockQuantity: { gte: line.quantity } },
+          data: { stockQuantity: { decrement: line.quantity } },
+        });
+
+        // No row matched: either the product is gone or it's short. Read the
+        // current level (0 when absent) so the error can say how many are left.
+        if (result.count === 0) {
+          const current = await tx.product.findUnique({
+            where: { id: line.productId },
+            select: { stockQuantity: true },
+          });
+          shortfalls.push({
+            productId: line.productId,
+            name: line.name,
+            available: current?.stockQuantity ?? 0,
+            requested: line.quantity,
+          });
+        }
+      }
+
+      if (shortfalls.length > 0) throw new InsufficientStockError(shortfalls);
+    });
+  }
 }
 
 /** Map a sort option to a Prisma `orderBy`; defaults to alphabetical by name. */
@@ -131,6 +170,7 @@ type ProductRow = {
   originalPrice: number | null;
   rating: number;
   ratingCount: number;
+  stockQuantity: number;
   imageUrl: string;
   categoryId: string;
   isFeatured: boolean;
@@ -158,6 +198,7 @@ function toProduct(row: ProductRow): Product {
       row.originalPrice != null ? Math.round((1 - row.price / row.originalPrice) * 100) : undefined,
     rating: row.rating,
     ratingCount: row.ratingCount,
+    stockQuantity: row.stockQuantity,
     imageUrl: row.imageUrl,
     categoryId: row.categoryId,
     isFeatured: row.isFeatured,

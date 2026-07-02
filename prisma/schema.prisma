@@ -87,6 +87,11 @@ model Product {
   originalPrice Float?   @map("original_price")
   rating        Float    @default(0)
   ratingCount   Int      @default(0) @map("rating_count")
+  // Units on hand. Defaults to 0 so a row without an explicit value is treated as
+  // out of stock (safe: never oversells). The admin form always supplies it. A DB
+  // CHECK (products_stock_quantity_non_negative, added in the add_product_stock
+  // migration) keeps it >= 0 — not expressible in the Prisma schema DSL.
+  stockQuantity Int      @default(0) @map("stock_quantity")
   imageUrl      String   @map("image_url")
   // categoryId is a plain reference, not a DB foreign key: products and categories
   // stay loosely coupled (as they were under the mock), so deleting a category
@@ -264,4 +269,21 @@ model CartItem {
   @@unique([userId, productId])
   @@index([userId])
   @@map("cart_items")
+}
+
+// A shopper's request to be told when an out-of-stock product is available again.
+// One row per (user, product) — subscribing twice is a no-op. When an admin
+// restocks a product (stock 0 → >0) its subscribers are notified and their rows
+// cleared. `userId`/`productId` are plain references (not DB foreign keys), the
+// same loose coupling the rest of the schema uses. Indexed by `productId` for the
+// restock lookup ("who's waiting on this product?").
+model StockAlert {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@map("stock_alerts")
 }

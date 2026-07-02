@@ -5,12 +5,16 @@ import { usePathname, useRouter } from "next/navigation";
 import { Plus, Star } from "lucide-react";
 import { Button, Icon } from "@/src/presentation/design-system";
 import type { Product } from "@/src/domain/entities/Product";
+import { getStockStatus } from "@/src/domain/entities/stock";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { cartsApi } from "@/src/presentation/cart/cart-api";
 import { QuantityStepper } from "./QuantityStepper";
+import { BackInStockButton } from "./BackInStockButton";
 
 interface ProductPurchasePanelProps {
   product: Product;
+  /** Whether the signed-in user is subscribed to this product's back-in-stock alert. */
+  initialStockAlert: boolean;
 }
 
 /**
@@ -19,14 +23,17 @@ interface ProductPurchasePanelProps {
  * share one source of truth. Adding navigates to the cart so the user sees the
  * line; a 401 (not signed in) sends them to login, returning here after.
  */
-export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
+export function ProductPurchasePanel({ product, initialStockAlert }: ProductPurchasePanelProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [quantity, setQuantity] = React.useState(1);
   const [pending, startTransition] = React.useTransition();
   const hasDiscount = product.originalPrice != null;
+  const stock = getStockStatus(product.stockQuantity);
+  const outOfStock = stock.level === "out";
 
   function handleAddToCart() {
+    if (outOfStock) return;
     startTransition(async () => {
       try {
         await cartsApi.addItem(product.id, quantity);
@@ -54,8 +61,21 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
 
         {product.unit && <p className="mt-1 text-body-b6 text-muted-foreground">{product.unit}</p>}
 
+        {stock.level === "out" && (
+          <p className="mt-2 text-body-b6 text-destructive">Out of stock</p>
+        )}
+        {stock.level === "low" && (
+          <p className="mt-2 text-body-b6 text-warning-foreground">Only {stock.quantity} left</p>
+        )}
+
         <div className="mt-4 flex items-center justify-between">
-          <QuantityStepper value={quantity} onChange={setQuantity} />
+          {/* Cap the stepper at what's on hand so the user can't pick a quantity the
+              checkout can't honour; disabled entirely when out of stock. */}
+          <QuantityStepper
+            value={quantity}
+            onChange={setQuantity}
+            max={outOfStock ? 1 : product.stockQuantity}
+          />
 
           <div className="flex items-baseline gap-2">
             {hasDiscount && (
@@ -68,10 +88,14 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
         </div>
       </div>
 
-      <Button size="lg" className="w-full gap-2" onClick={handleAddToCart} disabled={pending}>
-        Add to Cart
-        <Icon icon={Plus} size="sm" />
-      </Button>
+      {outOfStock ? (
+        <BackInStockButton productId={product.id} initialSubscribed={initialStockAlert} />
+      ) : (
+        <Button size="lg" className="w-full gap-2" onClick={handleAddToCart} disabled={pending}>
+          Add to Cart
+          <Icon icon={Plus} size="sm" />
+        </Button>
+      )}
     </div>
   );
 }

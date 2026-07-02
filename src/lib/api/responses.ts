@@ -3,6 +3,7 @@ import type { ZodError } from "zod";
 import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError";
 import { ValidationError } from "@/src/domain/errors/ValidationError";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
+import { InsufficientStockError } from "@/src/domain/errors/InsufficientStockError";
 
 /**
  * Server-side helpers for REST route handlers (Next.js `app/api/**` only — never
@@ -57,6 +58,12 @@ export function errorResponseFromException(error: unknown, context: string): Nex
 
   if (error instanceof NotFoundError) {
     return errorResponse(404, { message: `That ${error.entity} no longer exists.`, code: "NOT_FOUND" });
+  }
+
+  // Someone tried to buy more than is on hand (raced another order, or the stock
+  // dropped since the cart was built). 409 Conflict — the message names what's short.
+  if (error instanceof InsufficientStockError) {
+    return errorResponse(409, { message: error.message, code: "INSUFFICIENT_STOCK" });
   }
 
   console.error(`${context}:`, error);

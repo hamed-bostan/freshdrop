@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { productsServerApi } from "@/src/presentation/product/product-server-api";
 import { reviewsServerApi } from "@/src/presentation/product/review-server-api";
 import { favoritesServerApi } from "@/src/presentation/favorites/favorite-server-api";
+import { stockAlertsServerApi } from "@/src/presentation/product/stock-alert-server-api";
 import ProductDetailScreen from "@/src/presentation/product/ProductDetailScreen";
 
 interface ProductDetailPageProps {
@@ -18,13 +19,20 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const product = await productsServerApi.getById(id);
   if (!product) notFound();
 
-  const [similar, reviews, isFavorite] = await Promise.all([
+  const [similar, reviews, isFavorite, isStockAlertSubscribed] = await Promise.all([
     productsServerApi.listSimilar(id),
     reviewsServerApi.listByProduct(id),
     favoritesServerApi.isFavorite(id),
+    stockAlertsServerApi.isSubscribed(id),
   ]);
 
   return (
-    <ProductDetailScreen product={product} similar={similar} reviews={reviews} initialFavorite={isFavorite} />
+    <ProductDetailScreen
+      product={product}
+      similar={similar}
+      reviews={reviews}
+      initialFavorite={isFavorite}
+      initialStockAlert={isStockAlertSubscribed}
+    />
   );
 }

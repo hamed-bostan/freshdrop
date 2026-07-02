@@ -3,8 +3,9 @@ import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
 import type { ProductFilters, ProductSort } from "@/src/domain/entities/ProductFilters";
 import { PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
-import type { IProductRepository, NewProduct } from "@/src/domain/repositories/IProductRepository";
+import type { IProductRepository, NewProduct, StockAdjustment } from "@/src/domain/repositories/IProductRepository";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
+import { InsufficientStockError, type StockShortfall } from "@/src/domain/errors/InsufficientStockError";
 import { MOCK_CATEGORIES } from "./MockCategoryRepository";
 
 /**
@@ -214,6 +215,25 @@ function discountFor(price: number, originalPrice?: number): number | undefined 
   return originalPrice != null ? Math.round((1 - price / originalPrice) * 100) : undefined;
 }
 
+/**
+ * Deterministic seed stock by global serial — the same formula the DB backfill
+ * migration mirrors in SQL, so mock and Postgres stay in parity. The cycle keeps
+ * every read-side state represented: out of stock (0), "only N left" (low), and
+ * healthy stock.
+ */
+function stockFor(serial: number): number {
+  switch (serial % 10) {
+    case 0:
+      return 0; // out of stock
+    case 1:
+      return 2; // "only 2 left"
+    case 2:
+      return 4; // low stock
+    default:
+      return 25 + (serial % 40); // healthy
+  }
+}
+
 function buildProduct(seed: ProductSeed, category: Category, index: number, serial: number): Product {
   const discountPercent = discountFor(seed.price, seed.originalPrice);
 
@@ -226,6 +246,7 @@ function buildProduct(seed: ProductSeed, category: Category, index: number, seri
     // Deterministic so the catalog is stable across renders (no random per request).
     rating: Number((4 + (serial % 10) / 10).toFixed(1)),
     ratingCount: (serial % 5) + 1,
+    stockQuantity: stockFor(serial),
     imageUrl: category.iconUrl,
     categoryId: category.id,
     isFeatured: seed.featured ?? false,
@@ -353,5 +374,26 @@ export class MockProductRepository implements IProductRepository {
   async delete(id: string): Promise<void> {
     const index = PRODUCTS.findIndex((p) => p.id === id);
     if (index !== -1) PRODUCTS.splice(index, 1);
+  }
+
+  async decrementStock(lines: readonly StockAdjustment[]): Promise<void> {
+    // Mirror the Prisma repo's all-or-nothing guard. JS is single-threaded, so a
+    // check-all pass followed by an apply pass is effectively atomic here: no
+    // decrement lands unless every line can be satisfied.
+    const shortfalls: StockShortfall[] = [];
+    for (const line of lines) {
+      const product = PRODUCTS.find((p) => p.id === line.productId);
+      const available = product?.stockQuantity ?? 0;
+      if (available < line.quantity) {
+        shortfalls.push({ productId: line.productId, name: line.name, available, requested: line.quantity });
+      }
+    }
+    if (shortfalls.length > 0) throw new InsufficientStockError(shortfalls);
+
+    for (const line of lines) {
+      const product = PRODUCTS.find((p) => p.id === line.productId);
+      // Non-null: the check pass above proved every line resolves to a product.
+      if (product) product.stockQuantity -= line.quantity;
+    }
   }
 }

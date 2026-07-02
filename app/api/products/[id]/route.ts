@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { GetProductById } from "@/src/domain/use-cases/products/GetProductById";
 import { UpdateProduct } from "@/src/domain/use-cases/products/UpdateProduct";
 import { DeleteProduct } from "@/src/domain/use-cases/products/DeleteProduct";
-import { productRepository } from "@/src/infrastructure/container";
+import { productRepository, stockAlertRepository, stockAlertNotifier } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import { productFormSchema } from "@/src/presentation/dashboard/products/product-schema";
 import {
@@ -51,7 +51,10 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
   }
 
   try {
-    const updated = await new UpdateProduct(productRepository).execute(id, parsed.data);
+    const updated = await new UpdateProduct(productRepository, stockAlertRepository, stockAlertNotifier).execute(
+      id,
+      parsed.data,
+    );
     return NextResponse.json(updated);
   } catch (error) {
     return errorResponseFromException(error, `PUT /api/products/${id} failed`);

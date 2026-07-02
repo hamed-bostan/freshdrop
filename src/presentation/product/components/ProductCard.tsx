@@ -3,6 +3,7 @@ import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
 import { AddToCartButton } from "./AddToCartButton";
 import type { Product } from "@/src/domain/entities/Product";
+import { getStockStatus } from "@/src/domain/entities/stock";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -13,14 +14,30 @@ interface ProductCardProps {
 
 export function ProductCard({ product, className }: ProductCardProps) {
   const hasDiscount = product.originalPrice != null && product.discountPercent != null;
+  const stock = getStockStatus(product.stockQuantity);
+  const outOfStock = stock.level === "out";
 
   return (
     <article className={cn("rounded-card-xl bg-surface py-2 relative overflow-hidden", className)}>
-      <Image src={product.imageUrl} alt={product.name} width={100} height={100} className="mx-auto w-auto h-24 mb-2" />
-      {product.badge && (
-        <span className="absolute right-0 top-2 z-10 rounded-tl-lg rounded-bl-lg rounded-tr-xs rounded-br-none bg-primary p-1 text-label-l3 text-primary-foreground">
-          {product.badge}
+      <Image
+        src={product.imageUrl}
+        alt={product.name}
+        width={100}
+        height={100}
+        className={cn("mx-auto w-auto h-24 mb-2", outOfStock && "opacity-40 grayscale")}
+      />
+      {/* Out of stock takes the ribbon slot (it's the more important signal); an
+          in-stock product still shows its promo badge there. */}
+      {outOfStock ? (
+        <span className="absolute right-0 top-2 z-10 rounded-tl-lg rounded-bl-lg rounded-tr-xs rounded-br-none bg-destructive p-1 text-label-l3 text-destructive-foreground">
+          Out of stock
         </span>
+      ) : (
+        product.badge && (
+          <span className="absolute right-0 top-2 z-10 rounded-tl-lg rounded-bl-lg rounded-tr-xs rounded-br-none bg-primary p-1 text-label-l3 text-primary-foreground">
+            {product.badge}
+          </span>
+        )
       )}
 
       {/* Stretched link: this link's ::after covers the whole card, so the card
@@ -40,6 +57,10 @@ export function ProductCard({ product, className }: ProductCardProps) {
         </div>
       )}
 
+      {stock.level === "low" && (
+        <p className="px-2 mb-1 text-body-b10 text-warning-foreground">Only {stock.quantity} left</p>
+      )}
+
       <div className="flex justify-between items-center px-2">
         <div className="flex flex-col">
           <span className="text-base font-bold text-foreground">${product.price.toFixed(2)}</span>
@@ -55,7 +76,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           )}
         </div>
         <div className="relative z-10">
-          <AddToCartButton productId={product.id} />
+          <AddToCartButton productId={product.id} disabled={outOfStock} />
         </div>
       </div>
     </article>

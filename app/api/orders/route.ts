@@ -7,6 +7,7 @@ import { FindPromoCode } from "@/src/domain/use-cases/promo-codes/FindPromoCode"
 import {
   orderRepository,
   cartRepository,
+  productRepository,
   deliveryLocationRepository,
   promoCodeRepository,
 } from "@/src/infrastructure/container";
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       : null;
     const cart = await new GetCart(cartRepository).execute({ userId: session.user.id, promo });
 
-    const order = await new CreateOrder(orderRepository, cartRepository).execute({
+    const order = await new CreateOrder(orderRepository, cartRepository, productRepository).execute({
       userId: session.user.id,
       location: address.address,
       cart,

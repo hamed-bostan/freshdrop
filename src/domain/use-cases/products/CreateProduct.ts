@@ -16,6 +16,9 @@ export class CreateProduct {
       throw new ValidationError("originalPrice", "Original price must be higher than the price.");
     }
     if (!input.imageUrl) throw new ValidationError("imageUrl", "A product image is required.");
+    if (!Number.isInteger(input.stockQuantity) || input.stockQuantity < 0) {
+      throw new ValidationError("stockQuantity", "Stock must be a whole number of 0 or more.");
+    }
 
     return this.productRepo.create({ ...input, name });
   }

@@ -4,6 +4,7 @@ export { AddToCartButton } from "./AddToCartButton";
 export { ProductGallery } from "./ProductGallery";
 export { QuantityStepper } from "./QuantityStepper";
 export { ProductPurchasePanel } from "./ProductPurchasePanel";
+export { BackInStockButton } from "./BackInStockButton";
 export { ProductInfoAccordion } from "./ProductInfoAccordion";
 export { SimilarProducts } from "./SimilarProducts";
 export { ReviewItem } from "./ReviewItem";

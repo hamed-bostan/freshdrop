@@ -7,6 +7,13 @@ import type { ProductFilters } from "../entities/ProductFilters";
  */
 export type NewProduct = Omit<Product, "id" | "discountPercent" | "rating" | "ratingCount" | "images">;
 
+/** One line of a stock decrement: which product, its name (for error messages), and how many units. */
+export type StockAdjustment = {
+  productId: string;
+  name: string;
+  quantity: number;
+};
+
 export type IProductRepository = {
   getAll(): Promise<Product[]>;
   getById(id: string): Promise<Product | null>;
@@ -19,4 +26,13 @@ export type IProductRepository = {
   create(input: NewProduct): Promise<Product>;
   update(id: string, input: NewProduct): Promise<Product>;
   delete(id: string): Promise<void>;
+
+  /**
+   * Atomically reduce on-hand stock for each line, all-or-nothing: if any line
+   * can't be fully satisfied (not enough units, or the product is gone) nothing is
+   * decremented and `InsufficientStockError` is thrown. This is the overselling
+   * guard at checkout — the check and the decrement happen as one operation so
+   * concurrent orders can't both pass a stale read and drive stock negative.
+   */
+  decrementStock(lines: readonly StockAdjustment[]): Promise<void>;
 }
