@@ -39,6 +39,7 @@ export function OrderCard({ order }: OrderCardProps) {
       <dl className="flex flex-col gap-2">
         <OrderInfoRow label="Time:" value={formatOrderTime(order.placedAt)} />
         <OrderInfoRow label="Date:" value={formatOrderDate(order.placedAt)} />
+        {order.deliveryWindow && <OrderInfoRow label="Delivery:" value={order.deliveryWindow} />}
         <OrderInfoRow label="Location:" value={order.location} />
       </dl>
 

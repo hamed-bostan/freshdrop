@@ -12,7 +12,8 @@
     "generate:tokens": "tsx src/presentation/design-system/scripts/generate-css.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy"
+    "db:deploy": "prisma migrate deploy",
+    "db:seed:slots": "tsx scripts/seed-delivery-slots.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

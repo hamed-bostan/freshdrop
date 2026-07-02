@@ -9,6 +9,7 @@ import {
   cartRepository,
   productRepository,
   deliveryLocationRepository,
+  deliverySlotRepository,
   promoCodeRepository,
 } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
@@ -84,10 +85,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       : null;
     const cart = await new GetCart(cartRepository).execute({ userId: session.user.id, promo });
 
-    const order = await new CreateOrder(orderRepository, cartRepository, productRepository).execute({
+    const order = await new CreateOrder(
+      orderRepository,
+      cartRepository,
+      productRepository,
+      deliverySlotRepository,
+    ).execute({
       userId: session.user.id,
       location: address.address,
       cart,
+      deliveryDate: parsed.data.deliveryDate,
+      deliveryWindowId: parsed.data.deliveryWindowId,
     });
     return NextResponse.json(order, { status: 201 });
   } catch (error) {

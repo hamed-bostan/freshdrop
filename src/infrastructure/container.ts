@@ -4,7 +4,7 @@ import type { IFavoriteRepository } from "@/src/domain/repositories/IFavoriteRep
 import type { IReviewRepository } from "@/src/domain/repositories/IReviewRepository";
 import type { IDeliveryLocationRepository } from "@/src/domain/repositories/IDeliveryLocationRepository";
 import type { IPaymentMethodRepository } from "@/src/domain/repositories/IPaymentMethodRepository";
-import type { IDeliveryOptionRepository } from "@/src/domain/repositories/IDeliveryOptionRepository";
+import type { IDeliverySlotRepository } from "@/src/domain/repositories/IDeliverySlotRepository";
 import type { IGeocodingRepository } from "@/src/domain/repositories/IGeocodingRepository";
 import type { IWalletRepository } from "@/src/domain/repositories/IWalletRepository";
 import type { IOrderRepository } from "@/src/domain/repositories/IOrderRepository";
@@ -24,7 +24,7 @@ import { MockFavoriteRepository } from "./repositories/mock/MockFavoriteReposito
 import { PrismaReviewRepository } from "./repositories/PrismaReviewRepository";
 import { PrismaDeliveryLocationRepository } from "./repositories/PrismaDeliveryLocationRepository";
 import { PrismaPaymentMethodRepository } from "./repositories/PrismaPaymentMethodRepository";
-import { PrismaDeliveryOptionRepository } from "./repositories/PrismaDeliveryOptionRepository";
+import { PrismaDeliverySlotRepository } from "./repositories/PrismaDeliverySlotRepository";
 import { PrismaWalletRepository } from "./repositories/PrismaWalletRepository";
 import { PrismaOrderRepository } from "./repositories/PrismaOrderRepository";
 import { MockOrderTrackingRepository } from "./repositories/mock/MockOrderTrackingRepository";
@@ -72,10 +72,10 @@ export const deliveryLocationRepository: IDeliveryLocationRepository = new Prism
 // (Cash, Wallet, PayPal, Apple/Google Pay) lives on in the seed migration that
 // backfilled the table; it's reference data, like promo codes.
 export const paymentMethodRepository: IPaymentMethodRepository = new PrismaPaymentMethodRepository();
-// Delivery options are real data now — PostgreSQL via Prisma. The fixed catalog
-// (Fast, Standard) lives on in the seed migration that backfilled the table; it's
-// reference data, like payment methods.
-export const deliveryOptionRepository: IDeliveryOptionRepository = new PrismaDeliveryOptionRepository();
+// Delivery windows + their booking ledger — PostgreSQL via Prisma. The window
+// catalog (Morning, Midday, …) is seeded reference data, like payment methods; the
+// ledger enforces per-slot capacity at checkout.
+export const deliverySlotRepository: IDeliverySlotRepository = new PrismaDeliverySlotRepository();
 // Wallets are real data now — PostgreSQL via Prisma. Balance, saved cards and
 // transactions are per-user; real users start empty and fill the wallet via the
 // "Add Money" / "Add Card" flows. The demo wallet lives on in the seed migration.

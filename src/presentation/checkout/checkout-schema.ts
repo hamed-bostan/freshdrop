@@ -9,6 +9,13 @@ import { z } from "zod";
  */
 export const placeOrderSchema = z.object({
   addressId: z.string().trim().min(1, "Select a delivery address."),
+  // The booked delivery slot: a calendar date (YYYY-MM-DD) + a window slug. The
+  // server re-resolves the window and enforces its capacity — it never trusts the
+  // client's view of availability.
+  deliveryDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Select a delivery time."),
+  deliveryWindowId: z.string().trim().min(1, "Select a delivery time."),
   promo: z.string().trim().min(1).optional(),
 });
 

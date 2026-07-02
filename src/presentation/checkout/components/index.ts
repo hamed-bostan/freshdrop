@@ -1,4 +1,4 @@
 export { CheckoutSection } from "./CheckoutSection";
-export { DeliveryOptionItem } from "./DeliveryOptionItem";
+export { DeliverySlotPicker } from "./DeliverySlotPicker";
 export { OrderSummaryCard } from "./OrderSummaryCard";
 export { OrderTotals } from "./OrderTotals";

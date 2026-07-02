@@ -60,6 +60,15 @@ export type Order = {
    * `undefined` when the order isn't trackable (archived or cancelled).
    */
   stage?: TrackingMilestone;
+  /**
+   * The delivery slot the shopper booked at checkout. `deliveryWindow` is a display
+   * snapshot ("Tomorrow, 6:00 – 8:00 PM") captured at purchase time; `deliveryDate`
+   * (YYYY-MM-DD) + `deliveryWindowId` are the machine references. All `undefined`
+   * for orders placed before slot booking existed (seeded/legacy history).
+   */
+  deliveryDate?: string;
+  deliveryWindowId?: string;
+  deliveryWindow?: string;
 }
 
 /**

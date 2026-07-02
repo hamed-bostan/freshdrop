@@ -4,6 +4,7 @@ import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError
 import { ValidationError } from "@/src/domain/errors/ValidationError";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { InsufficientStockError } from "@/src/domain/errors/InsufficientStockError";
+import { SlotUnavailableError } from "@/src/domain/errors/SlotUnavailableError";
 
 /**
  * Server-side helpers for REST route handlers (Next.js `app/api/**` only — never
@@ -64,6 +65,12 @@ export function errorResponseFromException(error: unknown, context: string): Nex
   // dropped since the cart was built). 409 Conflict — the message names what's short.
   if (error instanceof InsufficientStockError) {
     return errorResponse(409, { message: error.message, code: "INSUFFICIENT_STOCK" });
+  }
+
+  // The chosen delivery window filled up (or is no longer offered) before the order
+  // landed. 409 Conflict — the message names the slot so the shopper can pick another.
+  if (error instanceof SlotUnavailableError) {
+    return errorResponse(409, { message: error.message, code: "SLOT_UNAVAILABLE" });
   }
 
   console.error(`${context}:`, error);

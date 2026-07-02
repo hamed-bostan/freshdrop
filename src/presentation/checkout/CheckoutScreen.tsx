@@ -6,23 +6,33 @@ import { useRouter } from "next/navigation";
 import { MapPin, Clock, CreditCard, ClipboardList } from "lucide-react";
 import type { Cart } from "@/src/domain/entities/Cart";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
-import type { DeliveryOption } from "@/src/domain/entities/DeliveryOption";
+import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
 import { Button } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { DeliveryLocationItem } from "@/src/presentation/delivery-location/components/DeliveryLocationItem";
 import { PaymentMethodOption } from "@/src/presentation/payment/components";
 import { ApiError } from "@/src/lib/api/ApiError";
-import { CheckoutSection, DeliveryOptionItem, OrderSummaryCard, OrderTotals } from "./components";
+import { CheckoutSection, DeliverySlotPicker, OrderSummaryCard, OrderTotals } from "./components";
+import type { SlotSelection } from "./components/DeliverySlotPicker";
 import { checkoutApi } from "./checkout-api";
 
 interface CheckoutScreenProps {
   cart: Cart;
   deliveryLocations: DeliveryLocation[];
-  deliveryOptions: DeliveryOption[];
+  deliverySlotDays: DeliverySlotDay[];
   paymentMethods: PaymentMethod[];
   /** Promo code applied in the cart, forwarded so the server's totals match. */
   promoCode?: string;
+}
+
+/** The first window that can still be booked, used as the default selection. */
+function firstBookableSlot(days: DeliverySlotDay[]): SlotSelection | null {
+  for (const day of days) {
+    const slot = day.slots.find((s) => s.availability.level !== "full");
+    if (slot) return { date: day.date, windowId: slot.windowId };
+  }
+  return null;
 }
 
 /**
@@ -34,13 +44,13 @@ interface CheckoutScreenProps {
 export default function CheckoutScreen({
   cart,
   deliveryLocations,
-  deliveryOptions,
+  deliverySlotDays,
   paymentMethods,
   promoCode,
 }: CheckoutScreenProps) {
   const router = useRouter();
   const [addressId, setAddressId] = React.useState(() => deliveryLocations[0]?.id);
-  const [optionId, setOptionId] = React.useState(() => deliveryOptions[0]?.id);
+  const [slot, setSlot] = React.useState<SlotSelection | null>(() => firstBookableSlot(deliverySlotDays));
   const [paymentId, setPaymentId] = React.useState(() => paymentMethods[0]?.id);
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
@@ -51,11 +61,20 @@ export default function CheckoutScreen({
       setError("Select a delivery address.");
       return;
     }
+    if (!slot) {
+      setError("Select a delivery time.");
+      return;
+    }
 
     setError(null);
     startTransition(async () => {
       try {
-        await checkoutApi.placeOrder({ addressId, promo: promoCode });
+        await checkoutApi.placeOrder({
+          addressId,
+          deliveryDate: slot.date,
+          deliveryWindowId: slot.windowId,
+          promo: promoCode,
+        });
         // The server cleared the cart and recorded the order; the confirmation
         // screen re-reads from the server, so just navigate.
         router.push("/cart/checkout/confirmed");
@@ -94,16 +113,7 @@ export default function CheckoutScreen({
       </CheckoutSection>
 
       <CheckoutSection icon={Clock} title="Delivery Time">
-        <div className="flex flex-col gap-2">
-          {deliveryOptions.map((option) => (
-            <DeliveryOptionItem
-              key={option.id}
-              option={option}
-              selected={option.id === optionId}
-              onSelect={setOptionId}
-            />
-          ))}
-        </div>
+        <DeliverySlotPicker days={deliverySlotDays} selected={slot} onSelect={setSlot} />
       </CheckoutSection>
 
       <CheckoutSection icon={CreditCard} title="Payment Method">

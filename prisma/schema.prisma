@@ -56,6 +56,14 @@ model Order {
   // Current delivery milestone (confirmed/shipped/arrived). Null when the order
   // isn't trackable (archived or cancelled). Advanced from the admin dashboard.
   stage     String?
+  // The delivery slot the shopper booked at checkout. Nullable so seeded/legacy
+  // orders (placed before slot booking existed) stay valid. `deliveryWindow` is a
+  // display snapshot ("Tomorrow, 6:00 – 8:00 PM") captured at purchase time, so the
+  // order reads correctly even if the window catalog changes later; the date/id are
+  // the machine references (delivery calendar date `YYYY-MM-DD` + window slug).
+  deliveryDate     String? @map("delivery_date")
+  deliveryWindowId String? @map("delivery_window_id")
+  deliveryWindow   String? @map("delivery_window")
   items     OrderItem[]
   createdAt DateTime    @default(now()) @map("created_at")
   updatedAt DateTime    @updatedAt @map("updated_at")
@@ -193,19 +201,42 @@ model PaymentMethod {
   @@map("payment_methods")
 }
 
-// A delivery speed/time the storefront offers at checkout (Fast, Standard, …).
-// Reference/catalog data — not user data — like payment methods: a fixed, ordered
-// list the checkout screen reads. `position` fixes the display order; the id is a
-// stable human slug. Pricing isn't modelled yet, so `eta` is just a display string.
-model DeliveryOption {
-  id        String   @id
-  label     String
-  eta       String
-  position  Int
+// A recurring delivery time-of-day window the storefront offers at checkout
+// (Morning 8–10, Evening 6–8, …). Reference/catalog data — not user data — like
+// payment methods: a fixed, ordered list, seeded and read at checkout. Times are
+// stored as minutes-from-midnight (store-local); `position` fixes the display
+// order; the id is a stable human slug. `capacity` caps how many orders may be
+// booked into this window on any single date.
+model DeliveryWindow {
+  id           String   @id
+  label        String
+  startMinutes Int      @map("start_minutes")
+  endMinutes   Int      @map("end_minutes")
+  capacity     Int
+  position     Int
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("delivery_windows")
+}
+
+// The running booking count for one delivery window on one calendar date — the
+// atomic capacity ledger. One row per (date, window), created lazily on the first
+// booking. `booked` is incremented under a guarded write (`booked < capacity`) so
+// a slot can never be oversold under concurrent checkouts. `date` is a plain
+// `YYYY-MM-DD` string (a delivery calendar date, free of timezone drift), not a
+// timestamp. `windowId` is a plain reference to a DeliveryWindow (loose coupling,
+// like the rest of the schema).
+model DeliverySlotBooking {
+  id        String   @id @default(uuid())
+  date      String
+  windowId  String   @map("window_id")
+  booked    Int      @default(0)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("delivery_options")
+  @@unique([date, windowId])
+  @@map("delivery_slot_bookings")
 }
 
 // A customer review of a product. `productId` is a plain reference (not a DB

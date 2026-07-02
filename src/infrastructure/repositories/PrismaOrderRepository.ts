@@ -53,6 +53,9 @@ export class PrismaOrderRepository implements IOrderRepository {
         location: input.location,
         total: input.total,
         stage: input.stage ?? null,
+        deliveryDate: input.deliveryDate ?? null,
+        deliveryWindowId: input.deliveryWindowId ?? null,
+        deliveryWindow: input.deliveryWindow ?? null,
         items: {
           create: input.items.map((item, index) => ({
             productId: item.productId,
@@ -116,6 +119,9 @@ type OrderRow = {
   location: string;
   total: number;
   stage: string | null;
+  deliveryDate: string | null;
+  deliveryWindowId: string | null;
+  deliveryWindow: string | null;
   items: { productId: string; name: string; imageUrl: string; quantity: number }[];
 };
 
@@ -141,6 +147,9 @@ function toOrder(row: OrderRow): Order {
     location: row.location,
     total: row.total,
     stage: (row.stage as TrackingMilestone | null) ?? undefined,
+    deliveryDate: row.deliveryDate ?? undefined,
+    deliveryWindowId: row.deliveryWindowId ?? undefined,
+    deliveryWindow: row.deliveryWindow ?? undefined,
     items,
   };
 }
