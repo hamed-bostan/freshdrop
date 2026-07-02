@@ -12,6 +12,8 @@ import type { IOrderTrackingRepository } from "@/src/domain/repositories/IOrderT
 import type { ICartRepository } from "@/src/domain/repositories/ICartRepository";
 import type { IStockAlertRepository } from "@/src/domain/repositories/IStockAlertRepository";
 import type { IStockAlertNotifier } from "@/src/domain/repositories/IStockAlertNotifier";
+import type { IOrderNotifier } from "@/src/domain/repositories/IOrderNotifier";
+import type { INotificationChannel } from "@/src/domain/repositories/INotificationChannel";
 import type { IPromoCodeRepository } from "@/src/domain/repositories/IPromoCodeRepository";
 import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
 import type { IImageStorageRepository } from "@/src/domain/repositories/IImageStorageRepository";
@@ -31,6 +33,9 @@ import { MockOrderTrackingRepository } from "./repositories/mock/MockOrderTracki
 import { PrismaCartRepository } from "./repositories/PrismaCartRepository";
 import { PrismaStockAlertRepository } from "./repositories/PrismaStockAlertRepository";
 import { LoggingStockAlertNotifier } from "./notifications/LoggingStockAlertNotifier";
+import { OrderNotifier } from "./notifications/OrderNotifier";
+import { LoggingNotificationChannel } from "./notifications/LoggingNotificationChannel";
+import { SmsIrNotificationChannel } from "./notifications/SmsIrNotificationChannel";
 import { PrismaPromoCodeRepository } from "./repositories/PrismaPromoCodeRepository";
 import { MockAuthRepository } from "./repositories/mock/MockAuthRepository";
 import { SmsIrAuthRepository } from "./repositories/SmsIrAuthRepository";
@@ -38,6 +43,14 @@ import { NominatimGeocodingRepository } from "./repositories/NominatimGeocodingR
 import { SupabaseImageStorageRepository } from "./repositories/SupabaseImageStorageRepository";
 
 const SMS_IR_DEFAULT_TEMPLATE_ID = 562447;
+
+/** Read a numeric env var, returning `undefined` when unset or not a number. */
+function numericEnv(name: string): number | undefined {
+  const raw = process.env[name];
+  if (!raw) return undefined;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : undefined;
+}
 
 /**
  * Composition root.
@@ -109,6 +122,32 @@ export const authRepository: IAuthRepository = process.env.SMS_IR_API_KEY
       baseUrl: process.env.SMS_IR_BASE_URL,
     })
   : new MockAuthRepository();
+
+// Transactional order notifications (confirmed → out for delivery → delivered,
+// and approved returns). The notifier fans each event out to every channel:
+//  - SMS: real SMS.ir pattern templates when an API key + per-event template ids
+//    are configured (the market's primary channel); a logging stub otherwise —
+//    the same real-or-mock switch used for `authRepository`.
+//  - Push: a logging stub for now. Full web-push (service worker + VAPID +
+//    subscription storage) is a follow-up; swapping the stub for a real
+//    `WebPushNotificationChannel` here is the only change needed then.
+// Every send is best-effort — a delivery failure never rolls back the order.
+const notificationChannels: INotificationChannel[] = [
+  process.env.SMS_IR_API_KEY
+    ? new SmsIrNotificationChannel({
+        apiKey: process.env.SMS_IR_API_KEY,
+        baseUrl: process.env.SMS_IR_BASE_URL,
+        templates: {
+          order_confirmed: numericEnv("SMS_IR_ORDER_CONFIRMED_TEMPLATE_ID"),
+          order_out_for_delivery: numericEnv("SMS_IR_ORDER_SHIPPED_TEMPLATE_ID"),
+          order_delivered: numericEnv("SMS_IR_ORDER_DELIVERED_TEMPLATE_ID"),
+          return_approved: numericEnv("SMS_IR_RETURN_APPROVED_TEMPLATE_ID"),
+        },
+      })
+    : new LoggingNotificationChannel("sms"),
+  new LoggingNotificationChannel("push"),
+];
+export const orderNotifier: IOrderNotifier = new OrderNotifier(userRepository, notificationChannels);
 
 // Real provider (not a mock): Nominatim runs server-side only — the route
 // handlers under `app/api/geocoding/*` are the only callers, which lets us send

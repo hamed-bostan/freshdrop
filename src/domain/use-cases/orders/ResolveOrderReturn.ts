@@ -2,6 +2,7 @@ import type { Order } from "../../entities/Order";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 import type { IWalletRepository } from "../../repositories/IWalletRepository";
+import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
 
@@ -23,6 +24,7 @@ export class ResolveOrderReturn {
     private readonly orderRepo: IOrderRepository,
     private readonly productRepo: IProductRepository,
     private readonly walletRepo: IWalletRepository,
+    private readonly notifier: IOrderNotifier,
   ) {}
 
   async execute(orderId: string, decision: ReturnDecision): Promise<Order> {
@@ -53,6 +55,10 @@ export class ResolveOrderReturn {
       refunded.items.map((item) => ({ productId: item.productId, name: item.name, quantity: item.quantity })),
     );
     await this.walletRepo.addFunds(refunded.userId, refunded.total, "Refund for returned order");
+
+    // Tell the customer their return was approved and refunded. Best-effort: the
+    // refund has already committed, so the notifier swallows any delivery failure.
+    await this.notifier.returnApproved(refunded);
 
     return refunded;
   }

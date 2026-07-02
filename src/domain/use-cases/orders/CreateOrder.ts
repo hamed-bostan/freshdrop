@@ -6,6 +6,7 @@ import type { ICartRepository } from "../../repositories/ICartRepository";
 import type { IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
+import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
 import { SlotUnavailableError } from "../../errors/SlotUnavailableError";
 import { ValidationError } from "../../errors/ValidationError";
 import { SLOT_HORIZON_DAYS } from "../delivery-slots/GetDeliverySlots";
@@ -51,6 +52,7 @@ export class CreateOrder {
     private readonly cartRepo: ICartRepository,
     private readonly productRepo: IProductRepository,
     private readonly slotRepo: IDeliverySlotRepository,
+    private readonly notifier: IOrderNotifier,
   ) {}
 
   async execute({
@@ -113,6 +115,10 @@ export class CreateOrder {
 
     // The order now owns the snapshot, so the working cart is emptied.
     await this.cartRepo.clear(userId);
+
+    // Tell the customer the order is confirmed. Best-effort side effect: the order
+    // is already recorded, so the notifier swallows any delivery failure itself.
+    await this.notifier.orderConfirmed(order);
 
     return order;
   }

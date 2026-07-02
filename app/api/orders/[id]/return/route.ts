@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { RequestOrderReturn } from "@/src/domain/use-cases/orders/RequestOrderReturn";
 import { ResolveOrderReturn } from "@/src/domain/use-cases/orders/ResolveOrderReturn";
-import { orderRepository, productRepository, walletRepository } from "@/src/infrastructure/container";
+import { orderRepository, productRepository, walletRepository, orderNotifier } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import { getUserSession } from "@/src/lib/require-auth";
 import { orderReturnDecisionSchema } from "@/src/presentation/dashboard/orders/order-return-schema";
@@ -68,10 +68,12 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
   }
 
   try {
-    const order = await new ResolveOrderReturn(orderRepository, productRepository, walletRepository).execute(
-      id,
-      parsed.data.decision,
-    );
+    const order = await new ResolveOrderReturn(
+      orderRepository,
+      productRepository,
+      walletRepository,
+      orderNotifier,
+    ).execute(id, parsed.data.decision);
     return NextResponse.json(order);
   } catch (error) {
     return errorResponseFromException(error, `PUT /api/orders/${id}/return failed`);

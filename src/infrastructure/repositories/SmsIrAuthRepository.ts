@@ -1,13 +1,10 @@
 import type { AuthIdentity, IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
+import { normalizePhone, sendPatternSms } from "../sms/smsIrClient";
 import { getOtpStore } from "./otpStore";
 
-const DEFAULT_BASE_URL = "https://api.sms.ir";
 const MIN_PHONE_DIGITS = 8;
-const REQUEST_TIMEOUT_MS = 10_000;
 // Short window so a leaked/stale SMS can't be replayed long after the fact.
 const CODE_TTL_MS = 2 * 60 * 1000;
-// SMS.ir returns `status: 1` on a successful send.
-const SMS_IR_OK = 1;
 
 export interface SmsIrConfig {
   /** Panel API key, sent as the `x-api-key` header. */
@@ -17,12 +14,6 @@ export interface SmsIrConfig {
   /** Override the API host (defaults to the public SMS.ir endpoint). */
   baseUrl?: string;
 }
-
-/** The slice of the SMS.ir response we act on. */
-type SmsIrSendResponse = {
-  status: number;
-  message?: string;
-};
 
 type StoredCode = {
   code: string;
@@ -46,14 +37,10 @@ export class SmsIrAuthRepository implements IAuthRepository {
   // Shared across module re-evaluations so a code stored on `/login` is still
   // there when `/login/verify` reads it. See getOtpStore.
   private readonly codes = getOtpStore<StoredCode>("sms-ir");
-  private readonly baseUrl: string;
-  private readonly apiKey: string;
-  private readonly templateId: number;
+  private readonly config: SmsIrConfig;
 
   constructor(config: SmsIrConfig) {
-    this.templateId = config.templateId;
-    this.apiKey = config.apiKey;
-    this.baseUrl = (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, "");
+    this.config = config;
   }
 
   async requestOtp(phone: string): Promise<boolean> {
@@ -64,34 +51,10 @@ export class SmsIrAuthRepository implements IAuthRepository {
 
     const code = String(Math.floor(1000 + Math.random() * 9000));
 
-    try {
-      const response = await fetch(`${this.baseUrl}/v1/send/verify`, {
-        method: "POST",
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          "x-api-key": this.apiKey,
-        },
-        body: JSON.stringify({
-          mobile,
-          templateId: this.templateId,
-          parameters: [{ name: "CODE", value: code }],
-        }),
-      });
-
-      if (!response.ok) {
-        console.error(`[sms.ir] send failed: HTTP ${response.status}`);
-        return false;
-      }
-
-      const data = (await response.json()) as SmsIrSendResponse;
-      if (data.status !== SMS_IR_OK) {
-        console.error(`[sms.ir] send rejected: ${data.message ?? "unknown error"}`);
-        return false;
-      }
-    } catch (error) {
-      console.error("[sms.ir] send failed:", error instanceof Error ? error.message : error);
+    const sent = await sendPatternSms(this.config, mobile, this.config.templateId, [
+      { name: "CODE", value: code },
+    ]);
+    if (!sent) {
       return false;
     }
 
@@ -133,16 +96,4 @@ export class SmsIrAuthRepository implements IAuthRepository {
     this.codes.delete(mobile); // correct, and one-time use
     return { id: mobile, phone, name: "FreshDrop Customer" };
   }
-}
-
-/**
- * Normalises to the local SMS.ir format (e.g. `09xxxxxxxxx`): strips non-digit
- * characters and rewrites a leading `98` country code to `0`.
- */
-function normalizePhone(phone: string): string {
-  const digits = phone.replace(/\D/g, "");
-  if (digits.startsWith("98") && digits.length === 12) {
-    return `0${digits.slice(2)}`;
-  }
-  return digits;
 }

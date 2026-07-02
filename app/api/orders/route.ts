@@ -11,6 +11,7 @@ import {
   deliveryLocationRepository,
   deliverySlotRepository,
   promoCodeRepository,
+  orderNotifier,
 } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
 import { placeOrderSchema } from "@/src/presentation/checkout/checkout-schema";
@@ -90,6 +91,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       cartRepository,
       productRepository,
       deliverySlotRepository,
+      orderNotifier,
     ).execute({
       userId: session.user.id,
       location: address.address,
