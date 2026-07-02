@@ -153,6 +153,8 @@ const notificationChannels: INotificationChannel[] = [
           order_out_for_delivery: numericEnv("SMS_IR_ORDER_SHIPPED_TEMPLATE_ID"),
           order_delivered: numericEnv("SMS_IR_ORDER_DELIVERED_TEMPLATE_ID"),
           return_approved: numericEnv("SMS_IR_RETURN_APPROVED_TEMPLATE_ID"),
+          item_substituted: numericEnv("SMS_IR_ITEM_SUBSTITUTED_TEMPLATE_ID"),
+          item_refunded: numericEnv("SMS_IR_ITEM_REFUNDED_TEMPLATE_ID"),
         },
       })
     : new LoggingNotificationChannel("sms"),

@@ -86,6 +86,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       : null;
     const cart = await new GetCart(cartRepository).execute({ userId: session.user.id, promo });
 
+    // Collapse the per-line substitution choices into a productId→preference map
+    // for the use-case; unlisted lines default to "substitute" there.
+    const substitutionPreferences = parsed.data.substitutions
+      ? Object.fromEntries(parsed.data.substitutions.map((s) => [s.productId, s.preference]))
+      : undefined;
+
     const order = await new CreateOrder(
       orderRepository,
       cartRepository,
@@ -98,6 +104,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       cart,
       deliveryDate: parsed.data.deliveryDate,
       deliveryWindowId: parsed.data.deliveryWindowId,
+      substitutionPreferences,
     });
     return NextResponse.json(order, { status: 201 });
   } catch (error) {

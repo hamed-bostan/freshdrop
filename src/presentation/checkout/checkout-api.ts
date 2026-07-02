@@ -9,6 +9,7 @@ import type { PlaceOrderInput } from "./checkout-schema";
  */
 export const checkoutApi = {
   async placeOrder(values: PlaceOrderInput): Promise<Order> {
+    // `values` already carries the per-line substitution pre-approvals.
     const { data } = await apiClient.post<Order>("/orders", values);
     return data;
   },

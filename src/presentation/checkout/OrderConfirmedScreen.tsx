@@ -1,9 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Order } from "@/src/domain/entities/Order";
 import { Button } from "@/src/presentation/design-system";
+import { OrderAdjustments } from "@/src/presentation/orders/components";
 import { orderConfirmed } from "@/src/shared/assets/images";
 
-export default function OrderConfirmedScreen() {
+interface OrderConfirmedScreenProps {
+  /** The order just placed, used to itemize any out-of-stock refunds on the receipt. */
+  order?: Order;
+}
+
+export default function OrderConfirmedScreen({ order }: OrderConfirmedScreenProps) {
   return (
     <div className="flex min-h-dvh flex-col items-center gap-6 px-6 pb-10 pt-20">
 
@@ -22,6 +29,8 @@ export default function OrderConfirmedScreen() {
             Thank you for shopping with us
           </p>
         </div>
+
+        {order && <OrderAdjustments order={order} />}
 
       </div>
 

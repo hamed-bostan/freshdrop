@@ -52,6 +52,13 @@ model Order {
   phase     String
   placedAt  DateTime    @map("placed_at")
   location  String
+  // Price breakdown captured at checkout — the faithful record of what was charged
+  // and the basis for pro-rating a partial (out-of-stock) refund. `total = subtotal
+  // + shipping - discount`. `subtotal`/`shipping`/`discount` default to 0 so orders
+  // placed before the breakdown was recorded stay valid.
+  subtotal  Float       @default(0)
+  shipping  Float       @default(0)
+  discount  Float       @default(0)
   total     Float
   // Current delivery milestone (confirmed/shipped/arrived). Null when the order
   // isn't trackable (archived or cancelled). Advanced from the admin dashboard.
@@ -80,8 +87,28 @@ model OrderItem {
   name      String
   imageUrl  String @map("image_url")
   quantity  Int
+  // Unit price snapshot at purchase — the basis for a substitution refund, so it
+  // reflects what was charged rather than today's catalog price. Defaults to 0 so
+  // pre-substitution rows stay valid.
+  price     Float  @default(0)
   // Preserves the authored line order for the thumbnails on the order card.
   position  Int
+  // Grocery substitutions. `substitutionPreference` is the customer's out-of-stock
+  // pre-approval captured at checkout ("substitute" | "refund"); it defaults to
+  // "substitute" (the grocery norm) so legacy rows stay valid. The `substitution*`
+  // columns record a picker's resolution and are null until a line is resolved:
+  // `substitutionStatus` is "substituted" | "refunded"; the `replacement*` snapshot
+  // is set only when substituted. `substitutionRefundAmount` is the exact amount
+  // credited to the wallet for the line (the line refund, or the saving on a cheaper
+  // swap — may be 0), null until resolved; it makes the wallet credit visible on the
+  // receipt while the order `total` stays the original charge. Plain strings/floats
+  // matching the domain unions, the schema's enum-free style.
+  substitutionPreference   String  @default("substitute") @map("substitution_preference")
+  substitutionStatus       String? @map("substitution_status")
+  substitutionRefundAmount Float?  @map("substitution_refund_amount")
+  replacementProductId     String? @map("replacement_product_id")
+  replacementName          String? @map("replacement_name")
+  replacementImageUrl      String? @map("replacement_image_url")
   order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])

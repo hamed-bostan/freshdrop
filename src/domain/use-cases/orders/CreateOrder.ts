@@ -1,7 +1,7 @@
 import type { Cart } from "../../entities/Cart";
 import type { DeliveryWindow } from "../../entities/DeliveryWindow";
 import { formatWindowRange } from "../../entities/DeliveryWindow";
-import type { Order, OrderItem } from "../../entities/Order";
+import type { Order, OrderItem, SubstitutionPreference } from "../../entities/Order";
 import type { ICartRepository } from "../../repositories/ICartRepository";
 import type { IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
@@ -22,7 +22,16 @@ export type CreateOrderInput = {
   deliveryDate: string;
   /** The delivery window the shopper booked (slug). */
   deliveryWindowId: string;
+  /**
+   * Per-line out-of-stock pre-approval, keyed by product id. A line absent from
+   * the map (or the whole map omitted) defaults to `substitute` — the grocery
+   * default of "replace it with something comparable".
+   */
+  substitutionPreferences?: Record<string, SubstitutionPreference>;
 };
+
+/** The out-of-stock pre-approval used when the customer didn't set one for a line. */
+const DEFAULT_SUBSTITUTION_PREFERENCE: SubstitutionPreference = "substitute";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -61,6 +70,7 @@ export class CreateOrder {
     cart,
     deliveryDate,
     deliveryWindowId,
+    substitutionPreferences,
   }: CreateOrderInput): Promise<Order> {
     if (cart.items.length === 0) {
       throw new ValidationError("cart", "Your cart is empty.");
@@ -80,6 +90,11 @@ export class CreateOrder {
       name: product.name,
       imageUrl: product.imageUrl,
       quantity,
+      // Snapshot the unit price so a later substitution refund uses the amount
+      // actually charged, not today's catalog price.
+      price: product.price,
+      substitutionPreference:
+        substitutionPreferences?.[product.id] ?? DEFAULT_SUBSTITUTION_PREFERENCE,
     }));
 
     // Claim the stock first (all-or-nothing). If anything is short this throws
@@ -106,6 +121,9 @@ export class CreateOrder {
       stage: "confirmed",
       placedAt: new Date().toISOString(),
       location,
+      subtotal: cart.subtotal,
+      shipping: cart.shipping,
+      discount: cart.discount,
       total: cart.total,
       deliveryDate,
       deliveryWindowId: window.id,

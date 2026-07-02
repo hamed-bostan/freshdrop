@@ -17,6 +17,17 @@ export const placeOrderSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Select a delivery time."),
   deliveryWindowId: z.string().trim().min(1, "Select a delivery time."),
   promo: z.string().trim().min(1).optional(),
+  // Per-line out-of-stock pre-approval (grocery substitutions). Only the choices
+  // travel; the server matches them to the cart it recomputes and defaults any
+  // unlisted line to "substitute". Optional so older clients still place orders.
+  substitutions: z
+    .array(
+      z.object({
+        productId: z.string().trim().min(1),
+        preference: z.enum(["substitute", "refund"]),
+      }),
+    )
+    .optional(),
 });
 
 export type PlaceOrderInput = z.infer<typeof placeOrderSchema>;

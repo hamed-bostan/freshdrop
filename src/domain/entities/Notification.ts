@@ -7,12 +7,21 @@
  * - `order_out_for_delivery` — the courier has the order and is on the way.
  * - `order_delivered` — the order reached the destination.
  * - `return_approved` — an admin approved the customer's return and refunded it.
+ * - `item_substituted` — a picker replaced an out-of-stock line with a pre-approved
+ *   comparable item.
+ * - `item_refunded` — a picker dropped an out-of-stock line the customer chose not
+ *   to substitute and refunded it.
+ * - `order_cancelled_out_of_stock` — every line was out of stock and refunded, so
+ *   the order was cancelled and fully refunded (delivery fee included).
  */
 export type NotificationKind =
   | "order_confirmed"
   | "order_out_for_delivery"
   | "order_delivered"
-  | "return_approved";
+  | "return_approved"
+  | "item_substituted"
+  | "item_refunded"
+  | "order_cancelled_out_of_stock";
 
 /**
  * A rendered, channel-agnostic notification. `title`/`body` are the human copy

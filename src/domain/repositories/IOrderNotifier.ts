@@ -22,4 +22,21 @@ export type IOrderNotifier = {
   orderDelivered(order: Order): Promise<void>;
   /** An admin approved the customer's return and refunded it — tell them. */
   returnApproved(order: Order): Promise<void>;
+  /**
+   * A picker replaced an out-of-stock line with a comparable item the customer had
+   * pre-approved — tell them what changed (and, when cheaper, that the saving was
+   * refunded). `itemName`/`replacementName` are the swapped products' names.
+   */
+  itemSubstituted(order: Order, itemName: string, replacementName: string): Promise<void>;
+  /**
+   * A picker dropped an out-of-stock line the customer chose not to substitute and
+   * refunded its value — tell them which item and that it was refunded.
+   */
+  itemRefunded(order: Order, itemName: string): Promise<void>;
+  /**
+   * Every line turned out to be out of stock and was refunded, so the order was
+   * cancelled and fully refunded (delivery fee included) — tell the customer there
+   * was nothing left to deliver and they've been made whole.
+   */
+  orderCancelledOutOfStock(order: Order): Promise<void>;
 };

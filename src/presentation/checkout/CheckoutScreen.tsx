@@ -3,8 +3,9 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MapPin, Clock, CreditCard, ClipboardList } from "lucide-react";
+import { MapPin, Clock, CreditCard, ClipboardList, Replace } from "lucide-react";
 import type { Cart } from "@/src/domain/entities/Cart";
+import type { SubstitutionPreference } from "@/src/domain/entities/Order";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
@@ -13,7 +14,13 @@ import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { DeliveryLocationItem } from "@/src/presentation/delivery-location/components/DeliveryLocationItem";
 import { PaymentMethodOption } from "@/src/presentation/payment/components";
 import { ApiError } from "@/src/lib/api/ApiError";
-import { CheckoutSection, DeliverySlotPicker, OrderSummaryCard, OrderTotals } from "./components";
+import {
+  CheckoutSection,
+  DeliverySlotPicker,
+  OrderSummaryCard,
+  OrderTotals,
+  SubstitutionPreferenceList,
+} from "./components";
 import type { SlotSelection } from "./components/DeliverySlotPicker";
 import { checkoutApi } from "./checkout-api";
 
@@ -52,8 +59,12 @@ export default function CheckoutScreen({
   const [addressId, setAddressId] = React.useState(() => deliveryLocations[0]?.id);
   const [slot, setSlot] = React.useState<SlotSelection | null>(() => firstBookableSlot(deliverySlotDays));
   const [paymentId, setPaymentId] = React.useState(() => paymentMethods[0]?.id);
+  const [substitutions, setSubstitutions] = React.useState<Record<string, SubstitutionPreference>>({});
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
+
+  const setSubstitution = (productId: string, preference: SubstitutionPreference) =>
+    setSubstitutions((prev) => ({ ...prev, [productId]: preference }));
 
   const placeOrder = (event: React.FormEvent) => {
     event.preventDefault();
@@ -74,6 +85,10 @@ export default function CheckoutScreen({
           deliveryDate: slot.date,
           deliveryWindowId: slot.windowId,
           promo: promoCode,
+          substitutions: cart.items.map((item) => ({
+            productId: item.product.id,
+            preference: substitutions[item.product.id] ?? "substitute",
+          })),
         });
         // The server cleared the cart and recorded the order; the confirmation
         // screen re-reads from the server, so just navigate.
@@ -131,6 +146,17 @@ export default function CheckoutScreen({
 
       <CheckoutSection icon={ClipboardList} title="Order Summary">
         <OrderSummaryCard items={cart.items} />
+      </CheckoutSection>
+
+      <CheckoutSection
+        icon={Replace}
+        title="If an item is out of stock"
+      >
+        <SubstitutionPreferenceList
+          items={cart.items}
+          value={substitutions}
+          onChange={setSubstitution}
+        />
       </CheckoutSection>
 
       <OrderTotals

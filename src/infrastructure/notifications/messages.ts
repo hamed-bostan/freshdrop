@@ -11,14 +11,29 @@ function shortRef(orderId: string): string {
 }
 
 /**
+ * Extra facts a substitution message needs — the affected line's name and, for a
+ * swap, the replacement's name. Ignored by the order-lifecycle kinds.
+ */
+export type SubstitutionContext = {
+  itemName: string;
+  replacementName?: string;
+};
+
+/**
  * Map an order lifecycle event to a rendered, channel-agnostic
  * {@link NotificationMessage}. The single owner of notification copy: free-text
  * channels use `title`/`body`, template channels fill their template from
  * `params` (the same facts, named). Pure — no I/O, no channel knowledge.
  */
-export function buildOrderMessage(kind: NotificationKind, order: Order): NotificationMessage {
+export function buildOrderMessage(
+  kind: NotificationKind,
+  order: Order,
+  context?: SubstitutionContext,
+): NotificationMessage {
   const ref = shortRef(order.id);
   const window = order.deliveryWindow ?? "";
+  const itemName = context?.itemName ?? "";
+  const replacementName = context?.replacementName ?? "";
 
   switch (kind) {
     case "order_confirmed":
@@ -53,6 +68,30 @@ export function buildOrderMessage(kind: NotificationKind, order: Order): Notific
         orderId: order.id,
         title: "Return approved",
         body: `Your return for FreshDrop order #${ref} was approved and refunded to your wallet.`,
+        params: { ORDER: ref },
+      };
+    case "item_substituted":
+      return {
+        kind,
+        orderId: order.id,
+        title: "Item substituted",
+        body: `${itemName} was out of stock in your FreshDrop order #${ref}, so we swapped in ${replacementName} as you approved. Any price difference was refunded to your wallet.`,
+        params: { ORDER: ref, ITEM: itemName, REPLACEMENT: replacementName },
+      };
+    case "item_refunded":
+      return {
+        kind,
+        orderId: order.id,
+        title: "Item refunded",
+        body: `${itemName} was out of stock in your FreshDrop order #${ref}, so we removed it and refunded it to your wallet.`,
+        params: { ORDER: ref, ITEM: itemName },
+      };
+    case "order_cancelled_out_of_stock":
+      return {
+        kind,
+        orderId: order.id,
+        title: "Order cancelled and refunded",
+        body: `Every item in your FreshDrop order #${ref} was out of stock, so we cancelled it and refunded it in full — including the delivery fee — to your wallet.`,
         params: { ORDER: ref },
       };
   }

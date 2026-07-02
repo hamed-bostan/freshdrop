@@ -1,5 +1,12 @@
 import { Prisma } from "@prisma/client";
-import type { Order, OrderItem, OrderPhase, OrderStatus } from "@/src/domain/entities/Order";
+import type {
+  ItemSubstitution,
+  Order,
+  OrderItem,
+  OrderPhase,
+  OrderStatus,
+  SubstitutionPreference,
+} from "@/src/domain/entities/Order";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
 import type {
   IOrderRepository,
@@ -51,6 +58,9 @@ export class PrismaOrderRepository implements IOrderRepository {
         phase: input.phase,
         placedAt: new Date(input.placedAt),
         location: input.location,
+        subtotal: input.subtotal,
+        shipping: input.shipping,
+        discount: input.discount,
         total: input.total,
         stage: input.stage ?? null,
         deliveryDate: input.deliveryDate ?? null,
@@ -62,6 +72,8 @@ export class PrismaOrderRepository implements IOrderRepository {
             name: item.name,
             imageUrl: item.imageUrl,
             quantity: item.quantity,
+            price: item.price,
+            substitutionPreference: item.substitutionPreference,
             position: index + 1,
           })),
         },
@@ -107,6 +119,29 @@ export class PrismaOrderRepository implements IOrderRepository {
     if (result.count === 0) return null;
     return this.getById(orderId);
   }
+
+  async resolveItemSubstitution(
+    orderId: string,
+    productId: string,
+    resolution: ItemSubstitution,
+  ): Promise<Order | null> {
+    // The "still unresolved" precondition (`substitutionStatus: null`) is folded
+    // into the WHERE clause, so the guard and the write are one atomic statement —
+    // `count` is 1 only for the call that actually resolved the line.
+    const result = await prisma.orderItem.updateMany({
+      where: { orderId, productId, substitutionStatus: null },
+      data: {
+        substitutionStatus: resolution.status,
+        substitutionRefundAmount: resolution.refundAmount,
+        replacementProductId: resolution.replacement?.productId ?? null,
+        replacementName: resolution.replacement?.name ?? null,
+        replacementImageUrl: resolution.replacement?.imageUrl ?? null,
+      },
+    });
+
+    if (result.count === 0) return null;
+    return this.getById(orderId);
+  }
 }
 
 /** The persisted columns an Order maps from (DB-only timestamps dropped). */
@@ -117,12 +152,27 @@ type OrderRow = {
   phase: string;
   placedAt: Date;
   location: string;
+  subtotal: number;
+  shipping: number;
+  discount: number;
   total: number;
   stage: string | null;
   deliveryDate: string | null;
   deliveryWindowId: string | null;
   deliveryWindow: string | null;
-  items: { productId: string; name: string; imageUrl: string; quantity: number }[];
+  items: {
+    productId: string;
+    name: string;
+    imageUrl: string;
+    quantity: number;
+    price: number;
+    substitutionPreference: string;
+    substitutionStatus: string | null;
+    substitutionRefundAmount: number | null;
+    replacementProductId: string | null;
+    replacementName: string | null;
+    replacementImageUrl: string | null;
+  }[];
 };
 
 /**
@@ -136,6 +186,25 @@ function toOrder(row: OrderRow): Order {
     name: item.name,
     imageUrl: item.imageUrl,
     quantity: item.quantity,
+    price: item.price,
+    // Plain string columns that only ever hold the domain union values (the app
+    // validates them), narrowed here — consistent with status/phase/stage above.
+    substitutionPreference: item.substitutionPreference as SubstitutionPreference,
+    substitution:
+      item.substitutionStatus == null
+        ? undefined
+        : {
+            status: item.substitutionStatus as ItemSubstitution["status"],
+            // Null only for rows resolved before this column existed — treat as 0.
+            refundAmount: item.substitutionRefundAmount ?? 0,
+            replacement: item.replacementProductId
+              ? {
+                  productId: item.replacementProductId,
+                  name: item.replacementName ?? "",
+                  imageUrl: item.replacementImageUrl ?? "",
+                }
+              : undefined,
+          },
   }));
 
   return {
@@ -145,6 +214,9 @@ function toOrder(row: OrderRow): Order {
     phase: row.phase as OrderPhase,
     placedAt: row.placedAt.toISOString(),
     location: row.location,
+    subtotal: row.subtotal,
+    shipping: row.shipping,
+    discount: row.discount,
     total: row.total,
     stage: (row.stage as TrackingMilestone | null) ?? undefined,
     deliveryDate: row.deliveryDate ?? undefined,

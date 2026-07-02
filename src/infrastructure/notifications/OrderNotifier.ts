@@ -3,7 +3,7 @@ import type { NotificationKind, NotificationRecipient } from "@/src/domain/entit
 import type { INotificationChannel } from "@/src/domain/repositories/INotificationChannel";
 import type { IOrderNotifier } from "@/src/domain/repositories/IOrderNotifier";
 import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
-import { buildOrderMessage } from "./messages";
+import { buildOrderMessage, type SubstitutionContext } from "./messages";
 
 /**
  * The concrete order notifier: resolves the order's owner, renders the event to a
@@ -38,7 +38,23 @@ export class OrderNotifier implements IOrderNotifier {
     return this.dispatch("return_approved", order);
   }
 
-  private async dispatch(kind: NotificationKind, order: Order): Promise<void> {
+  itemSubstituted(order: Order, itemName: string, replacementName: string): Promise<void> {
+    return this.dispatch("item_substituted", order, { itemName, replacementName });
+  }
+
+  itemRefunded(order: Order, itemName: string): Promise<void> {
+    return this.dispatch("item_refunded", order, { itemName });
+  }
+
+  orderCancelledOutOfStock(order: Order): Promise<void> {
+    return this.dispatch("order_cancelled_out_of_stock", order);
+  }
+
+  private async dispatch(
+    kind: NotificationKind,
+    order: Order,
+    context?: SubstitutionContext,
+  ): Promise<void> {
     if (this.channels.length === 0) return;
 
     try {
@@ -48,7 +64,7 @@ export class OrderNotifier implements IOrderNotifier {
         phone: user?.phone ?? null,
         name: user?.name ?? "",
       };
-      const message = buildOrderMessage(kind, order);
+      const message = buildOrderMessage(kind, order, context);
 
       const results = await Promise.allSettled(
         this.channels.map((channel) => channel.send(recipient, message)),

@@ -1,8 +1,11 @@
 import Image from "next/image";
-import type { Order } from "@/src/domain/entities/Order";
+import { ArrowLeftRight, RotateCcw } from "lucide-react";
+import type { Order, OrderItem } from "@/src/domain/entities/Order";
+import { Icon } from "@/src/presentation/design-system";
 import { formatOrderDate, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 import { OrderCardActions } from "./OrderCardActions";
+import { OrderAdjustments } from "./OrderAdjustments";
 
 /** Thumbnails shown before collapsing the rest into a "+N" count. */
 const MAX_VISIBLE_THUMBNAILS = 4;
@@ -21,6 +24,30 @@ function OrderInfoRow({ label, value }: OrderInfoRowProps) {
   );
 }
 
+/** A one-line note on the storefront card for a line a picker substituted or refunded. */
+function SubstitutionNote({ item }: { item: OrderItem }) {
+  const { substitution } = item;
+  if (!substitution) return null;
+
+  if (substitution.status === "substituted") {
+    return (
+      <li className="flex items-center gap-1.5 text-body-b8 text-foreground">
+        <Icon icon={ArrowLeftRight} size="xs" className="shrink-0 text-primary" />
+        <span className="truncate">
+          {item.name} → {substitution.replacement?.name ?? "a replacement"}
+        </span>
+      </li>
+    );
+  }
+
+  return (
+    <li className="flex items-center gap-1.5 text-body-b8 text-muted-foreground">
+      <Icon icon={RotateCcw} size="xs" className="shrink-0" />
+      <span className="truncate">{item.name} refunded — was out of stock</span>
+    </li>
+  );
+}
+
 interface OrderCardProps {
   order: Order;
 }
@@ -28,6 +55,7 @@ interface OrderCardProps {
 export function OrderCard({ order }: OrderCardProps) {
   const visibleItems = order.items.slice(0, MAX_VISIBLE_THUMBNAILS);
   const extraCount = order.items.length - visibleItems.length;
+  const substituted = order.items.filter((item) => item.substitution);
 
   return (
     <article className="flex flex-col gap-4 rounded-card-xl bg-surface p-4">
@@ -62,6 +90,16 @@ export function OrderCard({ order }: OrderCardProps) {
           $ {order.total.toFixed(2)}
         </p>
       </div>
+
+      {substituted.length > 0 && (
+        <ul className="flex flex-col gap-1.5 rounded-card-md bg-surface-sunken px-3 py-2">
+          {substituted.map((item) => (
+            <SubstitutionNote key={item.productId} item={item} />
+          ))}
+        </ul>
+      )}
+
+      <OrderAdjustments order={order} />
 
       <OrderCardActions order={order} />
     </article>

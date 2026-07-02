@@ -1,4 +1,4 @@
-import type { Order, OrderPhase, OrderStatus } from "../entities/Order";
+import type { ItemSubstitution, Order, OrderPhase, OrderStatus } from "../entities/Order";
 import type { TrackingMilestone } from "../entities/OrderTracking";
 
 /** The fields a delivery-stage transition writes (computed by the use-case, persisted by the repo). */
@@ -55,4 +55,19 @@ export type IOrderRepository = {
    * making cancel/return idempotent under double-submit and safe under races.
    */
   transitionStatus(orderId: string, transition: OrderStatusTransition): Promise<Order | null>;
+
+  /**
+   * Record a picker's resolution of an out-of-stock line, guarded so it only
+   * lands while the line is still unresolved. Returns the updated order when this
+   * call is the one that resolved the line, or `null` when it didn't match
+   * (unknown order/line, or the line was already resolved on another pick) — so
+   * the caller runs the refund/stock side effects only for the winning call,
+   * making the pick idempotent under double-submit and safe under races, exactly
+   * like {@link transitionStatus}.
+   */
+  resolveItemSubstitution(
+    orderId: string,
+    productId: string,
+    resolution: ItemSubstitution,
+  ): Promise<Order | null>;
 }

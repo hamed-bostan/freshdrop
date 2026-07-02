@@ -1,4 +1,10 @@
-import type { Order, OrderItem, OrderPhase, OrderStatus } from "@/src/domain/entities/Order";
+import type {
+  ItemSubstitution,
+  Order,
+  OrderItem,
+  OrderPhase,
+  OrderStatus,
+} from "@/src/domain/entities/Order";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
 import type {
   IOrderRepository,
@@ -115,6 +121,8 @@ export class MockOrderRepository implements IOrderRepository {
   );
   /** Phase overrides written by lifecycle transitions (cancel/refund archive the order). */
   private readonly phases = new Map<string, OrderPhase>();
+  /** Picker substitution resolutions, keyed `${orderId}::${productId}`. */
+  private readonly substitutions = new Map<string, ItemSubstitution>();
   /** Orders placed at runtime (via checkout), newest appended last. */
   private readonly created: Order[] = [];
   private nextId = 1;
@@ -134,7 +142,14 @@ export class MockOrderRepository implements IOrderRepository {
         .map(({ productId, quantity }) => {
           const product = byId.get(productId);
           if (!product) return null;
-          return { productId, name: product.name, imageUrl: product.imageUrl, quantity };
+          return this.withSubstitution(seed.id, {
+            productId,
+            name: product.name,
+            imageUrl: product.imageUrl,
+            quantity,
+            price: product.price,
+            substitutionPreference: "substitute",
+          });
         })
         .filter((item): item is OrderItem => item != null);
 
@@ -145,6 +160,11 @@ export class MockOrderRepository implements IOrderRepository {
         phase: this.phases.get(seed.id) ?? seed.phase,
         placedAt: seed.placedAt,
         location: seed.location,
+        // Demo orders carry no promo/shipping breakdown — treat the total as pure
+        // merchandise (no discount to pro-rate), enough for the mock.
+        subtotal: seed.total,
+        shipping: 0,
+        discount: 0,
         total: seed.total,
         stage: this.stages.get(seed.id) ?? undefined,
         items,
@@ -158,6 +178,7 @@ export class MockOrderRepository implements IOrderRepository {
       status: this.statuses.get(order.id) ?? order.status,
       phase: this.phases.get(order.id) ?? order.phase,
       stage: this.stages.has(order.id) ? (this.stages.get(order.id) ?? undefined) : order.stage,
+      items: order.items.map((item) => this.withSubstitution(order.id, item)),
     }));
 
     // Newest first — runtime orders carry the latest timestamps.
@@ -202,5 +223,28 @@ export class MockOrderRepository implements IOrderRepository {
     if (to.stage !== undefined) this.stages.set(orderId, to.stage);
 
     return this.getById(orderId);
+  }
+
+  async resolveItemSubstitution(
+    orderId: string,
+    productId: string,
+    resolution: ItemSubstitution,
+  ): Promise<Order | null> {
+    const key = `${orderId}::${productId}`;
+    const order = await this.getById(orderId);
+    // Guard mirrors the Prisma `updateMany` precondition: only an existing,
+    // still-unresolved line can be resolved (single-threaded JS makes this atomic).
+    if (!order) return null;
+    const item = order.items.find((line) => line.productId === productId);
+    if (!item || item.substitution) return null;
+
+    this.substitutions.set(key, resolution);
+    return this.getById(orderId);
+  }
+
+  /** Overlay any recorded picker resolution onto a line as it's read back. */
+  private withSubstitution(orderId: string, item: OrderItem): OrderItem {
+    const substitution = this.substitutions.get(`${orderId}::${item.productId}`);
+    return substitution ? { ...item, substitution } : item;
   }
 }

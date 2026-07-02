@@ -2,14 +2,16 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { ChevronDown } from "lucide-react";
-import type { Order } from "@/src/domain/entities/Order";
+import { ChevronDown, ArrowLeftRight, RotateCcw } from "lucide-react";
+import type { Order, OrderItem } from "@/src/domain/entities/Order";
+import { isPicking } from "@/src/domain/entities/Order";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Icon } from "@/src/presentation/design-system";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatOrderDate } from "@/src/lib/formatOrderDate";
 import { OrderStageSelect } from "./OrderStageSelect";
 import { OrderReturnControl } from "./OrderReturnControl";
+import { OrderItemPickControl } from "./OrderItemPickControl";
 
 type OrderRowProps = {
   order: Order;
@@ -24,6 +26,28 @@ function isTrackable(order: Order): boolean {
   return order.phase === "current" && order.status !== "cancelled";
 }
 
+/** The outcome shown once a picker has resolved an out-of-stock line. */
+function ItemSubstitutionBadge({ item }: { item: OrderItem }) {
+  const { substitution } = item;
+  if (!substitution) return null;
+
+  if (substitution.status === "substituted") {
+    return (
+      <p className="flex items-center gap-1.5 pl-13 text-body-b8 text-primary">
+        <Icon icon={ArrowLeftRight} size="xs" />
+        Substituted with {substitution.replacement?.name ?? "a replacement"}
+      </p>
+    );
+  }
+
+  return (
+    <p className="flex items-center gap-1.5 pl-13 text-body-b8 text-muted-foreground">
+      <Icon icon={RotateCcw} size="xs" />
+      Refunded — was out of stock
+    </p>
+  );
+}
+
 /**
  * One order row plus an expandable detail row. The summary row mirrors the table
  * columns; toggling the disclosure reveals the order's line items and total —
@@ -33,6 +57,7 @@ function isTrackable(order: Order): boolean {
 export function OrderRow({ order, customer, columnCount }: OrderRowProps) {
   const [open, setOpen] = React.useState(false);
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+  const pickable = isPicking(order);
 
   return (
     <>
@@ -86,24 +111,42 @@ export function OrderRow({ order, customer, columnCount }: OrderRowProps) {
               <h3 className="text-body-b8 uppercase tracking-wide text-muted-foreground">
                 {itemCount} {itemCount === 1 ? "item" : "items"}
               </h3>
-              <ul className="flex flex-col gap-2">
+              <ul className="flex flex-col gap-3">
                 {order.items.map((item) => (
-                  <li key={item.productId} className="flex items-center gap-3">
-                    <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
-                      <Image
-                        src={item.imageUrl}
-                        alt=""
-                        width={40}
-                        height={40}
-                        className="size-full object-contain"
-                      />
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-body-b7 text-foreground">
-                      {item.name}
-                    </span>
-                    <span className="shrink-0 text-body-b7 text-muted-foreground">
-                      × {item.quantity}
-                    </span>
+                  <li key={item.productId} className="flex flex-col gap-2">
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
+                        <Image
+                          src={item.imageUrl}
+                          alt=""
+                          width={40}
+                          height={40}
+                          className={`size-full object-contain ${
+                            item.substitution?.status === "refunded" ? "opacity-40" : ""
+                          }`}
+                        />
+                      </span>
+                      <span
+                        className={`min-w-0 flex-1 truncate text-body-b7 ${
+                          item.substitution?.status === "refunded"
+                            ? "text-muted-foreground line-through"
+                            : "text-foreground"
+                        }`}
+                      >
+                        {item.name}
+                      </span>
+                      <span className="shrink-0 text-body-b7 text-muted-foreground">
+                        × {item.quantity}
+                      </span>
+                    </div>
+
+                    {item.substitution ? (
+                      <ItemSubstitutionBadge item={item} />
+                    ) : pickable ? (
+                      <div className="pl-13">
+                        <OrderItemPickControl orderId={order.id} item={item} />
+                      </div>
+                    ) : null}
                   </li>
                 ))}
               </ul>
