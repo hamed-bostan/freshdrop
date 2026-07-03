@@ -11,7 +11,7 @@ interface ManageAddressesScreenProps {
 export default function ManageAddressesScreen({ locations }: ManageAddressesScreenProps) {
   return (
     <div className="flex min-h-dvh flex-col gap-6 px-6 pb-10">
-      <PageHeader title="Manage Address" />
+      <PageHeader title="Manage Address" backHref="/profile" />
 
       <ul className="flex flex-col gap-4">
         {locations.map((location) => (

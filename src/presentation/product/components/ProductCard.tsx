@@ -45,7 +45,10 @@ export function ProductCard({ product, className }: ProductCardProps) {
           independently clickable. No redundant wrapper — the title IS the link. */}
       <Link
         href={`/product/${product.id}`}
-        className="block px-2 mb-1 rounded-sm text-body-b13 text-foreground transition-colors hover:text-primary after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:ring focus-visible:ring-ring"
+        className={cn(
+          "block px-2 mb-1 rounded-sm text-body-b13 text-foreground transition-colors after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:ring focus-visible:ring-ring",
+          !outOfStock && "hover:text-primary"
+        )}
       >
         {product.name}
       </Link>

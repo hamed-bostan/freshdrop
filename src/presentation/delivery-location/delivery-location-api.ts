@@ -13,4 +13,13 @@ export const deliveryLocationsApi = {
     const { data } = await apiClient.post<DeliveryLocation>("/delivery-locations", input);
     return data;
   },
+
+  async update(id: string, input: DeliveryLocationInput): Promise<DeliveryLocation> {
+    const { data } = await apiClient.put<DeliveryLocation>(`/delivery-locations/${id}`, input);
+    return data;
+  },
+
+  async remove(id: string): Promise<void> {
+    await apiClient.delete(`/delivery-locations/${id}`);
+  },
 };

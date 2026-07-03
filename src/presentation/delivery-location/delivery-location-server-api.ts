@@ -20,4 +20,18 @@ export const deliveryLocationsServerApi = {
       throw error;
     }
   },
+
+  /**
+   * Resolve one of the caller's addresses by id; `null` so the edit page can
+   * `notFound()`. Both 404 (unknown/not the caller's) and 401 (signed out) read as
+   * "not available to you" — the same collapse the list read makes for anonymous users.
+   */
+  async getById(id: string): Promise<DeliveryLocation | null> {
+    try {
+      return await serverApiGet<DeliveryLocation>(`/delivery-locations/${id}`);
+    } catch (error) {
+      if (error instanceof ApiError && (error.status === 404 || error.status === 401)) return null;
+      throw error;
+    }
+  },
 };

@@ -9,6 +9,7 @@ import { DEFAULT_ZOOM, FOCUS_ZOOM, type MapViewCommand } from "./constants";
 import { LocationSearchBar, PlaceSearchResults, CenterPin, LocateButton } from "./components";
 import { usePlaceSearch } from "./hooks/use-place-search";
 import { useReverseGeocodedPlace } from "./hooks/use-reverse-geocode";
+import { reverseGeocode } from "./lib/geocoding-client";
 
 // Leaflet needs `window`, so the map is client-only and loaded lazily. Keeping
 // this import here (not in the barrel) keeps Leaflet out of the SSR bundle.
@@ -38,6 +39,7 @@ export default function LocationPickerScreen({ initialCenter, initialPlace }: Lo
 
   const { results, clear } = usePlaceSearch(query);
   const place = useReverseGeocodedPlace(point, initialPlace);
+  const [confirming, startConfirm] = React.useTransition();
 
   const recenter = (center: GeoPoint, zoom = FOCUS_ZOOM) =>
     setViewCommand((command) => ({ center, zoom, version: command.version + 1 }));
@@ -58,10 +60,28 @@ export default function LocationPickerScreen({ initialCenter, initialPlace }: Lo
   };
 
   const handleConfirm = () => {
-    // Hand the chosen coordinate to the detail step, which collects the address
-    // fields before the location is finally saved.
+    // Save the exact coordinate the pin sits on, and resolve *its* address here so
+    // the coordinate and its address stay in lockstep. We can't just forward the
+    // `place` shown on the map: it's debounced and trails `point`. Most visibly,
+    // right after "locate" the map has jumped to the user's position but the
+    // reverse-geocode hasn't caught up, so `place` still holds the address the map
+    // opened at (or none) — which is what leaked into the field before. Resolving
+    // the confirmed coordinate now (cached, so usually instant) fixes that.
     const target = point ?? initialCenter;
-    router.push(`/profile/addresses/new/details?lat=${target.latitude}&lon=${target.longitude}`);
+    startConfirm(async () => {
+      let address = "";
+      try {
+        const resolved = await reverseGeocode(target);
+        address = resolved?.address ?? "";
+      } catch {
+        // Lookup failed — hand off with no address rather than a stale one; the
+        // detail step falls back to resolving it server-side (or the user types it).
+      }
+
+      const params = new URLSearchParams({ lat: String(target.latitude), lon: String(target.longitude) });
+      if (address) params.set("address", address);
+      router.push(`/profile/addresses/new/details?${params.toString()}`);
+    });
   };
 
   return (
@@ -90,8 +110,14 @@ export default function LocationPickerScreen({ initialCenter, initialPlace }: Lo
       </div>
 
       <footer className="bg-background p-4">
-        <Button type="button" size="lg" className="w-full rounded-button-lg" onClick={handleConfirm}>
-          Add location
+        <Button
+          type="button"
+          size="lg"
+          className="w-full rounded-button-lg"
+          onClick={handleConfirm}
+          disabled={confirming}
+        >
+          {confirming ? "Loading…" : "Add location"}
         </Button>
       </footer>
     </div>

@@ -9,8 +9,6 @@ import type { DeliveryLocationKind } from "@/src/domain/entities/DeliveryLocatio
  */
 export const deliveryLocationSchema = z.object({
   address: z.string().trim().min(1, "Enter an address."),
-  detailAddress: z.string().trim().max(500, "Keep it under 500 characters.").optional().default(""),
-  phone: z.string().trim().max(30, "Enter a valid phone number.").optional().default(""),
   kind: z.enum(["home", "office", "gym", "other"]),
   latitude: z.number().optional(),
   longitude: z.number().optional(),

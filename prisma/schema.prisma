@@ -291,21 +291,19 @@ model Review {
 // A user's saved delivery address. Per-user data (scoped by `userId`, a plain
 // reference like the rest of the schema). `kind` ("home" | "office" | "gym" |
 // "other") is stored as a plain string matching the domain union — the app
-// validates it, consistent with the schema's enum-free style. `detailAddress`,
-// `phone` and the picked `latitude`/`longitude` are captured by the add-address
-// flow; only `label`/`address`/`kind` are surfaced on the cards today.
+// validates it, consistent with the schema's enum-free style. The picked
+// `latitude`/`longitude` are captured by the add-address flow; `label`,
+// `address` and `kind` are surfaced on the cards.
 model DeliveryLocation {
-  id            String   @id @default(uuid())
-  userId        String   @map("user_id")
-  label         String
-  address       String
-  detailAddress String?  @map("detail_address")
-  phone         String?
-  kind          String
-  latitude      Float?
-  longitude     Float?
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  label     String
+  address   String
+  kind      String
+  latitude  Float?
+  longitude Float?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([userId])
   @@map("delivery_locations")

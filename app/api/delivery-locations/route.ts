@@ -63,8 +63,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const location = await new CreateDeliveryLocation(deliveryLocationRepository).execute(session.user.id, {
       label: DELIVERY_LOCATION_LABELS[parsed.data.kind],
       address: parsed.data.address,
-      detailAddress: parsed.data.detailAddress || undefined,
-      phone: parsed.data.phone || undefined,
       kind: parsed.data.kind,
       latitude: parsed.data.latitude,
       longitude: parsed.data.longitude,
