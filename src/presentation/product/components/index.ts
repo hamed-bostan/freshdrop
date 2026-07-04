@@ -1,8 +1,7 @@
 export { ProductCard } from "./ProductCard";
 export { ProductGrid } from "./ProductGrid";
-export { AddToCartButton } from "./AddToCartButton";
+export { CartQuantityControl } from "./CartQuantityControl";
 export { ProductGallery } from "./ProductGallery";
-export { QuantityStepper } from "./QuantityStepper";
 export { ProductPurchasePanel } from "./ProductPurchasePanel";
 export { BackInStockButton } from "./BackInStockButton";
 export { ProductInfoAccordion } from "./ProductInfoAccordion";

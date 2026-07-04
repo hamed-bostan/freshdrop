@@ -7,6 +7,7 @@ import type { PromoCode } from "@/src/domain/entities/PromoCode";
 import { ConfirmSheet } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { cartsApi } from "../cart-api";
+import { useCart } from "../CartProvider";
 import { CartItemCard } from "./CartItemCard";
 import { CartSummaryBar } from "./CartSummaryBar";
 import { CartEmptyState } from "./CartEmptyState";
@@ -30,6 +31,7 @@ interface CartBrowserProps {
  */
 export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBrowserProps) {
   const router = useRouter();
+  const { refresh } = useCart();
   const [pendingRemovalId, setPendingRemovalId] = React.useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = React.useState(initialCheckoutOpen);
   const [pending, startTransition] = React.useTransition();
@@ -38,14 +40,16 @@ export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBro
   const isEmpty = items.length === 0;
   const pendingProduct = items.find((item) => item.product.id === pendingRemovalId)?.product;
 
-  // Run a cart mutation, then re-fetch the server cart so totals stay authoritative.
-  // A failure leaves the cart as the server has it (no toast system yet).
+  // Run a cart mutation, then re-fetch the server cart so totals (with any promo)
+  // stay authoritative, and resync the shared cart store so the nav badge reflects
+  // the change too. A failure leaves the cart as the server has it.
   const mutate = (action: () => Promise<void>) => {
     if (pending) return;
     startTransition(async () => {
       try {
         await action();
         router.refresh();
+        await refresh();
       } catch {
         // Swallowed: the displayed cart already reflects the server's last state.
       }

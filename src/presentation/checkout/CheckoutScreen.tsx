@@ -15,6 +15,7 @@ import { DeliveryLocationPickerSheet } from "@/src/presentation/delivery-locatio
 import { DeliveryLocationSummary } from "@/src/presentation/delivery-location/components/DeliveryLocationSummary";
 import { PaymentMethodOption } from "@/src/presentation/payment/components";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { useSessionStorageState } from "@/src/lib/hooks/useSessionStorageState";
 import {
   CheckoutSection,
   DeliverySlotPicker,
@@ -24,6 +25,7 @@ import {
 } from "./components";
 import type { SlotSelection } from "./components/DeliverySlotPicker";
 import { checkoutApi } from "./checkout-api";
+import { useCart } from "@/src/presentation/cart/CartProvider";
 
 interface CheckoutScreenProps {
   cart: Cart;
@@ -34,6 +36,12 @@ interface CheckoutScreenProps {
   promoCode?: string;
 }
 
+// Keys under which the in-progress selections are stashed in sessionStorage so they
+// survive popping out to add/edit an address and coming back (see useSessionStorageState).
+const SLOT_STORAGE_KEY = "freshdrop:checkout:slot";
+const PAYMENT_STORAGE_KEY = "freshdrop:checkout:payment";
+const SUBSTITUTIONS_STORAGE_KEY = "freshdrop:checkout:substitutions";
+
 /** The first window that can still be booked, used as the default selection. */
 function firstBookableSlot(days: DeliverySlotDay[]): SlotSelection | null {
   for (const day of days) {
@@ -41,6 +49,30 @@ function firstBookableSlot(days: DeliverySlotDay[]): SlotSelection | null {
     if (slot) return { date: day.date, windowId: slot.windowId };
   }
   return null;
+}
+
+/** Whether a (restored) selection still points at a window that's open for booking. */
+function isBookable(days: DeliverySlotDay[], selection: SlotSelection): boolean {
+  const slot = days
+    .find((day) => day.date === selection.date)
+    ?.slots.find((s) => s.windowId === selection.windowId);
+  return slot !== undefined && slot.availability.level !== "full";
+}
+
+/**
+ * Sanitize substitution preferences restored from sessionStorage — untrusted, since
+ * it's client-writable. Drop anything that isn't a recognized preference so a
+ * tampered/stale entry can't reach the order payload (the server re-validates too).
+ */
+function reviveSubstitutions(
+  stored: Record<string, SubstitutionPreference>,
+): Record<string, SubstitutionPreference> {
+  if (typeof stored !== "object" || stored === null) return {};
+  const clean: Record<string, SubstitutionPreference> = {};
+  for (const [productId, preference] of Object.entries(stored)) {
+    if (preference === "substitute" || preference === "refund") clean[productId] = preference;
+  }
+  return clean;
 }
 
 /**
@@ -57,13 +89,28 @@ export default function CheckoutScreen({
   promoCode,
 }: CheckoutScreenProps) {
   const router = useRouter();
+  const { refresh: refreshCart } = useCart();
   // The delivery address isn't chosen here — the user selects it in the home sheet or
   // on Manage Address, which persists it as their default. Checkout just reflects that
   // one selected address (falling back to the oldest if somehow none is flagged).
   const selectedAddress = deliveryLocations.find((location) => location.isDefault) ?? deliveryLocations[0];
-  const [slot, setSlot] = React.useState<SlotSelection | null>(() => firstBookableSlot(deliverySlotDays));
-  const [paymentId, setPaymentId] = React.useState(() => paymentMethods[0]?.id);
-  const [substitutions, setSubstitutions] = React.useState<Record<string, SubstitutionPreference>>({});
+  // The three selections persist to sessionStorage so leaving checkout to manage an
+  // address (or a reload) doesn't wipe them; they clear once the order is placed.
+  const defaultSlot = React.useMemo(() => firstBookableSlot(deliverySlotDays), [deliverySlotDays]);
+  const [slot, setSlot, clearSlot] = useSessionStorageState<SlotSelection | null>(
+    SLOT_STORAGE_KEY,
+    defaultSlot,
+    // A remembered slot may have sold out or rolled off the schedule while the user
+    // was away — only restore it if it's still an open window, else fall back.
+    (stored) => (stored && isBookable(deliverySlotDays, stored) ? stored : defaultSlot),
+  );
+  const [paymentId, setPaymentId, clearPayment] = useSessionStorageState<string | undefined>(
+    PAYMENT_STORAGE_KEY,
+    paymentMethods[0]?.id,
+  );
+  const [substitutions, setSubstitutions, clearSubstitutions] = useSessionStorageState<
+    Record<string, SubstitutionPreference>
+  >(SUBSTITUTIONS_STORAGE_KEY, {}, reviveSubstitutions);
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
 
@@ -94,9 +141,17 @@ export default function CheckoutScreen({
             preference: substitutions[item.product.id] ?? "substitute",
           })),
         });
-        // The server cleared the cart and recorded the order; the confirmation
-        // screen re-reads from the server, so just navigate.
+        // The server cleared the cart and recorded the order — drop the saved
+        // selections so the next checkout starts fresh, then navigate. The
+        // confirmation screen re-reads from the server.
+        clearSlot();
+        clearPayment();
+        clearSubstitutions();
+        // The order cleared the cart server-side: resync the shared cart store so
+        // the nav badge empties, then navigate and refresh the confirmation RSC.
+        refreshCart();
         router.push("/cart/checkout/confirmed");
+        router.refresh();
       } catch (err) {
         setError(
           err instanceof ApiError ? err.message : "Couldn't place your order. Please try again.",

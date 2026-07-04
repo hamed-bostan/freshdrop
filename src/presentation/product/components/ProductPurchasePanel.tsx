@@ -1,14 +1,10 @@
 "use client";
 
-import * as React from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { Plus, Star } from "lucide-react";
-import { Button, Icon } from "@/src/presentation/design-system";
+import { Star } from "lucide-react";
+import { Icon } from "@/src/presentation/design-system";
 import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
-import { ApiError } from "@/src/lib/api/ApiError";
-import { cartsApi } from "@/src/presentation/cart/cart-api";
-import { QuantityStepper } from "./QuantityStepper";
+import { CartQuantityControl } from "./CartQuantityControl";
 import { BackInStockButton } from "./BackInStockButton";
 
 interface ProductPurchasePanelProps {
@@ -18,33 +14,16 @@ interface ProductPurchasePanelProps {
 }
 
 /**
- * Name / rating / unit summary card with a quantity stepper and price, plus the
- * "Add to Cart" action. Owns the quantity so the stepper and the cart mutation
- * share one source of truth. Adding navigates to the cart so the user sees the
- * line; a 401 (not signed in) sends them to login, returning here after.
+ * Name / rating / unit summary card with the price and the cart control. In stock,
+ * the control is the grocery-style Add ↔ − / quantity / ＋ stepper bound to the
+ * cart line (see CartQuantityControl) — adding keeps the user on the page and the
+ * nav badge reflects it, rather than bouncing to the cart. Out of stock swaps in
+ * the back-in-stock subscribe button.
  */
 export function ProductPurchasePanel({ product, initialStockAlert }: ProductPurchasePanelProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [quantity, setQuantity] = React.useState(1);
-  const [pending, startTransition] = React.useTransition();
   const hasDiscount = product.originalPrice != null;
   const stock = getStockStatus(product.stockQuantity);
   const outOfStock = stock.level === "out";
-
-  function handleAddToCart() {
-    if (outOfStock) return;
-    startTransition(async () => {
-      try {
-        await cartsApi.addItem(product.id, quantity);
-        router.push("/cart");
-      } catch (error) {
-        if (error instanceof ApiError && error.status === 401) {
-          router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
-        }
-      }
-    });
-  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -68,33 +47,20 @@ export function ProductPurchasePanel({ product, initialStockAlert }: ProductPurc
           <p className="mt-2 text-body-b6 text-warning-foreground">Only {stock.quantity} left</p>
         )}
 
-        <div className="mt-4 flex items-center justify-between">
-          {/* Cap the stepper at what's on hand so the user can't pick a quantity the
-              checkout can't honour; disabled entirely when out of stock. */}
-          <QuantityStepper
-            value={quantity}
-            onChange={setQuantity}
-            max={outOfStock ? 1 : product.stockQuantity}
-          />
-
-          <div className="flex items-baseline gap-2">
-            {hasDiscount && (
-              <span className="text-body-b1 text-muted-foreground line-through">
-                ${product.originalPrice!.toFixed(2)}
-              </span>
-            )}
-            <span className="text-heading-h2 text-accent-foreground">${product.price.toFixed(2)}</span>
-          </div>
+        <div className="mt-4 flex items-baseline justify-end gap-2">
+          {hasDiscount && (
+            <span className="text-body-b1 text-muted-foreground line-through">
+              ${product.originalPrice!.toFixed(2)}
+            </span>
+          )}
+          <span className="text-heading-h2 text-accent-foreground">${product.price.toFixed(2)}</span>
         </div>
       </div>
 
       {outOfStock ? (
         <BackInStockButton productId={product.id} initialSubscribed={initialStockAlert} />
       ) : (
-        <Button size="lg" className="w-full gap-2" onClick={handleAddToCart} disabled={pending}>
-          Add to Cart
-          <Icon icon={Plus} size="sm" />
-        </Button>
+        <CartQuantityControl product={product} layout="block" />
       )}
     </div>
   );

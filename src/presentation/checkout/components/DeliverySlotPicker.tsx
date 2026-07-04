@@ -24,6 +24,15 @@ export function DeliverySlotPicker({ days, selected, onSelect }: DeliverySlotPic
   // Which day's windows are shown. Follows the selected slot's day, else the first.
   const [activeDate, setActiveDate] = React.useState(() => selected?.date ?? days[0]?.date ?? "");
 
+  // When the selection's day changes on its own — e.g. a slot restored from a
+  // previous session lands on a different day than the default — bring that day's
+  // tab into view so the restored window is visibly selected. During normal use the
+  // selection's day always equals the active day, so this is a no-op then.
+  const selectedDate = selected?.date;
+  React.useEffect(() => {
+    if (selectedDate) setActiveDate(selectedDate);
+  }, [selectedDate]);
+
   const activeDay = days.find((day) => day.date === activeDate) ?? days[0];
 
   if (!activeDay) {

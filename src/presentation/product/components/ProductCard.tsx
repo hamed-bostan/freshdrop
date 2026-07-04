@@ -1,7 +1,7 @@
 import { Star } from "lucide-react";
 import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
-import { AddToCartButton } from "./AddToCartButton";
+import { CartQuantityControl } from "./CartQuantityControl";
 import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
 import Image from "next/image";
@@ -79,7 +79,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           )}
         </div>
         <div className="relative z-10">
-          <AddToCartButton productId={product.id} disabled={outOfStock} />
+          <CartQuantityControl product={product} disabled={outOfStock} />
         </div>
       </div>
     </article>

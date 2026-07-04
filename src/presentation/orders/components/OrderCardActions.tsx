@@ -8,6 +8,7 @@ import { isCancellable, isReturnable } from "@/src/domain/entities/Order";
 import { Button } from "@/src/presentation/design-system";
 import { ConfirmDialog } from "@/src/presentation/components/ConfirmDialog";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { useCart } from "@/src/presentation/cart/CartProvider";
 import { ordersApi } from "../order-api";
 
 /** Which mutation is in flight — drives the per-button loading label. */
@@ -30,6 +31,7 @@ interface OrderCardActionsProps {
  */
 export function OrderCardActions({ order }: OrderCardActionsProps) {
   const router = useRouter();
+  const { refresh: refreshCart } = useCart();
   const [running, setRunning] = React.useState<RunningAction | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [confirm, setConfirm] = React.useState<ConfirmAction | null>(null);
@@ -147,7 +149,15 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
       variant="outline"
       size="sm"
       disabled={pending}
-      onClick={() => run("reorder", () => ordersApi.reorder(order.id), () => router.push("/cart"))}
+      onClick={() =>
+        run("reorder", () => ordersApi.reorder(order.id), () => {
+          // Reorder added the items server-side: resync the shared cart store so
+          // the nav badge reflects them, then navigate to the cart and refresh.
+          refreshCart();
+          router.push("/cart");
+          router.refresh();
+        })
+      }
     >
       {running === "reorder" ? "Adding…" : "Reorder"}
     </Button>,
