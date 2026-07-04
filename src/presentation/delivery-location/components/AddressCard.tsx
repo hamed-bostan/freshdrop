@@ -1,19 +1,29 @@
 import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { Icon } from "@/src/presentation/design-system";
+import { cn } from "@/src/lib/utils";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
-import { DeliveryLocationSummary } from "./DeliveryLocationSummary";
 import { RemoveAddressButton } from "./RemoveAddressButton";
+import { SelectAddressButton } from "./SelectAddressButton";
 
 interface AddressCardProps {
   location: DeliveryLocation;
 }
 
-/** One saved address on the Manage Address screen: summary + edit and remove affordances. */
+/**
+ * One saved address on the Manage Address screen. The body selects the address as
+ * the checkout default (highlighted with a border when selected); the trailing
+ * controls edit and remove it.
+ */
 export function AddressCard({ location }: AddressCardProps) {
   return (
-    <div className="flex items-center justify-between gap-5 rounded-card-xl bg-surface px-4 py-2">
-      <DeliveryLocationSummary location={location} />
+    <div
+      className={cn(
+        "flex items-center justify-between gap-5 rounded-card-xl border bg-surface px-4 py-2",
+        location.isDefault ? "border-foreground" : "border-transparent",
+      )}
+    >
+      <SelectAddressButton location={location} />
 
       <div className="flex shrink-0 items-center gap-1">
         <Link

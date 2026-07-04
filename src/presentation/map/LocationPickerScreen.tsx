@@ -70,9 +70,11 @@ export default function LocationPickerScreen({ initialCenter, initialPlace }: Lo
     const target = point ?? initialCenter;
     startConfirm(async () => {
       let address = "";
+      let city = "";
       try {
         const resolved = await reverseGeocode(target);
         address = resolved?.address ?? "";
+        city = resolved?.city ?? "";
       } catch {
         // Lookup failed — hand off with no address rather than a stale one; the
         // detail step falls back to resolving it server-side (or the user types it).
@@ -80,6 +82,7 @@ export default function LocationPickerScreen({ initialCenter, initialPlace }: Lo
 
       const params = new URLSearchParams({ lat: String(target.latitude), lon: String(target.longitude) });
       if (address) params.set("address", address);
+      if (city) params.set("city", city);
       router.push(`/profile/addresses/new/details?${params.toString()}`);
     });
   };

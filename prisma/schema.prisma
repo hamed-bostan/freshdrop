@@ -299,9 +299,19 @@ model DeliveryLocation {
   userId    String   @map("user_id")
   label     String
   address   String
+  // The settlement (city / town) the address sits in, resolved by reverse-geocoding
+  // the picked coordinate. Optional: the geocoder can't always determine it, and
+  // older rows predate the field. Drives the short region label in the home header.
+  city      String?
   kind      String
   latitude  Float?
   longitude Float?
+  // The one address the user has chosen for checkout. At most one per user is true,
+  // enforced by a partial unique index (see the add_delivery_location_default
+  // migration — not expressible in the Prisma schema DSL) and maintained in the
+  // repository: the first address a user saves becomes their default, selecting
+  // another moves it, and deleting the default promotes their next-oldest address.
+  isDefault Boolean  @default(false) @map("is_default")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

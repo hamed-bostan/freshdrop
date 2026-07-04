@@ -9,6 +9,13 @@ import type { DeliveryLocationKind } from "@/src/domain/entities/DeliveryLocatio
  */
 export const deliveryLocationSchema = z.object({
   address: z.string().trim().min(1, "Enter an address."),
+  // Optional and auto-derived from the picked coordinate; a blank value is stored as
+  // "unknown" (undefined) rather than an empty string.
+  city: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => value || undefined),
   kind: z.enum(["home", "office", "gym", "other"]),
   latitude: z.number().optional(),
   longitude: z.number().optional(),

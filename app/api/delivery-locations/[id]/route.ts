@@ -69,6 +69,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
     const location = await new UpdateDeliveryLocation(deliveryLocationRepository).execute(session.user.id, id, {
       label: DELIVERY_LOCATION_LABELS[parsed.data.kind],
       address: parsed.data.address,
+      city: parsed.data.city,
       kind: parsed.data.kind,
       latitude: parsed.data.latitude,
       longitude: parsed.data.longitude,

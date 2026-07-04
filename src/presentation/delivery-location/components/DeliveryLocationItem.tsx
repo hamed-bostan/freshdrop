@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
@@ -9,11 +10,13 @@ import { DeliveryLocationSummary } from "./DeliveryLocationSummary";
 interface DeliveryLocationItemProps {
   location: DeliveryLocation;
   selected: boolean;
+  /** Picking the address is in-page state (which one to deliver to), so it's a callback. */
   onSelect: () => void;
-  onEdit?: () => void;
+  /** Editing is a navigation, so it's a real link target rather than a callback. */
+  editHref: string;
 }
 
-export function DeliveryLocationItem({ location, selected, onSelect, onEdit }: DeliveryLocationItemProps) {
+export function DeliveryLocationItem({ location, selected, onSelect, editHref }: DeliveryLocationItemProps) {
   return (
     <div
       className={cn(
@@ -25,8 +28,10 @@ export function DeliveryLocationItem({ location, selected, onSelect, onEdit }: D
         <DeliveryLocationSummary location={location} />
       </button>
 
-      <Button variant="ghost" iconOnly type="button" onClick={onEdit} aria-label={`Edit ${location.label} address`}>
-        <Icon icon={Pencil} size="sm" />
+      <Button asChild variant="ghost" iconOnly aria-label={`Edit ${location.label} address`}>
+        <Link href={editHref}>
+          <Icon icon={Pencil} size="sm" />
+        </Link>
       </Button>
     </div>
   );

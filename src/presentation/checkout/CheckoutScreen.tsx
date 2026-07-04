@@ -11,7 +11,8 @@ import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
 import { Button } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
-import { DeliveryLocationItem } from "@/src/presentation/delivery-location/components/DeliveryLocationItem";
+import { DeliveryLocationPickerSheet } from "@/src/presentation/delivery-location/DeliveryLocationPickerSheet";
+import { DeliveryLocationSummary } from "@/src/presentation/delivery-location/components/DeliveryLocationSummary";
 import { PaymentMethodOption } from "@/src/presentation/payment/components";
 import { ApiError } from "@/src/lib/api/ApiError";
 import {
@@ -56,7 +57,10 @@ export default function CheckoutScreen({
   promoCode,
 }: CheckoutScreenProps) {
   const router = useRouter();
-  const [addressId, setAddressId] = React.useState(() => deliveryLocations[0]?.id);
+  // The delivery address isn't chosen here — the user selects it in the home sheet or
+  // on Manage Address, which persists it as their default. Checkout just reflects that
+  // one selected address (falling back to the oldest if somehow none is flagged).
+  const selectedAddress = deliveryLocations.find((location) => location.isDefault) ?? deliveryLocations[0];
   const [slot, setSlot] = React.useState<SlotSelection | null>(() => firstBookableSlot(deliverySlotDays));
   const [paymentId, setPaymentId] = React.useState(() => paymentMethods[0]?.id);
   const [substitutions, setSubstitutions] = React.useState<Record<string, SubstitutionPreference>>({});
@@ -68,7 +72,7 @@ export default function CheckoutScreen({
 
   const placeOrder = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!addressId) {
+    if (!selectedAddress) {
       setError("Select a delivery address.");
       return;
     }
@@ -81,7 +85,7 @@ export default function CheckoutScreen({
     startTransition(async () => {
       try {
         await checkoutApi.placeOrder({
-          addressId,
+          addressId: selectedAddress.id,
           deliveryDate: slot.date,
           deliveryWindowId: slot.windowId,
           promo: promoCode,
@@ -109,22 +113,31 @@ export default function CheckoutScreen({
         icon={MapPin}
         title="Deliver To"
         action={
-          <Link href="/profile/addresses/new" className="text-body-b8 text-primary">
-            Add New Address
-          </Link>
+          selectedAddress ? (
+            <DeliveryLocationPickerSheet
+              locations={deliveryLocations}
+              trigger={
+                <button type="button" className="text-body-b8 text-primary">
+                  Change
+                </button>
+              }
+            />
+          ) : (
+            <Link href="/profile/addresses/new" className="text-body-b8 text-primary">
+              Add New Address
+            </Link>
+          )
         }
       >
-        <div className="flex flex-col gap-2">
-          {deliveryLocations.map((location) => (
-            <DeliveryLocationItem
-              key={location.id}
-              location={location}
-              selected={location.id === addressId}
-              onSelect={() => setAddressId(location.id)}
-              onEdit={() => router.push("/profile/addresses")}
-            />
-          ))}
-        </div>
+        {selectedAddress ? (
+          <div className="flex items-center rounded-card-xl border border-foreground bg-surface px-4 py-2">
+            <DeliveryLocationSummary location={selectedAddress} />
+          </div>
+        ) : (
+          <p className="text-body-b8 text-muted-foreground">
+            You don&apos;t have a saved address yet. Add one to continue.
+          </p>
+        )}
       </CheckoutSection>
 
       <CheckoutSection icon={Clock} title="Delivery Time">

@@ -3,7 +3,7 @@
 import * as React from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { Button, TextField, Textarea } from "@/src/presentation/design-system";
+import { Button, Input, TextField, Textarea } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import type { GeoPoint } from "@/src/domain/entities/Place";
 import type { DeliveryLocation, DeliveryLocationKind } from "@/src/domain/entities/DeliveryLocation";
@@ -57,9 +57,16 @@ interface LocationDetailScreenProps {
    * retyping it. Ignored when editing (the saved address wins).
    */
   initialAddress?: string;
+  /** Reverse-geocoded city for the chosen coordinate, seeding the City field (add flow). */
+  initialCity?: string;
 }
 
-export default function LocationDetailScreen({ center, location, initialAddress }: LocationDetailScreenProps) {
+export default function LocationDetailScreen({
+  center,
+  location,
+  initialAddress,
+  initialCity,
+}: LocationDetailScreenProps) {
   const router = useRouter();
 
   const isEditing = location !== undefined;
@@ -67,6 +74,7 @@ export default function LocationDetailScreen({ center, location, initialAddress 
   // Editing: prefilled from the saved address. Adding: seeded with the picked
   // location's reverse-geocoded address, which the user can refine.
   const [address, setAddress] = React.useState(location?.address ?? initialAddress ?? "");
+  const [city, setCity] = React.useState(location?.city ?? initialCity ?? "");
   const [label, setLabel] = React.useState<DeliveryLocationKind>(location?.kind ?? "home");
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
@@ -77,27 +85,31 @@ export default function LocationDetailScreen({ center, location, initialAddress 
   const [point, setPoint] = React.useState<GeoPoint | null>(null);
   const coordinate = point ?? center;
 
-  // Whether the user has hand-edited the Address field since the last pan. A manual
-  // edit wins over the pin's reverse-geocoded address (both the live sync below and
-  // the confirmed-coordinate resolve on submit), so a refined address isn't clobbered.
+  // Whether the user has hand-edited the Address / City field since the last pan. A
+  // manual edit wins over the pin's reverse-geocoded values (both the live sync below
+  // and the confirmed-coordinate resolve on submit), so a refined value isn't clobbered.
   const addressEditedRef = React.useRef(false);
+  const cityEditedRef = React.useRef(false);
 
   const handleCenterChange = (next: GeoPoint) => {
     // Ignore the map's initial settling report (~the opening centre) so it doesn't
     // count as a move; only a genuine pan updates the pin.
     if (isSamePoint(next, center)) return;
-    // A fresh pan re-adopts the reverse-geocoded address for the new spot.
+    // A fresh pan re-adopts the reverse-geocoded address and city for the new spot.
     addressEditedRef.current = false;
+    cityEditedRef.current = false;
     setPoint(next);
   };
 
-  // Keep the Address field in lockstep with the pin: once the user pans, reverse-
-  // geocode the new coordinate (debounced) and adopt its address. `point` is null
-  // until the first pan, so the saved address is preserved until then; typing after
-  // a pan is preserved until the next pan.
+  // Keep the Address and City fields in lockstep with the pin: once the user pans,
+  // reverse-geocode the new coordinate (debounced) and adopt its values. `point` is
+  // null until the first pan, so the saved values are preserved until then; typing
+  // after a pan is preserved until the next pan.
   const pinnedPlace = useReverseGeocodedPlace(point, null);
   React.useEffect(() => {
-    if (pinnedPlace?.address && !addressEditedRef.current) setAddress(pinnedPlace.address);
+    if (!pinnedPlace) return;
+    if (pinnedPlace.address && !addressEditedRef.current) setAddress(pinnedPlace.address);
+    if (pinnedPlace.city && !cityEditedRef.current) setCity(pinnedPlace.city);
   }, [pinnedPlace]);
 
   const handleSubmit = (event: React.FormEvent) => {
@@ -110,23 +122,28 @@ export default function LocationDetailScreen({ center, location, initialAddress 
     setError(null);
     startTransition(async () => {
       try {
-        // Save the address for the *exact* pinned coordinate. When the pin has been
-        // moved and the user hasn't hand-edited the field, the live value is debounced
-        // and can still trail the pin — most visibly if they hit Save right after
-        // panning — so resolve the confirmed coordinate here (cached, usually instant)
-        // to keep the coordinate and its address in lockstep. A manual edit wins.
+        // Save the address/city for the *exact* pinned coordinate. When the pin has
+        // been moved and the user hasn't hand-edited a field, the live value is
+        // debounced and can still trail the pin — most visibly if they hit Save right
+        // after panning — so resolve the confirmed coordinate here (cached, usually
+        // instant) to keep the coordinate and its values in lockstep. A manual edit wins.
         let resolvedAddress = address.trim();
-        if (point && !addressEditedRef.current) {
+        let resolvedCity = city.trim();
+        const needsResolve =
+          point && (!addressEditedRef.current || !cityEditedRef.current);
+        if (needsResolve) {
           try {
             const place = await reverseGeocode(coordinate);
-            if (place?.address) resolvedAddress = place.address;
+            if (place?.address && !addressEditedRef.current) resolvedAddress = place.address;
+            if (place?.city && !cityEditedRef.current) resolvedCity = place.city;
           } catch {
-            // Lookup failed — keep the field value rather than blanking it.
+            // Lookup failed — keep the field values rather than blanking them.
           }
         }
 
         const input = {
           address: resolvedAddress,
+          city: resolvedCity || undefined,
           kind: label,
           latitude: coordinate.latitude,
           longitude: coordinate.longitude,
@@ -179,6 +196,21 @@ export default function LocationDetailScreen({ center, location, initialAddress 
       </div>
 
       <div className="flex flex-col gap-5">
+
+        <TextField label="City">
+          {(control) => (
+              <Input
+                  {...control}
+                  placeholder="City"
+                  value={city}
+                  onChange={(event) => {
+                    cityEditedRef.current = true;
+                    setCity(event.target.value);
+                  }}
+              />
+          )}
+        </TextField>
+
         <TextField label="Address">
           {(control) => (
             <Textarea

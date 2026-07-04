@@ -5,28 +5,30 @@ import LocationDetailScreen from "@/src/presentation/map/LocationDetailScreen";
 import { DEFAULT_CENTER } from "@/src/presentation/map/constants";
 
 interface LocationDetailsPageProps {
-  searchParams: Promise<{ lat?: string; lon?: string; address?: string }>;
+  searchParams: Promise<{ lat?: string; lon?: string; address?: string; city?: string }>;
 }
 
 export default async function LocationDetailsPage({ searchParams }: LocationDetailsPageProps) {
-  const { lat, lon, address } = await searchParams;
+  const { lat, lon, address, city } = await searchParams;
   const candidate: GeoPoint = { latitude: Number(lat), longitude: Number(lon) };
 
   // Fall back to the default if the coordinate is missing/invalid (e.g. deep link).
   const center = isValidGeoPoint(candidate) ? candidate : DEFAULT_CENTER;
 
-  // Seed the Address field with the location the user picked. The picker forwards
-  // the address it already reverse-geocoded, so that's the source of truth; only if
-  // it's missing (e.g. a deep link straight to this step) do we resolve it here.
+  // Seed the Address and City fields with the location the user picked. The picker
+  // forwards what it already reverse-geocoded, so that's the source of truth; only if
+  // either is missing (e.g. a deep link straight to this step) do we resolve it here.
   let initialAddress = address ?? "";
-  if (!initialAddress) {
+  let initialCity = city ?? "";
+  if (!initialAddress || !initialCity) {
     try {
       const place = await new ReverseGeocode(geocodingRepository).execute(center);
-      initialAddress = place?.address ?? "";
+      if (!initialAddress) initialAddress = place?.address ?? "";
+      if (!initialCity) initialCity = place?.city ?? "";
     } catch {
-      // Geocoder unavailable (e.g. offline dev) — the user can still type the address.
+      // Geocoder unavailable (e.g. offline dev) — the user can still type them.
     }
   }
 
-  return <LocationDetailScreen center={center} initialAddress={initialAddress} />;
+  return <LocationDetailScreen center={center} initialAddress={initialAddress} initialCity={initialCity} />;
 }

@@ -10,11 +10,7 @@ export function HomeHeader({ deliveryLocations }: HomeHeaderProps) {
   return (
     <header className="pt-3">
       <div className="mb-4 flex justify-center">
-        <DeliveryLocationSelector
-          region="Toronto, Ontario"
-          locations={deliveryLocations}
-          defaultSelectedId="2"
-        />
+        <DeliveryLocationSelector locations={deliveryLocations} />
       </div>
 
       <SearchBar />

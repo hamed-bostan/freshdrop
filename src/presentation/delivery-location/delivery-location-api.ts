@@ -19,6 +19,12 @@ export const deliveryLocationsApi = {
     return data;
   },
 
+  /** Make this address the user's checkout default; resolves with the updated address. */
+  async setDefault(id: string): Promise<DeliveryLocation> {
+    const { data } = await apiClient.put<DeliveryLocation>(`/delivery-locations/${id}/default`);
+    return data;
+  },
+
   async remove(id: string): Promise<void> {
     await apiClient.delete(`/delivery-locations/${id}`);
   },
