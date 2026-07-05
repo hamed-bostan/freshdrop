@@ -7,9 +7,13 @@ import { walletsServerApi } from "@/src/presentation/wallet/wallet-server-api";
 export const dynamic = "force-dynamic";
 
 export default async function PaymentMethodsPage() {
-  // The option catalog (public) and the caller's saved cards (per-user) are
-  // independent reads, fetched together.
-  const [methods, cards] = await Promise.all([paymentMethodsServerApi.list(), walletsServerApi.listCards()]);
+  // The option catalog (public), the caller's saved cards and their current
+  // selection (both per-user) are independent reads, fetched together.
+  const [methods, cards, selectedId] = await Promise.all([
+    paymentMethodsServerApi.list(),
+    walletsServerApi.listCards(),
+    paymentMethodsServerApi.getSelectedId(),
+  ]);
 
-  return <PaymentMethodScreen methods={methods} cards={cards} />;
+  return <PaymentMethodScreen methods={methods} cards={cards} selectedId={selectedId} />;
 }

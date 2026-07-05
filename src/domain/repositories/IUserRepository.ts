@@ -20,4 +20,8 @@ export type IUserRepository = {
   getById(id: string): Promise<User | null>;
   create(input: NewUser): Promise<User>;
   update(id: string, input: ProfileUpdate): Promise<User>;
+  /** The id of the payment method the user last selected for checkout, or `null` if unset. */
+  getSelectedPaymentMethodId(userId: string): Promise<string | null>;
+  /** Persist the user's selected checkout payment method (a catalog option or saved card id). */
+  setSelectedPaymentMethodId(userId: string, methodId: string): Promise<void>;
 }

@@ -40,6 +40,29 @@ export class PrismaUserRepository implements IUserRepository {
       throw error;
     }
   }
+
+  async getSelectedPaymentMethodId(userId: string): Promise<string | null> {
+    const row = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { selectedPaymentMethodId: true },
+    });
+    return row?.selectedPaymentMethodId ?? null;
+  }
+
+  async setSelectedPaymentMethodId(userId: string, methodId: string): Promise<void> {
+    try {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { selectedPaymentMethodId: methodId },
+      });
+    } catch (error) {
+      // P2025: the user row vanished (see `update`). Surface it transport-agnostically.
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+        throw new NotFoundError("user", userId, { cause: error });
+      }
+      throw error;
+    }
+  }
 }
 
 /** Map a Prisma row to the domain entity (dropping DB-only timestamps). */

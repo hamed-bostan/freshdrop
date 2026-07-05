@@ -9,11 +9,13 @@ import type { SubstitutionPreference } from "@/src/domain/entities/Order";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
+import type { SavedCard } from "@/src/domain/entities/Wallet";
 import { Button } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { DeliveryLocationPickerSheet } from "@/src/presentation/delivery-location/DeliveryLocationPickerSheet";
 import { DeliveryLocationSummary } from "@/src/presentation/delivery-location/components/DeliveryLocationSummary";
-import { PaymentMethodOption } from "@/src/presentation/payment/components";
+import { PaymentMethodOption, SavedCardOption } from "@/src/presentation/payment/components";
+import { paymentMethodsApi } from "@/src/presentation/payment/payment-method-api";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { useSessionStorageState } from "@/src/lib/hooks/useSessionStorageState";
 import {
@@ -32,14 +34,22 @@ interface CheckoutScreenProps {
   deliveryLocations: DeliveryLocation[];
   deliverySlotDays: DeliverySlotDay[];
   paymentMethods: PaymentMethod[];
+  /** The user's saved cards, selectable alongside the catalog options. */
+  savedCards: SavedCard[];
+  /**
+   * The user's persisted checkout payment selection (a catalog option or saved card
+   * id), or `null` when unset — the same preference set on the Payment Method screen.
+   */
+  selectedPaymentMethodId: string | null;
   /** Promo code applied in the cart, forwarded so the server's totals match. */
   promoCode?: string;
 }
 
 // Keys under which the in-progress selections are stashed in sessionStorage so they
 // survive popping out to add/edit an address and coming back (see useSessionStorageState).
+// The payment method isn't among them: it's a persisted per-user preference (read from
+// the server, written on change), not ephemeral checkout state.
 const SLOT_STORAGE_KEY = "freshdrop:checkout:slot";
-const PAYMENT_STORAGE_KEY = "freshdrop:checkout:payment";
 const SUBSTITUTIONS_STORAGE_KEY = "freshdrop:checkout:substitutions";
 
 /** The first window that can still be booked, used as the default selection. */
@@ -86,6 +96,8 @@ export default function CheckoutScreen({
   deliveryLocations,
   deliverySlotDays,
   paymentMethods,
+  savedCards,
+  selectedPaymentMethodId,
   promoCode,
 }: CheckoutScreenProps) {
   const router = useRouter();
@@ -94,8 +106,9 @@ export default function CheckoutScreen({
   // on Manage Address, which persists it as their default. Checkout just reflects that
   // one selected address (falling back to the oldest if somehow none is flagged).
   const selectedAddress = deliveryLocations.find((location) => location.isDefault) ?? deliveryLocations[0];
-  // The three selections persist to sessionStorage so leaving checkout to manage an
-  // address (or a reload) doesn't wipe them; they clear once the order is placed.
+  // The slot and substitution selections persist to sessionStorage so leaving checkout
+  // to manage an address (or a reload) doesn't wipe them; they clear once the order is
+  // placed. The payment method is handled separately — a server-persisted preference.
   const defaultSlot = React.useMemo(() => firstBookableSlot(deliverySlotDays), [deliverySlotDays]);
   const [slot, setSlot, clearSlot] = useSessionStorageState<SlotSelection | null>(
     SLOT_STORAGE_KEY,
@@ -104,15 +117,36 @@ export default function CheckoutScreen({
     // was away — only restore it if it's still an open window, else fall back.
     (stored) => (stored && isBookable(deliverySlotDays, stored) ? stored : defaultSlot),
   );
-  const [paymentId, setPaymentId, clearPayment] = useSessionStorageState<string | undefined>(
-    PAYMENT_STORAGE_KEY,
-    paymentMethods[0]?.id,
-  );
+  // Payment is a persisted per-user preference (the same one the Payment Method
+  // screen sets), not ephemeral checkout state. Seed the highlight from the stored
+  // selection — falling back to the first catalog option when it's unset or stale
+  // (e.g. a card since removed) — and write each change straight back to the server.
+  const initialPaymentId = React.useMemo(() => {
+    const available = new Set([...paymentMethods.map((m) => m.id), ...savedCards.map((c) => c.id)]);
+    return selectedPaymentMethodId && available.has(selectedPaymentMethodId)
+      ? selectedPaymentMethodId
+      : paymentMethods[0]?.id;
+  }, [paymentMethods, savedCards, selectedPaymentMethodId]);
+  const [paymentId, setPaymentId] = React.useState(initialPaymentId);
+  const [, startPaymentTransition] = React.useTransition();
   const [substitutions, setSubstitutions, clearSubstitutions] = useSessionStorageState<
     Record<string, SubstitutionPreference>
   >(SUBSTITUTIONS_STORAGE_KEY, {}, reviveSubstitutions);
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
+
+  const selectPayment = (id: string) => {
+    const previous = paymentId;
+    setPaymentId(id); // optimistic highlight
+    startPaymentTransition(async () => {
+      try {
+        await paymentMethodsApi.select(id);
+      } catch {
+        // Didn't persist — snap the highlight back to the previous choice.
+        setPaymentId(previous);
+      }
+    });
+  };
 
   const setSubstitution = (productId: string, preference: SubstitutionPreference) =>
     setSubstitutions((prev) => ({ ...prev, [productId]: preference }));
@@ -141,11 +175,11 @@ export default function CheckoutScreen({
             preference: substitutions[item.product.id] ?? "substitute",
           })),
         });
-        // The server cleared the cart and recorded the order — drop the saved
-        // selections so the next checkout starts fresh, then navigate. The
-        // confirmation screen re-reads from the server.
+        // The server cleared the cart and recorded the order — drop the ephemeral
+        // selections so the next checkout starts fresh, then navigate. The payment
+        // method is a persisted preference and intentionally kept. The confirmation
+        // screen re-reads from the server.
         clearSlot();
-        clearPayment();
         clearSubstitutions();
         // The order cleared the cart server-side: resync the shared cart store so
         // the nav badge empties, then navigate and refresh the confirmation RSC.
@@ -206,7 +240,15 @@ export default function CheckoutScreen({
               key={method.id}
               method={method}
               selected={method.id === paymentId}
-              onSelect={setPaymentId}
+              onSelect={selectPayment}
+            />
+          ))}
+          {savedCards.map((card) => (
+            <SavedCardOption
+              key={card.id}
+              card={card}
+              selected={card.id === paymentId}
+              onSelect={selectPayment}
             />
           ))}
         </div>

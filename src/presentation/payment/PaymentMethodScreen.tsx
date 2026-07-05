@@ -6,6 +6,8 @@ import { Button } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import type { PaymentMethod, PaymentMethodGroup } from "@/src/domain/entities/PaymentMethod";
 import type { SavedCard } from "@/src/domain/entities/Wallet";
+import { ApiError } from "@/src/lib/api/ApiError";
+import { paymentMethodsApi } from "./payment-method-api";
 import { PaymentMethodOption, SavedCardOption, AddCardRow } from "./components";
 
 /** Sections render in this fixed order; the title is a UI concern, not domain data. */
@@ -20,17 +22,42 @@ interface PaymentMethodScreenProps {
   methods: PaymentMethod[];
   /** The user's saved cards, listed (and selectable) under the Credit Card section. */
   cards: SavedCard[];
+  /**
+   * The user's persisted checkout selection — a catalog option or saved card id, or
+   * `null` when they haven't chosen one. Seeds the initial highlight so the screen
+   * reopens on their current choice; a stale id simply matches nothing.
+   */
+  selectedId: string | null;
 }
 
-export default function PaymentMethodScreen({ methods, cards }: PaymentMethodScreenProps) {
+export default function PaymentMethodScreen({ methods, cards, selectedId }: PaymentMethodScreenProps) {
   const router = useRouter();
-  const [selectedId, setSelectedId] = React.useState(() => methods[0]?.id);
+  const [selected, setSelected] = React.useState(() => selectedId ?? methods[0]?.id);
+  const [error, setError] = React.useState<string | null>(null);
+  const [pending, startTransition] = React.useTransition();
 
   const handleConfirm = (event: React.FormEvent) => {
     event.preventDefault();
-    // TODO: persist `selectedId` (e.g. a SetDefaultPaymentMethod use-case) and/or
-    // continue the checkout flow. For now we return to the previous screen.
-    router.back();
+    // Nothing selectable yet (no options and no cards) — just step back.
+    if (!selected) {
+      router.back();
+      return;
+    }
+
+    setError(null);
+    startTransition(async () => {
+      try {
+        await paymentMethodsApi.select(selected);
+        // Persisted as the user's checkout selection — refresh the server tree so
+        // checkout picks it up, then return to where they came from.
+        router.refresh();
+        router.back();
+      } catch (err) {
+        setError(
+          err instanceof ApiError ? err.message : "Couldn't save your payment method. Please try again.",
+        );
+      }
+    });
   };
 
   return (
@@ -56,8 +83,8 @@ export default function PaymentMethodScreen({ methods, cards }: PaymentMethodScr
                 <PaymentMethodOption
                   key={method.id}
                   method={method}
-                  selected={method.id === selectedId}
-                  onSelect={setSelectedId}
+                  selected={method.id === selected}
+                  onSelect={setSelected}
                 />
               ))}
 
@@ -66,8 +93,8 @@ export default function PaymentMethodScreen({ methods, cards }: PaymentMethodScr
                   <SavedCardOption
                     key={card.id}
                     card={card}
-                    selected={card.id === selectedId}
-                    onSelect={setSelectedId}
+                    selected={card.id === selected}
+                    onSelect={setSelected}
                   />
                 ))}
 
@@ -77,8 +104,14 @@ export default function PaymentMethodScreen({ methods, cards }: PaymentMethodScr
         })}
       </fieldset>
 
-      <Button type="submit" size="lg" className="mt-auto w-full rounded-button-lg">
-        Confirm Payment
+      {error && (
+        <p role="alert" className="text-center text-body-b8 text-destructive">
+          {error}
+        </p>
+      )}
+
+      <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full rounded-button-lg">
+        {pending ? "Saving…" : "Confirm Payment"}
       </Button>
     </form>
   );

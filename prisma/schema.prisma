@@ -31,6 +31,14 @@ model User {
   name      String
   email     String?
   avatarUrl String?  @map("avatar_url")
+  // The payment method the user last selected for checkout — a single per-user
+  // preference, so it lives here as a nullable scalar rather than a per-row flag
+  // like a default address. The id references either the payment_methods catalog
+  // (Cash, Wallet, PayPal, …) or one of the user's wallet_cards; it's a plain
+  // reference, not a DB foreign key (the same loose coupling the rest of the schema
+  // uses), so a stale id (e.g. a card later removed) is tolerated and falls back to
+  // the first catalog option at read time. Null until the user picks one.
+  selectedPaymentMethodId String?  @map("selected_payment_method_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
