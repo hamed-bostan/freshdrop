@@ -33,7 +33,7 @@ export function FavoritesBrowser({ favorites, categories }: FavoritesBrowserProp
   return (
     <div className="mt-4 flex flex-col gap-5">
       <FavoriteFilterTabs categories={availableCategories} value={selected} onValueChange={setSelected} />
-      <ProductGrid products={visible} favoriteToggle favoriteIds={favoriteIds} refreshOnUnfavorite />
+      <ProductGrid products={visible} addOnly favoriteToggle favoriteIds={favoriteIds} refreshOnUnfavorite />
     </div>
   );
 }

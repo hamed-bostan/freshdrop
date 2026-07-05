@@ -30,7 +30,6 @@ const HIDE_NAV_ON_PREFIXES = [
   "/profile/settings",
   "/profile/support",
   "/profile/wallet",
-  "/favorites",
   "/onboarding",
 ];
 
