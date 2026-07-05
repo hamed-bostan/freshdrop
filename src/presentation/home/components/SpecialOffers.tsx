@@ -15,7 +15,7 @@ export function SpecialOffers({ products }: SpecialOffersProps) {
         href="/products/special-offers"
         className="mb-4"
       />
-      <ProductGrid products={products} />
+      <ProductGrid products={products} addOnly />
     </section>
   );
 }

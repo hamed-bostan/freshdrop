@@ -13,7 +13,7 @@ export function SimilarProducts({ products }: SimilarProductsProps) {
 
       <div className="flex gap-4 overflow-x-auto scrollbar-hide">
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} className="w-40 shrink-0" />
+          <ProductCard key={product.id} product={product} className="w-40 shrink-0" addOnly />
         ))}
       </div>
     </section>

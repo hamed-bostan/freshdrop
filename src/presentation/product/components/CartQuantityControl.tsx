@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Minus, Plus } from "lucide-react";
+import { Check, Minus, Plus } from "lucide-react";
 import { Button, Icon } from "@/src/presentation/design-system";
 import type { Product } from "@/src/domain/entities/Product";
 import { ApiError } from "@/src/lib/api/ApiError";
@@ -18,6 +18,13 @@ interface CartQuantityControlProps {
   disabled?: boolean;
   /** `compact` = the round control on a product card; `block` = the full-width control on the detail page. */
   layout?: "compact" | "block";
+  /**
+   * Add-to-cart only: a one-shot toggle instead of the − / ＋ stepper. Tapping adds
+   * the product (the button shows an "added" check); tapping again removes it. The
+   * quantity can never climb past one. Used on the home, category, and
+   * "Similar To This Item" grids, where quantity is adjusted elsewhere.
+   */
+  addOnly?: boolean;
 }
 
 /**
@@ -28,7 +35,12 @@ interface CartQuantityControlProps {
  * grid tile, detail page, nav badge — updates on the same tap. A 401 means the
  * caller isn't signed in, so we send them to login and return here after.
  */
-export function CartQuantityControl({ product, disabled = false, layout = "compact" }: CartQuantityControlProps) {
+export function CartQuantityControl({
+  product,
+  disabled = false,
+  layout = "compact",
+  addOnly = false,
+}: CartQuantityControlProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { getQuantity, setItemQuantity } = useCart();
@@ -46,6 +58,26 @@ export function CartQuantityControl({ product, disabled = false, layout = "compa
   };
 
   const block = layout === "block";
+
+  // Add-only: a one-shot toggle, never the stepper. Tapping adds the product (the
+  // button becomes an "added" check); tapping again removes it. Quantity stays at one.
+  if (addOnly) {
+    const added = quantity > 0;
+    return (
+      <Button
+        size="sm"
+        iconOnly
+        aria-label={added ? `Remove ${product.name} from cart` : `Add ${product.name} to cart`}
+        aria-pressed={added}
+        variant={added ? "outline" : "primary"}
+        className="rounded-full"
+        disabled={disabled && !added}
+        onClick={() => change(added ? 0 : 1)}
+      >
+        <Icon icon={added ? Check : Plus} size="md" />
+      </Button>
+    );
+  }
 
   // Nothing in the cart yet — show the "Add" affordance.
   if (quantity === 0) {

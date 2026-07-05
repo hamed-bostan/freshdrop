@@ -22,7 +22,7 @@ export default function CategoryDetailScreen({ category, products }: CategoryDet
         }
       />
 
-      <ProductGrid products={products} />
+      <ProductGrid products={products} addOnly />
     </div>
   );
 }

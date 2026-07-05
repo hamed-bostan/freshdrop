@@ -10,9 +10,11 @@ import Link from "next/link";
 interface ProductCardProps {
   product: Product;
   className?: string;
+  /** Show only the "Add" button (no − / ＋ stepper) — see {@link CartQuantityControl}. */
+  addOnly?: boolean;
 }
 
-export function ProductCard({ product, className }: ProductCardProps) {
+export function ProductCard({ product, className, addOnly = false }: ProductCardProps) {
   const hasDiscount = product.originalPrice != null && product.discountPercent != null;
   const stock = getStockStatus(product.stockQuantity);
   const outOfStock = stock.level === "out";
@@ -79,7 +81,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           )}
         </div>
         <div className="relative z-10">
-          <CartQuantityControl product={product} disabled={outOfStock} />
+          <CartQuantityControl product={product} disabled={outOfStock} addOnly={addOnly} />
         </div>
       </div>
     </article>

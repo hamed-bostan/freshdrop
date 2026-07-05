@@ -10,7 +10,7 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
   return (
     <section aria-labelledby="featured-heading">
       <SectionHeader id="featured-heading" title="Featured Products" href="/products/featured" className="mb-4" />
-      <ProductGrid products={products} />
+      <ProductGrid products={products} addOnly />
     </section>
   );
 }
