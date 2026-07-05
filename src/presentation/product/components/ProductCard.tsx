@@ -2,6 +2,7 @@ import { Star } from "lucide-react";
 import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
 import { CartQuantityControl } from "./CartQuantityControl";
+import { FavoriteToggle } from "./FavoriteToggle";
 import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
 import Image from "next/image";
@@ -12,15 +13,43 @@ interface ProductCardProps {
   className?: string;
   /** Show only the "Add" button (no − / ＋ stepper) — see {@link CartQuantityControl}. */
   addOnly?: boolean;
+  /**
+   * Show a favorite heart toggle in the corner, seeded with {@link initialFavorite}.
+   * Used on the favorites grid and the product-detail "similar" row.
+   */
+  favoriteToggle?: boolean;
+  /** Seeds the heart's filled state when {@link favoriteToggle} is on; resolved server-side. */
+  initialFavorite?: boolean;
+  /** In a favorites list, drop the card on un-favorite instead of toggling in place — see {@link FavoriteToggle}. */
+  refreshOnUnfavorite?: boolean;
 }
 
-export function ProductCard({ product, className, addOnly = false }: ProductCardProps) {
+export function ProductCard({
+  product,
+  className,
+  addOnly = false,
+  favoriteToggle = false,
+  initialFavorite = false,
+  refreshOnUnfavorite = false,
+}: ProductCardProps) {
   const hasDiscount = product.originalPrice != null && product.discountPercent != null;
   const stock = getStockStatus(product.stockQuantity);
   const outOfStock = stock.level === "out";
 
   return (
     <article className={cn("rounded-card-xl bg-surface py-2 relative overflow-hidden", className)}>
+      {/* Top-left so it clears the badge / out-of-stock ribbon on the right; z-10 to
+          stay clickable above the title's stretched link overlay. */}
+      {favoriteToggle && (
+        <FavoriteToggle
+          productId={product.id}
+          productName={product.name}
+          initialFavorite={initialFavorite}
+          refreshOnUnfavorite={refreshOnUnfavorite}
+          className="absolute left-2 top-2 z-10"
+        />
+      )}
+
       <Image
         src={product.imageUrl}
         alt={product.name}

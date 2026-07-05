@@ -2,15 +2,11 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
-import { Heart } from "lucide-react";
-import { Button, Icon } from "@/src/presentation/design-system";
-import { ApiError } from "@/src/lib/api/ApiError";
-import { favoritesApi } from "@/src/presentation/favorites/favorite-api";
 import { cn } from "@/src/lib/utils";
+import { FavoriteToggle } from "./FavoriteToggle";
 
 interface ProductGalleryProps {
   images: string[];
@@ -22,34 +18,10 @@ interface ProductGalleryProps {
 
 /**
  * Product-detail image carousel: a green-outlined frame with a Swiper of gallery
- * shots, custom progress dots, and a favorite toggle anchored to the corner.
- * The toggle persists through the favorites API, updating optimistically and
- * rolling back on failure; a 401 means the caller isn't signed in, so we send
- * them to login with a callback back to this page.
+ * shots, custom progress dots, and a {@link FavoriteToggle} anchored to the corner.
  */
 export function ProductGallery({ images, productName, productId, initialFavorite }: ProductGalleryProps) {
-  const router = useRouter();
-  const pathname = usePathname();
   const [activeIndex, setActiveIndex] = React.useState(0);
-  const [isFavorite, setIsFavorite] = React.useState(initialFavorite);
-  const [pending, startTransition] = React.useTransition();
-
-  function handleToggleFavorite() {
-    const next = !isFavorite;
-    setIsFavorite(next); // Optimistic — the heart reflects the new state immediately.
-
-    startTransition(async () => {
-      try {
-        await (next ? favoritesApi.add(productId) : favoritesApi.remove(productId));
-      } catch (error) {
-        setIsFavorite(!next); // Roll back the optimistic toggle.
-        // Anonymous callers get a 401 — send them to login, returning here after.
-        if (error instanceof ApiError && error.status === 401) {
-          router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
-        }
-      }
-    });
-  }
 
   return (
     <div className="relative">
@@ -91,19 +63,14 @@ export function ProductGallery({ images, productName, productId, initialFavorite
         )}
       </div>
 
-      <Button
-        type="button"
-        variant="outline"
-        iconOnly
-        size="sm"
-        aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-        aria-pressed={isFavorite}
-        onClick={handleToggleFavorite}
-        disabled={pending}
-        className="absolute bottom-3 right-3 bg-background"
-      >
-        <Icon icon={Heart} size="sm" className={cn("text-primary", isFavorite && "fill-primary")} />
-      </Button>
+      {/* z-10 lifts the heart above Swiper's own `z-index: 1`, which would otherwise
+          paint over the button and swallow its clicks where they overlap. */}
+      <FavoriteToggle
+        productId={productId}
+        productName={productName}
+        initialFavorite={initialFavorite}
+        className="absolute bottom-3 right-3 z-10"
+      />
     </div>
   );
 }

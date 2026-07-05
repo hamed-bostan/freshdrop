@@ -1,6 +1,7 @@
 export { ProductCard } from "./ProductCard";
 export { ProductGrid } from "./ProductGrid";
 export { CartQuantityControl } from "./CartQuantityControl";
+export { FavoriteToggle } from "./FavoriteToggle";
 export { ProductGallery } from "./ProductGallery";
 export { ProductPurchasePanel } from "./ProductPurchasePanel";
 export { BackInStockButton } from "./BackInStockButton";

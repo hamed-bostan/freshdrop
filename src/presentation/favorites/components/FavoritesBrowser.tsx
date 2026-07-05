@@ -27,10 +27,13 @@ export function FavoritesBrowser({ favorites, categories }: FavoritesBrowserProp
   const visible =
     selected === ALL_FILTER ? favorites : favorites.filter((product) => product.categoryId === selected);
 
+  // Everything here is favorited by definition, so every card's heart starts filled.
+  const favoriteIds = React.useMemo(() => new Set(favorites.map((product) => product.id)), [favorites]);
+
   return (
     <div className="mt-4 flex flex-col gap-5">
       <FavoriteFilterTabs categories={availableCategories} value={selected} onValueChange={setSelected} />
-      <ProductGrid products={visible} />
+      <ProductGrid products={visible} favoriteToggle favoriteIds={favoriteIds} refreshOnUnfavorite />
     </div>
   );
 }
