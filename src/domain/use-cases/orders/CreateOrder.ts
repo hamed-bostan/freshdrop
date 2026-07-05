@@ -16,6 +16,8 @@ export type CreateOrderInput = {
   userId: string;
   /** Human-readable delivery address, resolved from the selected location. */
   location: string;
+  /** Saved-address label of the selected location ("Home", "Gym"), snapshotted onto the order. */
+  locationLabel?: string;
   /** The server-computed cart (items + authoritative totals) being checked out. */
   cart: Cart;
   /** Delivery calendar date the shopper booked, `YYYY-MM-DD`. */
@@ -67,6 +69,7 @@ export class CreateOrder {
   async execute({
     userId,
     location,
+    locationLabel,
     cart,
     deliveryDate,
     deliveryWindowId,
@@ -121,6 +124,7 @@ export class CreateOrder {
       stage: "confirmed",
       placedAt: new Date().toISOString(),
       location,
+      locationLabel,
       subtotal: cart.subtotal,
       shipping: cart.shipping,
       discount: cart.discount,

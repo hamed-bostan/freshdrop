@@ -93,6 +93,12 @@ export type Order = {
   placedAt: string;
   /** Human-readable delivery address. */
   location: string;
+  /**
+   * Short saved-address label the order was delivered to ("Home", "Gym"), captured
+   * from the selected delivery location at checkout. `undefined` for legacy orders
+   * placed before it was recorded — the order card then falls back to the city.
+   */
+  locationLabel?: string;
   items: OrderItem[];
   /**
    * The order's price breakdown captured at checkout — the faithful record of what

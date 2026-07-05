@@ -2,6 +2,7 @@ export { OrdersBrowser } from "./OrdersBrowser";
 export { OrdersEmptyState } from "./OrdersEmptyState";
 export { OrderTabs } from "./OrderTabs";
 export { OrderCard } from "./OrderCard";
+export { OrderLocationRow } from "./OrderLocationRow";
 export { OrderAdjustments } from "./OrderAdjustments";
 export { OrderStatusBadge } from "./OrderStatusBadge";
 export { TrackingMap } from "./TrackingMap";

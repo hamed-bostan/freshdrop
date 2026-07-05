@@ -58,6 +58,7 @@ export class PrismaOrderRepository implements IOrderRepository {
         phase: input.phase,
         placedAt: new Date(input.placedAt),
         location: input.location,
+        locationLabel: input.locationLabel ?? null,
         subtotal: input.subtotal,
         shipping: input.shipping,
         discount: input.discount,
@@ -152,6 +153,7 @@ type OrderRow = {
   phase: string;
   placedAt: Date;
   location: string;
+  locationLabel: string | null;
   subtotal: number;
   shipping: number;
   discount: number;
@@ -214,6 +216,7 @@ function toOrder(row: OrderRow): Order {
     phase: row.phase as OrderPhase,
     placedAt: row.placedAt.toISOString(),
     location: row.location,
+    locationLabel: row.locationLabel ?? undefined,
     subtotal: row.subtotal,
     shipping: row.shipping,
     discount: row.discount,

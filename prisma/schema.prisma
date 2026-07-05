@@ -60,6 +60,10 @@ model Order {
   phase     String
   placedAt  DateTime    @map("placed_at")
   location  String
+  // Short saved-address label ("Home", "Gym") captured at checkout, so the order
+  // card can collapse the address to its label. Nullable: seeded/legacy orders
+  // predate it and read as NULL (the card falls back to the address's city).
+  locationLabel String? @map("location_label")
   // Price breakdown captured at checkout — the faithful record of what was charged
   // and the basis for pro-rating a partial (out-of-stock) refund. `total = subtotal
   // + shipping - discount`. `subtotal`/`shipping`/`discount` default to 0 so orders

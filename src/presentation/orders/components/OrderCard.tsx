@@ -6,6 +6,7 @@ import { formatOrderDate, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 import { OrderCardActions } from "./OrderCardActions";
 import { OrderAdjustments } from "./OrderAdjustments";
+import { OrderLocationRow } from "./OrderLocationRow";
 
 /** Thumbnails shown before collapsing the rest into a "+N" count. */
 const MAX_VISIBLE_THUMBNAILS = 4;
@@ -68,7 +69,7 @@ export function OrderCard({ order }: OrderCardProps) {
         <OrderInfoRow label="Time:" value={formatOrderTime(order.placedAt)} />
         <OrderInfoRow label="Date:" value={formatOrderDate(order.placedAt)} />
         {order.deliveryWindow && <OrderInfoRow label="Delivery:" value={order.deliveryWindow} />}
-        <OrderInfoRow label="Location:" value={order.location} />
+        <OrderLocationRow location={order.location} label={order.locationLabel} />
       </dl>
 
       <div className="flex items-center justify-between gap-2">

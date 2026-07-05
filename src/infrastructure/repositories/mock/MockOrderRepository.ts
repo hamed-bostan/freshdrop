@@ -29,6 +29,8 @@ type OrderSeed = {
   phase: OrderPhase;
   placedAt: string;
   location: string;
+  /** Saved-address label the order card collapses the address to ("Home", "Gym"). */
+  locationLabel: string;
   total: number;
   /** Starting delivery milestone. Omitted for orders that aren't trackable. */
   stage?: TrackingMilestone;
@@ -41,7 +43,8 @@ const ORDER_SEEDS: OrderSeed[] = [
     status: "completed",
     phase: "current",
     placedAt: "2023-10-09T15:22:00Z",
-    location: "Toronto, 23rd Street, No. 5",
+    location: "123 Maple Street, Toronto, ON M5H 2N2",
+    locationLabel: "Home",
     total: 129.9,
     stage: "arrived",
     lines: [
@@ -57,7 +60,8 @@ const ORDER_SEEDS: OrderSeed[] = [
     status: "processing",
     phase: "current",
     placedAt: "2023-10-08T11:05:00Z",
-    location: "Toronto, 23rd Street, No. 5",
+    location: "123 Maple Street, Toronto, ON M5H 2N2",
+    locationLabel: "Home",
     total: 86.4,
     stage: "shipped",
     lines: [
@@ -73,7 +77,8 @@ const ORDER_SEEDS: OrderSeed[] = [
     status: "completed",
     phase: "previous",
     placedAt: "2023-09-21T18:40:00Z",
-    location: "Toronto, 23rd Street, No. 5",
+    location: "78 King St, Toronto, ON, Canada",
+    locationLabel: "Office",
     total: 54.25,
     lines: [
       { productId: "3-2", quantity: 1 }, // Chicken Breast Fillets
@@ -88,7 +93,8 @@ const ORDER_SEEDS: OrderSeed[] = [
     status: "cancelled",
     phase: "previous",
     placedAt: "2023-09-03T09:15:00Z",
-    location: "Toronto, 23rd Street, No. 5",
+    location: "FitZone Gym, 250 Front St W, Toronto, ON",
+    locationLabel: "Gym",
     total: 41.8,
     lines: [
       { productId: "13-1", quantity: 1 }, // Craft Lager 4-Pack
@@ -160,6 +166,7 @@ export class MockOrderRepository implements IOrderRepository {
         phase: this.phases.get(seed.id) ?? seed.phase,
         placedAt: seed.placedAt,
         location: seed.location,
+        locationLabel: seed.locationLabel,
         // Demo orders carry no promo/shipping breakdown — treat the total as pure
         // merchandise (no discount to pro-rate), enough for the mock.
         subtotal: seed.total,

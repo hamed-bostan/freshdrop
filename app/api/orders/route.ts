@@ -101,6 +101,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     ).execute({
       userId: session.user.id,
       location: address.address,
+      locationLabel: address.label,
       cart,
       deliveryDate: parsed.data.deliveryDate,
       deliveryWindowId: parsed.data.deliveryWindowId,
