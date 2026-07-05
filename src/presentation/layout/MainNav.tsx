@@ -23,6 +23,7 @@ const NAV_ITEMS: NavItem[] = [
 /** Focused task flows (forms, onboarding) hide the bottom nav for a distraction-free view. */
 const HIDE_NAV_ON_PREFIXES = [
   "/cart/promo",
+  "/cart/checkout/confirmed",
   "/profile/details",
   "/profile/addresses",
   "/profile/payment-methods",
