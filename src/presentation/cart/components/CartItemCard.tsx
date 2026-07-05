@@ -1,26 +1,29 @@
 import Image from "next/image";
-import { Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2 } from "lucide-react";
 import type { CartItem } from "@/src/domain/entities/Cart";
 import { Icon } from "@/src/presentation/design-system";
 
 interface CartItemCardProps {
   item: CartItem;
   onIncrement: () => void;
+  onDecrement: () => void;
   onRemove: () => void;
 }
 
 /**
  * A single cart row: product thumbnail, name + short description, then a
- * price and a trash / quantity / add control. The mockup pairs a remove action
- * (trash) with an increment (＋) — there is no decrement, so the trash removes
- * the whole line.
+ * price and a trash / − / quantity / ＋ control. The − steps the line down to a
+ * floor of one; clearing the line entirely goes through the trash (which asks
+ * for confirmation), so − is disabled at a quantity of one.
  */
-export function CartItemCard({ item, onIncrement, onRemove }: CartItemCardProps) {
+export function CartItemCard({ item, onIncrement, onDecrement, onRemove }: CartItemCardProps) {
   const { product, quantity } = item;
   const subtitle = product.description ?? product.unit;
   // Can't add past what's on hand — the server enforces the same cap, this just
   // reflects it so the ＋ can't be tapped into a guaranteed rejection.
   const atStockLimit = quantity >= product.stockQuantity;
+  // − floors at one; the trash (with its confirmation) clears the whole line.
+  const atMinQuantity = quantity <= 1;
 
   return (
     <article className="flex items-center gap-3 rounded-card-xl bg-surface p-3">
@@ -52,6 +55,16 @@ export function CartItemCard({ item, onIncrement, onRemove }: CartItemCardProps)
               className="grid size-8 place-items-center rounded-full text-destructive transition-colors active:bg-error"
             >
               <Icon icon={Trash2} size="sm" />
+            </button>
+
+            <button
+              type="button"
+              onClick={onDecrement}
+              disabled={atMinQuantity}
+              aria-label={`Decrease ${product.name} quantity`}
+              className="grid size-8 place-items-center rounded-full text-primary transition-colors active:bg-accent disabled:text-disabled-foreground disabled:active:bg-transparent"
+            >
+              <Icon icon={Minus} size="sm" />
             </button>
 
             <span

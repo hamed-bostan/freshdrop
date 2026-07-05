@@ -64,6 +64,12 @@ export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBro
     mutate(() => cartsApi.setQuantity(productId, quantity + 1));
   };
 
+  const decrement = (productId: string, quantity: number) => {
+    // Floor at one — clearing the line goes through the trash (with confirmation).
+    if (quantity <= 1) return;
+    mutate(() => cartsApi.setQuantity(productId, quantity - 1));
+  };
+
   const confirmRemoval = () => {
     if (pendingRemovalId == null) return;
     const productId = pendingRemovalId;
@@ -104,6 +110,7 @@ export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBro
                 <CartItemCard
                   item={item}
                   onIncrement={() => increment(item.product.id, item.quantity, item.product.stockQuantity)}
+                  onDecrement={() => decrement(item.product.id, item.quantity)}
                   onRemove={() => setPendingRemovalId(item.product.id)}
                 />
               </li>
