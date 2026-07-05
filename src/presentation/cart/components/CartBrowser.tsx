@@ -2,9 +2,10 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
 import type { Cart } from "@/src/domain/entities/Cart";
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
-import { ConfirmSheet } from "@/src/presentation/design-system";
+import { ConfirmSheet, Icon } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { cartsApi } from "../cart-api";
 import { useCart } from "../CartProvider";
@@ -33,6 +34,7 @@ export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBro
   const router = useRouter();
   const { refresh } = useCart();
   const [pendingRemovalId, setPendingRemovalId] = React.useState<string | null>(null);
+  const [clearOpen, setClearOpen] = React.useState(false);
   const [checkoutOpen, setCheckoutOpen] = React.useState(initialCheckoutOpen);
   const [pending, startTransition] = React.useTransition();
 
@@ -69,6 +71,11 @@ export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBro
     mutate(() => cartsApi.removeItem(productId));
   };
 
+  const confirmClear = () => {
+    setClearOpen(false);
+    mutate(() => cartsApi.clear());
+  };
+
   return (
     <>
       <PageHeader title={checkoutOpen ? "Checkout" : "My Cart"} />
@@ -77,6 +84,20 @@ export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBro
         <CartEmptyState />
       ) : (
         <>
+          <div className="flex items-center justify-between">
+            <span className="text-body-b9 text-muted-foreground">
+              {items.length} {items.length === 1 ? "item" : "items"}
+            </span>
+            <button
+              type="button"
+              onClick={() => setClearOpen(true)}
+              className="flex items-center gap-1.5 rounded-pill px-1 py-0.5 text-body-b8 text-destructive transition-colors active:bg-error"
+            >
+              <Icon icon={Trash2} size="sm" />
+              Clear all
+            </button>
+          </div>
+
           <ul className="flex flex-col gap-4 pb-52">
             {items.map((item) => (
               <li key={item.product.id}>
@@ -117,6 +138,15 @@ export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBro
         message={pendingProduct ? `Remove ${pendingProduct.name} from your cart?` : undefined}
         confirmLabel="Remove"
         onConfirm={confirmRemoval}
+      />
+
+      <ConfirmSheet
+        open={clearOpen}
+        onOpenChange={setClearOpen}
+        title="Clear cart?"
+        message="Remove all items from your cart? This can't be undone."
+        confirmLabel="Clear all"
+        onConfirm={confirmClear}
       />
     </>
   );
