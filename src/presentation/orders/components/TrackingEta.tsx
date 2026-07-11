@@ -2,9 +2,17 @@ import { Bike, PackageCheck, Clock, type LucideIcon } from "lucide-react";
 import type { TrackingMilestone, TrackingStep } from "@/src/domain/entities/OrderTracking";
 import { Icon } from "@/src/presentation/design-system";
 
-/** The milestone the order is currently at (the live step), if any. */
-function currentMilestone(steps: TrackingStep[]): TrackingMilestone | undefined {
-  return steps.find((step) => step.status === "current")?.milestone;
+/**
+ * The milestone the order has most recently reached — the live `current` step
+ * while in flight, or the final `done` step once delivered (an arrived order has
+ * no `current` step). Walks the ordered timeline and keeps the last non-pending
+ * one, so the banner tracks the furthest progress either way.
+ */
+function activeMilestone(steps: TrackingStep[]): TrackingMilestone | undefined {
+  return steps.reduce<TrackingMilestone | undefined>(
+    (reached, step) => (step.status === "pending" ? reached : step.milestone),
+    undefined,
+  );
 }
 
 /** Copy + icon for the banner, keyed off where the delivery is right now. */
@@ -32,7 +40,7 @@ interface TrackingEtaProps {
  * courier is en route, or a preparing/arrived message otherwise.
  */
 export function TrackingEta({ etaMinutes, steps }: TrackingEtaProps) {
-  const { icon, title, live } = bannerContent(currentMilestone(steps), etaMinutes);
+  const { icon, title, live } = bannerContent(activeMilestone(steps), etaMinutes);
 
   return (
     <div className="flex items-center gap-3 rounded-card-xl bg-surface p-3">

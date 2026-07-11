@@ -86,14 +86,21 @@ const TIMELINE: { milestone: TrackingMilestone; label: string; offsetMs: number 
 /**
  * Build the stepper from the order's current `stage`. Milestones before the stage
  * are `done`, the stage itself is the live `current` step, and later ones are
- * `pending` (with no timestamp yet).
+ * `pending` (with no timestamp yet). The one exception is the terminal milestone
+ * (`arrived`): reaching it means the order is *delivered*, a completion rather
+ * than an in-progress step, so it reads as `done` — the whole timeline fills in.
  */
 function buildSteps(stage: TrackingMilestone, placedAt: Date): TrackingStep[] {
   const stageIndex = TIMELINE.findIndex((step) => step.milestone === stage);
+  const lastIndex = TIMELINE.length - 1;
 
   return TIMELINE.map(({ milestone, label, offsetMs }, index) => {
-    const status: TrackingStepStatus = index < stageIndex ? "done" : index === stageIndex ? "current" : "pending";
     const reached = index <= stageIndex;
+    const status: TrackingStepStatus = !reached
+      ? "pending"
+      : index < stageIndex || index === lastIndex
+        ? "done"
+        : "current";
     return {
       milestone,
       label,

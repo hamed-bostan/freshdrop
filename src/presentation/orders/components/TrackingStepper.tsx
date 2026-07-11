@@ -1,5 +1,5 @@
 import { Check, Truck, PackageCheck, type LucideIcon } from "lucide-react";
-import type { TrackingMilestone, TrackingStep } from "@/src/domain/entities/OrderTracking";
+import type { TrackingMilestone, TrackingStep, TrackingStepStatus } from "@/src/domain/entities/OrderTracking";
 import { Icon } from "@/src/presentation/design-system";
 import { formatOrderTime } from "@/src/lib/formatOrderDate";
 import { cn } from "@/src/lib/utils";
@@ -13,22 +13,35 @@ const MILESTONE_ICONS: Record<TrackingMilestone, LucideIcon> = {
 
 interface StepNodeProps {
   milestone: TrackingMilestone;
-  done: boolean;
+  status: TrackingStepStatus;
 }
 
-/** A 32px circle: filled green when reached, an outlined ring otherwise. */
-function StepNode({ milestone, done }: StepNodeProps) {
+/**
+ * A 32px node styled by the step's progress: a solid green disc for a `done`
+ * milestone, a green ring highlighting the live `current` step, and a muted grey
+ * ring for a `pending` one still ahead — so the milestone the order is actually
+ * at never reads as inactive.
+ */
+function StepNode({ milestone, status }: StepNodeProps) {
+  const done = status === "done";
+  const current = status === "current";
   return (
     <span
       className={cn(
-        "flex size-8 shrink-0 items-center justify-center rounded-full",
-        done ? "bg-primary" : "border-2 border-icon-muted bg-background",
+        "flex size-8 shrink-0 items-center justify-center rounded-full border-2",
+        done && "border-primary bg-primary",
+        current && "border-primary bg-background",
+        status === "pending" && "border-icon-muted bg-background",
       )}
     >
       <Icon
         icon={MILESTONE_ICONS[milestone]}
         size="sm"
-        className={done ? "text-primary-foreground" : "text-icon-muted"}
+        className={cn(
+          done && "text-primary-foreground",
+          current && "text-primary",
+          status === "pending" && "text-icon-muted",
+        )}
       />
     </span>
   );
@@ -51,7 +64,7 @@ export function TrackingStepper({ steps }: TrackingStepperProps) {
         return (
           <li key={step.milestone} className="flex gap-3">
             <div className="flex flex-col items-center self-stretch">
-              <StepNode milestone={step.milestone} done={step.status === "done"} />
+              <StepNode milestone={step.milestone} status={step.status} />
               {!isLast && (
                 <span
                   aria-hidden
