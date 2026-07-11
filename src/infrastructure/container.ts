@@ -126,13 +126,20 @@ export const stockAlertNotifier: IStockAlertNotifier = new LoggingStockAlertNoti
 
 // Real SMS OTP when an SMS.ir key is configured; the in-memory mock otherwise so
 // local dev works without credentials (the mock surfaces the code in the UI).
-export const authRepository: IAuthRepository = process.env.SMS_IR_API_KEY
-  ? new SmsIrAuthRepository({
-      apiKey: process.env.SMS_IR_API_KEY,
-      templateId: Number(process.env.SMS_IR_TEMPLATE_ID ?? SMS_IR_DEFAULT_TEMPLATE_ID),
-      baseUrl: process.env.SMS_IR_BASE_URL,
-    })
-  : new MockAuthRepository();
+//
+// TEMPORARY: set `OTP_MOCK=true` to force the in-memory mock even when an SMS.ir
+// key is present — used while the SMS.ir provider is unresponsive so sign-in keeps
+// working (the code is logged server-side and shown in the verify screen). The real
+// `SmsIrAuthRepository` branch is left intact; clear `OTP_MOCK` to switch back.
+const forceMockAuth = process.env.OTP_MOCK === "true";
+export const authRepository: IAuthRepository =
+  process.env.SMS_IR_API_KEY && !forceMockAuth
+    ? new SmsIrAuthRepository({
+        apiKey: process.env.SMS_IR_API_KEY,
+        templateId: Number(process.env.SMS_IR_TEMPLATE_ID ?? SMS_IR_DEFAULT_TEMPLATE_ID),
+        baseUrl: process.env.SMS_IR_BASE_URL,
+      })
+    : new MockAuthRepository();
 
 // Transactional order notifications (confirmed → out for delivery → delivered,
 // and approved returns). The notifier fans each event out to every channel:
