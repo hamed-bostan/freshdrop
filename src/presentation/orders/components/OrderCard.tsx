@@ -62,7 +62,7 @@ export function OrderCard({ order }: OrderCardProps) {
     <article className="flex flex-col gap-4 rounded-card-xl bg-surface p-4">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-body-b2 text-foreground">Order details:</h2>
-        <OrderStatusBadge status={order.status} />
+        <OrderStatusBadge status={order.status} stage={order.stage} />
       </div>
 
       <dl className="flex flex-col gap-2">

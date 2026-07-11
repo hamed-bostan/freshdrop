@@ -85,7 +85,7 @@ export function OrderRow({ order, customer, columnCount }: OrderRowProps) {
         </td>
         <td className="px-4 py-3 text-body-b7 text-foreground">{order.id}</td>
         <td className="px-4 py-3">
-          <OrderStatusBadge status={order.status} />
+          <OrderStatusBadge status={order.status} stage={order.stage} />
         </td>
         <td className="px-4 py-3 text-body-b6 text-muted-foreground">
           {formatOrderDate(order.placedAt)}
