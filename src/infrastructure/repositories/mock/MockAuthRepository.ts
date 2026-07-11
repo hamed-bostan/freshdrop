@@ -1,4 +1,5 @@
 import type { AuthIdentity, IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
+import { normalizePhone } from "../../sms/smsIrClient";
 import { getOtpStore } from "../otpStore";
 
 const MIN_PHONE_DIGITS = 8;
@@ -17,29 +18,32 @@ export class MockAuthRepository implements IAuthRepository {
   private readonly codes = getOtpStore<string>("mock-auth");
 
   async requestOtp(phone: string): Promise<boolean> {
-    const digits = phone.replace(/\D/g, "");
-    if (digits.length < MIN_PHONE_DIGITS) {
+    const mobile = normalizePhone(phone);
+    if (mobile.length < MIN_PHONE_DIGITS) {
       return false;
     }
 
     const code = String(Math.floor(1000 + Math.random() * 9000));
-    this.codes.set(digits, code);
+    this.codes.set(mobile, code);
     console.log(`📱 [dev] OTP for ${phone}: ${code}`);
     return true;
   }
 
   async verifyOtp(phone: string, code: string): Promise<AuthIdentity | null> {
-    const digits = phone.replace(/\D/g, "");
-    if (this.codes.get(digits) !== code) {
+    const mobile = normalizePhone(phone);
+    if (this.codes.get(mobile) !== code) {
       return null;
     }
 
-    this.codes.delete(digits); // one-time use
-    return { id: digits, phone, name: "FreshDrop Customer" };
+    this.codes.delete(mobile); // one-time use
+    // `id` is the normalised phone so the minted user id is provider-independent
+    // (matches what SmsIrAuthRepository would mint, and the ADMIN_USER_IDS
+    // allowlist) regardless of how the number was typed (+98…, 98…, 09…).
+    return { id: mobile, phone, name: "FreshDrop Customer" };
   }
 
   /** Dev/mock only: surface the stored code so the UI can display it (no SMS yet). */
   peekDevOtp(phone: string): string | undefined {
-    return this.codes.get(phone.replace(/\D/g, ""));
+    return this.codes.get(normalizePhone(phone));
   }
 }
