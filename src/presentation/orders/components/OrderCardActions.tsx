@@ -37,8 +37,11 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
   const [confirm, setConfirm] = React.useState<ConfirmAction | null>(null);
   const [pending, startTransition] = React.useTransition();
 
-  // Mirror the tracking route's rule: only live, non-cancelled orders can be tracked.
-  const trackable = order.phase === "current" && order.status !== "cancelled" && order.status !== "refunded";
+  // Live tracking is a courier map + ticking ETA, so it's only meaningful while
+  // the order is actually in flight (confirmed/shipped → `processing`). Once it's
+  // delivered, returned, cancelled or refunded there's nothing live to follow, so
+  // the CTA retires and the card falls back to Return/Reorder.
+  const trackable = order.phase === "current" && order.status === "processing";
   const cancellable = isCancellable(order);
   const returnable = isReturnable(order);
   const returnPending = order.status === "return_requested";
