@@ -1,14 +1,14 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
 import { DIETARY_TAGS, PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
 import { Button, Field, Input, Switch, TextField, Textarea } from "@/src/presentation/design-system";
+import { Link, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { cn } from "@/src/lib/utils";
 import { productFormSchema, type ProductFormInput } from "./product-schema";
@@ -70,6 +70,7 @@ function toDefaults(product?: Product): ProductFormInput {
  * messages on the offending fields, otherwise at the root.
  */
 export function ProductForm(props: ProductFormProps) {
+  const t = useTranslations("dashProducts");
   const editing = props.mode === "edit";
   const router = useRouter();
   const {
@@ -93,7 +94,7 @@ export function ProductForm(props: ProductFormProps) {
       router.push("/dashboard/products");
     } catch (error) {
       if (!(error instanceof ApiError)) {
-        setError("root", { message: "Something went wrong. Please try again." });
+        setError("root", { message: t("formError") });
         return;
       }
       // Prefer field-level messages so they read in context; fall back to a single
@@ -112,15 +113,15 @@ export function ProductForm(props: ProductFormProps) {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5" noValidate>
-      <TextField label="Name" required error={errors.name?.message}>
-        {(control) => <Input {...control} {...register("name")} placeholder="e.g. Organic Baby Spinach" />}
+      <TextField label={t("nameLabel")} required error={errors.name?.message}>
+        {(control) => <Input {...control} {...register("name")} placeholder={t("namePlaceholder")} />}
       </TextField>
 
       <Field error={errors.categoryId?.message}>
         {({ id, ariaDescribedBy, ariaInvalid }) => (
           <>
             <label htmlFor={id} className="text-body-b7 text-input-foreground">
-              Category
+              {t("categoryLabel")}
               <span aria-hidden className="text-destructive"> *</span>
             </label>
             <select
@@ -131,7 +132,7 @@ export function ProductForm(props: ProductFormProps) {
               {...register("categoryId")}
             >
               <option value="" disabled>
-                Select a category
+                {t("selectCategory")}
               </option>
               {props.categories.map((category) => (
                 <option key={category.id} value={category.id}>
@@ -145,35 +146,35 @@ export function ProductForm(props: ProductFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <TextField
-          label="Price"
+          label={t("priceLabel")}
           required
-          description="In your store currency, e.g. 4.96"
+          description={t("priceDescription")}
           error={errors.price?.message}
         >
           {(control) => (
-            <Input {...control} {...register("price")} inputMode="decimal" placeholder="0.00" />
+            <Input {...control} {...register("price")} inputMode="decimal" placeholder={t("pricePlaceholder")} />
           )}
         </TextField>
 
         <TextField
-          label="Original price"
-          description="Optional — shows a discount when higher than price"
+          label={t("originalPriceLabel")}
+          description={t("originalPriceDescription")}
           error={errors.originalPrice?.message}
         >
           {(control) => (
-            <Input {...control} {...register("originalPrice")} inputMode="decimal" placeholder="0.00" />
+            <Input {...control} {...register("originalPrice")} inputMode="decimal" placeholder={t("pricePlaceholder")} />
           )}
         </TextField>
       </div>
 
       <TextField
-        label="Stock"
+        label={t("stockLabel")}
         required
-        description="Units on hand. 0 marks the product out of stock."
+        description={t("stockDescription")}
         error={errors.stockQuantity?.message}
       >
         {(control) => (
-          <Input {...control} {...register("stockQuantity")} inputMode="numeric" placeholder="0" />
+          <Input {...control} {...register("stockQuantity")} inputMode="numeric" placeholder={t("stockPlaceholder")} />
         )}
       </TextField>
 
@@ -181,7 +182,7 @@ export function ProductForm(props: ProductFormProps) {
         {({ id, ariaDescribedBy, ariaInvalid }) => (
           <>
             <label htmlFor={id} className="text-body-b7 text-input-foreground">
-              Product image
+              {t("imageLabel")}
               <span aria-hidden className="text-destructive"> *</span>
             </label>
             <ProductImageUpload
@@ -198,12 +199,12 @@ export function ProductForm(props: ProductFormProps) {
       <input type="hidden" {...register("imageUrl")} />
 
       <div className="grid grid-cols-2 gap-4">
-        <TextField label="Unit" description="Pack/measure, e.g. “200g bag”" error={errors.unit?.message}>
-          {(control) => <Input {...control} {...register("unit")} placeholder="e.g. 200g bag" />}
+        <TextField label={t("unitLabel")} description={t("unitDescription")} error={errors.unit?.message}>
+          {(control) => <Input {...control} {...register("unit")} placeholder={t("unitPlaceholder")} />}
         </TextField>
 
-        <TextField label="Badge" description="Optional ribbon, e.g. “Sale”" error={errors.badge?.message}>
-          {(control) => <Input {...control} {...register("badge")} placeholder="e.g. Sale" />}
+        <TextField label={t("badgeLabel")} description={t("badgeDescription")} error={errors.badge?.message}>
+          {(control) => <Input {...control} {...register("badge")} placeholder={t("badgePlaceholder")} />}
         </TextField>
       </div>
 
@@ -211,7 +212,7 @@ export function ProductForm(props: ProductFormProps) {
         {({ id, ariaDescribedBy, ariaInvalid }) => (
           <>
             <label htmlFor={id} className="text-body-b7 text-input-foreground">
-              Brand
+              {t("brandLabel")}
             </label>
             <select
               id={id}
@@ -220,7 +221,7 @@ export function ProductForm(props: ProductFormProps) {
               aria-describedby={ariaDescribedBy}
               {...register("brand")}
             >
-              <option value="">No brand</option>
+              <option value="">{t("noBrand")}</option>
               {PRODUCT_BRANDS.map((brand) => (
                 <option key={brand} value={brand}>
                   {brand}
@@ -236,9 +237,9 @@ export function ProductForm(props: ProductFormProps) {
         name="dietary"
         render={({ field }) => (
           <fieldset>
-            <legend className="text-body-b7 text-input-foreground">Dietary</legend>
+            <legend className="text-body-b7 text-input-foreground">{t("dietaryLegend")}</legend>
             <p className="mb-2 text-body-b10 text-muted-foreground">
-              Tags shown as storefront search filters.
+              {t("dietaryDescription")}
             </p>
             <div className="flex flex-wrap gap-2">
               {DIETARY_TAGS.map((tag) => {
@@ -282,32 +283,32 @@ export function ProductForm(props: ProductFormProps) {
           <div className="flex items-center justify-between rounded-card-md border border-border px-4 py-3">
             <div>
               <label htmlFor="isFeatured" className="text-body-b7 text-input-foreground">
-                Featured
+                {t("featuredLabel")}
               </label>
-              <p className="text-body-b10 text-muted-foreground">Show this product in the featured rail.</p>
+              <p className="text-body-b10 text-muted-foreground">{t("featuredDescription")}</p>
             </div>
             <Switch
               id="isFeatured"
               checked={field.value}
               onCheckedChange={field.onChange}
-              aria-label="Featured product"
+              aria-label={t("featuredAria")}
             />
           </div>
         )}
       />
 
-      <TextField label="Description" error={errors.description?.message}>
+      <TextField label={t("descriptionLabel")} error={errors.description?.message}>
         {(control) => (
-          <Textarea {...control} {...register("description")} placeholder="Product detail copy shown on the detail screen." />
+          <Textarea {...control} {...register("description")} placeholder={t("descriptionPlaceholder")} />
         )}
       </TextField>
 
-      <TextField label="Nutrition" error={errors.nutrition?.message}>
-        {(control) => <Textarea {...control} {...register("nutrition")} placeholder="Nutritional information." />}
+      <TextField label={t("nutritionLabel")} error={errors.nutrition?.message}>
+        {(control) => <Textarea {...control} {...register("nutrition")} placeholder={t("nutritionPlaceholder")} />}
       </TextField>
 
-      <TextField label="Origin" error={errors.origin?.message}>
-        {(control) => <Textarea {...control} {...register("origin")} placeholder="Sourcing and origin details." />}
+      <TextField label={t("originLabel")} error={errors.origin?.message}>
+        {(control) => <Textarea {...control} {...register("origin")} placeholder={t("originPlaceholder")} />}
       </TextField>
 
       {errors.root?.message && (
@@ -318,10 +319,10 @@ export function ProductForm(props: ProductFormProps) {
 
       <div className="flex gap-3 pt-2">
         <Button type="submit" disabled={isSubmitting}>
-          {editing ? "Save changes" : "Create product"}
+          {editing ? t("saveChanges") : t("createProduct")}
         </Button>
         <Button asChild variant="outline" type="button">
-          <Link href="/dashboard/products">Cancel</Link>
+          <Link href="/dashboard/products">{t("cancel")}</Link>
         </Button>
       </div>
     </form>

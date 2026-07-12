@@ -1,14 +1,17 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Button } from "@/src/presentation/design-system";
+import { Link } from "@/src/i18n/navigation";
 
 /** Shown when editing a product that no longer exists (the page called `notFound()`). */
-export default function EditProductNotFound() {
+export default async function EditProductNotFound() {
+  const t = await getTranslations("dashProducts");
+
   return (
     <div className="flex max-w-xl flex-col gap-3">
-      <h1 className="text-heading-h2 text-foreground">Product not found</h1>
-      <p className="text-body-b6 text-muted-foreground">It may have already been deleted.</p>
+      <h1 className="text-heading-h2 text-foreground">{t("notFoundTitle")}</h1>
+      <p className="text-body-b6 text-muted-foreground">{t("notFoundBody")}</p>
       <Button asChild variant="outline" size="sm" className="self-start">
-        <Link href="/dashboard/products">Back to products</Link>
+        <Link href="/dashboard/products">{t("backToProducts")}</Link>
       </Button>
     </div>
   );

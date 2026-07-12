@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { ImagePlus, Loader2 } from "lucide-react";
 import { Button, Icon } from "@/src/presentation/design-system";
 
@@ -23,6 +24,7 @@ const ACCEPT = "image/png,image/jpeg,image/webp,image/avif";
  * category `IconUpload`.
  */
 export function ProductImageUpload({ value, onChange, id, ...aria }: ProductImageUploadProps) {
+  const t = useTranslations("dashProducts");
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -41,11 +43,11 @@ export function ProductImageUpload({ value, onChange, id, ...aria }: ProductImag
 
       const res = await fetch("/api/images/upload", { method: "POST", body });
       const json: { image?: { url: string }; error?: string } = await res.json();
-      if (!res.ok || !json.image) throw new Error(json.error ?? "Upload failed.");
+      if (!res.ok || !json.image) throw new Error(json.error ?? t("uploadFailed"));
 
       onChange(json.image.url);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed.");
+      setError(err instanceof Error ? err.message : t("uploadFailed"));
     } finally {
       setUploading(false);
     }
@@ -55,7 +57,7 @@ export function ProductImageUpload({ value, onChange, id, ...aria }: ProductImag
     <div className="flex items-center gap-4">
       <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-card-lg bg-surface-sunken">
         {value ? (
-          <Image src={value} alt="Product image preview" width={80} height={80} className="size-full object-cover" />
+          <Image src={value} alt={t("imagePreviewAlt")} width={80} height={80} className="size-full object-cover" />
         ) : (
           <Icon icon={ImagePlus} size="md" className="text-icon-muted" />
         )}
@@ -81,18 +83,18 @@ export function ProductImageUpload({ value, onChange, id, ...aria }: ProductImag
           {uploading ? (
             <>
               <Icon icon={Loader2} size="sm" className="mr-2 animate-spin" />
-              Uploading…
+              {t("uploading")}
             </>
           ) : value ? (
-            "Replace image"
+            t("replaceImage")
           ) : (
-            "Upload image"
+            t("uploadImage")
           )}
         </Button>
         {error ? (
           <p className="text-body-b10 text-destructive">{error}</p>
         ) : (
-          <p className="text-body-b10 text-muted-foreground">PNG, JPG, WebP or AVIF · up to 5 MB</p>
+          <p className="text-body-b10 text-muted-foreground">{t("uploadHint")}</p>
         )}
       </div>
     </div>

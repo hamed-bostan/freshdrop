@@ -1,8 +1,9 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Plus } from "lucide-react";
 import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
 import { Button, Icon } from "@/src/presentation/design-system";
+import { Link } from "@/src/i18n/navigation";
 import { ProductsTable } from "./ProductsTable";
 
 type ProductsScreenProps = {
@@ -16,7 +17,8 @@ type ProductsScreenProps = {
  * server render via `router.refresh()` (see DeleteProductButton), so the server
  * stays the single source of truth — no client-side data cache to keep in sync.
  */
-export function ProductsScreen({ products, categories }: ProductsScreenProps) {
+export async function ProductsScreen({ products, categories }: ProductsScreenProps) {
+  const t = await getTranslations("dashProducts");
   const count = products.length;
   const categoryNames = new Map(categories.map((category) => [category.id, category.name]));
 
@@ -24,15 +26,13 @@ export function ProductsScreen({ products, categories }: ProductsScreenProps) {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-heading-h2 text-foreground">Products</h1>
-          <p className="text-body-b6 text-muted-foreground">
-            {count} {count === 1 ? "product" : "products"}
-          </p>
+          <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
+          <p className="text-body-b6 text-muted-foreground">{t("count", { count })}</p>
         </div>
         <Button asChild>
           <Link href="/dashboard/products/create">
             <Icon icon={Plus} size="sm" className="mr-1.5" />
-            New product
+            {t("newProduct")}
           </Link>
         </Button>
       </div>
@@ -41,10 +41,8 @@ export function ProductsScreen({ products, categories }: ProductsScreenProps) {
         <ProductsTable products={products} categoryNames={categoryNames} />
       ) : (
         <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
-          <p className="text-body-b4 text-foreground">No products yet</p>
-          <p className="mt-1 text-body-b6 text-muted-foreground">
-            Create your first product to get started.
-          </p>
+          <p className="text-body-b4 text-foreground">{t("emptyTitle")}</p>
+          <p className="mt-1 text-body-b6 text-muted-foreground">{t("emptyBody")}</p>
         </div>
       )}
     </div>
