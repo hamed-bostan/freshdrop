@@ -547,5 +547,29 @@
     "noReplacements": "محصول مرتبطی برای جایگزینی نیست — به‌جایش بازپرداخت کنید.",
     "refundChosen": "مشتری در صورت ناموجود بودن این کالا، بازپرداخت را انتخاب کرده است.",
     "refundThisItem": "بازپرداخت این کالا"
+  },
+  "dashReviews": {
+    "heading": "نظرات",
+    "summary": "{count} در انتظار تأیید · برای انتشار در فروشگاه تأیید کنید",
+    "filterAll": "همه",
+    "statusPending": "در انتظار",
+    "statusApproved": "تأییدشده",
+    "statusRejected": "ردشده",
+    "filterAria": "فیلتر نظرات بر اساس وضعیت",
+    "emptyPending": "نظری در انتظار تأیید نیست",
+    "emptyOther": "نظری اینجا نیست",
+    "emptyPendingBody": "نظرات جدید مشتریان برای تأیید اینجا نمایش داده می‌شوند.",
+    "emptyOtherBody": "هنوز چیزی با این فیلتر مطابقت ندارد.",
+    "colAuthor": "نویسنده",
+    "colProduct": "محصول",
+    "colRating": "امتیاز",
+    "colReview": "نظر",
+    "colStatus": "وضعیت",
+    "colAction": "عملیات",
+    "unknownProduct": "محصول نامشخص",
+    "noComment": "بدون نظر",
+    "moderateAria": "بررسی نظر",
+    "moderatePlaceholder": "بررسی…",
+    "updateError": "به‌روزرسانی نظر ممکن نشد. لطفاً دوباره تلاش کنید."
   }
 }

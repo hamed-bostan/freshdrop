@@ -1,9 +1,10 @@
-import Link from "next/link";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Star } from "lucide-react";
 import type { Review, ReviewStatus } from "@/src/domain/entities/Review";
 import type { Product } from "@/src/domain/entities/Product";
 import { Badge, Icon } from "@/src/presentation/design-system";
+import { Link } from "@/src/i18n/navigation";
 import { ReviewStatusSelect } from "./ReviewStatusSelect";
 
 type ReviewsTableProps = {
@@ -46,25 +47,27 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
-const STATUS_BADGE: Record<ReviewStatus, { variant: "success" | "warning" | "destructive"; label: string }> = {
-  pending: { variant: "warning", label: "Pending" },
-  approved: { variant: "success", label: "Approved" },
-  rejected: { variant: "destructive", label: "Rejected" },
+const STATUS_BADGE: Record<ReviewStatus, { variant: "success" | "warning" | "destructive"; labelKey: "statusPending" | "statusApproved" | "statusRejected" }> = {
+  pending: { variant: "warning", labelKey: "statusPending" },
+  approved: { variant: "success", labelKey: "statusApproved" },
+  rejected: { variant: "destructive", labelKey: "statusRejected" },
 };
 
 /** Admin moderation table: one row per review with its status and a moderation control. */
 export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
+  const t = useTranslations("dashReviews");
+
   return (
     <div className="overflow-x-auto rounded-card-lg border border-border">
       <table className="w-full min-w-[48rem] border-collapse text-left">
         <thead className="border-b border-border bg-surface-sunken text-body-b9 uppercase tracking-wide text-muted-foreground">
           <tr>
-            <th scope="col" className="px-4 py-3 font-medium">Author</th>
-            <th scope="col" className="px-4 py-3 font-medium">Product</th>
-            <th scope="col" className="px-4 py-3 font-medium">Rating</th>
-            <th scope="col" className="px-4 py-3 font-medium">Review</th>
-            <th scope="col" className="px-4 py-3 font-medium">Status</th>
-            <th scope="col" className="px-4 py-3 text-right font-medium">Action</th>
+            <th scope="col" className="px-4 py-3 font-medium">{t("colAuthor")}</th>
+            <th scope="col" className="px-4 py-3 font-medium">{t("colProduct")}</th>
+            <th scope="col" className="px-4 py-3 font-medium">{t("colRating")}</th>
+            <th scope="col" className="px-4 py-3 font-medium">{t("colReview")}</th>
+            <th scope="col" className="px-4 py-3 font-medium">{t("colStatus")}</th>
+            <th scope="col" className="px-4 py-3 text-right font-medium">{t("colAction")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -122,7 +125,7 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
                       </span>
                     </Link>
                   ) : (
-                    <span className="text-body-b8 text-muted-foreground">Unknown product</span>
+                    <span className="text-body-b8 text-muted-foreground">{t("unknownProduct")}</span>
                   )}
                 </td>
                 <td className="px-4 py-4">
@@ -137,11 +140,11 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
                       {review.comment}
                     </p>
                   ) : (
-                    <span className="text-body-b8 italic text-muted-foreground/70">No comment</span>
+                    <span className="text-body-b8 italic text-muted-foreground/70">{t("noComment")}</span>
                   )}
                 </td>
                 <td className="px-4 py-4">
-                  <Badge variant={badge.variant}>{badge.label}</Badge>
+                  <Badge variant={badge.variant}>{t(badge.labelKey)}</Badge>
                 </td>
                 <td className="px-4 py-4">
                   <ReviewStatusSelect id={review.id} status={review.status} />

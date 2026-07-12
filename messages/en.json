@@ -547,5 +547,29 @@
     "noReplacements": "No related products to substitute — refund instead.",
     "refundChosen": "The customer chose a refund if this item is unavailable.",
     "refundThisItem": "Refund this item"
+  },
+  "dashReviews": {
+    "heading": "Reviews",
+    "summary": "{count} awaiting approval · approve to publish to the storefront",
+    "filterAll": "All",
+    "statusPending": "Pending",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "filterAria": "Filter reviews by status",
+    "emptyPending": "No reviews awaiting approval",
+    "emptyOther": "No reviews here",
+    "emptyPendingBody": "New customer reviews will appear here for you to approve.",
+    "emptyOtherBody": "Nothing matches this filter yet.",
+    "colAuthor": "Author",
+    "colProduct": "Product",
+    "colRating": "Rating",
+    "colReview": "Review",
+    "colStatus": "Status",
+    "colAction": "Action",
+    "unknownProduct": "Unknown product",
+    "noComment": "No comment",
+    "moderateAria": "Moderate review",
+    "moderatePlaceholder": "Moderate…",
+    "updateError": "Couldn't update the review. Please try again."
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import type { Review, ReviewStatus } from "@/src/domain/entities/Review";
 import type { Product } from "@/src/domain/entities/Product";
 import { cn } from "@/src/lib/utils";
@@ -13,11 +14,11 @@ type ReviewsScreenProps = {
 
 type FilterValue = ReviewStatus | "all";
 
-const FILTERS: { value: FilterValue; label: string }[] = [
-  { value: "pending", label: "Pending" },
-  { value: "approved", label: "Approved" },
-  { value: "rejected", label: "Rejected" },
-  { value: "all", label: "All" },
+const FILTERS: { value: FilterValue; labelKey: "statusPending" | "statusApproved" | "statusRejected" | "filterAll" }[] = [
+  { value: "pending", labelKey: "statusPending" },
+  { value: "approved", labelKey: "statusApproved" },
+  { value: "rejected", labelKey: "statusRejected" },
+  { value: "all", labelKey: "filterAll" },
 ];
 
 /**
@@ -29,6 +30,7 @@ const FILTERS: { value: FilterValue; label: string }[] = [
  * to the Pending tab since that's the queue awaiting a decision.
  */
 export function ReviewsScreen({ reviews, products }: ReviewsScreenProps) {
+  const t = useTranslations("dashReviews");
   const [filter, setFilter] = React.useState<FilterValue>("pending");
 
   const productsById = React.useMemo(
@@ -51,13 +53,11 @@ export function ReviewsScreen({ reviews, products }: ReviewsScreenProps) {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-heading-h2 text-foreground">Reviews</h1>
-        <p className="text-body-b6 text-muted-foreground">
-          {counts.pending} awaiting approval · approve to publish to the storefront
-        </p>
+        <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
+        <p className="text-body-b6 text-muted-foreground">{t("summary", { count: counts.pending })}</p>
       </div>
 
-      <div className="flex items-center gap-1" role="tablist" aria-label="Filter reviews by status">
+      <div className="flex items-center gap-1" role="tablist" aria-label={t("filterAria")}>
         {FILTERS.map((tab) => {
           const active = filter === tab.value;
           return (
@@ -74,7 +74,7 @@ export function ReviewsScreen({ reviews, products }: ReviewsScreenProps) {
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              {tab.label}
+              {t(tab.labelKey)}
               <span className="ml-1.5 text-muted-foreground">{counts[tab.value]}</span>
             </button>
           );
@@ -86,12 +86,10 @@ export function ReviewsScreen({ reviews, products }: ReviewsScreenProps) {
       ) : (
         <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
           <p className="text-body-b4 text-foreground">
-            {filter === "pending" ? "No reviews awaiting approval" : "No reviews here"}
+            {filter === "pending" ? t("emptyPending") : t("emptyOther")}
           </p>
           <p className="mt-1 text-body-b6 text-muted-foreground">
-            {filter === "pending"
-              ? "New customer reviews will appear here for you to approve."
-              : "Nothing matches this filter yet."}
+            {filter === "pending" ? t("emptyPendingBody") : t("emptyOtherBody")}
           </p>
         </div>
       )}

@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { ReviewStatus } from "@/src/domain/entities/Review";
+import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { cn } from "@/src/lib/utils";
 import { reviewsApi } from "./review-api";
@@ -14,9 +15,9 @@ import { reviewsApi } from "./review-api";
  */
 type ModerationDecision = Exclude<ReviewStatus, "pending">;
 
-const DECISIONS: { value: ModerationDecision; label: string }[] = [
-  { value: "approved", label: "Approved" },
-  { value: "rejected", label: "Rejected" },
+const DECISIONS: { value: ModerationDecision; labelKey: "statusApproved" | "statusRejected" }[] = [
+  { value: "approved", labelKey: "statusApproved" },
+  { value: "rejected", labelKey: "statusRejected" },
 ];
 
 /** Native-select styling matching the DS field family (same as OrderStageSelect). */
@@ -36,6 +37,7 @@ type ReviewStatusSelectProps = {
  * server `status`) and shows inline.
  */
 export function ReviewStatusSelect({ id, status }: ReviewStatusSelectProps) {
+  const t = useTranslations("dashReviews");
   const router = useRouter();
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
@@ -50,8 +52,7 @@ export function ReviewStatusSelect({ id, status }: ReviewStatusSelectProps) {
         await reviewsApi.setStatus(id, { status: next });
         router.refresh();
       } catch (err) {
-        const message =
-          err instanceof ApiError ? err.message : "Couldn't update the review. Please try again.";
+        const message = err instanceof ApiError ? err.message : t("updateError");
         setError(message);
       }
     });
@@ -64,16 +65,16 @@ export function ReviewStatusSelect({ id, status }: ReviewStatusSelectProps) {
         value={status === "pending" ? "" : status}
         onChange={handleChange}
         disabled={pending}
-        aria-label="Moderate review"
+        aria-label={t("moderateAria")}
       >
         {status === "pending" && (
           <option value="" disabled>
-            Moderate…
+            {t("moderatePlaceholder")}
           </option>
         )}
         {DECISIONS.map((option) => (
           <option key={option.value} value={option.value}>
-            {option.label}
+            {t(option.labelKey)}
           </option>
         ))}
       </select>
