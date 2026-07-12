@@ -9,6 +9,7 @@ import "swiper/css";
 import { ArrowRight } from "lucide-react";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { routing } from "@/src/i18n/routing";
+import { getLangDir } from "@/src/i18n/direction";
 import { onboarding1, onboarding2, onboarding3, onboarding4 } from "@/src/shared/assets/images";
 import { OnboardingDots } from "./components";
 import { completeOnboarding } from "./actions";
@@ -55,6 +56,9 @@ export default function OnboardingScreen() {
     <div className="flex min-h-dvh flex-col">
       <div className="flex flex-1 flex-col justify-center">
         <Swiper
+          // Match the reading direction so slides advance the natural way under `fa`
+          // (and `slideNext()` from the mirrored arrow moves toward the next slide).
+          dir={getLangDir(locale)}
           autoHeight
           onSwiper={setSwiper}
           onSlideChange={(instance) => setActiveIndex(instance.activeIndex)}

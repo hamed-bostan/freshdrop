@@ -33,10 +33,12 @@ function getFormatters(locale: Locale): OrderFormatters {
     month: new Intl.DateTimeFormat(tag, { month: "long", timeZone: "UTC" }),
     day: new Intl.DateTimeFormat(tag, { day: "numeric", timeZone: "UTC" }),
     year: new Intl.DateTimeFormat(tag, { year: "numeric", timeZone: "UTC" }),
+    // `fa` uses a 24-hour clock (idiomatic in Iran, and avoids the long
+    // "بعدازظهر" day-period marker overflowing tight time rows); `en` keeps 12-hour.
     time: new Intl.DateTimeFormat(tag, {
       hour: "2-digit",
       minute: "2-digit",
-      hour12: true,
+      hour12: locale === "en",
       timeZone: "UTC",
     }),
   };
@@ -44,14 +46,21 @@ function getFormatters(locale: Locale): OrderFormatters {
   return formatters;
 }
 
-/** "03:22 PM" (en) — Persian numerals + Jalali day period under `fa`. */
+/** "03:22 PM" (en) — Persian numerals, 24-hour clock under `fa` ("۱۵:۲۲"). */
 export function formatOrderTime(iso: string, locale: Locale): string {
   return getFormatters(locale).time.format(new Date(iso));
 }
 
-/** "Monday - October 9,2023" (en) — Jalali calendar + Persian numerals under `fa`. */
+/**
+ * "Monday - October 9,2023" (en). Under `fa`, the Jalali calendar with Persian
+ * numerals composed in natural Persian order — weekday day month year
+ * ("یکشنبه ۲۱ تیر ۱۴۰۵") — rather than the English dash/comma layout.
+ */
 export function formatOrderDate(iso: string, locale: Locale): string {
   const date = new Date(iso);
   const f = getFormatters(locale);
+  if (locale === "fa") {
+    return `${f.weekday.format(date)} ${f.day.format(date)} ${f.month.format(date)} ${f.year.format(date)}`;
+  }
   return `${f.weekday.format(date)} - ${f.month.format(date)} ${f.day.format(date)},${f.year.format(date)}`;
 }

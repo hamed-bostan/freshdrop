@@ -2,9 +2,11 @@
 
 import * as React from "react";
 import Image from "next/image";
+import { useLocale } from "next-intl";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
+import { getLangDir } from "@/src/i18n/direction";
 import { cn } from "@/src/lib/utils";
 import { FavoriteToggle } from "./FavoriteToggle";
 
@@ -21,12 +23,15 @@ interface ProductGalleryProps {
  * shots, custom progress dots, and a {@link FavoriteToggle} anchored to the corner.
  */
 export function ProductGallery({ images, productName, productId, initialFavorite }: ProductGalleryProps) {
+  const locale = useLocale();
   const [activeIndex, setActiveIndex] = React.useState(0);
 
   return (
     <div className="relative">
       <div className="rounded-card-xl border border-primary p-4">
         <Swiper
+          // Match the reading direction so the gallery swipes the natural way under `fa`.
+          dir={getLangDir(locale)}
           onSlideChange={(instance: SwiperType) => setActiveIndex(instance.activeIndex)}
           className="w-full"
         >

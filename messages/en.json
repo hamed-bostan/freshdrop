@@ -100,7 +100,10 @@
     "outOfStock": "Out of stock",
     "totalLabel": "Total :",
     "checkout": "Check Out",
-    "empty": "Your Cart Is Empty"
+    "empty": "Your Cart Is Empty",
+    "errorTitle": "Something went wrong",
+    "errorBody": "We couldn't load your cart. Please try again.",
+    "tryAgain": "Try again"
   },
   "product": {
     "detailTitle": "Product Detail",

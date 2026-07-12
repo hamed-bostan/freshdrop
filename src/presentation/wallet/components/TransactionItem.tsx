@@ -21,7 +21,7 @@ function getFormatters(locale: Locale): { date: Intl.DateTimeFormat; time: Intl.
     time: new Intl.DateTimeFormat(TIME_TAG[locale], {
       hour: "2-digit",
       minute: "2-digit",
-      hour12: true,
+      hour12: locale === "en",
       timeZone: "UTC",
     }),
   };
