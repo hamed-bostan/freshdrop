@@ -1,12 +1,12 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@/src/domain/entities/Category";
 import { Button, Field, Input, TextField } from "@/src/presentation/design-system";
+import { Link, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { slugify } from "@/src/lib/slugify";
 import { categoryFormSchema, type CategoryFormValues } from "./category-schema";
@@ -26,6 +26,7 @@ type CategoryFormProps = { mode: "create" } | { mode: "edit"; category: Category
  * inline — field-specific messages on the offending fields, otherwise at the root.
  */
 export function CategoryForm(props: CategoryFormProps) {
+  const t = useTranslations("dashCategories");
   const editing = props.mode === "edit";
   const router = useRouter();
   const {
@@ -54,7 +55,7 @@ export function CategoryForm(props: CategoryFormProps) {
       router.push("/dashboard/categories");
     } catch (error) {
       if (!(error instanceof ApiError)) {
-        setError("root", { message: "Something went wrong. Please try again." });
+        setError("root", { message: t("formError") });
         return;
       }
       // Prefer field-level messages (e.g. a taken slug) so they read in context;
@@ -73,7 +74,7 @@ export function CategoryForm(props: CategoryFormProps) {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5" noValidate>
-      <TextField label="Name" required error={errors.name?.message}>
+      <TextField label={t("nameLabel")} required error={errors.name?.message}>
         {(control) => (
           <Input
             {...control}
@@ -82,22 +83,22 @@ export function CategoryForm(props: CategoryFormProps) {
                 if (!slugLocked) setValue("slug", slugify(event.target.value), { shouldValidate: true });
               },
             })}
-            placeholder="e.g. Vegetables"
+            placeholder={t("namePlaceholder")}
           />
         )}
       </TextField>
 
       <TextField
-        label="Slug"
+        label={t("slugLabel")}
         required
-        description="Appears in the URL: /category/<slug>"
+        description={t("slugDescription")}
         error={errors.slug?.message}
       >
         {(control) => (
           <Input
             {...control}
             {...register("slug", { onChange: () => setSlugLocked(true) })}
-            placeholder="e.g. vegetables"
+            placeholder={t("slugPlaceholder")}
           />
         )}
       </TextField>
@@ -106,7 +107,7 @@ export function CategoryForm(props: CategoryFormProps) {
         {({ id, ariaDescribedBy, ariaInvalid }) => (
           <>
             <label htmlFor={id} className="text-body-b7 text-input-foreground">
-              Icon image
+              {t("iconLabel")}
               <span aria-hidden className="text-destructive"> *</span>
             </label>
             <IconUpload
@@ -130,10 +131,10 @@ export function CategoryForm(props: CategoryFormProps) {
 
       <div className="flex gap-3 pt-2">
         <Button type="submit" disabled={isSubmitting}>
-          {editing ? "Save changes" : "Create category"}
+          {editing ? t("saveChanges") : t("createCategory")}
         </Button>
         <Button asChild variant="outline" type="button">
-          <Link href="/dashboard/categories">Cancel</Link>
+          <Link href="/dashboard/categories">{t("cancel")}</Link>
         </Button>
       </div>
     </form>

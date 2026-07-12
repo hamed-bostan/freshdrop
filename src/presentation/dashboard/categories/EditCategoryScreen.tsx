@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import type { Category } from "@/src/domain/entities/Category";
 import { CategoryForm } from "./CategoryForm";
 
@@ -6,12 +7,14 @@ import { CategoryForm } from "./CategoryForm";
  * (BFF) during server render and passes it in, then hands it to the shared
  * `CategoryForm`. A missing category is handled upstream via `notFound()`.
  */
-export function EditCategoryScreen({ category }: { category: Category }) {
+export async function EditCategoryScreen({ category }: { category: Category }) {
+  const t = await getTranslations("dashCategories");
+
   return (
     <div className="flex max-w-xl flex-col gap-6">
       <div>
-        <h1 className="text-heading-h2 text-foreground">Edit category</h1>
-        <p className="text-body-b6 text-muted-foreground">Update “{category.name}”.</p>
+        <h1 className="text-heading-h2 text-foreground">{t("editHeading")}</h1>
+        <p className="text-body-b6 text-muted-foreground">{t("editSubtitle", { name: category.name })}</p>
       </div>
       <CategoryForm mode="edit" category={category} />
     </div>

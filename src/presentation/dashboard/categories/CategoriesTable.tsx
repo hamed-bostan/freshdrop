@@ -1,8 +1,9 @@
-import Link from "next/link";
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import { Pencil } from "lucide-react";
 import type { Category } from "@/src/domain/entities/Category";
 import { Button, Icon } from "@/src/presentation/design-system";
+import { Link } from "@/src/i18n/navigation";
 import { DeleteCategoryButton } from "./DeleteCategoryButton";
 
 type CategoriesTableProps = {
@@ -10,16 +11,18 @@ type CategoriesTableProps = {
 };
 
 /** Admin list of categories with per-row edit + delete actions. */
-export function CategoriesTable({ categories }: CategoriesTableProps) {
+export async function CategoriesTable({ categories }: CategoriesTableProps) {
+  const t = await getTranslations("dashCategories");
+
   return (
     <div className="overflow-hidden rounded-card-lg border border-border">
       <table className="w-full text-left">
         <thead className="bg-surface-sunken text-body-b8 text-muted-foreground">
           <tr>
-            <th scope="col" className="px-4 py-3">Icon</th>
-            <th scope="col" className="px-4 py-3">Name</th>
-            <th scope="col" className="px-4 py-3">Slug</th>
-            <th scope="col" className="px-4 py-3 text-right">Actions</th>
+            <th scope="col" className="px-4 py-3">{t("colIcon")}</th>
+            <th scope="col" className="px-4 py-3">{t("colName")}</th>
+            <th scope="col" className="px-4 py-3">{t("colSlug")}</th>
+            <th scope="col" className="px-4 py-3 text-right">{t("colActions")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -37,7 +40,7 @@ export function CategoriesTable({ categories }: CategoriesTableProps) {
                   <Button asChild variant="outline" size="sm">
                     <Link href={`/dashboard/categories/${category.id}/edit`}>
                       <Icon icon={Pencil} size="sm" className="mr-1.5" />
-                      Edit
+                      {t("edit")}
                     </Link>
                   </Button>
                   <DeleteCategoryButton id={category.id} name={category.name} />
