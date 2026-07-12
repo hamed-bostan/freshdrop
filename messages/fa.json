@@ -377,5 +377,16 @@
     "getStarted": "شروع کنید",
     "skip": "رد کردن",
     "nextSlide": "اسلاید بعدی"
+  },
+  "dashboard": {
+    "navCategories": "دسته‌بندی‌ها",
+    "navProducts": "محصولات",
+    "navOrders": "سفارش‌ها",
+    "navReviews": "نظرات",
+    "admin": "مدیریت",
+    "viewStore": "مشاهده فروشگاه",
+    "errorTitle": "مشکلی پیش آمد",
+    "errorBody": "بارگذاری این صفحه ممکن نشد. لطفاً دوباره تلاش کنید.",
+    "tryAgain": "تلاش مجدد"
   }
 }

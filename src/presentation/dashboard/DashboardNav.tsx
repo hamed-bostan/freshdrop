@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/src/i18n/navigation";
 import { cn } from "@/src/lib/utils";
 
 /**
@@ -10,13 +10,14 @@ import { cn } from "@/src/lib/utils";
  * redirects to Categories.
  */
 const SECTIONS = [
-  { href: "/dashboard/categories", label: "Categories" },
-  { href: "/dashboard/products", label: "Products" },
-  { href: "/dashboard/orders", label: "Orders" },
-  { href: "/dashboard/reviews", label: "Reviews" },
+  { href: "/dashboard/categories", labelKey: "navCategories" },
+  { href: "/dashboard/products", labelKey: "navProducts" },
+  { href: "/dashboard/orders", labelKey: "navOrders" },
+  { href: "/dashboard/reviews", labelKey: "navReviews" },
 ] as const;
 
 export function DashboardNav() {
+  const t = useTranslations("dashboard");
   const pathname = usePathname();
 
   return (
@@ -35,7 +36,7 @@ export function DashboardNav() {
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            {section.label}
+            {t(section.labelKey)}
           </Link>
         );
       })}

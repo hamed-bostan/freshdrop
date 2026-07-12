@@ -377,5 +377,16 @@
     "getStarted": "Get started",
     "skip": "skip",
     "nextSlide": "Next slide"
+  },
+  "dashboard": {
+    "navCategories": "Categories",
+    "navProducts": "Products",
+    "navOrders": "Orders",
+    "navReviews": "Reviews",
+    "admin": "Admin",
+    "viewStore": "View store",
+    "errorTitle": "Something went wrong",
+    "errorBody": "We couldn't load this page. Please try again.",
+    "tryAgain": "Try again"
   }
 }
