@@ -1,21 +1,22 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import type { PaymentMethod, PaymentMethodGroup } from "@/src/domain/entities/PaymentMethod";
 import type { SavedCard } from "@/src/domain/entities/Wallet";
+import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { paymentMethodsApi } from "./payment-method-api";
 import { PaymentMethodOption, SavedCardOption, AddCardRow } from "./components";
 
 /** Sections render in this fixed order; the title is a UI concern, not domain data. */
-const SECTIONS: { group: PaymentMethodGroup; title: string }[] = [
-  { group: "cash", title: "Cash" },
-  { group: "wallet", title: "Wallet" },
-  { group: "card", title: "Credit Card" },
-  { group: "options", title: "Payment Options" },
+const SECTIONS: { group: PaymentMethodGroup; titleKey: "sectionCash" | "sectionWallet" | "sectionCard" | "sectionOptions" }[] = [
+  { group: "cash", titleKey: "sectionCash" },
+  { group: "wallet", titleKey: "sectionWallet" },
+  { group: "card", titleKey: "sectionCard" },
+  { group: "options", titleKey: "sectionOptions" },
 ];
 
 interface PaymentMethodScreenProps {
@@ -31,6 +32,7 @@ interface PaymentMethodScreenProps {
 }
 
 export default function PaymentMethodScreen({ methods, cards, selectedId }: PaymentMethodScreenProps) {
+  const t = useTranslations("payment");
   const router = useRouter();
   const [selected, setSelected] = React.useState(() => selectedId ?? methods[0]?.id);
   const [error, setError] = React.useState<string | null>(null);
@@ -53,21 +55,19 @@ export default function PaymentMethodScreen({ methods, cards, selectedId }: Paym
         router.refresh();
         router.back();
       } catch (err) {
-        setError(
-          err instanceof ApiError ? err.message : "Couldn't save your payment method. Please try again.",
-        );
+        setError(err instanceof ApiError ? err.message : t("saveError"));
       }
     });
   };
 
   return (
     <form onSubmit={handleConfirm} className="flex min-h-dvh flex-col gap-6 px-6 pb-10">
-      <PageHeader title="Payment Method" />
+      <PageHeader title={t("title")} />
 
       <fieldset className="flex flex-col gap-6">
-        <legend className="sr-only">Select a payment method</legend>
+        <legend className="sr-only">{t("selectLegend")}</legend>
 
-        {SECTIONS.map(({ group, title }) => {
+        {SECTIONS.map(({ group, titleKey }) => {
           const groupMethods = methods.filter((method) => method.group === group);
 
           // The Credit Card section always shows the user's saved cards plus the
@@ -77,7 +77,7 @@ export default function PaymentMethodScreen({ methods, cards, selectedId }: Paym
 
           return (
             <section key={group} className="flex flex-col gap-2">
-              <h2 className="text-body-b8 text-foreground">{title}</h2>
+              <h2 className="text-body-b8 text-foreground">{t(titleKey)}</h2>
 
               {groupMethods.map((method) => (
                 <PaymentMethodOption
@@ -111,7 +111,7 @@ export default function PaymentMethodScreen({ methods, cards, selectedId }: Paym
       )}
 
       <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full rounded-button-lg">
-        {pending ? "Saving…" : "Confirm Payment"}
+        {pending ? t("saving") : t("confirm")}
       </Button>
     </form>
   );

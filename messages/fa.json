@@ -282,5 +282,29 @@
     "errZero": "مبلغی بیشتر از صفر وارد کنید.",
     "errGeneric": "مشکلی پیش آمد. لطفاً دوباره تلاش کنید.",
     "deleteKey": "حذف"
+  },
+  "payment": {
+    "title": "روش پرداخت",
+    "sectionCash": "نقدی",
+    "sectionWallet": "کیف پول",
+    "sectionCard": "کارت بانکی",
+    "sectionOptions": "گزینه‌های پرداخت",
+    "selectLegend": "یک روش پرداخت انتخاب کنید",
+    "saveError": "ذخیره روش پرداخت ممکن نشد. لطفاً دوباره تلاش کنید.",
+    "saving": "در حال ذخیره…",
+    "confirm": "تأیید پرداخت",
+    "addCard": "افزودن کارت",
+    "cardNumber": "شماره کارت",
+    "cardNumberPlaceholder": "شماره کارت",
+    "cardholder": "نام دارنده کارت",
+    "cardholderPlaceholder": "نام دارنده کارت",
+    "expiryDate": "تاریخ انقضا",
+    "yearPlaceholder": "سال",
+    "expiryYearAria": "سال انقضا",
+    "monthPlaceholder": "ماه",
+    "expiryMonthAria": "ماه انقضا",
+    "cvv": "CVV",
+    "cvvPlaceholder": "cvv",
+    "addCardError": "مشکلی پیش آمد. لطفاً دوباره تلاش کنید."
   }
 }

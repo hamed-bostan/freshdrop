@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/src/i18n/navigation";
 import { PaymentMethodIcon } from "./PaymentMethodIcon";
 
 /**
@@ -7,6 +8,8 @@ import { PaymentMethodIcon } from "./PaymentMethodIcon";
  * so it is a link rather than a radio.
  */
 export function AddCardRow() {
+  const t = useTranslations("payment");
+
   return (
     <Link
       href="/profile/payment-methods/add-card"
@@ -15,7 +18,7 @@ export function AddCardRow() {
       }
     >
       <PaymentMethodIcon methodId="add-card" />
-      <span className="text-body-b6 text-foreground">Add Card</span>
+      <span className="text-body-b6 text-foreground">{t("addCard")}</span>
     </Link>
   );
 }

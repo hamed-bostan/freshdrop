@@ -1,14 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { CreditCard, User, Lock } from "lucide-react";
 import { Button, Icon, Input, PasswordInput, TextField } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { usePathname, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { walletsApi } from "@/src/presentation/wallet/wallet-api";
 
 export default function AddCardScreen() {
+  const t = useTranslations("payment");
   const router = useRouter();
   const pathname = usePathname();
 
@@ -43,22 +45,22 @@ export default function AddCardScreen() {
           router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
           return;
         }
-        setError(caught instanceof ApiError ? caught.message : "Something went wrong. Please try again.");
+        setError(caught instanceof ApiError ? caught.message : t("addCardError"));
       }
     });
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex min-h-dvh flex-col gap-4 px-6 pb-10">
-      <PageHeader title="Add Card" />
+      <PageHeader title={t("addCard")} />
 
       {/* Card number — maskable via the show/hide toggle PasswordInput provides. */}
-      <TextField label="Card number">
+      <TextField label={t("cardNumber")}>
         {(control) => (
           <PasswordInput
             {...control}
             size="lg"
-            placeholder="card number"
+            placeholder={t("cardNumberPlaceholder")}
             inputMode="numeric"
             autoComplete="cc-number"
             leftElement={<Icon icon={CreditCard} size="sm" />}
@@ -69,9 +71,9 @@ export default function AddCardScreen() {
       </TextField>
 
       <TextField
-        label="Cardholder name"
+        label={t("cardholder")}
         size="lg"
-        placeholder="cardholder name"
+        placeholder={t("cardholderPlaceholder")}
         autoComplete="cc-name"
         leftElement={<Icon icon={User} size="sm" />}
         value={cardholder}
@@ -79,13 +81,13 @@ export default function AddCardScreen() {
       />
 
       {/* Two controls under one label → grouped for screen readers, each with its own name. */}
-      <div role="group" aria-label="Expiry date" className="flex flex-col gap-1.5">
-        <span className="text-body-b3 text-input-foreground">Expiry date</span>
+      <div role="group" aria-label={t("expiryDate")} className="flex flex-col gap-1.5">
+        <span className="text-body-b3 text-input-foreground">{t("expiryDate")}</span>
         <div className="grid grid-cols-2 gap-4">
           <Input
             size="lg"
-            placeholder="Year"
-            aria-label="Expiry year"
+            placeholder={t("yearPlaceholder")}
+            aria-label={t("expiryYearAria")}
             inputMode="numeric"
             autoComplete="cc-exp-year"
             maxLength={4}
@@ -94,8 +96,8 @@ export default function AddCardScreen() {
           />
           <Input
             size="lg"
-            placeholder="Month"
-            aria-label="Expiry month"
+            placeholder={t("monthPlaceholder")}
+            aria-label={t("expiryMonthAria")}
             inputMode="numeric"
             autoComplete="cc-exp-month"
             maxLength={2}
@@ -105,12 +107,12 @@ export default function AddCardScreen() {
         </div>
       </div>
 
-      <TextField label="Cvv">
+      <TextField label={t("cvv")}>
         {(control) => (
           <PasswordInput
             {...control}
             size="lg"
-            placeholder="cvv"
+            placeholder={t("cvvPlaceholder")}
             inputMode="numeric"
             autoComplete="cc-csc"
             maxLength={4}
@@ -128,7 +130,7 @@ export default function AddCardScreen() {
       )}
 
       <Button type="submit" size="lg" className="mt-auto w-full" disabled={pending}>
-        Add Card
+        {t("addCard")}
       </Button>
     </form>
   );

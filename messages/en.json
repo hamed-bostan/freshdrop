@@ -282,5 +282,29 @@
     "errZero": "Enter an amount greater than zero.",
     "errGeneric": "Something went wrong. Please try again.",
     "deleteKey": "Delete"
+  },
+  "payment": {
+    "title": "Payment Method",
+    "sectionCash": "Cash",
+    "sectionWallet": "Wallet",
+    "sectionCard": "Credit Card",
+    "sectionOptions": "Payment Options",
+    "selectLegend": "Select a payment method",
+    "saveError": "Couldn't save your payment method. Please try again.",
+    "saving": "Saving…",
+    "confirm": "Confirm Payment",
+    "addCard": "Add Card",
+    "cardNumber": "Card number",
+    "cardNumberPlaceholder": "card number",
+    "cardholder": "Cardholder name",
+    "cardholderPlaceholder": "cardholder name",
+    "expiryDate": "Expiry date",
+    "yearPlaceholder": "Year",
+    "expiryYearAria": "Expiry year",
+    "monthPlaceholder": "Month",
+    "expiryMonthAria": "Expiry month",
+    "cvv": "Cvv",
+    "cvvPlaceholder": "cvv",
+    "addCardError": "Something went wrong. Please try again."
   }
 }
