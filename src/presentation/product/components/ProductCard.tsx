@@ -48,7 +48,7 @@ export function ProductCard({
           productName={product.name}
           initialFavorite={initialFavorite}
           refreshOnUnfavorite={refreshOnUnfavorite}
-          className="absolute left-2 top-2 z-10"
+          className="absolute start-2 top-2 z-10"
         />
       )}
 
@@ -62,12 +62,12 @@ export function ProductCard({
       {/* Out of stock takes the ribbon slot (it's the more important signal); an
           in-stock product still shows its promo badge there. */}
       {outOfStock ? (
-        <span className="absolute right-0 top-2 z-10 rounded-tl-lg rounded-bl-lg rounded-tr-xs rounded-br-none bg-destructive p-1 text-label-l3 text-destructive-foreground">
+        <span className="absolute end-0 top-2 z-10 rounded-ss-lg rounded-es-lg rounded-se-xs rounded-ee-none bg-destructive p-1 text-label-l3 text-destructive-foreground">
           {t("outOfStock")}
         </span>
       ) : (
         product.badge && (
-          <span className="absolute right-0 top-2 z-10 rounded-tl-lg rounded-bl-lg rounded-tr-xs rounded-br-none bg-primary p-1 text-label-l3 text-primary-foreground">
+          <span className="absolute end-0 top-2 z-10 rounded-ss-lg rounded-es-lg rounded-se-xs rounded-ee-none bg-primary p-1 text-label-l3 text-primary-foreground">
             {product.badge}
           </span>
         )

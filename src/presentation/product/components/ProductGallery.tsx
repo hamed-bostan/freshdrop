@@ -69,7 +69,7 @@ export function ProductGallery({ images, productName, productId, initialFavorite
         productId={productId}
         productName={productName}
         initialFavorite={initialFavorite}
-        className="absolute bottom-3 right-3 z-10"
+        className="absolute bottom-3 end-3 z-10"
       />
     </div>
   );
