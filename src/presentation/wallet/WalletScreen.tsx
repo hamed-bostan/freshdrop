@@ -1,8 +1,9 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import type { Wallet } from "@/src/domain/entities/Wallet";
 import { cn } from "@/src/lib/utils";
 import { Button } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { Link } from "@/src/i18n/navigation";
 import { TransactionItem, WalletCard } from "./components";
 
 // Decorative brand gradients (green / magenta), cycled per card. Kept as a
@@ -15,13 +16,15 @@ interface WalletScreenProps {
   wallet: Wallet;
 }
 
-export default function WalletScreen({ wallet }: WalletScreenProps) {
+export default async function WalletScreen({ wallet }: WalletScreenProps) {
+  const t = await getTranslations("wallet");
+
   return (
     <div className="flex min-h-dvh flex-col gap-6 pb-10 px-6">
-      <PageHeader title="Wallet" />
+      <PageHeader title={t("title")} />
 
       <section className="flex flex-col gap-3">
-        <h2 className=" text-body-b1 text-foreground">My Saved Cards</h2>
+        <h2 className=" text-body-b1 text-foreground">{t("savedCards")}</h2>
         {/* Full-width scroller;  aligns the first card with the headings and lets the next peek off-edge. */}
         <div className="flex gap-4 overflow-x-auto scrollbar-hide">
           {wallet.cards.map((card, index) => (
@@ -36,17 +39,17 @@ export default function WalletScreen({ wallet }: WalletScreenProps) {
 
       <section className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
-          <h2 className="text-body-b4 text-foreground">Available Wallet Balance</h2>
+          <h2 className="text-body-b4 text-foreground">{t("balanceLabel")}</h2>
           <p className="text-heading-h3 text-foreground">${wallet.balance.toFixed(2)}</p>
         </div>
         <Button asChild size="md" className="self-start">
-          <Link href="/profile/wallet/add-money">Add Money</Link>
+          <Link href="/profile/wallet/add-money">{t("addMoney")}</Link>
         </Button>
       </section>
 
       <section>
         <div className="flex flex-col gap-4 rounded-card-xl bg-surface-sunken px-4 py-2">
-          <h2 className="text-body-b3 text-muted-foreground">Recent Transactions</h2>
+          <h2 className="text-body-b3 text-muted-foreground">{t("recentTransactions")}</h2>
           <ul className="flex flex-col gap-2">
             {wallet.transactions.map((transaction) => (
               <li key={transaction.id}>

@@ -2,9 +2,10 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { usePathname, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { addMoney } from "@/src/shared/assets/images";
 import { walletsApi } from "./wallet-api";
@@ -13,6 +14,7 @@ import { NumericKeypad } from "./components";
 const MAX_DIGITS = 6;
 
 export default function AddMoneyScreen() {
+  const t = useTranslations("wallet");
   const router = useRouter();
   const pathname = usePathname();
   const [amount, setAmount] = React.useState("240");
@@ -31,7 +33,7 @@ export default function AddMoneyScreen() {
   const handleContinue = () => {
     const value = Number(amount);
     if (!value) {
-      setError("Enter an amount greater than zero.");
+      setError(t("errZero"));
       return;
     }
 
@@ -48,7 +50,7 @@ export default function AddMoneyScreen() {
           router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
           return;
         }
-        setError(caught instanceof ApiError ? caught.message : "Something went wrong. Please try again.");
+        setError(caught instanceof ApiError ? caught.message : t("errGeneric"));
       }
     });
   };
@@ -62,19 +64,17 @@ export default function AddMoneyScreen() {
           {/* Decorative — the headline below conveys the meaning. Design size 235×194. */}
           <Image src={addMoney} alt="" sizes="235px" className="h-auto w-full max-w-58.75" />
 
-          <p className="text-center text-body-b4 text-foreground">
-            Use Credit Card To Add Money To Use Your Wallet For Quick Use.
-          </p>
+          <p className="text-center text-body-b4 text-foreground">{t("addMoneyIntro")}</p>
         </div>
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-4 rounded-card-xl bg-surface p-4">
             <div className="flex min-w-0 flex-col gap-1">
-              <span className="text-body-b7 text-muted-foreground">Add Money to Wallet</span>
+              <span className="text-body-b7 text-muted-foreground">{t("addToWallet")}</span>
               <span className="truncate text-body-b4 text-foreground">${amount || "0"}</span>
             </div>
             <Button type="button" size="sm" onClick={handleContinue} disabled={pending}>
-              Continue
+              {t("continue")}
             </Button>
           </div>
           {error && (

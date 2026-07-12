@@ -269,5 +269,18 @@
     "hotlineLabel": "Hotline:",
     "emailLabel": "Email:",
     "liveChat": "Live Chat"
+  },
+  "wallet": {
+    "title": "Wallet",
+    "savedCards": "My Saved Cards",
+    "balanceLabel": "Available Wallet Balance",
+    "addMoney": "Add Money",
+    "recentTransactions": "Recent Transactions",
+    "addMoneyIntro": "Use Credit Card To Add Money To Use Your Wallet For Quick Use.",
+    "addToWallet": "Add Money to Wallet",
+    "continue": "Continue",
+    "errZero": "Enter an amount greater than zero.",
+    "errGeneric": "Something went wrong. Please try again.",
+    "deleteKey": "Delete"
   }
 }

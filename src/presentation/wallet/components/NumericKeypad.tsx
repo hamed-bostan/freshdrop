@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Delete } from "lucide-react";
 import { Icon } from "@/src/presentation/design-system";
 
@@ -26,6 +27,8 @@ interface NumericKeypadProps {
 
 /** On-screen phone-style number pad (digits + letters, 0, and backspace). */
 export function NumericKeypad({ onDigit, onBackspace }: NumericKeypadProps) {
+  const t = useTranslations("wallet");
+
   return (
     <div className="grid grid-cols-3 gap-3">
       {KEYS.map(({ digit, letters }) => (
@@ -42,7 +45,7 @@ export function NumericKeypad({ onDigit, onBackspace }: NumericKeypadProps) {
         <span className="text-heading-h4 text-foreground">0</span>
       </button>
 
-      <button type="button" onClick={onBackspace} aria-label="Delete" className={keyClass}>
+      <button type="button" onClick={onBackspace} aria-label={t("deleteKey")} className={keyClass}>
         <Icon icon={Delete} size="md" className="text-foreground" />
       </button>
     </div>
