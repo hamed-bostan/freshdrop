@@ -113,6 +113,9 @@
     "infoDetail": "Product detail",
     "infoNutrition": "Nutritions",
     "infoOrigin": "Origins",
+    "infoDetailFallback": "A quality pick from our range — sourced for freshness and everyday value.",
+    "infoNutritionFallback": "Nutritional values vary by serving size — check the pack for full details. Best enjoyed as part of a balanced diet.",
+    "infoOriginFallback": "Responsibly sourced and quality-checked before reaching our shelves.",
     "notifyWhenAvailable": "Notify me when available",
     "willNotify": "We'll notify you"
   },

@@ -256,13 +256,14 @@ function buildProduct(seed: ProductSeed, category: Category, index: number, seri
     // index, dietary tags by category — so mock and Postgres stay in parity.
     brand: PRODUCT_BRANDS[index % PRODUCT_BRANDS.length],
     dietary: DIETARY_BY_CATEGORY[category.id] ?? [],
-    description:
-      seed.description ??
-      `${seed.name} — a quality pick from our ${category.name} range, sourced for freshness and everyday value.`,
-    nutrition:
-      seed.nutrition ??
-      "Nutritional values vary by serving size — check the pack for full details. Best enjoyed as part of a balanced diet.",
-    origin: seed.origin ?? `Responsibly sourced and quality-checked before reaching our ${category.name.toLowerCase()} shelves.`,
+    // Only genuinely authored copy — the generic "detail / nutrition / origin"
+    // blurbs are UI fallback (localized in ProductInfoAccordion), not data, so the
+    // repository no longer fabricates them. Left undefined when a seed has none, so
+    // the presentation supplies the localized fallback (mirrors the cleaned DB, where
+    // the same filler was nulled out).
+    description: seed.description,
+    nutrition: seed.nutrition,
+    origin: seed.origin,
   };
 }
 
