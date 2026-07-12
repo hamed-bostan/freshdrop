@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/src/lib/utils";
 import { baseFieldStyles } from "../shared/baseFieldStyles";
 
@@ -31,11 +32,13 @@ export function OTPInput({
   onChange,
   autoFocus = false,
   id,
-  "aria-label": ariaLabel = "One-time password code",
+  "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
   "aria-describedby": ariaDescribedBy,
   "aria-invalid": ariaInvalid,
 }: OTPInputProps) {
+  const t = useTranslations("ds");
+  const groupLabel = ariaLabel ?? t("otpLabel");
   // The cells array is the source of truth. A joined string can't represent an
   // empty *middle* cell (["1","","3"].join() === "13"), so re-deriving cells from
   // a string every render shifts digits left when a middle box is cleared. When
@@ -116,7 +119,7 @@ export function OTPInput({
       onPaste={handlePaste}
       className="flex gap-6"
       role="group"
-      aria-label={ariaLabelledBy ? undefined : ariaLabel}
+      aria-label={ariaLabelledBy ? undefined : groupLabel}
       aria-labelledby={ariaLabelledBy}
     >
       {cells.map((v, i) => {
@@ -132,7 +135,7 @@ export function OTPInput({
             value={v}
             inputMode="numeric"
             autoComplete="one-time-code"
-            aria-label={`Digit ${i + 1} of ${length}`}
+            aria-label={t("otpDigit", { index: i + 1, length })}
             aria-describedby={ariaDescribedBy}
             aria-invalid={ariaInvalid || undefined}
             onChange={(e) => updateValue(i, e.target.value)}

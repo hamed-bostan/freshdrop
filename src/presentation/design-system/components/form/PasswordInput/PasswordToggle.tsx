@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Eye, EyeOff } from "lucide-react";
 import { Icon } from "@/src/presentation/design-system/components/Icon";
 
@@ -10,10 +11,12 @@ interface PasswordToggleProps {
 }
 
 export function PasswordToggle({ show, setShow, controls }: PasswordToggleProps) {
+  const t = useTranslations("ds");
+
   return (
     <button
       type="button"
-      aria-label={show ? "Hide password" : "Show password"}
+      aria-label={show ? t("hidePassword") : t("showPassword")}
       aria-pressed={show}
       aria-controls={controls}
       onMouseDown={(e) => e.preventDefault()}

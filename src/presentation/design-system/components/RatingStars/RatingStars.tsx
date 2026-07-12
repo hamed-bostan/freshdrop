@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Star } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 
@@ -30,7 +31,9 @@ export interface RatingStarsProps {
  * A row of `max` stars. Read-only by default; pass `onChange` to turn it into an
  * interactive rating picker (rendered as a radio group for keyboard + a11y).
  */
-export function RatingStars({ value, max = 5, onChange, size = "md", label = "Rating", className }: RatingStarsProps) {
+export function RatingStars({ value, max = 5, onChange, size = "md", label, className }: RatingStarsProps) {
+  const t = useTranslations("ds");
+  const groupLabel = label ?? t("ratingLabel");
   const stars = Array.from({ length: max }, (_, index) => index + 1);
 
   const star = (filled: boolean) => (
@@ -43,7 +46,7 @@ export function RatingStars({ value, max = 5, onChange, size = "md", label = "Ra
 
   if (!onChange) {
     return (
-      <div className={cn("flex items-center gap-1", className)} role="img" aria-label={`${value} out of ${max} stars`}>
+      <div className={cn("flex items-center gap-1", className)} role="img" aria-label={t("ratingValue", { value, max })}>
         {stars.map((starValue) => (
           <span key={starValue}>{star(starValue <= value)}</span>
         ))}
@@ -52,14 +55,14 @@ export function RatingStars({ value, max = 5, onChange, size = "md", label = "Ra
   }
 
   return (
-    <div className={cn("flex items-center gap-2", className)} role="radiogroup" aria-label={label}>
+    <div className={cn("flex items-center gap-2", className)} role="radiogroup" aria-label={groupLabel}>
       {stars.map((starValue) => (
         <button
           key={starValue}
           type="button"
           role="radio"
           aria-checked={starValue === value}
-          aria-label={`${starValue} ${starValue === 1 ? "star" : "stars"}`}
+          aria-label={t("ratingStar", { count: starValue })}
           onClick={() => onChange(starValue)}
           className="rounded-full transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-90"
         >

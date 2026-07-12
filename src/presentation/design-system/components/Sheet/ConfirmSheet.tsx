@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Dialog } from "radix-ui";
 import { Sheet, SheetClose, SheetContent } from "./Sheet";
 import { Button } from "../Button";
@@ -26,10 +27,12 @@ export function ConfirmSheet({
   onOpenChange,
   title,
   message,
-  cancelLabel = "Cancel",
-  confirmLabel = "Yes",
+  cancelLabel,
+  confirmLabel,
   onConfirm,
 }: ConfirmSheetProps) {
+  const t = useTranslations("ds");
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent title={title} titleClassName="mb-4 text-left">
@@ -42,7 +45,7 @@ export function ConfirmSheet({
         <div className="mt-8 flex gap-3">
           <SheetClose asChild>
             <Button variant="outline" size="lg" className="flex-1">
-              {cancelLabel}
+              {cancelLabel ?? t("confirmCancel")}
             </Button>
           </SheetClose>
           <Button
@@ -53,7 +56,7 @@ export function ConfirmSheet({
               onOpenChange(false);
             }}
           >
-            {confirmLabel}
+            {confirmLabel ?? t("confirmYes")}
           </Button>
         </div>
       </SheetContent>

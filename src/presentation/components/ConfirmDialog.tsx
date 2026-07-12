@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Button } from "@/src/presentation/design-system";
 import { Modal, ModalClose, ModalContent } from "@/src/presentation/design-system";
 
@@ -37,12 +38,14 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
-  cancelLabel = "Keep",
+  cancelLabel,
   confirmVariant = "primary",
   pending = false,
-  pendingLabel = "Working…",
+  pendingLabel,
   onConfirm,
 }: ConfirmDialogProps) {
+  const t = useTranslations("ds");
+
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent title={title} description={description}>
@@ -51,11 +54,11 @@ export function ConfirmDialog({
           <div className="grid grid-cols-2 gap-2">
             <ModalClose asChild>
               <Button type="button" variant="outline" size="sm" disabled={pending}>
-                {cancelLabel}
+                {cancelLabel ?? t("confirmKeep")}
               </Button>
             </ModalClose>
             <Button type="button" variant={confirmVariant} size="sm" disabled={pending} onClick={onConfirm}>
-              {pending ? pendingLabel : confirmLabel}
+              {pending ? (pendingLabel ?? t("confirmWorking")) : confirmLabel}
             </Button>
           </div>
         </div>

@@ -4,6 +4,19 @@
     "startShopping": "Start Shopping",
     "viewAll": "view all"
   },
+  "ds": {
+    "otpLabel": "One-time password code",
+    "otpDigit": "Digit {index} of {length}",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "ratingLabel": "Rating",
+    "ratingValue": "{value} out of {max} stars",
+    "ratingStar": "{count, plural, one {# star} other {# stars}}",
+    "confirmCancel": "Cancel",
+    "confirmYes": "Yes",
+    "confirmKeep": "Keep",
+    "confirmWorking": "Working…"
+  },
   "nav": {
     "ariaLabel": "Main navigation",
     "home": "Home",
