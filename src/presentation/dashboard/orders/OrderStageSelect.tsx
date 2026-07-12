@@ -1,16 +1,17 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
+import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { ordersApi } from "./order-api";
 
-/** The advanceable milestones, in delivery order, with their dashboard labels. */
-const STAGES: { value: TrackingMilestone; label: string }[] = [
-  { value: "confirmed", label: "Confirmed" },
-  { value: "shipped", label: "Shipped" },
-  { value: "arrived", label: "Arrived" },
+/** The advanceable milestones, in delivery order, keyed to their dashboard labels. */
+const STAGES: { value: TrackingMilestone; labelKey: "stageConfirmed" | "stageShipped" | "stageArrived" }[] = [
+  { value: "confirmed", labelKey: "stageConfirmed" },
+  { value: "shipped", labelKey: "stageShipped" },
+  { value: "arrived", labelKey: "stageArrived" },
 ];
 
 /** Native-select styling matching the DS field family (no DS Select yet — same as ProductForm). */
@@ -29,6 +30,7 @@ type OrderStageSelectProps = {
  * truth, no local copy to keep in sync. A failed write reverts and shows inline.
  */
 export function OrderStageSelect({ orderId, stage }: OrderStageSelectProps) {
+  const t = useTranslations("dashOrders");
   const router = useRouter();
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
@@ -43,8 +45,7 @@ export function OrderStageSelect({ orderId, stage }: OrderStageSelectProps) {
         await ordersApi.setTrackingStage(orderId, { stage: next });
         router.refresh();
       } catch (err) {
-        const message =
-          err instanceof ApiError ? err.message : "Couldn't update the stage. Please try again.";
+        const message = err instanceof ApiError ? err.message : t("stageError");
         setError(message);
       }
     });
@@ -57,11 +58,11 @@ export function OrderStageSelect({ orderId, stage }: OrderStageSelectProps) {
         value={stage}
         onChange={handleChange}
         disabled={pending}
-        aria-label={`Delivery stage for order ${orderId}`}
+        aria-label={t("stageAria", { id: orderId })}
       >
         {STAGES.map((option) => (
           <option key={option.value} value={option.value}>
-            {option.label}
+            {t(option.labelKey)}
           </option>
         ))}
       </select>

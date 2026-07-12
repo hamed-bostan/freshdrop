@@ -2,12 +2,13 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { PackageX, RotateCcw } from "lucide-react";
 import type { OrderItem } from "@/src/domain/entities/Order";
 import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
 import { Button, Icon } from "@/src/presentation/design-system";
+import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { ordersApi } from "./order-api";
 
@@ -28,6 +29,7 @@ type OrderItemPickControlProps = {
  * of-truth pattern as the stage/return controls. Money and stock move server-side.
  */
 export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProps) {
+  const t = useTranslations("dashOrders");
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [candidates, setCandidates] = React.useState<Product[] | null>(null);
@@ -48,7 +50,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
         if (active) setCandidates(products);
       })
       .catch(() => {
-        if (active) setError("Couldn't load replacements. Please try again.");
+        if (active) setError(t("loadReplacementsError"));
       })
       .finally(() => {
         if (active) setLoadingCandidates(false);
@@ -70,7 +72,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
         setOpen(false);
         router.refresh();
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Couldn't substitute this item. Please try again.");
+        setError(err instanceof ApiError ? err.message : t("substituteError"));
       }
     });
   }
@@ -83,7 +85,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
         setOpen(false);
         router.refresh();
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Couldn't refund this item. Please try again.");
+        setError(err instanceof ApiError ? err.message : t("refundError"));
       }
     });
   }
@@ -98,7 +100,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
         className="gap-1.5"
       >
         <Icon icon={PackageX} size="xs" />
-        Out of stock
+        {t("outOfStock")}
       </Button>
     );
   }
@@ -107,7 +109,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
     <div className="flex w-full max-w-sm flex-col gap-2 rounded-card-md border border-border bg-background p-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-body-b8 uppercase tracking-wide text-muted-foreground">
-          {canSubstitute ? "Replace with" : "Refund only"}
+          {canSubstitute ? t("replaceWith") : t("refundOnly")}
         </p>
         <button
           type="button"
@@ -115,14 +117,14 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
           disabled={pending}
           className="text-body-b8 text-muted-foreground hover:text-foreground disabled:opacity-50"
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
 
       {canSubstitute ? (
         <>
           {loadingCandidates ? (
-            <p className="text-body-b7 text-muted-foreground">Loading replacements…</p>
+            <p className="text-body-b7 text-muted-foreground">{t("loadingReplacements")}</p>
           ) : candidates && candidates.length > 0 ? (
             <ul className="flex flex-col gap-1">
               {candidates.map((product) => {
@@ -148,7 +150,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
                         {product.name}
                       </span>
                       <span className="shrink-0 text-body-b7 text-muted-foreground">
-                        {outOfStock ? "Out of stock" : `$ ${product.price.toFixed(2)}`}
+                        {outOfStock ? t("outOfStock") : `$ ${product.price.toFixed(2)}`}
                       </span>
                     </button>
                   </li>
@@ -157,13 +159,13 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
             </ul>
           ) : (
             <p className="text-body-b7 text-muted-foreground">
-              No related products to substitute — refund instead.
+              {t("noReplacements")}
             </p>
           )}
         </>
       ) : (
         <p className="text-body-b7 text-muted-foreground">
-          The customer chose a refund if this item is unavailable.
+          {t("refundChosen")}
         </p>
       )}
 
@@ -176,7 +178,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
         className="gap-1.5 self-start"
       >
         <Icon icon={RotateCcw} size="xs" />
-        Refund this item
+        {t("refundThisItem")}
       </Button>
 
       {error && (

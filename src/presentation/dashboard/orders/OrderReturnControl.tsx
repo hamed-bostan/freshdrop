@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/src/presentation/design-system";
 import { ConfirmDialog } from "@/src/presentation/components/ConfirmDialog";
+import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { ordersApi } from "./order-api";
 
@@ -19,6 +20,7 @@ type OrderReturnControlProps = {
  * truth pattern as the stage select. A failed write shows inline.
  */
 export function OrderReturnControl({ orderId }: OrderReturnControlProps) {
+  const t = useTranslations("dashOrders");
   const router = useRouter();
   const [error, setError] = React.useState<string | null>(null);
   const [confirmingApprove, setConfirmingApprove] = React.useState(false);
@@ -32,7 +34,7 @@ export function OrderReturnControl({ orderId }: OrderReturnControlProps) {
         setConfirmingApprove(false);
         router.refresh();
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Couldn't resolve the return. Please try again.");
+        setError(err instanceof ApiError ? err.message : t("returnError"));
         setConfirmingApprove(false);
       }
     });
@@ -43,10 +45,10 @@ export function OrderReturnControl({ orderId }: OrderReturnControlProps) {
       <div className="flex items-center gap-2">
         {/* Approving moves money (restock + wallet refund), so it's confirmed first. */}
         <Button type="button" size="sm" disabled={pending} onClick={() => setConfirmingApprove(true)}>
-          Approve
+          {t("approve")}
         </Button>
         <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => resolve("reject")}>
-          Reject
+          {t("reject")}
         </Button>
       </div>
       {error && (
@@ -61,11 +63,11 @@ export function OrderReturnControl({ orderId }: OrderReturnControlProps) {
           onOpenChange={(next) => {
             if (!next && !pending) setConfirmingApprove(false);
           }}
-          title="Approve this return?"
-          description="This restocks the items and refunds the order total to the customer's wallet. This can't be undone."
-          confirmLabel="Approve refund"
-          pendingLabel="Approving…"
-          cancelLabel="Not now"
+          title={t("approveTitle")}
+          description={t("approveDescription")}
+          confirmLabel={t("approveConfirm")}
+          pendingLabel={t("approvePending")}
+          cancelLabel={t("notNow")}
           pending={pending}
           onConfirm={() => resolve("approve")}
         />

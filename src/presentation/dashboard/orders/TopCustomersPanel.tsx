@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 
 type TopCustomersPanelProps = {
@@ -16,14 +17,15 @@ const TOP_COUNT = 5;
  * the Orders screen supplies the already-ranked summaries; this only shows the
  * leading few.
  */
-export function TopCustomersPanel({ customers }: TopCustomersPanelProps) {
+export async function TopCustomersPanel({ customers }: TopCustomersPanelProps) {
+  const t = await getTranslations("dashOrders");
   const top = customers.slice(0, TOP_COUNT);
 
   return (
     <section className="rounded-card-lg border border-border p-4">
       <div>
-        <h2 className="text-body-b5 text-foreground">Top customers</h2>
-        <p className="text-body-b8 text-muted-foreground">Ranked by total spend</p>
+        <h2 className="text-body-b5 text-foreground">{t("topCustomers")}</h2>
+        <p className="text-body-b8 text-muted-foreground">{t("rankedBySpend")}</p>
       </div>
 
       <ol className="mt-4 flex flex-col gap-2">
@@ -41,7 +43,7 @@ export function TopCustomersPanel({ customers }: TopCustomersPanelProps) {
             <div className="text-right">
               <p className="text-body-b7 text-foreground">$ {customer.totalSpent.toFixed(2)}</p>
               <p className="text-body-b8 text-muted-foreground">
-                {customer.orderCount} {customer.orderCount === 1 ? "order" : "orders"}
+                {t("orderCount", { count: customer.orderCount })}
               </p>
             </div>
           </li>

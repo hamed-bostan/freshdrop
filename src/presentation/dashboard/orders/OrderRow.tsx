@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { ChevronDown, ArrowLeftRight, RotateCcw } from "lucide-react";
 import type { Order, OrderItem } from "@/src/domain/entities/Order";
 import { isPicking } from "@/src/domain/entities/Order";
@@ -28,6 +29,7 @@ function isTrackable(order: Order): boolean {
 
 /** The outcome shown once a picker has resolved an out-of-stock line. */
 function ItemSubstitutionBadge({ item }: { item: OrderItem }) {
+  const t = useTranslations("dashOrders");
   const { substitution } = item;
   if (!substitution) return null;
 
@@ -35,7 +37,7 @@ function ItemSubstitutionBadge({ item }: { item: OrderItem }) {
     return (
       <p className="flex items-center gap-1.5 pl-13 text-body-b8 text-primary">
         <Icon icon={ArrowLeftRight} size="xs" />
-        Substituted with {substitution.replacement?.name ?? "a replacement"}
+        {t("substitutedWith", { name: substitution.replacement?.name ?? t("replacementFallback") })}
       </p>
     );
   }
@@ -43,7 +45,7 @@ function ItemSubstitutionBadge({ item }: { item: OrderItem }) {
   return (
     <p className="flex items-center gap-1.5 pl-13 text-body-b8 text-muted-foreground">
       <Icon icon={RotateCcw} size="xs" />
-      Refunded — was out of stock
+      {t("refundedOutOfStock")}
     </p>
   );
 }
@@ -55,6 +57,7 @@ function ItemSubstitutionBadge({ item }: { item: OrderItem }) {
  * ephemeral open/closed state.
  */
 export function OrderRow({ order, customer, columnCount }: OrderRowProps) {
+  const t = useTranslations("dashOrders");
   const [open, setOpen] = React.useState(false);
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const pickable = isPicking(order);
@@ -67,7 +70,7 @@ export function OrderRow({ order, customer, columnCount }: OrderRowProps) {
             type="button"
             onClick={() => setOpen((prev) => !prev)}
             aria-expanded={open}
-            aria-label={`${open ? "Hide" : "Show"} details for order ${order.id}`}
+            aria-label={open ? t("hideDetailsAria", { id: order.id }) : t("showDetailsAria", { id: order.id })}
             className="flex size-6 items-center justify-center rounded-input text-muted-foreground transition-colors hover:bg-surface-sunken hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Icon
@@ -98,7 +101,7 @@ export function OrderRow({ order, customer, columnCount }: OrderRowProps) {
             ) : isTrackable(order) && order.stage ? (
               <OrderStageSelect orderId={order.id} stage={order.stage} />
             ) : (
-              <span className="text-body-b8 text-muted-foreground">Not trackable</span>
+              <span className="text-body-b8 text-muted-foreground">{t("notTrackable")}</span>
             )}
           </div>
         </td>
@@ -109,7 +112,7 @@ export function OrderRow({ order, customer, columnCount }: OrderRowProps) {
           <td colSpan={columnCount} className="px-4 py-4">
             <div className="flex flex-col gap-3">
               <h3 className="text-body-b8 uppercase tracking-wide text-muted-foreground">
-                {itemCount} {itemCount === 1 ? "item" : "items"}
+                {t("itemCount", { count: itemCount })}
               </h3>
               <ul className="flex flex-col gap-3">
                 {order.items.map((item) => (
@@ -151,7 +154,7 @@ export function OrderRow({ order, customer, columnCount }: OrderRowProps) {
                 ))}
               </ul>
               <div className="flex items-center justify-between border-t border-border pt-3">
-                <span className="text-body-b7 text-muted-foreground">Total</span>
+                <span className="text-body-b7 text-muted-foreground">{t("total")}</span>
                 <span className="text-body-b5 text-foreground">$ {order.total.toFixed(2)}</span>
               </div>
             </div>
