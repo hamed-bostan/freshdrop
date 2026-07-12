@@ -16,13 +16,13 @@ export async function CategoriesTable({ categories }: CategoriesTableProps) {
 
   return (
     <div className="overflow-hidden rounded-card-lg border border-border">
-      <table className="w-full text-left">
+      <table className="w-full text-start">
         <thead className="bg-surface-sunken text-body-b8 text-muted-foreground">
           <tr>
             <th scope="col" className="px-4 py-3">{t("colIcon")}</th>
             <th scope="col" className="px-4 py-3">{t("colName")}</th>
             <th scope="col" className="px-4 py-3">{t("colSlug")}</th>
-            <th scope="col" className="px-4 py-3 text-right">{t("colActions")}</th>
+            <th scope="col" className="px-4 py-3 text-end">{t("colActions")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -39,7 +39,7 @@ export async function CategoriesTable({ categories }: CategoriesTableProps) {
                 <div className="flex items-center justify-end gap-2">
                   <Button asChild variant="outline" size="sm">
                     <Link href={`/dashboard/categories/${category.id}/edit`}>
-                      <Icon icon={Pencil} size="sm" className="mr-1.5" />
+                      <Icon icon={Pencil} size="sm" className="me-1.5" />
                       {t("edit")}
                     </Link>
                   </Button>

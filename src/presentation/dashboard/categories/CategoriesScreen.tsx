@@ -28,7 +28,7 @@ export async function CategoriesScreen({ categories }: CategoriesScreenProps) {
         </div>
         <Button asChild>
           <Link href="/dashboard/categories/create">
-            <Icon icon={Plus} size="sm" className="mr-1.5" />
+            <Icon icon={Plus} size="sm" className="me-1.5" />
             {t("newCategory")}
           </Link>
         </Button>

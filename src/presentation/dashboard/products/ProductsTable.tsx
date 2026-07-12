@@ -18,15 +18,15 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
 
   return (
     <div className="overflow-hidden rounded-card-lg border border-border">
-      <table className="w-full text-left">
+      <table className="w-full text-start">
         <thead className="bg-surface-sunken text-body-b8 text-muted-foreground">
           <tr>
             <th scope="col" className="px-4 py-3">{t("colImage")}</th>
             <th scope="col" className="px-4 py-3">{t("colName")}</th>
             <th scope="col" className="px-4 py-3">{t("colCategory")}</th>
-            <th scope="col" className="px-4 py-3 text-right">{t("colPrice")}</th>
+            <th scope="col" className="px-4 py-3 text-end">{t("colPrice")}</th>
             <th scope="col" className="px-4 py-3">{t("colFeatured")}</th>
-            <th scope="col" className="px-4 py-3 text-right">{t("colActions")}</th>
+            <th scope="col" className="px-4 py-3 text-end">{t("colActions")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -44,7 +44,7 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
               <td className="px-4 py-3 text-body-b6 text-muted-foreground">
                 {categoryNames.get(product.categoryId) ?? "—"}
               </td>
-              <td className="px-4 py-3 text-right">
+              <td className="px-4 py-3 text-end">
                 <span className="text-body-b7 text-foreground">${product.price.toFixed(2)}</span>
                 {product.originalPrice != null && (
                   <span className="block text-body-b10 text-muted-foreground line-through">
@@ -59,7 +59,7 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
                 <div className="flex items-center justify-end gap-2">
                   <Button asChild variant="outline" size="sm">
                     <Link href={`/dashboard/products/${product.id}/edit`}>
-                      <Icon icon={Pencil} size="sm" className="mr-1.5" />
+                      <Icon icon={Pencil} size="sm" className="me-1.5" />
                       {t("edit")}
                     </Link>
                   </Button>

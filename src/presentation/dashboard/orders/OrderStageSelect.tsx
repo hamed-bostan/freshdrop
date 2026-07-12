@@ -67,7 +67,7 @@ export function OrderStageSelect({ orderId, stage }: OrderStageSelectProps) {
         ))}
       </select>
       {error && (
-        <p role="alert" className="max-w-48 text-right text-body-b10 text-destructive">
+        <p role="alert" className="max-w-48 text-end text-body-b10 text-destructive">
           {error}
         </p>
       )}

@@ -35,7 +35,7 @@ function ItemSubstitutionBadge({ item }: { item: OrderItem }) {
 
   if (substitution.status === "substituted") {
     return (
-      <p className="flex items-center gap-1.5 pl-13 text-body-b8 text-primary">
+      <p className="flex items-center gap-1.5 ps-13 text-body-b8 text-primary">
         <Icon icon={ArrowLeftRight} size="xs" />
         {t("substitutedWith", { name: substitution.replacement?.name ?? t("replacementFallback") })}
       </p>
@@ -43,7 +43,7 @@ function ItemSubstitutionBadge({ item }: { item: OrderItem }) {
   }
 
   return (
-    <p className="flex items-center gap-1.5 pl-13 text-body-b8 text-muted-foreground">
+    <p className="flex items-center gap-1.5 ps-13 text-body-b8 text-muted-foreground">
       <Icon icon={RotateCcw} size="xs" />
       {t("refundedOutOfStock")}
     </p>
@@ -146,7 +146,7 @@ export function OrderRow({ order, customer, columnCount }: OrderRowProps) {
                     {item.substitution ? (
                       <ItemSubstitutionBadge item={item} />
                     ) : pickable ? (
-                      <div className="pl-13">
+                      <div className="ps-13">
                         <OrderItemPickControl orderId={order.id} item={item} />
                       </div>
                     ) : null}

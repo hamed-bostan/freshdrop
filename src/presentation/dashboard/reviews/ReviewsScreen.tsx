@@ -75,7 +75,7 @@ export function ReviewsScreen({ reviews, products }: ReviewsScreenProps) {
               )}
             >
               {t(tab.labelKey)}
-              <span className="ml-1.5 text-muted-foreground">{counts[tab.value]}</span>
+              <span className="ms-1.5 text-muted-foreground">{counts[tab.value]}</span>
             </button>
           );
         })}

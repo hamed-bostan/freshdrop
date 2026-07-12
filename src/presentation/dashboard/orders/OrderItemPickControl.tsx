@@ -135,7 +135,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
                       type="button"
                       disabled={pending || outOfStock}
                       onClick={() => substitute(product.id)}
-                      className="flex w-full items-center gap-3 rounded-input p-1.5 text-left transition-colors hover:bg-surface-sunken disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="flex w-full items-center gap-3 rounded-input p-1.5 text-start transition-colors hover:bg-surface-sunken disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
                         <Image

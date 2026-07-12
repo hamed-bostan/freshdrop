@@ -22,7 +22,7 @@ export async function OrdersTrackingTable({ orders, customersById }: OrdersTrack
 
   return (
     <div className="overflow-hidden rounded-card-lg border border-border">
-      <table className="w-full text-left">
+      <table className="w-full text-start">
         <thead className="bg-surface-sunken text-body-b8 text-muted-foreground">
           <tr>
             <th scope="col" className="w-10 px-4 py-3">
@@ -33,7 +33,7 @@ export async function OrdersTrackingTable({ orders, customersById }: OrdersTrack
             <th scope="col" className="px-4 py-3">{t("colStatus")}</th>
             <th scope="col" className="px-4 py-3">{t("colPlaced")}</th>
             <th scope="col" className="px-4 py-3">{t("colAddress")}</th>
-            <th scope="col" className="px-4 py-3 text-right">{t("colStage")}</th>
+            <th scope="col" className="px-4 py-3 text-end">{t("colStage")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">

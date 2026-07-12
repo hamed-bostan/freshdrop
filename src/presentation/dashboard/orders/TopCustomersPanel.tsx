@@ -40,7 +40,7 @@ export async function TopCustomersPanel({ customers }: TopCustomersPanelProps) {
                 <p className="truncate text-body-b8 text-muted-foreground">{customer.phone}</p>
               ) : null}
             </div>
-            <div className="text-right">
+            <div className="text-end">
               <p className="text-body-b7 text-foreground">$ {customer.totalSpent.toFixed(2)}</p>
               <p className="text-body-b8 text-muted-foreground">
                 {t("orderCount", { count: customer.orderCount })}

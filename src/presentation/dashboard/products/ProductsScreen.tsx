@@ -31,7 +31,7 @@ export async function ProductsScreen({ products, categories }: ProductsScreenPro
         </div>
         <Button asChild>
           <Link href="/dashboard/products/create">
-            <Icon icon={Plus} size="sm" className="mr-1.5" />
+            <Icon icon={Plus} size="sm" className="me-1.5" />
             {t("newProduct")}
           </Link>
         </Button>

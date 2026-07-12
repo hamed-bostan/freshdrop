@@ -81,7 +81,7 @@ export function IconUpload({ value, onChange, id, ...aria }: IconUploadProps) {
         >
           {uploading ? (
             <>
-              <Icon icon={Loader2} size="sm" className="mr-2 animate-spin" />
+              <Icon icon={Loader2} size="sm" className="me-2 animate-spin" />
               {t("uploading")}
             </>
           ) : value ? (

@@ -59,7 +59,7 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
 
   return (
     <div className="overflow-x-auto rounded-card-lg border border-border">
-      <table className="w-full min-w-[48rem] border-collapse text-left">
+      <table className="w-full min-w-[48rem] border-collapse text-start">
         <thead className="border-b border-border bg-surface-sunken text-body-b9 uppercase tracking-wide text-muted-foreground">
           <tr>
             <th scope="col" className="px-4 py-3 font-medium">{t("colAuthor")}</th>
@@ -67,7 +67,7 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
             <th scope="col" className="px-4 py-3 font-medium">{t("colRating")}</th>
             <th scope="col" className="px-4 py-3 font-medium">{t("colReview")}</th>
             <th scope="col" className="px-4 py-3 font-medium">{t("colStatus")}</th>
-            <th scope="col" className="px-4 py-3 text-right font-medium">{t("colAction")}</th>
+            <th scope="col" className="px-4 py-3 text-end font-medium">{t("colAction")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
