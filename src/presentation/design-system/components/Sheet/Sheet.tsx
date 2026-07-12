@@ -25,7 +25,7 @@ export interface SheetContentProps extends React.ComponentPropsWithoutRef<typeof
   hideTitle?: boolean;
   /** Optional screen-reader description of the sheet's purpose. */
   description?: string;
-  /** Override the visible title's classes (e.g. left-align for confirmations). */
+  /** Override the visible title's classes (e.g. start-align for confirmations). */
   titleClassName?: string;
 }
 

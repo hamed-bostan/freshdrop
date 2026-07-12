@@ -8,7 +8,7 @@ import { Button } from "../Button";
 interface ConfirmSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** The question — becomes the dialog title (left-aligned). */
+  /** The question — becomes the dialog title (start-aligned). */
   title: string;
   /** Friendly line under the title; also serves as the dialog's a11y description. */
   message?: string;
@@ -18,7 +18,7 @@ interface ConfirmSheetProps {
 }
 
 /**
- * Confirmation bottom sheet: a left-aligned question + message and a
+ * Confirmation bottom sheet: a start-aligned question + message and a
  * Cancel / Confirm action pair, built on <Sheet>. Controlled via `open`.
  * `Cancel` closes; `Confirm` runs `onConfirm` then closes.
  */
@@ -35,7 +35,7 @@ export function ConfirmSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent title={title} titleClassName="mb-4 text-left">
+      <SheetContent title={title} titleClassName="mb-4 text-start">
         {/* Rendering Dialog.Description here makes the visible message double as the
             dialog's a11y description (so it's referenced, not duplicated sr-only). */}
         {message && (

@@ -10,11 +10,11 @@ const inputVariants = cva(
   {
     variants: {
       hasLeftElement: {
-        true: "pl-10",
+        true: "ps-10",
       },
 
       hasRightElement: {
-        true: "pr-10",
+        true: "pe-10",
       },
     },
 
@@ -70,7 +70,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={cn("relative w-full", className)}>
         {hasLeft && (
-          <div className="pointer-events-none absolute left-3 top-1/2 z-20 -translate-y-1/2 text-icon-muted">
+          <div className="pointer-events-none absolute start-3 top-1/2 z-20 -translate-y-1/2 text-icon-muted">
             {leftElement}
           </div>
         )}
@@ -90,7 +90,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         />
 
         {hasRight && (
-          <div className="absolute right-5 top-1/2 z-20 -translate-y-1/2 text-icon-muted">{rightElement}</div>
+          <div className="absolute end-5 top-1/2 z-20 -translate-y-1/2 text-icon-muted">{rightElement}</div>
         )}
 
         {children}

@@ -49,7 +49,7 @@ export function FloatingField({
   ...inputProps
 }: FloatingFieldProps) {
   // Align the label's resting position with the input's text inset.
-  const offset = leftElement ? "left-10" : "left-7";
+  const offset = leftElement ? "start-10" : "start-7";
 
   return (
     <Field id={id} description={description} error={error}>
