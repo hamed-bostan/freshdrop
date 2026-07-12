@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { ConfirmSheet } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { logout } from "@/src/presentation/auth/actions";
-import { SettingRow, SettingToggleRow } from "./components";
+import { LocaleSwitcher, SettingRow, SettingToggleRow } from "./components";
 
 const NAV_ITEMS: { labelKey: "aboutApp" | "support"; href: string }[] = [
   { labelKey: "aboutApp", href: "/profile/settings/about" },
@@ -30,6 +30,7 @@ export default function SettingScreen() {
       <div className="flex flex-col gap-3">
         <SettingToggleRow label={t("notifications")} checked={notifications} onCheckedChange={setNotifications} />
         <SettingToggleRow label={t("darkMode")} checked={darkMode} onCheckedChange={setDarkMode} />
+        <LocaleSwitcher />
         {NAV_ITEMS.map((item) => (
           <SettingRow key={item.href} label={t(item.labelKey)} href={item.href} />
         ))}

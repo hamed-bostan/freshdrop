@@ -259,6 +259,8 @@
     "title": "Setting",
     "notifications": "Notifications",
     "darkMode": "Dark mood",
+    "language": "Language",
+    "languageAria": "Select language",
     "aboutApp": "About application",
     "support": "Support",
     "logout": "Logout",
