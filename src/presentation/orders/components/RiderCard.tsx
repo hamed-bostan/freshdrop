@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { MessageSquareText, Phone } from "lucide-react";
 import type { DeliveryRider } from "@/src/domain/entities/OrderTracking";
 import { Button, Icon } from "@/src/presentation/design-system";
@@ -9,6 +10,8 @@ interface RiderCardProps {
 
 /** Delivery courier with message and call shortcuts. */
 export function RiderCard({ rider }: RiderCardProps) {
+  const t = useTranslations("orders");
+
   return (
     <div className="flex items-center justify-between gap-4 rounded-card-xl bg-surface p-2">
       <div className="flex min-w-0 items-center gap-4">
@@ -26,12 +29,12 @@ export function RiderCard({ rider }: RiderCardProps) {
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
-        <Button asChild iconOnly size="sm" aria-label={`Message ${rider.name}`}>
+        <Button asChild iconOnly size="sm" aria-label={t("messageRider", { name: rider.name })}>
           <a href={`sms:${rider.phone}`}>
             <Icon icon={MessageSquareText} size="md" />
           </a>
         </Button>
-        <Button asChild iconOnly size="sm" aria-label={`Call ${rider.name}`}>
+        <Button asChild iconOnly size="sm" aria-label={t("callRider", { name: rider.name })}>
           <a href={`tel:${rider.phone}`}>
             <Icon icon={Phone} size="md" />
           </a>

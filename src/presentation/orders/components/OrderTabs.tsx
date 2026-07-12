@@ -1,12 +1,13 @@
 "use client";
 
 import { RadioGroup } from "radix-ui";
+import { useTranslations } from "next-intl";
 import type { OrderPhase } from "@/src/domain/entities/Order";
 import { cn } from "@/src/lib/utils";
 
-const TABS: { value: OrderPhase; label: string }[] = [
-  { value: "current", label: "Current orders" },
-  { value: "previous", label: "Previous orders" },
+const TABS: { value: OrderPhase; labelKey: "tabCurrent" | "tabPrevious" }[] = [
+  { value: "current", labelKey: "tabCurrent" },
+  { value: "previous", labelKey: "tabPrevious" },
 ];
 
 interface OrderTabsProps {
@@ -20,13 +21,15 @@ interface OrderTabsProps {
  * the selected tab gets a tinted green outline pill, the other a neutral border.
  */
 export function OrderTabs({ value, onValueChange }: OrderTabsProps) {
+  const t = useTranslations("orders");
+
   return (
     <RadioGroup.Root
       value={value}
       onValueChange={(next) => onValueChange(next as OrderPhase)}
       orientation="horizontal"
       loop
-      aria-label="Filter orders"
+      aria-label={t("tabsAria")}
       className="grid grid-cols-2 gap-3"
     >
       {TABS.map((tab) => (
@@ -41,7 +44,7 @@ export function OrderTabs({ value, onValueChange }: OrderTabsProps) {
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           )}
         >
-          {tab.label}
+          {t(tab.labelKey)}
         </RadioGroup.Item>
       ))}
     </RadioGroup.Root>

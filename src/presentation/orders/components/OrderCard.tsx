@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { ArrowLeftRight, RotateCcw } from "lucide-react";
 import type { Order, OrderItem } from "@/src/domain/entities/Order";
 import { Icon } from "@/src/presentation/design-system";
@@ -27,6 +28,7 @@ function OrderInfoRow({ label, value }: OrderInfoRowProps) {
 
 /** A one-line note on the storefront card for a line a picker substituted or refunded. */
 function SubstitutionNote({ item }: { item: OrderItem }) {
+  const t = useTranslations("orders");
   const { substitution } = item;
   if (!substitution) return null;
 
@@ -35,7 +37,7 @@ function SubstitutionNote({ item }: { item: OrderItem }) {
       <li className="flex items-center gap-1.5 text-body-b8 text-foreground">
         <Icon icon={ArrowLeftRight} size="xs" className="shrink-0 text-primary" />
         <span className="truncate">
-          {item.name} → {substitution.replacement?.name ?? "a replacement"}
+          {item.name} → {substitution.replacement?.name ?? t("replacementFallback")}
         </span>
       </li>
     );
@@ -44,7 +46,7 @@ function SubstitutionNote({ item }: { item: OrderItem }) {
   return (
     <li className="flex items-center gap-1.5 text-body-b8 text-muted-foreground">
       <Icon icon={RotateCcw} size="xs" className="shrink-0" />
-      <span className="truncate">{item.name} refunded — was out of stock</span>
+      <span className="truncate">{t("refundedNote", { name: item.name })}</span>
     </li>
   );
 }
@@ -54,6 +56,7 @@ interface OrderCardProps {
 }
 
 export function OrderCard({ order }: OrderCardProps) {
+  const t = useTranslations("orders");
   const visibleItems = order.items.slice(0, MAX_VISIBLE_THUMBNAILS);
   const extraCount = order.items.length - visibleItems.length;
   const substituted = order.items.filter((item) => item.substitution);
@@ -61,14 +64,14 @@ export function OrderCard({ order }: OrderCardProps) {
   return (
     <article className="flex flex-col gap-4 rounded-card-xl bg-surface p-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-body-b2 text-foreground">Order details:</h2>
+        <h2 className="text-body-b2 text-foreground">{t("detailsHeading")}</h2>
         <OrderStatusBadge status={order.status} stage={order.stage} />
       </div>
 
       <dl className="flex flex-col gap-2">
-        <OrderInfoRow label="Time:" value={formatOrderTime(order.placedAt)} />
-        <OrderInfoRow label="Date:" value={formatOrderDate(order.placedAt)} />
-        {order.deliveryWindow && <OrderInfoRow label="Delivery:" value={order.deliveryWindow} />}
+        <OrderInfoRow label={t("timeLabel")} value={formatOrderTime(order.placedAt)} />
+        <OrderInfoRow label={t("dateLabel")} value={formatOrderDate(order.placedAt)} />
+        {order.deliveryWindow && <OrderInfoRow label={t("deliveryLabel")} value={order.deliveryWindow} />}
         <OrderLocationRow location={order.location} label={order.locationLabel} />
       </dl>
 

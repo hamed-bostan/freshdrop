@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, useRouter } from "@/src/i18n/navigation";
 import type { Order } from "@/src/domain/entities/Order";
 import { isCancellable, isReturnable } from "@/src/domain/entities/Order";
 import { Button } from "@/src/presentation/design-system";
@@ -30,6 +30,7 @@ interface OrderCardActionsProps {
  * — the server stays the source of truth, no local order copy to patch.
  */
 export function OrderCardActions({ order }: OrderCardActionsProps) {
+  const t = useTranslations("orders");
   const router = useRouter();
   const { refresh: refreshCart } = useCart();
   const [running, setRunning] = React.useState<RunningAction | null>(null);
@@ -59,7 +60,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
         await mutate();
         onSuccess();
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
+        setError(err instanceof ApiError ? err.message : t("actionError"));
         setRunning(null);
         // Close any open confirmation so the inline error isn't hidden behind it.
         setConfirm(null);
@@ -84,16 +85,16 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
 
   const confirmCopy: Record<ConfirmAction, { title: string; description: string; confirmLabel: string; pendingLabel: string }> = {
     cancel: {
-      title: "Cancel this order?",
-      description: `We'll return the items to stock and refund $ ${order.total.toFixed(2)} to your wallet. This can't be undone.`,
-      confirmLabel: "Cancel order",
-      pendingLabel: "Cancelling…",
+      title: t("cancelTitle"),
+      description: t("cancelDescription", { amount: `$ ${order.total.toFixed(2)}` }),
+      confirmLabel: t("cancelConfirm"),
+      pendingLabel: t("cancelling"),
     },
     return: {
-      title: "Request a return?",
-      description: "We'll submit a return request for this order. Once it's approved you'll be refunded to your wallet.",
-      confirmLabel: "Request return",
-      pendingLabel: "Requesting…",
+      title: t("returnTitle"),
+      description: t("returnDescription"),
+      confirmLabel: t("returnConfirm"),
+      pendingLabel: t("requesting"),
     },
   };
 
@@ -102,7 +103,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
   if (trackable) {
     actions.push(
       <Button key="track" asChild size="sm" disabled={pending}>
-        <Link href={`/orders/${order.id}/track`}>Track Order</Link>
+        <Link href={`/orders/${order.id}/track`}>{t("trackOrder")}</Link>
       </Button>,
     );
   }
@@ -117,7 +118,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
         disabled={pending}
         onClick={() => setConfirm("cancel")}
       >
-        {running === "cancel" ? "Cancelling…" : "Cancel Order"}
+        {running === "cancel" ? t("cancelling") : t("cancelOrder")}
       </Button>,
     );
   }
@@ -132,7 +133,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
         disabled={pending}
         onClick={() => setConfirm("return")}
       >
-        {running === "return" ? "Requesting…" : "Return"}
+        {running === "return" ? t("requesting") : t("return")}
       </Button>,
     );
   }
@@ -140,7 +141,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
   if (returnPending) {
     actions.push(
       <Button key="return-pending" type="button" variant="outline" size="sm" disabled>
-        Return requested
+        {t("returnRequested")}
       </Button>,
     );
   }
@@ -162,7 +163,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
         })
       }
     >
-      {running === "reorder" ? "Adding…" : "Reorder"}
+      {running === "reorder" ? t("adding") : t("reorder")}
     </Button>,
   );
 
@@ -189,7 +190,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
           confirmLabel={confirmCopy[confirm].confirmLabel}
           pendingLabel={confirmCopy[confirm].pendingLabel}
           confirmVariant={confirm === "cancel" ? "outline" : "primary"}
-          cancelLabel={confirm === "cancel" ? "Keep order" : "Not now"}
+          cancelLabel={confirm === "cancel" ? t("keepOrder") : t("notNow")}
           pending={pending}
           onConfirm={handleConfirm}
         />

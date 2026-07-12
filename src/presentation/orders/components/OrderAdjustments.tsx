@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid, orderShippingRefunded } from "@/src/domain/entities/Order";
 
@@ -15,6 +16,7 @@ interface OrderAdjustmentsProps {
  * Instacart/Walmart/Snapp Market. Renders nothing when no money was refunded.
  */
 export function OrderAdjustments({ order }: OrderAdjustmentsProps) {
+  const t = useTranslations("orders");
   const refunds = order.items.flatMap((item) =>
     item.substitution && item.substitution.refundAmount > 0
       ? [{ item, substitution: item.substitution }]
@@ -28,14 +30,14 @@ export function OrderAdjustments({ order }: OrderAdjustmentsProps) {
 
   return (
     <dl className="flex w-full flex-col gap-2 rounded-card-md bg-surface-sunken px-3 py-2 text-body-b6">
-      <p className="text-body-b8 text-muted-foreground">Refunded to wallet</p>
+      <p className="text-body-b8 text-muted-foreground">{t("refundedToWallet")}</p>
 
       {refunds.map(({ item, substitution }) => (
         <div key={item.productId} className="flex items-start justify-between gap-2">
           <dt className="truncate text-muted-foreground">
             {substitution.status === "substituted"
-              ? `${item.name} — substituted`
-              : `${item.name} — out of stock`}
+              ? t("adjustmentSubstituted", { name: item.name })
+              : t("adjustmentOutOfStock", { name: item.name })}
           </dt>
           <dd className="shrink-0 text-foreground">− {money(substitution.refundAmount)}</dd>
         </div>
@@ -43,13 +45,13 @@ export function OrderAdjustments({ order }: OrderAdjustmentsProps) {
 
       {shippingRefund > 0 && (
         <div className="flex items-start justify-between gap-2">
-          <dt className="truncate text-muted-foreground">Delivery — order cancelled</dt>
+          <dt className="truncate text-muted-foreground">{t("adjustmentDeliveryCancelled")}</dt>
           <dd className="shrink-0 text-foreground">− {money(shippingRefund)}</dd>
         </div>
       )}
 
       <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
-        <dt className="text-foreground">Net paid</dt>
+        <dt className="text-foreground">{t("netPaid")}</dt>
         <dd className="text-body-b7 text-foreground">{money(orderNetPaid(order))}</dd>
       </div>
     </dl>

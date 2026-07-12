@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import type { Order, OrderPhase } from "@/src/domain/entities/Order";
 import { OrderTabs } from "./OrderTabs";
 import { OrderCard } from "./OrderCard";
@@ -14,6 +15,7 @@ interface OrdersBrowserProps {
  * Filtering is client-side so tab switches are instant.
  */
 export function OrdersBrowser({ orders }: OrdersBrowserProps) {
+  const t = useTranslations("orders");
   const [phase, setPhase] = React.useState<OrderPhase>("current");
 
   const visible = orders.filter((order) => order.phase === phase);
@@ -32,7 +34,7 @@ export function OrdersBrowser({ orders }: OrdersBrowserProps) {
         </ul>
       ) : (
         <p className="pt-16 text-center text-body-b4 text-muted-foreground">
-          No {phase} orders yet.
+          {t("emptyPhase", { phase })}
         </p>
       )}
     </div>

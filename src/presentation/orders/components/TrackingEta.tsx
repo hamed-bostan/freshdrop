@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Bike, PackageCheck, Clock, type LucideIcon } from "lucide-react";
 import type { TrackingMilestone, TrackingStep } from "@/src/domain/entities/OrderTracking";
 import { Icon } from "@/src/presentation/design-system";
@@ -15,19 +16,14 @@ function activeMilestone(steps: TrackingStep[]): TrackingMilestone | undefined {
   );
 }
 
-/** Copy + icon for the banner, keyed off where the delivery is right now. */
-function bannerContent(
+/** Icon + `live` flag for the banner, keyed off where the delivery is right now. */
+function bannerVisual(
   milestone: TrackingMilestone | undefined,
   etaMinutes: number | null,
-): { icon: LucideIcon; title: string; live: boolean } {
-  if (milestone === "arrived") {
-    return { icon: PackageCheck, title: "Your courier has arrived", live: false };
-  }
-  if (milestone === "shipped" && etaMinutes !== null) {
-    const unit = etaMinutes === 1 ? "min" : "mins";
-    return { icon: Bike, title: `Arriving in about ${etaMinutes} ${unit}`, live: true };
-  }
-  return { icon: Clock, title: "Preparing your order", live: false };
+): { icon: LucideIcon; live: boolean } {
+  if (milestone === "arrived") return { icon: PackageCheck, live: false };
+  if (milestone === "shipped" && etaMinutes !== null) return { icon: Bike, live: true };
+  return { icon: Clock, live: false };
 }
 
 interface TrackingEtaProps {
@@ -40,7 +36,17 @@ interface TrackingEtaProps {
  * courier is en route, or a preparing/arrived message otherwise.
  */
 export function TrackingEta({ etaMinutes, steps }: TrackingEtaProps) {
-  const { icon, title, live } = bannerContent(activeMilestone(steps), etaMinutes);
+  const t = useTranslations("orders");
+  const milestone = activeMilestone(steps);
+  const { icon, live } = bannerVisual(milestone, etaMinutes);
+
+  // Same branch order as `bannerVisual`, so the copy always matches the icon/flag.
+  const title =
+    milestone === "arrived"
+      ? t("courierArrived")
+      : milestone === "shipped" && etaMinutes !== null
+        ? t("arrivingIn", { count: etaMinutes })
+        : t("preparing");
 
   return (
     <div className="flex items-center gap-3 rounded-card-xl bg-surface p-3">
@@ -52,7 +58,7 @@ export function TrackingEta({ etaMinutes, steps }: TrackingEtaProps) {
         {live && (
           <span className="flex items-center gap-1.5 text-body-b10 text-muted-foreground">
             <span aria-hidden className="size-2 animate-pulse rounded-full bg-primary" />
-            Live tracking
+            {t("liveTracking")}
           </span>
         )}
       </div>

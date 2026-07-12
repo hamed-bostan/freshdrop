@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import type { OrderStatus } from "@/src/domain/entities/Order";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
 import { cn } from "@/src/lib/utils";
@@ -15,7 +16,16 @@ const TONE_STYLES: Record<BadgeTone, string> = {
   error: "border-error-foreground text-error-foreground bg-error",
 };
 
-type BadgeDisplay = { label: string; tone: BadgeTone };
+/** Translation key under the `orders` namespace for the pill's label. */
+type BadgeLabelKey =
+  | "statusDelivered"
+  | "statusCancelled"
+  | "statusReturnRequested"
+  | "statusRefunded"
+  | "statusShipped"
+  | "statusConfirmed";
+
+type BadgeDisplay = { labelKey: BadgeLabelKey; tone: BadgeTone };
 
 /**
  * Reconcile an order's coarse lifecycle `status` with its fine-grained delivery
@@ -29,20 +39,20 @@ type BadgeDisplay = { label: string; tone: BadgeTone };
 function statusDisplay(status: OrderStatus, stage?: TrackingMilestone): BadgeDisplay {
   switch (status) {
     case "completed":
-      return { label: "Delivered", tone: "success" };
+      return { labelKey: "statusDelivered", tone: "success" };
     case "cancelled":
-      return { label: "Cancelled", tone: "error" };
+      return { labelKey: "statusCancelled", tone: "error" };
     case "return_requested":
-      return { label: "Return requested", tone: "progress" };
+      return { labelKey: "statusReturnRequested", tone: "progress" };
     case "refunded":
-      return { label: "Refunded", tone: "success" };
+      return { labelKey: "statusRefunded", tone: "success" };
     case "processing":
       // Live order — show the delivery milestone. `arrived` flips the status to
       // `completed`, so `processing` only ever covers confirmed/shipped; a
       // missing stage (shouldn't happen while live) falls back to "Confirmed".
       return stage === "shipped"
-        ? { label: "Shipped", tone: "progress" }
-        : { label: "Confirmed", tone: "progress" };
+        ? { labelKey: "statusShipped", tone: "progress" }
+        : { labelKey: "statusConfirmed", tone: "progress" };
   }
 }
 
@@ -53,7 +63,8 @@ type OrderStatusBadgeProps = {
 };
 
 export function OrderStatusBadge({ status, stage }: OrderStatusBadgeProps) {
-  const { label, tone } = statusDisplay(status, stage);
+  const t = useTranslations("orders");
+  const { labelKey, tone } = statusDisplay(status, stage);
 
   return (
     <span
@@ -63,7 +74,7 @@ export function OrderStatusBadge({ status, stage }: OrderStatusBadgeProps) {
         TONE_STYLES[tone],
       )}
     >
-      {label}
+      {t(labelKey)}
     </span>
   );
 }
