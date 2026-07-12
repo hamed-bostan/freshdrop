@@ -26,4 +26,11 @@
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
   }
+
+  /* Persian (RTL) renders in Vazirmatn. Every typography token resolves
+   * `var(--font-inter)`, so remapping it on the RTL body switches the entire type
+   * system to Vazirmatn without regenerating the token pipeline. */
+  html[dir="rtl"] body {
+    --font-inter: var(--font-vazirmatn);
+  }
 }
