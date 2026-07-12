@@ -17,7 +17,7 @@ export function PlaceSearchResults({ results, onSelect }: PlaceSearchResultsProp
           <button
             type="button"
             onClick={() => onSelect(place)}
-            className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-muted-strong focus-visible:bg-muted-strong focus-visible:outline-none"
+            className="flex w-full items-start gap-3 px-4 py-3 text-start transition-colors hover:bg-muted-strong focus-visible:bg-muted-strong focus-visible:outline-none"
           >
             <Icon icon={MapPin} size="sm" className="mt-0.5 shrink-0 text-icon-muted" />
             <span className="min-w-0">

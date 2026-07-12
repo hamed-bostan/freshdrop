@@ -16,7 +16,7 @@ export function LocateButton({ onClick }: LocateButtonProps) {
       onClick={onClick}
       aria-label={t("useMyLocation")}
       className={
-        "absolute bottom-6 right-4 z-[500] flex size-12 items-center justify-center rounded-full " +
+        "absolute bottom-6 end-4 z-[500] flex size-12 items-center justify-center rounded-full " +
         "bg-primary text-primary-foreground shadow-lg transition-colors active:bg-primary-pressed " +
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       }

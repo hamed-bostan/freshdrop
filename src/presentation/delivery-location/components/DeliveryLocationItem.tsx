@@ -27,7 +27,7 @@ export function DeliveryLocationItem({ location, selected, onSelect, editHref }:
         selected ? "border-foreground" : "border-transparent",
       )}
     >
-      <button type="button" onClick={onSelect} aria-pressed={selected} className="flex min-w-0 items-center text-left">
+      <button type="button" onClick={onSelect} aria-pressed={selected} className="flex min-w-0 items-center text-start">
         <DeliveryLocationSummary location={location} />
       </button>
 

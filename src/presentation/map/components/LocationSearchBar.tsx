@@ -26,7 +26,7 @@ export function LocationSearchBar({ query, region, onQueryChange, onBack }: Loca
         onClick={onBack}
         className="shrink-0 rounded-full bg-background shadow-sm"
       >
-        <Icon icon={ChevronLeft} size="lg" />
+        <Icon icon={ChevronLeft} size="lg" className="rtl:-scale-x-100" />
       </Button>
 
       <Input
@@ -43,7 +43,7 @@ export function LocationSearchBar({ query, region, onQueryChange, onBack }: Loca
             <Icon icon={ChevronDown} size="sm" className="shrink-0" />
           </span>
         }
-        inputClassName="rounded-full pr-28 shadow-sm"
+        inputClassName="rounded-full pe-28 shadow-sm"
       />
     </div>
   );

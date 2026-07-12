@@ -40,7 +40,7 @@ export function SelectAddressButton({ location }: SelectAddressButtonProps) {
       onClick={handleSelect}
       disabled={pending}
       aria-pressed={location.isDefault}
-      className="flex min-w-0 flex-1 items-center text-left disabled:opacity-70"
+      className="flex min-w-0 flex-1 items-center text-start disabled:opacity-70"
     >
       <DeliveryLocationSummary location={location} />
     </button>
