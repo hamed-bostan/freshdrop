@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { cn } from "@/src/lib/utils";
 import { Button, OTPInput } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { Link } from "@/src/i18n/navigation";
 import { peekDevOtp, requestOtp, verifyOtp } from "./actions";
 
 const CODE_LENGTH = 4;
@@ -16,6 +17,7 @@ interface OtpScreenProps {
 }
 
 export default function OtpScreen({ phone, callbackUrl = "/" }: OtpScreenProps) {
+  const t = useTranslations("auth");
   const [code, setCode] = React.useState("");
   const [error, setError] = React.useState(false);
   const [pending, setPending] = React.useState(false);
@@ -68,14 +70,14 @@ export default function OtpScreen({ phone, callbackUrl = "/" }: OtpScreenProps) 
   const ss = String(secondsLeft % 60).padStart(2, "0");
 
   const subtitle = error
-    ? "Incorrect Code. Please Try Again"
+    ? t("incorrectCode")
     : code.length === 0
-      ? `Enter The 4-Digit Code We Sent To ${maskPhone(phone)}`
-      : "We're Waiting For Your Code...";
+      ? t("enterCode", { phone: maskPhone(phone) })
+      : t("waitingCode");
 
   return (
     <div className="flex min-h-dvh flex-col px-6 pb-10">
-      <PageHeader title="Verification Code" />
+      <PageHeader title={t("verifyTitle")} />
 
       <p className={cn("mt-2 text-center text-body-b5", error ? "text-destructive" : "text-muted-foreground")}>
         {subtitle}
@@ -87,7 +89,7 @@ export default function OtpScreen({ phone, callbackUrl = "/" }: OtpScreenProps) 
           onChange={handleCodeChange}
           length={CODE_LENGTH}
           autoFocus
-          aria-label="Verification code"
+          aria-label={t("codeAria")}
           aria-invalid={error || undefined}
         />
 
@@ -97,16 +99,16 @@ export default function OtpScreen({ phone, callbackUrl = "/" }: OtpScreenProps) 
             onClick={() => handleCodeChange(devCode)}
             className="rounded-card-lg border border-dashed border-border bg-muted px-3 py-1.5 text-body-b7 text-muted-foreground"
           >
-            Dev code: <span className="font-semibold text-foreground">{devCode}</span> — tap to fill
+            {t("devCodeLabel")} <span className="font-semibold text-foreground">{devCode}</span> {t("devCodeTapToFill")}
           </button>
         )}
 
         <p className="text-body-b6 text-muted-foreground">
           {secondsLeft > 0 ? (
-            `Resend Code in ${mm}:${ss}`
+            t("resendIn", { time: `${mm}:${ss}` })
           ) : (
             <Button type="button" variant="link" onClick={handleResend} >
-              Resend Code
+              {t("resendCode")}
             </Button>
           )}
         </p>
@@ -120,11 +122,11 @@ export default function OtpScreen({ phone, callbackUrl = "/" }: OtpScreenProps) 
         size="lg"
         className="mt-4"
       >
-        {pending ? "Verifying…" : "Verify Code"}
+        {pending ? t("verifying") : t("verifyCode")}
       </Button>
 
       <Button asChild variant="ghost" className="mt-8 self-center text-body-b7">
-        <Link href="/login">Change Phone number</Link>
+        <Link href="/login">{t("changePhone")}</Link>
       </Button>
     </div>
   );

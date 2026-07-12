@@ -1,12 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Phone } from "lucide-react";
 import { Button, Icon, TextField } from "@/src/presentation/design-system";
+import { useRouter } from "@/src/i18n/navigation";
 import { requestOtp } from "./actions";
 
 export default function LoginScreen({ callbackUrl = "/" }: { callbackUrl?: string }) {
+  const t = useTranslations("auth");
   const router = useRouter();
   const [phone, setPhone] = React.useState("");
   const [error, setError] = React.useState<string>();
@@ -33,18 +35,18 @@ export default function LoginScreen({ callbackUrl = "/" }: { callbackUrl?: strin
   return (
     <div className="flex min-h-dvh flex-col px-6 pb-10">
       <header className="pt-16 text-center mb-16">
-        <h1 className="text-heading-h3 text-foreground mb-2">Welcome Back!</h1>
-        <p className="text-body-b4 text-muted-foreground">Enter Your Phone Number To Access Your Account</p>
+        <h1 className="text-heading-h3 text-foreground mb-2">{t("welcomeTitle")}</h1>
+        <p className="text-body-b4 text-muted-foreground">{t("welcomeSubtitle")}</p>
       </header>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-8">
         <div className="flex flex-col gap-2 min-h-28">
           <TextField
-            label="Phone number"
+            label={t("phoneLabel")}
             size="lg"
             type="tel"
             inputMode="tel"
-            placeholder="Phone number"
+            placeholder={t("phonePlaceholder")}
             autoComplete="tel"
             required
             leftElement={<Icon icon={Phone} size="sm" />}
@@ -60,7 +62,7 @@ export default function LoginScreen({ callbackUrl = "/" }: { callbackUrl?: strin
         </div>
 
         <Button type="submit" size="lg" disabled={pending} className="mt-auto">
-          {pending ? "Sending code…" : "Continue"}
+          {pending ? t("sendingCode") : t("continue")}
         </Button>
       </form>
     </div>
