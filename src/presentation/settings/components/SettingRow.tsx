@@ -27,7 +27,7 @@ export function SettingRow({ label, href, onClick, tone = "default" }: SettingRo
   const content = (
     <>
       <span className="text-body-b3">{label}</span>
-      <Icon icon={ChevronRight} size="sm" />
+      <Icon icon={ChevronRight} size="sm" className="rtl:-scale-x-100" />
     </>
   );
 
@@ -40,7 +40,7 @@ export function SettingRow({ label, href, onClick, tone = "default" }: SettingRo
   }
 
   return (
-    <button type="button" onClick={onClick} className={cn(className, "text-left")}>
+    <button type="button" onClick={onClick} className={cn(className, "text-start")}>
       {content}
     </button>
   );

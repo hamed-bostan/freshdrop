@@ -37,7 +37,7 @@ export function SupportRow({ icon, children, href, external, onClick }: SupportR
   }
 
   return (
-    <button type="button" onClick={onClick} className={cn(rowClass, "w-full text-left")}>
+    <button type="button" onClick={onClick} className={cn(rowClass, "w-full text-start")}>
       {content}
     </button>
   );

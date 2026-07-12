@@ -16,7 +16,7 @@ export function WalletCard({ card, className }: WalletCardProps) {
       <p className="text-heading-h3">{card.brand}</p>
       <p className="mt-auto text-body-b6 text-primary-foreground/90">{card.holderName}</p>
 
-      <p className="mt-1 ml-4 text-body-b3 tracking-wide">{card.number}</p>
+      <p className="mt-1 ms-4 text-body-b3 tracking-wide">{card.number}</p>
       <p className="mt-1 text-body-b6 text-primary-foreground/90">{card.expiry}</p>
     </article>
   );

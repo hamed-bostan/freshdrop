@@ -106,7 +106,7 @@ export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploader
               type="button"
               aria-label={t("changePhoto")}
               disabled={uploading}
-              className="absolute bottom-0 right-0 flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors active:bg-primary-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+              className="absolute bottom-0 end-0 flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors active:bg-primary-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
             >
               <Icon icon={ImagePlus} size="xs" />
             </button>
