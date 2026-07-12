@@ -1,7 +1,8 @@
 {
   "common": {
     "goBack": "Go back",
-    "startShopping": "Start Shopping"
+    "startShopping": "Start Shopping",
+    "viewAll": "view all"
   },
   "nav": {
     "ariaLabel": "Main navigation",
@@ -25,5 +26,13 @@
     "heroImageAlt": "Fresh vegetables",
     "featured": "Featured Products",
     "specialOffers": "Special Offers"
+  },
+  "category": {
+    "allCategories": "All Categories"
+  },
+  "search": {
+    "brandHint": "Search on <brand>FRESH DROP</brand>",
+    "inputAria": "Search products",
+    "openFilters": "Open filters"
   }
 }

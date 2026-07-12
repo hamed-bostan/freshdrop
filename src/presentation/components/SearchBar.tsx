@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { SlidersHorizontal, Search } from "lucide-react";
 import type { Product } from "@/src/domain/entities/Product";
+import { useRouter } from "@/src/i18n/navigation";
 import { Button, Icon, Input } from "@/src/presentation/design-system";
 import { useProductSearch } from "@/src/presentation/product/hooks/use-product-search";
 import { SearchSuggestions } from "./SearchSuggestions";
@@ -27,12 +28,6 @@ interface SearchBarProps {
   hideFilter?: boolean;
 }
 
-const DEFAULT_PLACEHOLDER = (
-  <>
-    Search on <span className="text-primary">FRESH DROP</span>
-  </>
-);
-
 /**
  * Storefront search field: the design-system `Input` in its `filled` variant —
  * the borderless grey well that distinguishes search from the white, bordered
@@ -45,13 +40,19 @@ const DEFAULT_PLACEHOLDER = (
  * so the brand name can be coloured; it shows only while the field is empty.
  */
 export function SearchBar({
-  placeholder = DEFAULT_PLACEHOLDER,
+  placeholder,
   defaultValue = "",
   onFilterClick,
   hideFilter = false,
 }: SearchBarProps) {
+  const t = useTranslations("search");
   const router = useRouter();
   const [value, setValue] = React.useState(defaultValue);
+
+  // Defaults to the brand hint; the coloured brand name comes from the rich `brand` tag.
+  const resolvedPlaceholder =
+    placeholder ??
+    t.rich("brandHint", { brand: (chunks) => <span className="text-primary">{chunks}</span> });
   const [isOpen, setIsOpen] = React.useState(false);
   const { results } = useProductSearch(value);
 
@@ -98,13 +99,13 @@ export function SearchBar({
           onKeyDown={(event) => {
             if (event.key === "Escape") setIsOpen(false);
           }}
-          aria-label="Search products"
+          aria-label={t("inputAria")}
           autoComplete="off"
           leftElement={<Icon icon={Search} size="md" />}
         />
         {value === "" && (
           <span className="pointer-events-none absolute left-10 top-1/2 -translate-y-1/2 text-body-b2 text-input-placeholder">
-            {placeholder}
+            {resolvedPlaceholder}
           </span>
         )}
         {showSuggestions && <SearchSuggestions results={suggestions} onSelect={handleSelect} />}
@@ -116,7 +117,7 @@ export function SearchBar({
           size="lg"
           iconOnly
           variant="outline"
-          aria-label="Open filters"
+          aria-label={t("openFilters")}
           onClick={onFilterClick}
         >
           <Icon icon={SlidersHorizontal} />

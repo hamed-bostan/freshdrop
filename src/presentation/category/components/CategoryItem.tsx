@@ -1,5 +1,5 @@
-import Link from "next/link";
 import Image from "next/image";
+import { Link } from "@/src/i18n/navigation";
 import type { Category } from "@/src/domain/entities/Category";
 
 interface CategoryItemProps {

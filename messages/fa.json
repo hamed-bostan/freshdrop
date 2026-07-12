@@ -1,7 +1,8 @@
 {
   "common": {
     "goBack": "بازگشت",
-    "startShopping": "شروع خرید"
+    "startShopping": "شروع خرید",
+    "viewAll": "مشاهده همه"
   },
   "nav": {
     "ariaLabel": "ناوبری اصلی",
@@ -25,5 +26,13 @@
     "heroImageAlt": "سبزیجات تازه",
     "featured": "محصولات منتخب",
     "specialOffers": "پیشنهادهای ویژه"
+  },
+  "category": {
+    "allCategories": "همه دسته‌بندی‌ها"
+  },
+  "search": {
+    "brandHint": "جستجو در <brand>FRESH DROP</brand>",
+    "inputAria": "جستجوی محصولات",
+    "openFilters": "باز کردن فیلترها"
   }
 }

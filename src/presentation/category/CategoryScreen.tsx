@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import type { Category } from "@/src/domain/entities/Category";
 import { CategoryGrid } from "@/src/presentation/category/components";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
@@ -7,14 +8,17 @@ interface CategoryScreenProps {
   categories: Category[];
 }
 
-export default function CategoryScreen({ categories }: CategoryScreenProps) {
+export default async function CategoryScreen({ categories }: CategoryScreenProps) {
+  const t = await getTranslations("category");
+  const title = t("allCategories");
+
   return (
     <div className="flex flex-col gap-6 px-6 pb-24">
-      <PageHeader title="All Categories" />
+      <PageHeader title={title} />
 
       <SearchBar />
 
-      <CategoryGrid categories={categories} title="All Categories" />
+      <CategoryGrid categories={categories} title={title} />
     </div>
   );
 }
