@@ -6,15 +6,15 @@ import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { SupportSection, SupportRow, LiveChatRow } from "./components";
 
 interface SocialLink {
-  label: string;
+  labelKey: "socialWhatsapp" | "socialInstagram" | "socialYoutube";
   href: string;
   icon: ComponentType<LucideProps>;
 }
 
 const SOCIAL_LINKS: SocialLink[] = [
-  { label: "WhatsApp", href: "https://wa.me/18001234567", icon: WhatsappIcon },
-  { label: "Instagram", href: "https://www.instagram.com/", icon: InstagramIcon },
-  { label: "Youtube", href: "https://www.youtube.com/", icon: YoutubeIcon },
+  { labelKey: "socialWhatsapp", href: "https://wa.me/18001234567", icon: WhatsappIcon },
+  { labelKey: "socialInstagram", href: "https://www.instagram.com/", icon: InstagramIcon },
+  { labelKey: "socialYoutube", href: "https://www.youtube.com/", icon: YoutubeIcon },
 ];
 
 export default async function SupportScreen() {
@@ -27,9 +27,9 @@ export default async function SupportScreen() {
       <p className="text-body-b6 text-foreground">{t("intro")}</p>
 
       <SupportSection title={t("followUs")}>
-        {SOCIAL_LINKS.map(({ label, href, icon }) => (
-          <SupportRow key={label} href={href} external icon={<Icon icon={icon} size="sm" />}>
-            {label}
+        {SOCIAL_LINKS.map(({ labelKey, href, icon }) => (
+          <SupportRow key={labelKey} href={href} external icon={<Icon icon={icon} size="sm" />}>
+            {t(labelKey)}
           </SupportRow>
         ))}
       </SupportSection>

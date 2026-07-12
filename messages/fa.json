@@ -289,7 +289,10 @@
     "contactUs": "تماس با ما",
     "hotlineLabel": "خط تماس:",
     "emailLabel": "ایمیل:",
-    "liveChat": "گفتگوی زنده"
+    "liveChat": "گفتگوی زنده",
+    "socialWhatsapp": "واتساپ",
+    "socialInstagram": "اینستاگرام",
+    "socialYoutube": "یوتیوب"
   },
   "wallet": {
     "title": "کیف پول",

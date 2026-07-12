@@ -289,7 +289,10 @@
     "contactUs": "Contact us",
     "hotlineLabel": "Hotline:",
     "emailLabel": "Email:",
-    "liveChat": "Live Chat"
+    "liveChat": "Live Chat",
+    "socialWhatsapp": "WhatsApp",
+    "socialInstagram": "Instagram",
+    "socialYoutube": "Youtube"
   },
   "wallet": {
     "title": "Wallet",
