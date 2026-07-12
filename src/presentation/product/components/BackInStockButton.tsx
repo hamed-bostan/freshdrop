@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Bell, BellRing } from "lucide-react";
+import { usePathname, useRouter } from "@/src/i18n/navigation";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { stockAlertsApi } from "../stock-alert-api";
@@ -20,6 +21,7 @@ interface BackInStockButtonProps {
  * in, so we send them to login with a callback back to this page.
  */
 export function BackInStockButton({ productId, initialSubscribed }: BackInStockButtonProps) {
+  const t = useTranslations("product");
   const router = useRouter();
   const pathname = usePathname();
   const [subscribed, setSubscribed] = React.useState(initialSubscribed);
@@ -52,7 +54,7 @@ export function BackInStockButton({ productId, initialSubscribed }: BackInStockB
       aria-pressed={subscribed}
     >
       <Icon icon={subscribed ? BellRing : Bell} size="sm" />
-      {subscribed ? "We'll notify you" : "Notify me when available"}
+      {subscribed ? t("willNotify") : t("notifyWhenAvailable")}
     </Button>
   );
 }

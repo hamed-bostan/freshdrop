@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/src/presentation/design-system";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { useRouter } from "@/src/i18n/navigation";
 import { reviewsApi } from "../review-api";
 import { AddReviewSheet, type ReviewDraft } from "./AddReviewSheet";
 import { ReviewSubmittedModal } from "./ReviewSubmittedModal";
@@ -22,6 +23,7 @@ interface AddReviewFlowProps {
  * signed in.
  */
 export function AddReviewFlow({ productId }: AddReviewFlowProps) {
+  const t = useTranslations("reviews");
   const router = useRouter();
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [successOpen, setSuccessOpen] = React.useState(false);
@@ -43,10 +45,10 @@ export function AddReviewFlow({ productId }: AddReviewFlowProps) {
       } catch (err) {
         setError(
           err instanceof ApiError && err.status === 401
-            ? "Please sign in to leave a review."
+            ? t("signInError")
             : err instanceof ApiError
               ? err.message
-              : "Couldn't submit your review. Please try again.",
+              : t("genericError"),
         );
       }
     });
@@ -55,7 +57,7 @@ export function AddReviewFlow({ productId }: AddReviewFlowProps) {
   return (
     <>
       <Button variant="link" className="mx-auto" onClick={() => setSheetOpen(true)}>
-        Add Review
+        {t("add")}
       </Button>
 
       <AddReviewSheet

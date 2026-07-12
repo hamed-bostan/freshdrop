@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import type { Product } from "@/src/domain/entities/Product";
 import type { Review } from "@/src/domain/entities/Review";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
@@ -19,18 +20,19 @@ interface ProductDetailScreenProps {
   initialStockAlert: boolean;
 }
 
-export default function ProductDetailScreen({
+export default async function ProductDetailScreen({
   product,
   similar,
   reviews,
   initialFavorite,
   initialStockAlert,
 }: ProductDetailScreenProps) {
+  const t = await getTranslations("product");
   const galleryImages = product.images?.length ? product.images : [product.imageUrl];
 
   return (
     <div className="flex flex-col gap-6 px-6 pb-28">
-      <PageHeader title="Product Detail" />
+      <PageHeader title={t("detailTitle")} />
 
       <ProductGallery
         images={galleryImages}

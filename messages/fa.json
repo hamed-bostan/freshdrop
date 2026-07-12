@@ -17,7 +17,11 @@
     "filterAria": "فیلتر علاقه‌مندی‌ها بر اساس دسته‌بندی",
     "filterAll": "همه",
     "emptyTitle": "لیست علاقه‌مندی‌های شما خالی است.",
-    "emptyBody": "محصولات را به علاقه‌مندی‌های خود اضافه کنید تا به‌راحتی اینجا پیدایشان کنید"
+    "emptyBody": "محصولات را به علاقه‌مندی‌های خود اضافه کنید تا به‌راحتی اینجا پیدایشان کنید",
+    "addAria": "افزودن به علاقه‌مندی‌ها",
+    "addAriaNamed": "افزودن {name} به علاقه‌مندی‌ها",
+    "removeAria": "حذف از علاقه‌مندی‌ها",
+    "removeAriaNamed": "حذف {name} از علاقه‌مندی‌ها"
   },
   "home": {
     "categorySection": "دسته‌بندی",
@@ -34,5 +38,40 @@
     "brandHint": "جستجو در <brand>FRESH DROP</brand>",
     "inputAria": "جستجوی محصولات",
     "openFilters": "باز کردن فیلترها"
+  },
+  "cart": {
+    "addToCart": "افزودن به سبد",
+    "addAria": "افزودن {name} به سبد",
+    "removeAria": "حذف {name} از سبد",
+    "decreaseAria": "کاهش تعداد {name}",
+    "increaseAria": "افزایش تعداد {name}"
+  },
+  "product": {
+    "detailTitle": "جزئیات محصول",
+    "outOfStock": "ناموجود",
+    "onlyLeft": "فقط {count} عدد باقی مانده",
+    "similar": "محصولات مشابه",
+    "infoDetail": "جزئیات محصول",
+    "infoNutrition": "ارزش غذایی",
+    "infoOrigin": "خاستگاه",
+    "notifyWhenAvailable": "هنگام موجود شدن خبرم کن",
+    "willNotify": "خبرت می‌کنیم"
+  },
+  "reviews": {
+    "heading": "نظرات",
+    "empty": "هنوز نظری ثبت نشده. اولین نفری باشید که نظر می‌دهد.",
+    "add": "افزودن نظر",
+    "sheetTitle": "نظر خود را بنویسید",
+    "sheetDescription": "به محصول امتیاز دهید و نظرتان را بنویسید.",
+    "yourRating": "امتیاز شما",
+    "feedbackPlaceholder": "نظر خود را بنویسید",
+    "feedbackLabel": "نظر",
+    "submitting": "در حال ارسال…",
+    "submit": "ارسال",
+    "signInError": "برای ثبت نظر وارد شوید.",
+    "genericError": "ثبت نظر ممکن نشد. لطفاً دوباره تلاش کنید.",
+    "doneTitle": "انجام شد!",
+    "doneDescription": "از نظر شما سپاسگزاریم.",
+    "doneBody": "از نظر شما ممنونیم — پس از تأیید تیم ما نمایش داده می‌شود."
   }
 }

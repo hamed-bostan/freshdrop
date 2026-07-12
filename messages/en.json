@@ -17,7 +17,11 @@
     "filterAria": "Filter favorites by category",
     "filterAll": "All",
     "emptyTitle": "Your favorite list is empty.",
-    "emptyBody": "Start Adding Products To Your Favorites And Find Them Here Easily"
+    "emptyBody": "Start Adding Products To Your Favorites And Find Them Here Easily",
+    "addAria": "Add to favorites",
+    "addAriaNamed": "Add {name} to favorites",
+    "removeAria": "Remove from favorites",
+    "removeAriaNamed": "Remove {name} from favorites"
   },
   "home": {
     "categorySection": "Category",
@@ -34,5 +38,40 @@
     "brandHint": "Search on <brand>FRESH DROP</brand>",
     "inputAria": "Search products",
     "openFilters": "Open filters"
+  },
+  "cart": {
+    "addToCart": "Add to Cart",
+    "addAria": "Add {name} to cart",
+    "removeAria": "Remove {name} from cart",
+    "decreaseAria": "Decrease {name} quantity",
+    "increaseAria": "Increase {name} quantity"
+  },
+  "product": {
+    "detailTitle": "Product Detail",
+    "outOfStock": "Out of stock",
+    "onlyLeft": "Only {count} left",
+    "similar": "Similar To This Item",
+    "infoDetail": "Product detail",
+    "infoNutrition": "Nutritions",
+    "infoOrigin": "Origins",
+    "notifyWhenAvailable": "Notify me when available",
+    "willNotify": "We'll notify you"
+  },
+  "reviews": {
+    "heading": "Reviews",
+    "empty": "No reviews yet. Be the first to share your thoughts.",
+    "add": "Add Review",
+    "sheetTitle": "Add Your Review",
+    "sheetDescription": "Rate the product and share your feedback.",
+    "yourRating": "Your rating",
+    "feedbackPlaceholder": "Add Feedback",
+    "feedbackLabel": "Feedback",
+    "submitting": "Submitting…",
+    "submit": "Submit",
+    "signInError": "Please sign in to leave a review.",
+    "genericError": "Couldn't submit your review. Please try again.",
+    "doneTitle": "Done!",
+    "doneDescription": "Thank you for your review.",
+    "doneBody": "Thanks for your review — it'll appear once our team approves it."
   }
 }

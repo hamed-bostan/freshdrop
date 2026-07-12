@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import {
   Accordion,
   AccordionItem,
@@ -13,11 +14,15 @@ interface ProductInfoAccordionProps {
 type Section = { value: string; label: string; content: string };
 
 /** Collapsible product detail / nutritions / origins sections (only those present). */
-export function ProductInfoAccordion({ product }: ProductInfoAccordionProps) {
+export async function ProductInfoAccordion({ product }: ProductInfoAccordionProps) {
+  const t = await getTranslations("product");
+
+  // Section content is catalog data (localized once content translation lands); only
+  // the section labels are UI copy.
   const sections: Section[] = [
-    { value: "detail", label: "Product detail", content: product.description },
-    { value: "nutrition", label: "Nutritions", content: product.nutrition },
-    { value: "origin", label: "Origins", content: product.origin },
+    { value: "detail", label: t("infoDetail"), content: product.description },
+    { value: "nutrition", label: t("infoNutrition"), content: product.nutrition },
+    { value: "origin", label: t("infoOrigin"), content: product.origin },
   ].filter((section): section is Section => Boolean(section.content));
 
   if (sections.length === 0) return null;

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Star } from "lucide-react";
 import { Icon } from "@/src/presentation/design-system";
 import type { Product } from "@/src/domain/entities/Product";
@@ -21,6 +22,7 @@ interface ProductPurchasePanelProps {
  * the back-in-stock subscribe button.
  */
 export function ProductPurchasePanel({ product, initialStockAlert }: ProductPurchasePanelProps) {
+  const t = useTranslations("product");
   const hasDiscount = product.originalPrice != null;
   const stock = getStockStatus(product.stockQuantity);
   const outOfStock = stock.level === "out";
@@ -41,10 +43,10 @@ export function ProductPurchasePanel({ product, initialStockAlert }: ProductPurc
         {product.unit && <p className="mt-1 text-body-b6 text-muted-foreground">{product.unit}</p>}
 
         {stock.level === "out" && (
-          <p className="mt-2 text-body-b6 text-destructive">Out of stock</p>
+          <p className="mt-2 text-body-b6 text-destructive">{t("outOfStock")}</p>
         )}
         {stock.level === "low" && (
-          <p className="mt-2 text-body-b6 text-warning-foreground">Only {stock.quantity} left</p>
+          <p className="mt-2 text-body-b6 text-warning-foreground">{t("onlyLeft", { count: stock.quantity })}</p>
         )}
 
         <div className="mt-4 flex items-baseline justify-end gap-2">

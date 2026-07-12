@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Check, Minus, Plus } from "lucide-react";
+import { usePathname, useRouter } from "@/src/i18n/navigation";
 import { Button, Icon } from "@/src/presentation/design-system";
 import type { Product } from "@/src/domain/entities/Product";
 import { ApiError } from "@/src/lib/api/ApiError";
@@ -41,6 +42,7 @@ export function CartQuantityControl({
   layout = "compact",
   addOnly = false,
 }: CartQuantityControlProps) {
+  const t = useTranslations("cart");
   const router = useRouter();
   const pathname = usePathname();
   const { getQuantity, setItemQuantity } = useCart();
@@ -67,7 +69,7 @@ export function CartQuantityControl({
       <Button
         size="sm"
         iconOnly
-        aria-label={added ? `Remove ${product.name} from cart` : `Add ${product.name} to cart`}
+        aria-label={added ? t("removeAria", { name: product.name }) : t("addAria", { name: product.name })}
         aria-pressed={added}
         variant={added ? "outline" : "primary"}
         className="rounded-full"
@@ -84,7 +86,7 @@ export function CartQuantityControl({
     if (block) {
       return (
         <Button size="lg" className="w-full gap-2" disabled={disabled} onClick={() => change(1)}>
-          Add to Cart
+          {t("addToCart")}
           <Icon icon={Plus} size="sm" />
         </Button>
       );
@@ -93,7 +95,7 @@ export function CartQuantityControl({
       <Button
         size="sm"
         iconOnly
-        aria-label={`Add ${product.name} to cart`}
+        aria-label={t("addAria", { name: product.name })}
         className="rounded-full"
         disabled={disabled}
         onClick={() => change(1)}
@@ -120,7 +122,7 @@ export function CartQuantityControl({
       <button
         type="button"
         onClick={decrement}
-        aria-label={`Decrease ${product.name} quantity`}
+        aria-label={t("decreaseAria", { name: product.name })}
         className={cn(
           "grid place-items-center rounded-full transition-colors active:bg-primary-pressed",
           block ? "size-10" : "size-8",
@@ -137,7 +139,7 @@ export function CartQuantityControl({
         type="button"
         onClick={increment}
         disabled={!canIncrement}
-        aria-label={`Increase ${product.name} quantity`}
+        aria-label={t("increaseAria", { name: product.name })}
         className={cn(
           "grid place-items-center rounded-full transition-colors active:bg-primary-pressed disabled:opacity-40 disabled:active:bg-transparent",
           block ? "size-10" : "size-8",

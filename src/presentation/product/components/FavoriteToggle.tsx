@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Heart } from "lucide-react";
+import { usePathname, useRouter } from "@/src/i18n/navigation";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { favoritesApi } from "@/src/presentation/favorites/favorite-api";
@@ -37,6 +38,7 @@ export function FavoriteToggle({
   className,
   refreshOnUnfavorite = false,
 }: FavoriteToggleProps) {
+  const t = useTranslations("favorites");
   const router = useRouter();
   const pathname = usePathname();
   const [isFavorite, setIsFavorite] = React.useState(initialFavorite);
@@ -68,8 +70,13 @@ export function FavoriteToggle({
     });
   }
 
-  const target = productName ? ` ${productName}` : "";
-  const label = isFavorite ? `Remove${target} from favorites` : `Add${target} to favorites`;
+  const label = isFavorite
+    ? productName
+      ? t("removeAriaNamed", { name: productName })
+      : t("removeAria")
+    : productName
+      ? t("addAriaNamed", { name: productName })
+      : t("addAria");
 
   return (
     <Button

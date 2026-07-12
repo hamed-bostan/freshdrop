@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import type { Review } from "@/src/domain/entities/Review";
 import { ReviewItem } from "./ReviewItem";
 import { AddReviewFlow } from "./AddReviewFlow";
@@ -7,11 +8,13 @@ interface ReviewSectionProps {
   reviews: Review[];
 }
 
-export function ReviewSection({ productId, reviews }: ReviewSectionProps) {
+export async function ReviewSection({ productId, reviews }: ReviewSectionProps) {
+  const t = await getTranslations("reviews");
+
   return (
     <section aria-labelledby="reviews-heading" className="flex flex-col gap-4">
       <h2 id="reviews-heading" className="text-body-b1 text-foreground">
-        Reviews
+        {t("heading")}
       </h2>
 
       {reviews.length > 0 ? (
@@ -21,7 +24,7 @@ export function ReviewSection({ productId, reviews }: ReviewSectionProps) {
           ))}
         </div>
       ) : (
-        <p className="text-body-b6 text-muted-foreground">No reviews yet. Be the first to share your thoughts.</p>
+        <p className="text-body-b6 text-muted-foreground">{t("empty")}</p>
       )}
 
       <AddReviewFlow productId={productId} />

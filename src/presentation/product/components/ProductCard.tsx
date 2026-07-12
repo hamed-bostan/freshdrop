@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Star } from "lucide-react";
 import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
@@ -6,7 +7,7 @@ import { FavoriteToggle } from "./FavoriteToggle";
 import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/src/i18n/navigation";
 
 interface ProductCardProps {
   product: Product;
@@ -32,6 +33,7 @@ export function ProductCard({
   initialFavorite = false,
   refreshOnUnfavorite = false,
 }: ProductCardProps) {
+  const t = useTranslations("product");
   const hasDiscount = product.originalPrice != null && product.discountPercent != null;
   const stock = getStockStatus(product.stockQuantity);
   const outOfStock = stock.level === "out";
@@ -61,7 +63,7 @@ export function ProductCard({
           in-stock product still shows its promo badge there. */}
       {outOfStock ? (
         <span className="absolute right-0 top-2 z-10 rounded-tl-lg rounded-bl-lg rounded-tr-xs rounded-br-none bg-destructive p-1 text-label-l3 text-destructive-foreground">
-          Out of stock
+          {t("outOfStock")}
         </span>
       ) : (
         product.badge && (
@@ -92,7 +94,7 @@ export function ProductCard({
       )}
 
       {stock.level === "low" && (
-        <p className="px-2 mb-1 text-body-b10 text-warning-foreground">Only {stock.quantity} left</p>
+        <p className="px-2 mb-1 text-body-b10 text-warning-foreground">{t("onlyLeft", { count: stock.quantity })}</p>
       )}
 
       <div className="flex justify-between items-center px-2">
