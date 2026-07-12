@@ -101,7 +101,7 @@ export default function OnboardingScreen() {
               {t("skip")}
             </Button>
             <Button iconOnly className="rounded-full" aria-label={t("nextSlide")} onClick={() => swiper?.slideNext()}>
-              <Icon icon={ArrowRight} />
+              <Icon icon={ArrowRight} className="rtl:-scale-x-100" />
             </Button>
           </>
         )}

@@ -23,7 +23,7 @@ export function PageHeader({ title, backHref }: PageHeaderProps) {
   const t = useTranslations("common");
   const router = useRouter();
 
-  const backIcon = <Icon icon={ChevronLeft} size="md" className="text-foreground" />;
+  const backIcon = <Icon icon={ChevronLeft} size="md" className="text-foreground rtl:-scale-x-100" />;
 
   return (
     <header className="grid grid-cols-[1fr_auto_1fr] items-center pt-3">

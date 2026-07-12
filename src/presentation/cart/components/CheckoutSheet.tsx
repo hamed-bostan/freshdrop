@@ -97,7 +97,7 @@ export function CheckoutSheet({
             ) : (
               <span className="flex-1 text-body-b2 text-input-placeholder">{t("enterPromo")}</span>
             )}
-            <Icon icon={ChevronRight} size="sm" className="text-icon-muted" />
+            <Icon icon={ChevronRight} size="sm" className="text-icon-muted rtl:-scale-x-100" />
           </Link>
 
           <dl className="mt-6 flex flex-col gap-4">
