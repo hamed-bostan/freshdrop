@@ -1,6 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import type { Order } from "@/src/domain/entities/Order";
+import { Link } from "@/src/i18n/navigation";
 import { Button } from "@/src/presentation/design-system";
 import { OrderAdjustments } from "@/src/presentation/orders/components";
 import { orderConfirmed } from "@/src/shared/assets/images";
@@ -10,7 +11,9 @@ interface OrderConfirmedScreenProps {
   order?: Order;
 }
 
-export default function OrderConfirmedScreen({ order }: OrderConfirmedScreenProps) {
+export default async function OrderConfirmedScreen({ order }: OrderConfirmedScreenProps) {
+  const t = await getTranslations("checkout");
+
   return (
     <div className="flex min-h-dvh flex-col items-center gap-6 px-6 pb-10 pt-20">
 
@@ -24,10 +27,8 @@ export default function OrderConfirmedScreen({ order }: OrderConfirmedScreenProp
         />
 
         <div className="flex flex-col items-center gap-4 text-center">
-          <h1 className="text-heading-h2 text-foreground">Order Confirmed</h1>
-          <p className="text-body-b4 text-muted-foreground">
-            Thank you for shopping with us
-          </p>
+          <h1 className="text-heading-h2 text-foreground">{t("confirmedTitle")}</h1>
+          <p className="text-body-b4 text-muted-foreground">{t("confirmedThanks")}</p>
         </div>
 
         {order && <OrderAdjustments order={order} />}
@@ -36,11 +37,11 @@ export default function OrderConfirmedScreen({ order }: OrderConfirmedScreenProp
 
       <div className="flex w-full flex-col gap-3">
         <Button asChild variant="link"  className="w-full">
-          <Link href="/">Back to Home</Link>
+          <Link href="/">{t("backToHome")}</Link>
         </Button>
 
         <Button asChild size="lg" className="w-full">
-          <Link href="/orders">Track Order</Link>
+          <Link href="/orders">{t("trackOrder")}</Link>
         </Button>
 
 

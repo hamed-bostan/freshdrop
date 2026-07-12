@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { MapPin, Clock, CreditCard, ClipboardList, Replace } from "lucide-react";
+import { Link, useRouter } from "@/src/i18n/navigation";
 import type { Cart } from "@/src/domain/entities/Cart";
 import type { SubstitutionPreference } from "@/src/domain/entities/Order";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
@@ -100,6 +100,7 @@ export default function CheckoutScreen({
   selectedPaymentMethodId,
   promoCode,
 }: CheckoutScreenProps) {
+  const t = useTranslations("checkout");
   const router = useRouter();
   const { refresh: refreshCart } = useCart();
   // The delivery address isn't chosen here — the user selects it in the home sheet or
@@ -154,11 +155,11 @@ export default function CheckoutScreen({
   const placeOrder = (event: React.FormEvent) => {
     event.preventDefault();
     if (!selectedAddress) {
-      setError("Select a delivery address.");
+      setError(t("errAddress"));
       return;
     }
     if (!slot) {
-      setError("Select a delivery time.");
+      setError(t("errTime"));
       return;
     }
 
@@ -187,33 +188,31 @@ export default function CheckoutScreen({
         router.push("/cart/checkout/confirmed");
         router.refresh();
       } catch (err) {
-        setError(
-          err instanceof ApiError ? err.message : "Couldn't place your order. Please try again.",
-        );
+        setError(err instanceof ApiError ? err.message : t("errGeneric"));
       }
     });
   };
 
   return (
     <form onSubmit={placeOrder} className="flex min-h-dvh flex-col gap-6 px-6 pb-28">
-      <PageHeader title="Checkout" />
+      <PageHeader title={t("title")} />
 
       <CheckoutSection
         icon={MapPin}
-        title="Deliver To"
+        title={t("deliverTo")}
         action={
           selectedAddress ? (
             <DeliveryLocationPickerSheet
               locations={deliveryLocations}
               trigger={
                 <button type="button" className="text-body-b8 text-primary">
-                  Change
+                  {t("change")}
                 </button>
               }
             />
           ) : (
             <Link href="/profile/addresses/new" className="text-body-b8 text-primary">
-              Add New Address
+              {t("addNewAddress")}
             </Link>
           )
         }
@@ -223,17 +222,15 @@ export default function CheckoutScreen({
             <DeliveryLocationSummary location={selectedAddress} />
           </div>
         ) : (
-          <p className="text-body-b8 text-muted-foreground">
-            You don&apos;t have a saved address yet. Add one to continue.
-          </p>
+          <p className="text-body-b8 text-muted-foreground">{t("noAddress")}</p>
         )}
       </CheckoutSection>
 
-      <CheckoutSection icon={Clock} title="Delivery Time">
+      <CheckoutSection icon={Clock} title={t("deliveryTime")}>
         <DeliverySlotPicker days={deliverySlotDays} selected={slot} onSelect={setSlot} />
       </CheckoutSection>
 
-      <CheckoutSection icon={CreditCard} title="Payment Method">
+      <CheckoutSection icon={CreditCard} title={t("paymentMethod")}>
         <div className="flex flex-col gap-2">
           {paymentMethods.map((method) => (
             <PaymentMethodOption
@@ -254,14 +251,11 @@ export default function CheckoutScreen({
         </div>
       </CheckoutSection>
 
-      <CheckoutSection icon={ClipboardList} title="Order Summary">
+      <CheckoutSection icon={ClipboardList} title={t("orderSummary")}>
         <OrderSummaryCard items={cart.items} />
       </CheckoutSection>
 
-      <CheckoutSection
-        icon={Replace}
-        title="If an item is out of stock"
-      >
+      <CheckoutSection icon={Replace} title={t("ifOutOfStock")}>
         <SubstitutionPreferenceList
           items={cart.items}
           value={substitutions}
@@ -283,7 +277,7 @@ export default function CheckoutScreen({
       )}
 
       <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full">
-        {pending ? "Placing Order…" : "Place Order"}
+        {pending ? t("placingOrder") : t("placeOrder")}
       </Button>
     </form>
   );

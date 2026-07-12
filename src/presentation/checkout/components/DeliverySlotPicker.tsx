@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/src/lib/utils";
 import type { DeliverySlot, DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import { Chip, ChipGroup } from "@/src/presentation/design-system";
@@ -21,6 +22,7 @@ interface DeliverySlotPickerProps {
  * window is disabled. Selection is lifted to the checkout screen as {@link SlotSelection}.
  */
 export function DeliverySlotPicker({ days, selected, onSelect }: DeliverySlotPickerProps) {
+  const t = useTranslations("checkout");
   // Which day's windows are shown. Follows the selected slot's day, else the first.
   const [activeDate, setActiveDate] = React.useState(() => selected?.date ?? days[0]?.date ?? "");
 
@@ -36,17 +38,13 @@ export function DeliverySlotPicker({ days, selected, onSelect }: DeliverySlotPic
   const activeDay = days.find((day) => day.date === activeDate) ?? days[0];
 
   if (!activeDay) {
-    return (
-      <p className="text-body-b8 text-muted-foreground">
-        No delivery times are available right now. Please check back soon.
-      </p>
-    );
+    return <p className="text-body-b8 text-muted-foreground">{t("noSlots")}</p>;
   }
 
   return (
     <div className="flex flex-col gap-4">
       <ChipGroup
-        aria-label="Delivery day"
+        aria-label={t("dayAria")}
         value={activeDay.date}
         onValueChange={setActiveDate}
         className="flex-nowrap overflow-x-auto"
@@ -89,6 +87,7 @@ interface SlotOptionProps {
  * the product cards), nothing when there's plenty.
  */
 function SlotOption({ slot, selected, onSelect, disabled }: SlotOptionProps) {
+  const t = useTranslations("checkout");
   const { availability } = slot;
 
   return (
@@ -116,10 +115,10 @@ function SlotOption({ slot, selected, onSelect, disabled }: SlotOptionProps) {
       />
 
       {availability.level === "full" ? (
-        <span className="shrink-0 text-body-b10 text-destructive">Full</span>
+        <span className="shrink-0 text-body-b10 text-destructive">{t("full")}</span>
       ) : availability.level === "low" ? (
         <span className="shrink-0 text-body-b10 text-warning-foreground">
-          Only {availability.remaining} left
+          {t("slotOnlyLeft", { count: availability.remaining })}
         </span>
       ) : null}
     </label>

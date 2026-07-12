@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import type { CartItem } from "@/src/domain/entities/Cart";
 import type { SubstitutionPreference } from "@/src/domain/entities/Order";
 import { Switch } from "@/src/presentation/design-system";
@@ -20,6 +21,8 @@ type SubstitutionPreferenceListProps = {
  * choices are lifted to the checkout screen and sent with the order.
  */
 export function SubstitutionPreferenceList({ items, value, onChange }: SubstitutionPreferenceListProps) {
+  const t = useTranslations("checkout");
+
   return (
     <ul className="flex w-full flex-col gap-3 rounded-card-xl bg-surface px-4 py-3">
       {items.map((item) => {
@@ -41,7 +44,7 @@ export function SubstitutionPreferenceList({ items, value, onChange }: Substitut
             <div className="min-w-0 flex-1">
               <p className="truncate text-body-b6 text-foreground">{item.product.name}</p>
               <label htmlFor={switchId} className="text-body-b8 text-muted-foreground">
-                {allowSubstitute ? "Replace with a similar item" : "Refund if unavailable"}
+                {allowSubstitute ? t("replaceWith") : t("refundIf")}
               </label>
             </div>
             <Switch
@@ -50,7 +53,7 @@ export function SubstitutionPreferenceList({ items, value, onChange }: Substitut
               onCheckedChange={(checked) =>
                 onChange(item.product.id, checked ? "substitute" : "refund")
               }
-              aria-label={`Allow a substitution for ${item.product.name} if it's out of stock`}
+              aria-label={t("subAria", { name: item.product.name })}
             />
           </li>
         );

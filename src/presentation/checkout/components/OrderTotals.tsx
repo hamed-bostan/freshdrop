@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+
 interface OrderTotalsProps {
   subtotal: number;
   shipping: number;
@@ -12,10 +14,11 @@ const money = (amount: number) => `$ ${amount.toFixed(2)}`;
  * then the emphasized total payment.
  */
 export function OrderTotals({ subtotal, shipping, discount, total }: OrderTotalsProps) {
+  const t = useTranslations("checkout");
   const rows = [
-    { label: "Subtotal", value: money(subtotal) },
-    { label: "Delivery Fee", value: money(shipping) },
-    { label: "Discount", value: money(discount) },
+    { label: t("subtotal"), value: money(subtotal) },
+    { label: t("deliveryFee"), value: money(shipping) },
+    { label: t("discount"), value: money(discount) },
   ];
 
   return (
@@ -33,7 +36,7 @@ export function OrderTotals({ subtotal, shipping, discount, total }: OrderTotals
       </dl>
 
       <div className="flex items-center justify-between gap-4">
-        <span className="text-body-b7 text-foreground">Total Payment</span>
+        <span className="text-body-b7 text-foreground">{t("totalPayment")}</span>
         <span className="text-body-b6 text-foreground">{money(total)}</span>
       </div>
     </div>

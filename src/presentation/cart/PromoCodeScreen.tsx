@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Plus, Ticket } from "lucide-react";
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
+import { useRouter } from "@/src/i18n/navigation";
 import { Button, Icon, Input } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { PromoCodeOption } from "./components/PromoCodeOption";
@@ -15,6 +16,7 @@ interface PromoCodeScreenProps {
 }
 
 export default function PromoCodeScreen({ promos, appliedCode }: PromoCodeScreenProps) {
+  const t = useTranslations("checkout");
   const router = useRouter();
   const [code, setCode] = React.useState("");
 
@@ -27,7 +29,7 @@ export default function PromoCodeScreen({ promos, appliedCode }: PromoCodeScreen
 
   return (
     <div className="flex min-h-dvh flex-col gap-6 px-6 pb-6">
-      <PageHeader title="Checkout" />
+      <PageHeader title={t("title")} />
 
       <form
         className="flex items-center gap-3"
@@ -39,12 +41,12 @@ export default function PromoCodeScreen({ promos, appliedCode }: PromoCodeScreen
         <Input
           value={code}
           onChange={(event) => setCode(event.target.value)}
-          placeholder="Enter Promo Code"
-          aria-label="Promo code"
+          placeholder={t("enterPromo")}
+          aria-label={t("promoAria")}
           leftElement={<Icon icon={Ticket} size="md" />}
           size="lg"
         />
-        <Button type="submit" iconOnly variant="outline" size="lg" aria-label="Apply promo code">
+        <Button type="submit" iconOnly variant="outline" size="lg" aria-label={t("applyPromoAria")}>
           <Icon icon={Plus} />
         </Button>
       </form>
