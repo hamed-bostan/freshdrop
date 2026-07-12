@@ -50,7 +50,7 @@ export function MainNav () {
   return (
     <nav
       aria-label={t("ariaLabel")}
-      className="max-w-md mx-auto fixed bottom-0 left-0 right-0 z-50 min-h-20 grid grid-cols-4 border-t border-border bg-background overflow-hidden"
+      className="max-w-md mx-auto fixed bottom-0 inset-x-0 z-50 min-h-20 grid grid-cols-4 border-t border-border bg-background overflow-hidden"
     >
       {NAV_ITEMS.map(({ href, labelKey, icon }) => {
         const label = t(labelKey);
@@ -76,7 +76,7 @@ export function MainNav () {
               {showCount && (
                 <span
                   aria-hidden
-                  className="absolute -right-2.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-label-l3 font-semibold text-primary-foreground"
+                  className="absolute -end-2.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-label-l3 font-semibold text-primary-foreground"
                 >
                   {cartCount > 99 ? "99+" : cartCount}
                 </span>

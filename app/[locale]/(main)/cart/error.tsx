@@ -16,7 +16,7 @@ export default function CartError({ reset }: { error: Error; reset: () => void }
         We couldn&apos;t load your cart. Please try again.
       </p>
       <Button variant="outline" size="sm" className="mt-4" onClick={reset}>
-        <Icon icon={RotateCcw} size="sm" className="mr-1.5" />
+        <Icon icon={RotateCcw} size="sm" className="me-1.5" />
         Try again
       </Button>
     </div>

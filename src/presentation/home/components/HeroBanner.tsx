@@ -9,7 +9,7 @@ export async function HeroBanner() {
 
   return (
     <div className="relative overflow-hidden rounded-card-xl min-h-40 bg-linear-to-t from-primary/50 to-primary">
-      <div className="absolute top-7 left-8 z-20">
+      <div className="absolute top-7 start-8 z-20">
         {/* rich text so each locale controls its own line break */}
         <h4 className="mb-2 text-heading-h4 text-accent">{t.rich("heroTitle", { br: () => <br /> })}</h4>
         <Button variant="ghost" size="sm" className="gap-2 text-accent">
@@ -20,10 +20,10 @@ export async function HeroBanner() {
 
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-14 top-1/2 size-48 -translate-y-1/2 rounded-full bg-muted-strong"
+        className="pointer-events-none absolute -end-14 top-1/2 size-48 -translate-y-1/2 rounded-full bg-muted-strong"
       />
 
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-4 end-4 z-10">
         <Image src={heroBanner} alt={t("heroImageAlt")} className="object-cover" priority />
       </div>
     </div>

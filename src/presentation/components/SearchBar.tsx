@@ -104,7 +104,7 @@ export function SearchBar({
           leftElement={<Icon icon={Search} size="md" />}
         />
         {value === "" && (
-          <span className="pointer-events-none absolute left-10 top-1/2 -translate-y-1/2 text-body-b2 text-input-placeholder">
+          <span className="pointer-events-none absolute start-10 top-1/2 -translate-y-1/2 text-body-b2 text-input-placeholder">
             {resolvedPlaceholder}
           </span>
         )}

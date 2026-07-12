@@ -22,7 +22,7 @@ export function SearchSuggestions({ results, onSelect }: SearchSuggestionsProps)
           <button
             type="button"
             onClick={() => onSelect(product)}
-            className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-muted-strong focus-visible:bg-muted-strong focus-visible:outline-none"
+            className="flex w-full items-center gap-3 px-4 py-2.5 text-start transition-colors hover:bg-muted-strong focus-visible:bg-muted-strong focus-visible:outline-none"
           >
             <Image
               src={product.imageUrl}

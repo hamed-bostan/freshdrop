@@ -17,7 +17,7 @@ export default function SearchError({ reset }: { error: Error; reset: () => void
       <p className="text-body-b4 text-foreground">{t("errorTitle")}</p>
       <p className="text-body-b6 text-muted-foreground">{t("errorBody")}</p>
       <Button variant="outline" size="sm" className="mt-4" onClick={reset}>
-        <Icon icon={RotateCcw} size="sm" className="mr-1.5" />
+        <Icon icon={RotateCcw} size="sm" className="me-1.5" />
         {t("tryAgain")}
       </Button>
     </div>
