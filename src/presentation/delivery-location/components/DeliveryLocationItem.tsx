@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Pencil } from "lucide-react";
+import { Link } from "@/src/i18n/navigation";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
@@ -17,6 +18,8 @@ interface DeliveryLocationItemProps {
 }
 
 export function DeliveryLocationItem({ location, selected, onSelect, editHref }: DeliveryLocationItemProps) {
+  const t = useTranslations("addresses");
+
   return (
     <div
       className={cn(
@@ -28,7 +31,7 @@ export function DeliveryLocationItem({ location, selected, onSelect, editHref }:
         <DeliveryLocationSummary location={location} />
       </button>
 
-      <Button asChild variant="ghost" iconOnly aria-label={`Edit ${location.label} address`}>
+      <Button asChild variant="ghost" iconOnly aria-label={t("editAria", { label: location.label })}>
         <Link href={editHref}>
           <Icon icon={Pencil} size="sm" />
         </Link>

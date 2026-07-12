@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronDown, Search } from "lucide-react";
 import { Button, Icon, Input } from "@/src/presentation/design-system";
 
@@ -12,13 +13,16 @@ interface LocationSearchBarProps {
 }
 
 export function LocationSearchBar({ query, region, onQueryChange, onBack }: LocationSearchBarProps) {
+  const t = useTranslations("addresses");
+  const tCommon = useTranslations("common");
+
   return (
     <div className="flex items-center gap-2">
       <Button
         type="button"
         variant="ghost"
         iconOnly
-        aria-label="Go back"
+        aria-label={tCommon("goBack")}
         onClick={onBack}
         className="shrink-0 rounded-full bg-background shadow-sm"
       >
@@ -29,8 +33,8 @@ export function LocationSearchBar({ query, region, onQueryChange, onBack }: Loca
         size="lg"
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
-        placeholder="street ..."
-        aria-label="Search for a place"
+        placeholder={t("searchPlaceholder")}
+        aria-label={t("searchAria")}
         autoComplete="off"
         leftElement={<Icon icon={Search} size="sm" />}
         rightElement={

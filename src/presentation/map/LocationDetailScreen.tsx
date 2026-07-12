@@ -2,12 +2,13 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button, Input, TextField, Textarea } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import type { GeoPoint } from "@/src/domain/entities/Place";
 import type { DeliveryLocation, DeliveryLocationKind } from "@/src/domain/entities/DeliveryLocation";
 import { deliveryLocationsApi } from "@/src/presentation/delivery-location/delivery-location-api";
+import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { AddressLabelChips } from "./components";
 import { useReverseGeocodedPlace } from "./hooks/use-reverse-geocode";
@@ -67,6 +68,7 @@ export default function LocationDetailScreen({
   initialAddress,
   initialCity,
 }: LocationDetailScreenProps) {
+  const t = useTranslations("addresses");
   const router = useRouter();
 
   const isEditing = location !== undefined;
@@ -115,7 +117,7 @@ export default function LocationDetailScreen({
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!address.trim()) {
-      setError("Enter an address.");
+      setError(t("errEnterAddress"));
       return;
     }
 
@@ -162,10 +164,10 @@ export default function LocationDetailScreen({
       } catch (err) {
         setError(
           err instanceof ApiError && err.status === 401
-            ? "Please sign in to save an address."
+            ? t("errSignIn")
             : err instanceof ApiError
               ? err.message
-              : "Couldn't save your address. Please try again.",
+              : t("errSave"),
         );
       }
     });
@@ -181,7 +183,7 @@ export default function LocationDetailScreen({
           Profile) as a clean hierarchy. Adding sits at the end of the picker → details
           flow, where a one-step history pop back to the picker is the natural "back". */}
       <PageHeader
-        title={isEditing ? "Edit Address" : "Location Detail"}
+        title={isEditing ? t("editTitle") : t("detailTitle")}
         backHref={isEditing ? ADDRESSES_ROUTE : undefined}
       />
 
@@ -197,11 +199,11 @@ export default function LocationDetailScreen({
 
       <div className="flex flex-col gap-5">
 
-        <TextField label="City">
+        <TextField label={t("cityLabel")}>
           {(control) => (
               <Input
                   {...control}
-                  placeholder="City"
+                  placeholder={t("cityPlaceholder")}
                   value={city}
                   onChange={(event) => {
                     cityEditedRef.current = true;
@@ -211,12 +213,12 @@ export default function LocationDetailScreen({
           )}
         </TextField>
 
-        <TextField label="Address">
+        <TextField label={t("addressLabel")}>
           {(control) => (
             <Textarea
               {...control}
               rows={5}
-              placeholder="Street, area, city…"
+              placeholder={t("addressPlaceholder")}
               value={address}
               onChange={(event) => {
                 addressEditedRef.current = true;
@@ -227,7 +229,7 @@ export default function LocationDetailScreen({
         </TextField>
 
         <div className="flex flex-col gap-2">
-          <span className="text-body-b2 text-muted-foreground">Save address as :</span>
+          <span className="text-body-b2 text-muted-foreground">{t("saveAs")}</span>
           <AddressLabelChips value={label} onChange={setLabel} onAddCustom={handleAddCustomLabel} />
         </div>
       </div>
@@ -239,7 +241,7 @@ export default function LocationDetailScreen({
       )}
 
       <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full">
-        {pending ? "Saving…" : isEditing ? "Save changes" : "Add new location"}
+        {pending ? t("saving") : isEditing ? t("saveChanges") : t("addNewLocationBtn")}
       </Button>
     </form>
   );

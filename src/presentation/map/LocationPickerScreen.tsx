@@ -2,9 +2,10 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/src/presentation/design-system";
 import type { GeoPoint, Place } from "@/src/domain/entities/Place";
+import { useRouter } from "@/src/i18n/navigation";
 import { DEFAULT_ZOOM, FOCUS_ZOOM, type MapViewCommand } from "./constants";
 import { LocationSearchBar, PlaceSearchResults, CenterPin, LocateButton } from "./components";
 import { usePlaceSearch } from "./hooks/use-place-search";
@@ -25,6 +26,7 @@ interface LocationPickerScreenProps {
 }
 
 export default function LocationPickerScreen({ initialCenter, initialPlace }: LocationPickerScreenProps) {
+  const t = useTranslations("addresses");
   const router = useRouter();
 
   const [query, setQuery] = React.useState("");
@@ -102,7 +104,7 @@ export default function LocationPickerScreen({ initialCenter, initialPlace }: Lo
         <header className="absolute inset-x-0 top-0 z-[1100] px-4 pt-3">
           <LocationSearchBar
             query={query}
-            region={place?.city ?? "Set region"}
+            region={place?.city ?? t("setRegion")}
             onQueryChange={setQuery}
             onBack={() => router.back()}
           />
@@ -120,7 +122,7 @@ export default function LocationPickerScreen({ initialCenter, initialPlace }: Lo
           onClick={handleConfirm}
           disabled={confirming}
         >
-          {confirming ? "Loading…" : "Add location"}
+          {confirming ? t("confirmLoading") : t("addLocation")}
         </Button>
       </footer>
     </div>

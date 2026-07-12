@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import { Button, ConfirmSheet, Icon } from "@/src/presentation/design-system";
+import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { deliveryLocationsApi } from "../delivery-location-api";
 
@@ -14,6 +15,7 @@ type RemoveAddressButtonProps = {
 
 /** Trash action that confirms via the DS ConfirmSheet, then removes the address over the API. */
 export function RemoveAddressButton({ id, label }: RemoveAddressButtonProps) {
+  const t = useTranslations("addresses");
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -31,8 +33,7 @@ export function RemoveAddressButton({ id, label }: RemoveAddressButtonProps) {
       } catch (err) {
         // Re-open the sheet in a failure state so the error reads in context and
         // the user can retry — instead of a disruptive window.alert.
-        const message =
-          err instanceof ApiError ? err.message : "Couldn't remove the address. Please try again.";
+        const message = err instanceof ApiError ? err.message : t("removeError");
         setError(message);
         setOpen(true);
       }
@@ -51,7 +52,7 @@ export function RemoveAddressButton({ id, label }: RemoveAddressButtonProps) {
         variant="ghost"
         size="sm"
         iconOnly
-        aria-label={`Remove ${label} address`}
+        aria-label={t("removeAria", { label })}
         onClick={() => setOpen(true)}
         disabled={pending}
         className="text-destructive"
@@ -62,9 +63,9 @@ export function RemoveAddressButton({ id, label }: RemoveAddressButtonProps) {
       <ConfirmSheet
         open={open}
         onOpenChange={handleOpenChange}
-        title={error ? "Couldn't remove address" : "Remove address?"}
-        message={error ?? `"${label}" will be permanently removed. This can't be undone.`}
-        confirmLabel={error ? "Try again" : "Remove"}
+        title={error ? t("removeErrorTitle") : t("removeTitle")}
+        message={error ?? t("removeMessage", { label })}
+        confirmLabel={error ? t("removeTryAgain") : t("removeConfirm")}
         onConfirm={handleConfirm}
       />
     </>

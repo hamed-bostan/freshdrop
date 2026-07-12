@@ -1,10 +1,10 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Sheet, SheetTrigger, SheetContent, Button } from "@/src/presentation/design-system";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
+import { Link, useRouter } from "@/src/i18n/navigation";
 import { deliveryLocationsApi } from "./delivery-location-api";
 import { DeliveryLocationItem } from "./components/DeliveryLocationItem";
 
@@ -35,6 +35,7 @@ interface DeliveryLocationPickerSheetProps {
  * context (no navigation), so a caller like checkout keeps its in-progress state.
  */
 export function DeliveryLocationPickerSheet({ locations, trigger }: DeliveryLocationPickerSheetProps) {
+  const t = useTranslations("addresses");
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   // Optimistic highlight: track the picked id locally for instant feedback, but keep
@@ -69,8 +70,8 @@ export function DeliveryLocationPickerSheet({ locations, trigger }: DeliveryLoca
       <SheetTrigger asChild>{trigger}</SheetTrigger>
 
       <SheetContent
-        title="Select Your Delivery Location"
-        description="Choose which saved address your order should be delivered to."
+        title={t("pickerTitle")}
+        description={t("pickerDescription")}
       >
         <ul className="flex flex-col gap-2">
           {locations.map((location) => (
@@ -86,7 +87,7 @@ export function DeliveryLocationPickerSheet({ locations, trigger }: DeliveryLoca
         </ul>
 
         <Button asChild variant="link" className="mt-8 text-button-btn4 mx-auto">
-          <Link href={ADD_LOCATION_ROUTE}>add new location</Link>
+          <Link href={ADD_LOCATION_ROUTE}>{t("addNewLocation")}</Link>
         </Button>
       </SheetContent>
     </Sheet>

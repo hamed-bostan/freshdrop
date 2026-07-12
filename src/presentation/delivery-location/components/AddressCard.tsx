@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Pencil } from "lucide-react";
+import { Link } from "@/src/i18n/navigation";
 import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
@@ -16,6 +17,8 @@ interface AddressCardProps {
  * controls edit and remove it.
  */
 export function AddressCard({ location }: AddressCardProps) {
+  const t = useTranslations("addresses");
+
   return (
     <div
       className={cn(
@@ -28,7 +31,7 @@ export function AddressCard({ location }: AddressCardProps) {
       <div className="flex shrink-0 items-center gap-1">
         <Link
           href={`/profile/addresses/${location.id}/edit`}
-          aria-label={`Edit ${location.label} address`}
+          aria-label={t("editAria", { label: location.label })}
           className="flex size-6 items-center justify-center text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Icon icon={Pencil} size="sm" />

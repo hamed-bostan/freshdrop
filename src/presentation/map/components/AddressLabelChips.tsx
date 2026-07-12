@@ -1,14 +1,15 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
 import { Chip, ChipGroup, Icon } from "@/src/presentation/design-system";
 import type { DeliveryLocationKind } from "@/src/domain/entities/DeliveryLocation";
 
 /** The presets shown as chips; "other" is reached via the add button. */
-const PRESETS: { kind: DeliveryLocationKind; label: string }[] = [
-  { kind: "home", label: "Home" },
-  { kind: "office", label: "Office" },
-  { kind: "gym", label: "Gym" },
+const PRESETS: { kind: DeliveryLocationKind; labelKey: "presetHome" | "presetOffice" | "presetGym" }[] = [
+  { kind: "home", labelKey: "presetHome" },
+  { kind: "office", labelKey: "presetOffice" },
+  { kind: "gym", labelKey: "presetGym" },
 ];
 
 interface AddressLabelChipsProps {
@@ -23,16 +24,18 @@ interface AddressLabelChipsProps {
  * "+" is an action (add a custom label), not a selectable chip.
  */
 export function AddressLabelChips({ value, onChange, onAddCustom }: AddressLabelChipsProps) {
+  const t = useTranslations("addresses");
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <ChipGroup
         value={value}
         onValueChange={(next) => onChange(next as DeliveryLocationKind)}
-        aria-label="Save address as"
+        aria-label={t("saveAsAria")}
       >
-        {PRESETS.map(({ kind, label }) => (
+        {PRESETS.map(({ kind, labelKey }) => (
           <Chip key={kind} value={kind}>
-            {label}
+            {t(labelKey)}
           </Chip>
         ))}
       </ChipGroup>
@@ -40,7 +43,7 @@ export function AddressLabelChips({ value, onChange, onAddCustom }: AddressLabel
       <button
         type="button"
         onClick={onAddCustom}
-        aria-label="Add a custom label"
+        aria-label={t("addCustomAria")}
         className="flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Icon icon={Plus} size="sm" />
