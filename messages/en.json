@@ -212,5 +212,62 @@
     "errorTitle": "Something went wrong",
     "errorBody": "We couldn't load your orders. Please try again.",
     "tryAgain": "Try again"
+  },
+  "profile": {
+    "title": "Profile",
+    "menuAria": "Profile menu",
+    "photoAlt": "{name}'s profile photo",
+    "menuYourProfile": "Your Profile",
+    "menuManageAddress": "Manage Address",
+    "menuPaymentMethods": "Payment Methods",
+    "menuMyOrders": "My Orders",
+    "menuFavorites": "Favorites",
+    "menuMyWallet": "My Wallet",
+    "menuSupport": "Support",
+    "menuSettings": "Settings",
+    "completeTitle": "Complete Profile",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "phone": "Phone",
+    "email": "Email",
+    "saveError": "Couldn't save your profile. Please try again.",
+    "saving": "Saving…",
+    "saveContinue": "Save & Continue",
+    "avatarAlt": "Profile photo",
+    "changePhoto": "Change photo",
+    "changePhotoTitle": "Change profile photo",
+    "photoNotice": "Your profile picture will be visible to everyone.<br></br>You can change it now.",
+    "chooseFromLibrary": "Choose From Library",
+    "takePhoto": "Take Photo",
+    "removePicture": "Remove Current Picture",
+    "uploadFailed": "Upload failed."
+  },
+  "settings": {
+    "title": "Setting",
+    "notifications": "Notifications",
+    "darkMode": "Dark mood",
+    "aboutApp": "About application",
+    "support": "Support",
+    "logout": "Logout",
+    "logoutTitle": "Are you sure you want to Log out?",
+    "logoutMessage": "Thank You And See You Again!",
+    "logoutConfirm": "Yes",
+    "logoutCancel": "Cancel"
+  },
+  "about": {
+    "title": "About Freshdrop",
+    "p1": "This application is an online grocery marketplace with fast home delivery.",
+    "p2": "Users can browse products through categories, add their desired items to the cart, and place orders easily.",
+    "p3": "All orders are prepared from the nearest store and delivered right to the customer's doorstep.",
+    "p4": "We make grocery shopping simple, fast, and convenient"
+  },
+  "support": {
+    "title": "Support",
+    "intro": "We're here to help you with any questions, issues, or feedback you may have.",
+    "followUs": "Follow Us",
+    "contactUs": "Contact us",
+    "hotlineLabel": "Hotline:",
+    "emailLabel": "Email:",
+    "liveChat": "Live Chat"
   }
 }

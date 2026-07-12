@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { UserPen, Phone, MessageSquareText, type LucideIcon } from "lucide-react";
 import type { User } from "@/src/domain/entities/User";
 import { Button, Icon, TextField } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { ProfileAvatarUploader } from "./components/ProfileAvatarUploader";
 import { profilesApi } from "./profile-api";
@@ -21,17 +22,17 @@ type ProfileForm = { firstName: string; lastName: string; phone: string; email: 
  */
 const FIELDS: ReadonlyArray<{
   name: keyof ProfileForm;
-  label: string;
+  labelKey: "firstName" | "lastName" | "phone" | "email";
   icon: LucideIcon;
   autoComplete: string;
   type?: React.HTMLInputTypeAttribute;
   inputMode?: React.InputHTMLAttributes<HTMLInputElement>["inputMode"];
   readOnly?: boolean;
 }> = [
-  { name: "firstName", label: "First name", autoComplete: "given-name", icon: UserPen },
-  { name: "lastName", label: "Last name", autoComplete: "family-name", icon: UserPen },
-  { name: "phone", label: "Phone", type: "tel", inputMode: "tel", autoComplete: "tel", icon: Phone, readOnly: true },
-  { name: "email", label: "Email", type: "email", autoComplete: "email", icon: MessageSquareText },
+  { name: "firstName", labelKey: "firstName", autoComplete: "given-name", icon: UserPen },
+  { name: "lastName", labelKey: "lastName", autoComplete: "family-name", icon: UserPen },
+  { name: "phone", labelKey: "phone", type: "tel", inputMode: "tel", autoComplete: "tel", icon: Phone, readOnly: true },
+  { name: "email", labelKey: "email", type: "email", autoComplete: "email", icon: MessageSquareText },
 ];
 
 /** Split a stored full name into first/last for the two-field form (rejoined on save). */
@@ -47,6 +48,7 @@ interface CompleteProfileScreenProps {
 }
 
 export default function CompleteProfileScreen({ user }: CompleteProfileScreenProps) {
+  const t = useTranslations("profile");
   const router = useRouter();
   const { firstName, lastName } = splitName(user.name);
   const [form, setForm] = React.useState<ProfileForm>({
@@ -76,44 +78,45 @@ export default function CompleteProfileScreen({ user }: CompleteProfileScreenPro
       router.push("/profile");
       router.refresh();
     } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Couldn't save your profile. Please try again.",
-      );
+      setError(err instanceof ApiError ? err.message : t("saveError"));
       setSaving(false);
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex min-h-dvh flex-col gap-6 px-6 pb-10">
-      <PageHeader title="Complete Profile" />
+      <PageHeader title={t("completeTitle")} />
 
       <div className="flex justify-center">
         <ProfileAvatarUploader value={avatarUrl} onChange={setAvatarUrl} />
       </div>
 
       <div className="flex flex-col gap-4">
-        {FIELDS.map(({ name, label, icon, type, inputMode, autoComplete, readOnly }) => (
-          <TextField
-            key={name}
-            size="lg"
-            label={label}
-            placeholder={label}
-            type={type}
-            inputMode={inputMode}
-            autoComplete={autoComplete}
-            readOnly={readOnly}
-            disabled={readOnly}
-            value={form[name]}
-            onChange={update(name)}
-            leftElement={<Icon icon={icon} size="sm" className={ICON} />}
-          />
-        ))}
+        {FIELDS.map(({ name, labelKey, icon, type, inputMode, autoComplete, readOnly }) => {
+          const label = t(labelKey);
+          return (
+            <TextField
+              key={name}
+              size="lg"
+              label={label}
+              placeholder={label}
+              type={type}
+              inputMode={inputMode}
+              autoComplete={autoComplete}
+              readOnly={readOnly}
+              disabled={readOnly}
+              value={form[name]}
+              onChange={update(name)}
+              leftElement={<Icon icon={icon} size="sm" className={ICON} />}
+            />
+          );
+        })}
       </div>
 
       {error ? <p className="text-body-b8 text-destructive">{error}</p> : null}
 
       <Button type="submit" size="lg" disabled={saving} className="mt-auto w-full rounded-button-lg">
-        {saving ? "Saving…" : "Save & Continue"}
+        {saving ? t("saving") : t("saveContinue")}
       </Button>
     </form>
   );

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { User, ImagePlus, Images, Camera, Trash2, Loader2, type LucideIcon } from "lucide-react";
 import { Icon, Sheet, SheetTrigger, SheetContent, SheetClose } from "@/src/presentation/design-system";
 import { ApiError } from "@/src/lib/api/ApiError";
@@ -53,6 +54,7 @@ interface ProfileAvatarUploaderProps {
  * camera on devices that support capture, falling back to the file picker.
  */
 export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploaderProps) {
+  const t = useTranslations("profile");
   const libraryInputRef = React.useRef<HTMLInputElement>(null);
   const cameraInputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = React.useState(false);
@@ -69,7 +71,7 @@ export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploader
       const url = await profilesApi.uploadAvatar(file);
       onChange(url);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Upload failed.");
+      setError(err instanceof ApiError ? err.message : t("uploadFailed"));
     } finally {
       setUploading(false);
     }
@@ -93,7 +95,7 @@ export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploader
             {uploading ? (
               <Icon icon={Loader2} className="size-8 animate-spin text-icon-muted" />
             ) : value ? (
-              <Image src={value} alt="Profile photo" width={96} height={96} className="size-full object-cover" />
+              <Image src={value} alt={t("avatarAlt")} width={96} height={96} className="size-full object-cover" />
             ) : (
               <Icon icon={User} className="size-12 text-icon-muted" />
             )}
@@ -102,7 +104,7 @@ export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploader
           <SheetTrigger asChild>
             <button
               type="button"
-              aria-label="Change photo"
+              aria-label={t("changePhoto")}
               disabled={uploading}
               className="absolute bottom-0 right-0 flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors active:bg-primary-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
             >
@@ -111,19 +113,17 @@ export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploader
           </SheetTrigger>
         </div>
 
-        <SheetContent title="Change profile photo" hideTitle>
+        <SheetContent title={t("changePhotoTitle")} hideTitle>
           <div className="flex flex-col items-center gap-3">
             <div className="flex size-20 items-center justify-center overflow-hidden rounded-full bg-surface">
               {value ? (
-                <Image src={value} alt="Profile photo" width={80} height={80} className="size-full object-cover" />
+                <Image src={value} alt={t("avatarAlt")} width={80} height={80} className="size-full object-cover" />
               ) : (
                 <Icon icon={User} className="size-10 text-icon-muted" />
               )}
             </div>
             <p className="text-center text-body-b6 text-foreground">
-              Your profile picture will be visible to everyone.
-              <br />
-              You can change it now.
+              {t.rich("photoNotice", { br: () => <br /> })}
             </p>
           </div>
 
@@ -132,13 +132,13 @@ export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploader
           <div className="flex flex-col">
             <PhotoAction
               icon={Images}
-              label="Choose From Library"
+              label={t("chooseFromLibrary")}
               onClick={() => libraryInputRef.current?.click()}
             />
-            <PhotoAction icon={Camera} label="Take Photo" onClick={() => cameraInputRef.current?.click()} />
+            <PhotoAction icon={Camera} label={t("takePhoto")} onClick={() => cameraInputRef.current?.click()} />
             <PhotoAction
               icon={Trash2}
-              label="Remove Current Picture"
+              label={t("removePicture")}
               destructive
               disabled={!value}
               onClick={() => onChange(null)}

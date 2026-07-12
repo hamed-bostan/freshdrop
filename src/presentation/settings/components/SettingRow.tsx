@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { Link } from "@/src/i18n/navigation";
 import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
 import { settingCardClass, settingInteractiveClass } from "./settingRowStyles";
