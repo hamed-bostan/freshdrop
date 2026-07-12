@@ -1,23 +1,57 @@
-// Fixed UTC formatters → deterministic output (identical on server and client,
-// so server-rendered order dates don't trigger a hydration mismatch).
-const weekdayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "long", timeZone: "UTC" });
-const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "long", timeZone: "UTC" });
-const dayFormatter = new Intl.DateTimeFormat("en-US", { day: "numeric", timeZone: "UTC" });
-const yearFormatter = new Intl.DateTimeFormat("en-US", { year: "numeric", timeZone: "UTC" });
-const timeFormatter = new Intl.DateTimeFormat("en-US", {
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: true,
-  timeZone: "UTC",
-});
+import type { Locale } from "@/src/i18n/routing";
 
-/** "03:22 PM" */
-export function formatOrderTime(iso: string): string {
-  return timeFormatter.format(new Date(iso));
+// Deterministic, locale-aware order date/time formatting. A fixed UTC time zone
+// keeps output identical on the server and its client hydration (no mismatch).
+// Under `fa` the Persian (Jalali) calendar and Persian numerals come from the
+// `fa-IR-u-ca-persian` BCP-47 tag — `Intl` does the Gregorian→Jalali conversion
+// natively, so no extra date library is needed. `en` stays Gregorian/Latin.
+
+// App locale → BCP-47 tag selecting its calendar + numbering system.
+const INTL_LOCALE: Record<Locale, string> = {
+  en: "en-US",
+  fa: "fa-IR-u-ca-persian",
+};
+
+type OrderFormatters = {
+  weekday: Intl.DateTimeFormat;
+  month: Intl.DateTimeFormat;
+  day: Intl.DateTimeFormat;
+  year: Intl.DateTimeFormat;
+  time: Intl.DateTimeFormat;
+};
+
+// Formatters are relatively costly to build, so cache one set per locale.
+const cache = new Map<Locale, OrderFormatters>();
+
+function getFormatters(locale: Locale): OrderFormatters {
+  const cached = cache.get(locale);
+  if (cached) return cached;
+
+  const tag = INTL_LOCALE[locale];
+  const formatters: OrderFormatters = {
+    weekday: new Intl.DateTimeFormat(tag, { weekday: "long", timeZone: "UTC" }),
+    month: new Intl.DateTimeFormat(tag, { month: "long", timeZone: "UTC" }),
+    day: new Intl.DateTimeFormat(tag, { day: "numeric", timeZone: "UTC" }),
+    year: new Intl.DateTimeFormat(tag, { year: "numeric", timeZone: "UTC" }),
+    time: new Intl.DateTimeFormat(tag, {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: "UTC",
+    }),
+  };
+  cache.set(locale, formatters);
+  return formatters;
 }
 
-/** "Monday - October 9,2023" */
-export function formatOrderDate(iso: string): string {
+/** "03:22 PM" (en) — Persian numerals + Jalali day period under `fa`. */
+export function formatOrderTime(iso: string, locale: Locale): string {
+  return getFormatters(locale).time.format(new Date(iso));
+}
+
+/** "Monday - October 9,2023" (en) — Jalali calendar + Persian numerals under `fa`. */
+export function formatOrderDate(iso: string, locale: Locale): string {
   const date = new Date(iso);
-  return `${weekdayFormatter.format(date)} - ${monthFormatter.format(date)} ${dayFormatter.format(date)},${yearFormatter.format(date)}`;
+  const f = getFormatters(locale);
+  return `${f.weekday.format(date)} - ${f.month.format(date)} ${f.day.format(date)},${f.year.format(date)}`;
 }

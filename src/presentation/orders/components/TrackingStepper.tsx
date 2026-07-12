@@ -1,3 +1,4 @@
+import { useLocale } from "next-intl";
 import { Check, Truck, PackageCheck, type LucideIcon } from "lucide-react";
 import type { TrackingMilestone, TrackingStep, TrackingStepStatus } from "@/src/domain/entities/OrderTracking";
 import { Icon } from "@/src/presentation/design-system";
@@ -57,6 +58,7 @@ interface TrackingStepperProps {
  * line, mirroring how far the order has progressed.
  */
 export function TrackingStepper({ steps }: TrackingStepperProps) {
+  const locale = useLocale();
   return (
     <ol className="flex flex-col">
       {steps.map((step, index) => {
@@ -79,7 +81,7 @@ export function TrackingStepper({ steps }: TrackingStepperProps) {
             <div className={cn("flex flex-col gap-1", !isLast && "pb-6")}>
               <p className="text-body-b8 text-foreground">{step.label}</p>
               {step.occurredAt && (
-                <p className="text-body-b10 text-icon-muted">{formatOrderTime(step.occurredAt)}</p>
+                <p className="text-body-b10 text-icon-muted">{formatOrderTime(step.occurredAt, locale)}</p>
               )}
             </div>
           </li>

@@ -1,6 +1,7 @@
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Star } from "lucide-react";
+import type { Locale } from "@/src/i18n/routing";
 import type { Review, ReviewStatus } from "@/src/domain/entities/Review";
 import type { Product } from "@/src/domain/entities/Product";
 import { Badge, Icon } from "@/src/presentation/design-system";
@@ -16,24 +17,41 @@ type ReviewsTableProps = {
 // Fixed UTC formatters → deterministic output (identical on server and client), so
 // the server-rendered submission date doesn't trigger a hydration mismatch — unlike
 // relative time ("5 seconds ago"), which is computed against a moving "now". A
-// moderation queue also reads better with the exact date than a relative one.
-const dateFormatter = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  timeZone: "UTC",
-});
-const timeFormatter = new Intl.DateTimeFormat("en-US", {
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: true,
-  timeZone: "UTC",
-});
+// moderation queue also reads better with the exact date than a relative one. Under
+// `fa` the date is Jalali with Persian numerals (`fa-IR-u-ca-persian`). Built once
+// per locale, then reused.
+const DATE_TAG: Record<Locale, string> = { en: "en-GB", fa: "fa-IR-u-ca-persian" };
+const TIME_TAG: Record<Locale, string> = { en: "en-US", fa: "fa-IR-u-ca-persian" };
 
-/** "1 Jul 2026, 3:22 PM" (UTC) */
-function formatReviewDate(iso: string): string {
+const cache = new Map<Locale, { date: Intl.DateTimeFormat; time: Intl.DateTimeFormat }>();
+
+function getFormatters(locale: Locale): { date: Intl.DateTimeFormat; time: Intl.DateTimeFormat } {
+  const cached = cache.get(locale);
+  if (cached) return cached;
+
+  const formatters = {
+    date: new Intl.DateTimeFormat(DATE_TAG[locale], {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    }),
+    time: new Intl.DateTimeFormat(TIME_TAG[locale], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: "UTC",
+    }),
+  };
+  cache.set(locale, formatters);
+  return formatters;
+}
+
+/** "1 Jul 2026, 3:22 PM" (en, UTC) — Jalali + Persian numerals under `fa`. */
+function formatReviewDate(iso: string, locale: Locale): string {
   const date = new Date(iso);
-  return `${dateFormatter.format(date)}, ${timeFormatter.format(date)}`;
+  const f = getFormatters(locale);
+  return `${f.date.format(date)}, ${f.time.format(date)}`;
 }
 
 /** Two leading initials, e.g. "Leonardo DiCaprio" → "LD". */
@@ -56,6 +74,7 @@ const STATUS_BADGE: Record<ReviewStatus, { variant: "success" | "warning" | "des
 /** Admin moderation table: one row per review with its status and a moderation control. */
 export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
   const t = useTranslations("dashReviews");
+  const locale = useLocale();
 
   return (
     <div className="overflow-x-auto rounded-card-lg border border-border">
@@ -100,7 +119,7 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
                         dateTime={review.createdAt}
                         className="text-body-b10 text-muted-foreground"
                       >
-                        {formatReviewDate(review.createdAt)}
+                        {formatReviewDate(review.createdAt, locale)}
                       </time>
                     </div>
                   </div>

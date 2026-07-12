@@ -71,8 +71,8 @@ export function OrderCard({ order }: OrderCardProps) {
       </div>
 
       <dl className="flex flex-col gap-2">
-        <OrderInfoRow label={t("timeLabel")} value={formatOrderTime(order.placedAt)} />
-        <OrderInfoRow label={t("dateLabel")} value={formatOrderDate(order.placedAt)} />
+        <OrderInfoRow label={t("timeLabel")} value={formatOrderTime(order.placedAt, locale)} />
+        <OrderInfoRow label={t("dateLabel")} value={formatOrderDate(order.placedAt, locale)} />
         {order.deliveryWindow && <OrderInfoRow label={t("deliveryLabel")} value={order.deliveryWindow} />}
         <OrderLocationRow location={order.location} label={order.locationLabel} />
       </dl>

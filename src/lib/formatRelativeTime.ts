@@ -1,3 +1,5 @@
+import type { Locale } from "@/src/i18n/routing";
+
 /** Largest-fitting unit boundaries, smallest → largest. */
 const DIVISIONS: { amount: number; unit: Intl.RelativeTimeFormatUnit }[] = [
   { amount: 60, unit: "seconds" },
@@ -9,13 +11,25 @@ const DIVISIONS: { amount: number; unit: Intl.RelativeTimeFormatUnit }[] = [
   { amount: Number.POSITIVE_INFINITY, unit: "years" },
 ];
 
-const rtf = new Intl.RelativeTimeFormat("en", { numeric: "always" });
+// One formatter per locale — under `fa` this yields Persian phrasing and numerals
+// ("۲ هفته پیش"); `en` gives "2 weeks ago".
+const cache = new Map<Locale, Intl.RelativeTimeFormat>();
+
+function getFormatter(locale: Locale): Intl.RelativeTimeFormat {
+  const cached = cache.get(locale);
+  if (cached) return cached;
+
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "always" });
+  cache.set(locale, rtf);
+  return rtf;
+}
 
 /**
- * Formats an ISO timestamp as relative time ("2 weeks ago", "3 months ago").
- * `now` is injectable to keep the function pure and testable.
+ * Formats an ISO timestamp as relative time ("2 weeks ago", "3 months ago") in the
+ * given locale. `now` is injectable to keep the function pure and testable.
  */
-export function formatRelativeTime(iso: string, now: Date = new Date()): string {
+export function formatRelativeTime(iso: string, locale: Locale, now: Date = new Date()): string {
+  const rtf = getFormatter(locale);
   let duration = (new Date(iso).getTime() - now.getTime()) / 1000;
 
   for (const { amount, unit } of DIVISIONS) {

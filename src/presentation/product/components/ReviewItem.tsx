@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useLocale } from "next-intl";
 import { Star } from "lucide-react";
 import { Icon } from "@/src/presentation/design-system";
 import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
@@ -20,6 +21,7 @@ function getInitials(name: string): string {
 }
 
 export function ReviewItem({ review }: ReviewItemProps) {
+  const locale = useLocale();
   return (
     <article className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
@@ -43,7 +45,7 @@ export function ReviewItem({ review }: ReviewItemProps) {
 
           <div className="flex flex-col">
             <span className="text-body-b8 text-foreground">{review.authorName}</span>
-            <span className="text-body-b10 text-muted-foreground">{formatRelativeTime(review.createdAt)}</span>
+            <span className="text-body-b10 text-muted-foreground">{formatRelativeTime(review.createdAt, locale)}</span>
           </div>
         </div>
 
