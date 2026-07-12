@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
 import type { ProductFilters } from "@/src/domain/entities/ProductFilters";
@@ -21,12 +22,13 @@ interface SearchResultsScreenProps {
  * query + filters and passes them in; this screen holds no data state. The
  * `SearchToolbar` (client) turns filter changes into `/search` navigations.
  */
-export default function SearchResultsScreen({
+export default async function SearchResultsScreen({
   query,
   filters,
   products,
   categories,
 }: SearchResultsScreenProps) {
+  const t = await getTranslations("search");
   const hasCriteria = hasProductSearchCriteria(filters);
   const hasResults = products.length > 0;
 
@@ -38,22 +40,23 @@ export default function SearchResultsScreen({
         {hasResults ? (
           <div className="flex flex-col gap-4">
             <p className="text-body-b6 text-muted-foreground">
-              {products.length} {products.length === 1 ? "result" : "results"}
-              {query ? ` for “${query}”` : ""}
+              {query
+                ? t("resultsFor", { count: products.length, query })
+                : t("resultsCount", { count: products.length })}
             </p>
             <ProductGrid products={products} />
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 pt-16 text-center">
             <h2 className="text-heading-h4 text-foreground">
-              {hasCriteria ? "No results found" : "Search the store"}
+              {hasCriteria ? t("noResultsTitle") : t("searchStoreTitle")}
             </h2>
             <p className="text-body-b4 text-muted-foreground">
               {hasCriteria
                 ? query
-                  ? `We couldn't find anything for “${query}”. Try a different word or adjust your filters.`
-                  : "Nothing matches those filters. Try loosening them."
-                : "Type a product name to get started."}
+                  ? t("noResultsForQuery", { query })
+                  : t("noResultsFilters")
+                : t("emptyPrompt")}
             </p>
           </div>
         )}

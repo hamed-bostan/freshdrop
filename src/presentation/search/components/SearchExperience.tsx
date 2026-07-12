@@ -1,21 +1,22 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { Category } from "@/src/domain/entities/Category";
 import type { ProductFilters, ProductSort } from "@/src/domain/entities/ProductFilters";
 import { DEFAULT_PRODUCT_SORT, hasProductSearchCriteria } from "@/src/domain/entities/ProductFilters";
 import { buildProductFilterParams } from "@/src/lib/api/product-search-params";
 import { cn } from "@/src/lib/utils";
+import { useRouter } from "@/src/i18n/navigation";
 import { SearchBar } from "@/src/presentation/components/SearchBar";
 import { ProductFilterSheet } from "./ProductFilterSheet";
 
-/** Sort options in display order, with their user-facing labels. */
-const SORT_OPTIONS: { value: ProductSort; label: string }[] = [
-  { value: "name", label: "Name (A–Z)" },
-  { value: "price-asc", label: "Price: low to high" },
-  { value: "price-desc", label: "Price: high to low" },
-  { value: "rating", label: "Top rated" },
+/** Sort options in display order, keyed to their `search` namespace labels. */
+const SORT_OPTIONS: { value: ProductSort; labelKey: "sortName" | "sortPriceAsc" | "sortPriceDesc" | "sortRating" }[] = [
+  { value: "name", labelKey: "sortName" },
+  { value: "price-asc", labelKey: "sortPriceAsc" },
+  { value: "price-desc", labelKey: "sortPriceDesc" },
+  { value: "rating", labelKey: "sortRating" },
 ];
 
 /** Native-select styling matching the dashboard's field family (no DS Select yet). */
@@ -41,6 +42,7 @@ interface SearchExperienceProps {
  * refinements out of history; a brand-new query (the `SearchBar`) still pushes.
  */
 export function SearchExperience({ query, filters, categories, children }: SearchExperienceProps) {
+  const t = useTranslations("search");
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = React.useTransition();
@@ -94,23 +96,23 @@ export function SearchExperience({ query, filters, categories, children }: Searc
                 onClick={clearFilters}
                 className="rounded-sm text-body-b8 text-primary focus-visible:outline-none focus-visible:ring focus-visible:ring-ring"
               >
-                Clear {activeCount} {activeCount === 1 ? "filter" : "filters"}
+                {t("clearFilters", { count: activeCount })}
               </button>
             ) : (
               <span />
             )}
 
             <label className="flex items-center gap-2 text-body-b8 text-muted-foreground">
-              Sort
+              {t("sortLabel")}
               <select
                 className={SORT_SELECT_CLASSES}
-                aria-label="Sort results"
+                aria-label={t("sortAria")}
                 value={optimisticFilters.sort ?? DEFAULT_PRODUCT_SORT}
                 onChange={(event) => changeSort(event.target.value as ProductSort)}
               >
                 {SORT_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {t(option.labelKey)}
                   </option>
                 ))}
               </select>

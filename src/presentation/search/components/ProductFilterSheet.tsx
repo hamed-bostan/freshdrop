@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import type { Category } from "@/src/domain/entities/Category";
 import type { ProductFilters } from "@/src/domain/entities/ProductFilters";
 import { DIETARY_TAGS, PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
@@ -30,6 +31,7 @@ export function ProductFilterSheet({
   initial,
   onApply,
 }: ProductFilterSheetProps) {
+  const t = useTranslations("search");
   const [categoryId, setCategoryId] = React.useState<string | undefined>(initial.categoryId);
   const [minPrice, setMinPrice] = React.useState(initial.minPrice != null ? String(initial.minPrice) : "");
   const [maxPrice, setMaxPrice] = React.useState(initial.maxPrice != null ? String(initial.maxPrice) : "");
@@ -73,19 +75,19 @@ export function ProductFilterSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        title="Filters"
-        description="Filter products by price, category, dietary preference and brand."
+        title={t("filtersTitle")}
+        description={t("filtersDescription")}
       >
         <div className="flex max-h-[60vh] flex-col gap-6 overflow-y-auto pb-2">
           <fieldset>
-            <legend className="mb-3 text-body-b4 text-foreground">Price</legend>
+            <legend className="mb-3 text-body-b4 text-foreground">{t("priceLegend")}</legend>
             <div className="flex items-center gap-3">
               <Input
                 type="number"
                 inputMode="decimal"
                 min={0}
-                placeholder="Min"
-                aria-label="Minimum price"
+                placeholder={t("minPlaceholder")}
+                aria-label={t("minPriceAria")}
                 value={minPrice}
                 onChange={(event) => setMinPrice(event.target.value)}
               />
@@ -94,8 +96,8 @@ export function ProductFilterSheet({
                 type="number"
                 inputMode="decimal"
                 min={0}
-                placeholder="Max"
-                aria-label="Maximum price"
+                placeholder={t("maxPlaceholder")}
+                aria-label={t("maxPriceAria")}
                 value={maxPrice}
                 onChange={(event) => setMaxPrice(event.target.value)}
               />
@@ -103,7 +105,7 @@ export function ProductFilterSheet({
           </fieldset>
 
           <fieldset>
-            <legend className="mb-3 text-body-b4 text-foreground">Category</legend>
+            <legend className="mb-3 text-body-b4 text-foreground">{t("categoryLegend")}</legend>
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
                 <FilterChip
@@ -119,7 +121,7 @@ export function ProductFilterSheet({
           </fieldset>
 
           <fieldset>
-            <legend className="mb-3 text-body-b4 text-foreground">Dietary</legend>
+            <legend className="mb-3 text-body-b4 text-foreground">{t("dietaryLegend")}</legend>
             <div className="flex flex-wrap gap-2">
               {DIETARY_TAGS.map((tag) => (
                 <FilterChip
@@ -133,7 +135,7 @@ export function ProductFilterSheet({
           </fieldset>
 
           <fieldset>
-            <legend className="mb-3 text-body-b4 text-foreground">Brand</legend>
+            <legend className="mb-3 text-body-b4 text-foreground">{t("brandLegend")}</legend>
             <div className="flex flex-wrap gap-2">
               {PRODUCT_BRANDS.map((brand) => (
                 <FilterChip
@@ -149,10 +151,10 @@ export function ProductFilterSheet({
 
         <div className="mt-6 flex gap-3">
           <Button type="button" variant="outline" className="flex-1" onClick={handleClear}>
-            Clear all
+            {t("clearAll")}
           </Button>
           <Button type="button" className="flex-1" onClick={handleApply}>
-            Apply
+            {t("apply")}
           </Button>
         </div>
       </SheetContent>
