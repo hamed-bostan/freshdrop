@@ -20,7 +20,7 @@ export function PromoCodeOption({ promo, selected, onSelect }: PromoCodeOptionPr
       onClick={() => onSelect(promo.code)}
       aria-pressed={selected}
       className={cn(
-        "flex w-full flex-col gap-1 rounded-card-xl border bg-surface px-4 py-3 text-left transition-colors",
+        "flex w-full flex-col gap-1 rounded-card-xl border bg-surface px-4 py-3 text-start transition-colors",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         selected ? "border-foreground" : "border-transparent",
       )}

@@ -39,7 +39,7 @@ export function OrderLocationRow({ location, label }: OrderLocationRowProps) {
       className="flex items-start justify-between gap-2 text-body-b6"
     >
       <dt className="text-muted-foreground">{t("locationLabel")}</dt>
-      <dd className="flex min-w-0 flex-col items-end gap-1 text-right text-foreground">
+      <dd className="flex min-w-0 flex-col items-end gap-1 text-end text-foreground">
         <Collapsible.Trigger className="inline-flex items-center gap-0.5 rounded text-label-l1 text-primary transition-colors focus-visible:outline-none focus-visible:ring focus-visible:ring-ring">
           {collapsedLabel(location, label)}
           <Icon

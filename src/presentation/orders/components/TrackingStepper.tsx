@@ -69,7 +69,7 @@ export function TrackingStepper({ steps }: TrackingStepperProps) {
                 <span
                   aria-hidden
                   className={cn(
-                    "my-1 w-0 flex-1 border-l-2",
+                    "my-1 w-0 flex-1 border-s-2",
                     step.status === "done" ? "border-solid border-primary" : "border-dashed border-icon-muted",
                   )}
                 />

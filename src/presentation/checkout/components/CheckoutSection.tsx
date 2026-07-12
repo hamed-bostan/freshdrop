@@ -5,12 +5,12 @@ import { Icon } from "@/src/presentation/design-system";
 interface CheckoutSectionProps {
   icon: LucideIcon;
   title: string;
-  /** Optional action rendered at the right edge of the header (e.g. a link). */
+  /** Optional action rendered at the end edge of the header (e.g. a link). */
   action?: React.ReactNode;
   children: React.ReactNode;
 }
 
-/** A labelled checkout section: an icon + title header with optional right-side
+/** A labelled checkout section: an icon + title header with optional end-side
  * action, above its content. The repeated frame for every block on the screen. */
 export function CheckoutSection({ icon, title, action, children }: CheckoutSectionProps) {
   return (

@@ -21,7 +21,7 @@ function OrderInfoRow({ label, value }: OrderInfoRowProps) {
   return (
     <div className="flex items-start text-body-b6 justify-between gap-2">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="text-right text-foreground">{value}</dd>
+      <dd className="text-end text-foreground">{value}</dd>
     </div>
   );
 }
