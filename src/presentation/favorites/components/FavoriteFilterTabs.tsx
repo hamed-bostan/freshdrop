@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { RadioGroup } from "radix-ui";
 import { cn } from "@/src/lib/utils";
 import type { Category } from "@/src/domain/entities/Category";
@@ -22,7 +23,10 @@ interface FavoriteFilterTabsProps {
  * edge-to-edge while staying aligned to the page gutter.
  */
 export function FavoriteFilterTabs({ categories, value, onValueChange }: FavoriteFilterTabsProps) {
-  const tabs = [{ id: ALL_FILTER, name: "All" }, ...categories];
+  const t = useTranslations("favorites");
+  // Category names come from the catalog (English until content translation lands); only
+  // the synthetic "All" tab is localized.
+  const tabs = [{ id: ALL_FILTER, name: t("filterAll") }, ...categories];
 
   return (
     <RadioGroup.Root
@@ -30,7 +34,7 @@ export function FavoriteFilterTabs({ categories, value, onValueChange }: Favorit
       onValueChange={onValueChange}
       orientation="horizontal"
       loop
-      aria-label="Filter favorites by category"
+      aria-label={t("filterAria")}
       className="-mx-6 flex gap-2 overflow-x-auto scrollbar-hide px-6"
     >
       {tabs.map((tab) => (

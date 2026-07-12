@@ -1,23 +1,24 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Home, LayoutGrid, ShoppingCart, User, type LucideIcon } from "lucide-react";
+import { Link, usePathname } from "@/src/i18n/navigation";
 import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
 import { useCart } from "@/src/presentation/cart/CartProvider";
 
 interface NavItem {
   href: string;
-  label: string;
+  /** Key into the `nav` message namespace. */
+  labelKey: "home" | "category" | "cart" | "profile";
   icon: LucideIcon;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/category", label: "Category", icon: LayoutGrid },
-  { href: "/cart", label: "Cart", icon: ShoppingCart },
-  { href: "/profile", label: "Profile", icon: User },
+  { href: "/", labelKey: "home", icon: Home },
+  { href: "/category", labelKey: "category", icon: LayoutGrid },
+  { href: "/cart", labelKey: "cart", icon: ShoppingCart },
+  { href: "/profile", labelKey: "profile", icon: User },
 ];
 
 /** Focused task flows (forms, onboarding) hide the bottom nav for a distraction-free view. */
@@ -34,6 +35,9 @@ const HIDE_NAV_ON_PREFIXES = [
 ];
 
 export function MainNav () {
+  const t = useTranslations("nav");
+  // next-intl's usePathname returns the path without the locale prefix, so the active
+  // and hide-nav checks below match for both English (/cart) and Persian (/fa/cart).
   const pathname = usePathname();
   // The badge reads the shared cart store, so it updates optimistically the moment
   // an item is added/removed anywhere — grid, detail page or the cart itself.
@@ -45,10 +49,11 @@ export function MainNav () {
 
   return (
     <nav
-      aria-label="Main navigation"
+      aria-label={t("ariaLabel")}
       className="max-w-md mx-auto fixed bottom-0 left-0 right-0 z-50 min-h-20 grid grid-cols-4 border-t border-border bg-background overflow-hidden"
     >
-      {NAV_ITEMS.map(({ href, label, icon }) => {
+      {NAV_ITEMS.map(({ href, labelKey, icon }) => {
+        const label = t(labelKey);
         const isActive = pathname === href;
         // The Cart tab carries a count badge so an add elsewhere gives visible confirmation.
         const showCount = href === "/cart" && cartCount > 0;
@@ -57,7 +62,7 @@ export function MainNav () {
             key={href}
             href={href}
             aria-current={isActive ? "page" : undefined}
-            aria-label={showCount ? `${label}, ${cartCount} ${cartCount === 1 ? "item" : "items"}` : undefined}
+            aria-label={showCount ? t("cartItems", { label, count: cartCount }) : undefined}
             className={cn(
               "relative flex h-full flex-col items-center justify-center gap-1",
               isActive ? "text-primary" : "text-foreground",

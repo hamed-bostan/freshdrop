@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ChevronLeft } from "lucide-react";
+import { Link, useRouter } from "@/src/i18n/navigation";
 import { Button, Icon } from "@/src/presentation/design-system";
 
 interface PageHeaderProps {
@@ -20,6 +20,7 @@ interface PageHeaderProps {
 
 /** Sub-page header: a back control on the left with an optional centred title. */
 export function PageHeader({ title, backHref }: PageHeaderProps) {
+  const t = useTranslations("common");
   const router = useRouter();
 
   const backIcon = <Icon icon={ChevronLeft} size="md" className="text-foreground" />;
@@ -29,7 +30,7 @@ export function PageHeader({ title, backHref }: PageHeaderProps) {
       {backHref ? (
         // Hierarchical "Up": a real link to the logical parent — it prefetches and
         // behaves like navigation (new-tab, etc.), unlike an onClick history push.
-        <Button asChild variant="ghost" iconOnly aria-label="Go back" className="justify-self-start">
+        <Button asChild variant="ghost" iconOnly aria-label={t("goBack")} className="justify-self-start">
           <Link href={backHref}>{backIcon}</Link>
         </Button>
       ) : (
@@ -38,7 +39,7 @@ export function PageHeader({ title, backHref }: PageHeaderProps) {
           type="button"
           variant="ghost"
           iconOnly
-          aria-label="Go back"
+          aria-label={t("goBack")}
           onClick={() => router.back()}
           className="justify-self-start"
         >

@@ -1,1 +1,21 @@
-{}
+{
+  "common": {
+    "goBack": "Go back",
+    "startShopping": "Start Shopping"
+  },
+  "nav": {
+    "ariaLabel": "Main navigation",
+    "home": "Home",
+    "category": "Category",
+    "cart": "Cart",
+    "profile": "Profile",
+    "cartItems": "{label}, {count, plural, one {# item} other {# items}}"
+  },
+  "favorites": {
+    "title": "Favorites",
+    "filterAria": "Filter favorites by category",
+    "filterAll": "All",
+    "emptyTitle": "Your favorite list is empty.",
+    "emptyBody": "Start Adding Products To Your Favorites And Find Them Here Easily"
+  }
+}
