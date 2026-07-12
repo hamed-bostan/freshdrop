@@ -44,7 +44,21 @@
     "addAria": "Add {name} to cart",
     "removeAria": "Remove {name} from cart",
     "decreaseAria": "Decrease {name} quantity",
-    "increaseAria": "Increase {name} quantity"
+    "increaseAria": "Increase {name} quantity",
+    "myCart": "My Cart",
+    "checkoutTitle": "Checkout",
+    "itemCount": "{count, plural, one {# item} other {# items}}",
+    "clearAll": "Clear all",
+    "removeTitle": "Remove from cart?",
+    "removeMessage": "Remove {name} from your cart?",
+    "removeConfirm": "Remove",
+    "clearTitle": "Clear cart?",
+    "clearMessage": "Remove all items from your cart? This can't be undone.",
+    "maxInStock": "Max available in stock",
+    "outOfStock": "Out of stock",
+    "totalLabel": "Total :",
+    "checkout": "Check Out",
+    "empty": "Your Cart Is Empty"
   },
   "product": {
     "detailTitle": "Product Detail",

@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import type { Cart } from "@/src/domain/entities/Cart";
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
+import { useRouter } from "@/src/i18n/navigation";
 import { ConfirmSheet, Icon } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { cartsApi } from "../cart-api";
@@ -31,6 +32,7 @@ interface CartBrowserProps {
  * shipping, total) are always the server's, never recomputed on the client.
  */
 export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBrowserProps) {
+  const t = useTranslations("cart");
   const router = useRouter();
   const { refresh } = useCart();
   const [pendingRemovalId, setPendingRemovalId] = React.useState<string | null>(null);
@@ -84,7 +86,7 @@ export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBro
 
   return (
     <>
-      <PageHeader title={checkoutOpen ? "Checkout" : "My Cart"} />
+      <PageHeader title={checkoutOpen ? t("checkoutTitle") : t("myCart")} />
 
       {isEmpty ? (
         <CartEmptyState />
@@ -92,7 +94,7 @@ export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBro
         <>
           <div className="flex items-center justify-between">
             <span className="text-body-b9 text-muted-foreground">
-              {items.length} {items.length === 1 ? "item" : "items"}
+              {t("itemCount", { count: items.length })}
             </span>
             <button
               type="button"
@@ -100,7 +102,7 @@ export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBro
               className="flex items-center gap-1.5 rounded-pill px-1 py-0.5 text-body-b8 text-destructive transition-colors active:bg-error"
             >
               <Icon icon={Trash2} size="sm" />
-              Clear all
+              {t("clearAll")}
             </button>
           </div>
 
@@ -141,18 +143,18 @@ export function CartBrowser({ cart, appliedPromo, initialCheckoutOpen }: CartBro
         onOpenChange={(open) => {
           if (!open) setPendingRemovalId(null);
         }}
-        title="Remove from cart?"
-        message={pendingProduct ? `Remove ${pendingProduct.name} from your cart?` : undefined}
-        confirmLabel="Remove"
+        title={t("removeTitle")}
+        message={pendingProduct ? t("removeMessage", { name: pendingProduct.name }) : undefined}
+        confirmLabel={t("removeConfirm")}
         onConfirm={confirmRemoval}
       />
 
       <ConfirmSheet
         open={clearOpen}
         onOpenChange={setClearOpen}
-        title="Clear cart?"
-        message="Remove all items from your cart? This can't be undone."
-        confirmLabel="Clear all"
+        title={t("clearTitle")}
+        message={t("clearMessage")}
+        confirmLabel={t("clearAll")}
         onConfirm={confirmClear}
       />
     </>

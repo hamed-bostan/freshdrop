@@ -44,7 +44,21 @@
     "addAria": "افزودن {name} به سبد",
     "removeAria": "حذف {name} از سبد",
     "decreaseAria": "کاهش تعداد {name}",
-    "increaseAria": "افزایش تعداد {name}"
+    "increaseAria": "افزایش تعداد {name}",
+    "myCart": "سبد من",
+    "checkoutTitle": "تسویه حساب",
+    "itemCount": "{count, plural, one {# کالا} other {# کالا}}",
+    "clearAll": "حذف همه",
+    "removeTitle": "حذف از سبد؟",
+    "removeMessage": "{name} از سبد خرید حذف شود؟",
+    "removeConfirm": "حذف",
+    "clearTitle": "خالی کردن سبد؟",
+    "clearMessage": "همه کالاها از سبد حذف شوند؟ این کار قابل بازگشت نیست.",
+    "maxInStock": "حداکثر موجودی انبار",
+    "outOfStock": "ناموجود",
+    "totalLabel": "جمع کل:",
+    "checkout": "تسویه حساب",
+    "empty": "سبد خرید شما خالی است"
   },
   "product": {
     "detailTitle": "جزئیات محصول",

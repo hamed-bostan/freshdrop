@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import type { CartItem } from "@/src/domain/entities/Cart";
 import { Icon } from "@/src/presentation/design-system";
@@ -17,6 +18,7 @@ interface CartItemCardProps {
  * for confirmation), so − is disabled at a quantity of one.
  */
 export function CartItemCard({ item, onIncrement, onDecrement, onRemove }: CartItemCardProps) {
+  const t = useTranslations("cart");
   const { product, quantity } = item;
   const subtitle = product.description ?? product.unit;
   // Can't add past what's on hand — the server enforces the same cap, this just
@@ -40,7 +42,7 @@ export function CartItemCard({ item, onIncrement, onDecrement, onRemove }: CartI
         {subtitle && <p className="truncate text-body-b6 text-muted-foreground">{subtitle}</p>}
         {atStockLimit && (
           <p className="text-body-b10 text-warning-foreground">
-            {product.stockQuantity > 0 ? "Max available in stock" : "Out of stock"}
+            {product.stockQuantity > 0 ? t("maxInStock") : t("outOfStock")}
           </p>
         )}
 
@@ -51,7 +53,7 @@ export function CartItemCard({ item, onIncrement, onDecrement, onRemove }: CartI
             <button
               type="button"
               onClick={onRemove}
-              aria-label={`Remove ${product.name} from cart`}
+              aria-label={t("removeAria", { name: product.name })}
               className="grid size-8 place-items-center rounded-full text-destructive transition-colors active:bg-error"
             >
               <Icon icon={Trash2} size="sm" />
@@ -61,7 +63,7 @@ export function CartItemCard({ item, onIncrement, onDecrement, onRemove }: CartI
               type="button"
               onClick={onDecrement}
               disabled={atMinQuantity}
-              aria-label={`Decrease ${product.name} quantity`}
+              aria-label={t("decreaseAria", { name: product.name })}
               className="grid size-8 place-items-center rounded-full text-primary transition-colors active:bg-accent disabled:text-disabled-foreground disabled:active:bg-transparent"
             >
               <Icon icon={Minus} size="sm" />
@@ -78,7 +80,7 @@ export function CartItemCard({ item, onIncrement, onDecrement, onRemove }: CartI
               type="button"
               onClick={onIncrement}
               disabled={atStockLimit}
-              aria-label={`Increase ${product.name} quantity`}
+              aria-label={t("increaseAria", { name: product.name })}
               className="grid size-8 place-items-center rounded-full text-primary transition-colors active:bg-accent disabled:text-disabled-foreground disabled:active:bg-transparent"
             >
               <Icon icon={Plus} size="sm" />
