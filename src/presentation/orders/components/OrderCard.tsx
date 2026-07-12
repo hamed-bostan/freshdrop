@@ -5,6 +5,7 @@ import type { Order, OrderItem } from "@/src/domain/entities/Order";
 import { Icon } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDate, formatOrderTime } from "@/src/lib/formatOrderDate";
+import { formatDeliveryWindow } from "@/src/lib/formatDeliveryWindow";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 import { OrderCardActions } from "./OrderCardActions";
 import { OrderAdjustments } from "./OrderAdjustments";
@@ -59,6 +60,7 @@ interface OrderCardProps {
 export function OrderCard({ order }: OrderCardProps) {
   const t = useTranslations("orders");
   const locale = useLocale();
+  const deliveryWindow = formatDeliveryWindow(order, locale);
   const visibleItems = order.items.slice(0, MAX_VISIBLE_THUMBNAILS);
   const extraCount = order.items.length - visibleItems.length;
   const substituted = order.items.filter((item) => item.substitution);
@@ -73,7 +75,7 @@ export function OrderCard({ order }: OrderCardProps) {
       <dl className="flex flex-col gap-2">
         <OrderInfoRow label={t("timeLabel")} value={formatOrderTime(order.placedAt, locale)} />
         <OrderInfoRow label={t("dateLabel")} value={formatOrderDate(order.placedAt, locale)} />
-        {order.deliveryWindow && <OrderInfoRow label={t("deliveryLabel")} value={order.deliveryWindow} />}
+        {deliveryWindow && <OrderInfoRow label={t("deliveryLabel")} value={deliveryWindow} />}
         <OrderLocationRow location={order.location} label={order.locationLabel} />
       </dl>
 
