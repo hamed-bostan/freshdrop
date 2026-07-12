@@ -1,7 +1,8 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Star } from "lucide-react";
 import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
+import { formatMoney } from "@/src/lib/formatMoney";
 import { CartQuantityControl } from "./CartQuantityControl";
 import { FavoriteToggle } from "./FavoriteToggle";
 import type { Product } from "@/src/domain/entities/Product";
@@ -34,6 +35,7 @@ export function ProductCard({
   refreshOnUnfavorite = false,
 }: ProductCardProps) {
   const t = useTranslations("product");
+  const locale = useLocale();
   const hasDiscount = product.originalPrice != null && product.discountPercent != null;
   const stock = getStockStatus(product.stockQuantity);
   const outOfStock = stock.level === "out";
@@ -99,14 +101,14 @@ export function ProductCard({
 
       <div className="flex justify-between items-center px-2">
         <div className="flex flex-col">
-          <span className="text-base font-bold text-foreground">${product.price.toFixed(2)}</span>
+          <span className="text-base font-bold text-foreground">{formatMoney(product.price, locale)}</span>
           {hasDiscount && (
             <div className="flex items-center gap-1">
               <span className="rounded-full size-4 bg-discount flex items-center justify-center text-[0.5rem] font-semibold text-primary-foreground">
                 {product.discountPercent}%
               </span>
               <span className="text-body-b11 font-bold text-muted-foreground line-through">
-                ${product.originalPrice!.toFixed(2)}
+                {formatMoney(product.originalPrice!, locale)}
               </span>
             </div>
           )}

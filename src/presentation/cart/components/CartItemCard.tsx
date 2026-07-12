@@ -1,8 +1,9 @@
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import type { CartItem } from "@/src/domain/entities/Cart";
 import { Icon } from "@/src/presentation/design-system";
+import { formatMoney } from "@/src/lib/formatMoney";
 
 interface CartItemCardProps {
   item: CartItem;
@@ -19,6 +20,7 @@ interface CartItemCardProps {
  */
 export function CartItemCard({ item, onIncrement, onDecrement, onRemove }: CartItemCardProps) {
   const t = useTranslations("cart");
+  const locale = useLocale();
   const { product, quantity } = item;
   const subtitle = product.description ?? product.unit;
   // Can't add past what's on hand — the server enforces the same cap, this just
@@ -47,7 +49,7 @@ export function CartItemCard({ item, onIncrement, onDecrement, onRemove }: CartI
         )}
 
         <div className="mt-1 flex items-center justify-between gap-2">
-          <span className="text-body-b9 text-muted-foreground">${product.price.toFixed(2)}</span>
+          <span className="text-body-b9 text-muted-foreground">{formatMoney(product.price, locale)}</span>
 
           <div className="flex items-center gap-2">
             <button

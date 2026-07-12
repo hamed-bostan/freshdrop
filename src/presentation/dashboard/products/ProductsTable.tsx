@@ -1,9 +1,10 @@
 import Image from "next/image";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Pencil } from "lucide-react";
 import type { Product } from "@/src/domain/entities/Product";
 import { Badge, Button, Icon } from "@/src/presentation/design-system";
 import { Link } from "@/src/i18n/navigation";
+import { formatMoney } from "@/src/lib/formatMoney";
 import { DeleteProductButton } from "./DeleteProductButton";
 
 type ProductsTableProps = {
@@ -15,6 +16,7 @@ type ProductsTableProps = {
 /** Admin list of products with per-row edit + delete actions. */
 export async function ProductsTable({ products, categoryNames }: ProductsTableProps) {
   const t = await getTranslations("dashProducts");
+  const locale = await getLocale();
 
   return (
     <div className="overflow-hidden rounded-card-lg border border-border">
@@ -45,10 +47,10 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
                 {categoryNames.get(product.categoryId) ?? "—"}
               </td>
               <td className="px-4 py-3 text-end">
-                <span className="text-body-b7 text-foreground">${product.price.toFixed(2)}</span>
+                <span className="text-body-b7 text-foreground">{formatMoney(product.price, locale)}</span>
                 {product.originalPrice != null && (
                   <span className="block text-body-b10 text-muted-foreground line-through">
-                    ${product.originalPrice.toFixed(2)}
+                    {formatMoney(product.originalPrice, locale)}
                   </span>
                 )}
               </td>

@@ -1,6 +1,7 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { Wallet } from "@/src/domain/entities/Wallet";
 import { cn } from "@/src/lib/utils";
+import { formatMoney } from "@/src/lib/formatMoney";
 import { Button } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { Link } from "@/src/i18n/navigation";
@@ -18,6 +19,7 @@ interface WalletScreenProps {
 
 export default async function WalletScreen({ wallet }: WalletScreenProps) {
   const t = await getTranslations("wallet");
+  const locale = await getLocale();
 
   return (
     <div className="flex min-h-dvh flex-col gap-6 pb-10 px-6">
@@ -40,7 +42,7 @@ export default async function WalletScreen({ wallet }: WalletScreenProps) {
       <section className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
           <h2 className="text-body-b4 text-foreground">{t("balanceLabel")}</h2>
-          <p className="text-heading-h3 text-foreground">${wallet.balance.toFixed(2)}</p>
+          <p className="text-heading-h3 text-foreground">{formatMoney(wallet.balance, locale)}</p>
         </div>
         <Button asChild size="md" className="self-start">
           <Link href="/profile/wallet/add-money">{t("addMoney")}</Link>

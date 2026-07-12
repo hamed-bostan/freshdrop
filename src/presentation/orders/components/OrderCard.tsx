@@ -1,8 +1,9 @@
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ArrowLeftRight, RotateCcw } from "lucide-react";
 import type { Order, OrderItem } from "@/src/domain/entities/Order";
 import { Icon } from "@/src/presentation/design-system";
+import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDate, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 import { OrderCardActions } from "./OrderCardActions";
@@ -57,6 +58,7 @@ interface OrderCardProps {
 
 export function OrderCard({ order }: OrderCardProps) {
   const t = useTranslations("orders");
+  const locale = useLocale();
   const visibleItems = order.items.slice(0, MAX_VISIBLE_THUMBNAILS);
   const extraCount = order.items.length - visibleItems.length;
   const substituted = order.items.filter((item) => item.substitution);
@@ -91,7 +93,7 @@ export function OrderCard({ order }: OrderCardProps) {
         </ul>
 
         <p className="shrink-0 text-body-b9 text-foreground">
-          $ {order.total.toFixed(2)}
+          {formatMoney(order.total, locale)}
         </p>
       </div>
 

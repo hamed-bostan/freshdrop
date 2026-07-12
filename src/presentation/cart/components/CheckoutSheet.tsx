@@ -1,12 +1,13 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Dialog, VisuallyHidden } from "radix-ui";
 import { ChevronRight, Ticket } from "lucide-react";
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
 import { Link } from "@/src/i18n/navigation";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
+import { formatMoney } from "@/src/lib/formatMoney";
 
 interface SummaryRowProps {
   label: string;
@@ -53,6 +54,7 @@ export function CheckoutSheet({
   onConfirm,
 }: CheckoutSheetProps) {
   const t = useTranslations("checkout");
+  const locale = useLocale();
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -101,15 +103,15 @@ export function CheckoutSheet({
           </Link>
 
           <dl className="mt-6 flex flex-col gap-4">
-            <SummaryRow label={t("subTotal")} value={`$${subtotal.toFixed(2)}`} />
-            <SummaryRow label={t("shipping")} value={`$${shipping.toFixed(2)}`} />
-            <SummaryRow label={t("discount")} value={`${discount > 0 ? "-" : ""}$${discount.toFixed(2)}`} />
+            <SummaryRow label={t("subTotal")} value={formatMoney(subtotal, locale)} />
+            <SummaryRow label={t("shipping")} value={formatMoney(shipping, locale)} />
+            <SummaryRow label={t("discount")} value={`${discount > 0 ? "-" : ""}${formatMoney(discount, locale)}`} />
           </dl>
 
           <div className="my-5 border-t border-dashed border-border" aria-hidden />
 
           <dl>
-            <SummaryRow label={t("totalLabel")} value={`$${total.toFixed(2)}`} emphasized />
+            <SummaryRow label={t("totalLabel")} value={formatMoney(total, locale)} emphasized />
           </dl>
 
           {/* UI-only — no order creation / confirmation screen yet (TODO). */}

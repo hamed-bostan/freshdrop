@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { PackageX, RotateCcw } from "lucide-react";
 import type { OrderItem } from "@/src/domain/entities/Order";
 import type { Product } from "@/src/domain/entities/Product";
@@ -10,6 +10,7 @@ import { getStockStatus } from "@/src/domain/entities/stock";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { formatMoney } from "@/src/lib/formatMoney";
 import { ordersApi } from "./order-api";
 
 type OrderItemPickControlProps = {
@@ -30,6 +31,7 @@ type OrderItemPickControlProps = {
  */
 export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProps) {
   const t = useTranslations("dashOrders");
+  const locale = useLocale();
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [candidates, setCandidates] = React.useState<Product[] | null>(null);
@@ -150,7 +152,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
                         {product.name}
                       </span>
                       <span className="shrink-0 text-body-b7 text-muted-foreground">
-                        {outOfStock ? t("outOfStock") : `$ ${product.price.toFixed(2)}`}
+                        {outOfStock ? t("outOfStock") : formatMoney(product.price, locale)}
                       </span>
                     </button>
                   </li>

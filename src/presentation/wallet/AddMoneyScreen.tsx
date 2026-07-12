@@ -2,10 +2,11 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { usePathname, useRouter } from "@/src/i18n/navigation";
+import { formatMoney } from "@/src/lib/formatMoney";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { addMoney } from "@/src/shared/assets/images";
 import { walletsApi } from "./wallet-api";
@@ -15,6 +16,7 @@ const MAX_DIGITS = 6;
 
 export default function AddMoneyScreen() {
   const t = useTranslations("wallet");
+  const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const [amount, setAmount] = React.useState("240");
@@ -71,7 +73,7 @@ export default function AddMoneyScreen() {
           <div className="flex items-center justify-between gap-4 rounded-card-xl bg-surface p-4">
             <div className="flex min-w-0 flex-col gap-1">
               <span className="text-body-b7 text-muted-foreground">{t("addToWallet")}</span>
-              <span className="truncate text-body-b4 text-foreground">${amount || "0"}</span>
+              <span className="truncate text-body-b4 text-foreground">{formatMoney(Number(amount) || 0, locale)}</span>
             </div>
             <Button type="button" size="sm" onClick={handleContinue} disabled={pending}>
               {t("continue")}

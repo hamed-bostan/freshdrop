@@ -1,5 +1,6 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
+import { formatMoney } from "@/src/lib/formatMoney";
 
 type TopCustomersPanelProps = {
   /** Customers ranked by total spend (highest first) — the parent screen passes them pre-sorted. */
@@ -19,6 +20,7 @@ const TOP_COUNT = 5;
  */
 export async function TopCustomersPanel({ customers }: TopCustomersPanelProps) {
   const t = await getTranslations("dashOrders");
+  const locale = await getLocale();
   const top = customers.slice(0, TOP_COUNT);
 
   return (
@@ -41,7 +43,7 @@ export async function TopCustomersPanel({ customers }: TopCustomersPanelProps) {
               ) : null}
             </div>
             <div className="text-end">
-              <p className="text-body-b7 text-foreground">$ {customer.totalSpent.toFixed(2)}</p>
+              <p className="text-body-b7 text-foreground">{formatMoney(customer.totalSpent, locale)}</p>
               <p className="text-body-b8 text-muted-foreground">
                 {t("orderCount", { count: customer.orderCount })}
               </p>

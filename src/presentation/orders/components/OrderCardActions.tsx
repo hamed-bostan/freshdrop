@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import type { Order } from "@/src/domain/entities/Order";
 import { isCancellable, isReturnable } from "@/src/domain/entities/Order";
@@ -9,6 +9,7 @@ import { Button } from "@/src/presentation/design-system";
 import { ConfirmDialog } from "@/src/presentation/components/ConfirmDialog";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { useCart } from "@/src/presentation/cart/CartProvider";
+import { formatMoney } from "@/src/lib/formatMoney";
 import { ordersApi } from "../order-api";
 
 /** Which mutation is in flight — drives the per-button loading label. */
@@ -31,6 +32,7 @@ interface OrderCardActionsProps {
  */
 export function OrderCardActions({ order }: OrderCardActionsProps) {
   const t = useTranslations("orders");
+  const locale = useLocale();
   const router = useRouter();
   const { refresh: refreshCart } = useCart();
   const [running, setRunning] = React.useState<RunningAction | null>(null);
@@ -86,7 +88,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
   const confirmCopy: Record<ConfirmAction, { title: string; description: string; confirmLabel: string; pendingLabel: string }> = {
     cancel: {
       title: t("cancelTitle"),
-      description: t("cancelDescription", { amount: `$ ${order.total.toFixed(2)}` }),
+      description: t("cancelDescription", { amount: formatMoney(order.total, locale) }),
       confirmLabel: t("cancelConfirm"),
       pendingLabel: t("cancelling"),
     },

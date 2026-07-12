@@ -1,5 +1,6 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/src/presentation/design-system";
+import { formatMoney } from "@/src/lib/formatMoney";
 
 interface CartSummaryBarProps {
   total: number;
@@ -12,6 +13,7 @@ interface CartSummaryBarProps {
  */
 export function CartSummaryBar({ total, onCheckout }: CartSummaryBarProps) {
   const t = useTranslations("cart");
+  const locale = useLocale();
 
   return (
     <div className="fixed inset-x-0 bottom-20 z-40 mx-auto w-full max-w-md rounded-t-card-xl border-t border-border bg-surface px-6 pb-6 pt-3 shadow-[0_-4px_24px_rgba(0,0,0,0.06)]">
@@ -19,7 +21,7 @@ export function CartSummaryBar({ total, onCheckout }: CartSummaryBarProps) {
 
       <div className="mb-4 flex items-center gap-2">
         <span className="text-body-b2 text-foreground">{t("totalLabel")}</span>
-        <span className="text-body-b4 text-foreground">${total.toFixed(2)}</span>
+        <span className="text-body-b4 text-foreground">{formatMoney(total, locale)}</span>
       </div>
 
       <Button type="button" size="lg" className="w-full" onClick={onCheckout}>

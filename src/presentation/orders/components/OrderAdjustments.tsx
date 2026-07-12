@@ -1,8 +1,7 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid, orderShippingRefunded } from "@/src/domain/entities/Order";
-
-const money = (amount: number) => `$ ${amount.toFixed(2)}`;
+import { formatMoney } from "@/src/lib/formatMoney";
 
 interface OrderAdjustmentsProps {
   order: Order;
@@ -17,6 +16,8 @@ interface OrderAdjustmentsProps {
  */
 export function OrderAdjustments({ order }: OrderAdjustmentsProps) {
   const t = useTranslations("orders");
+  const locale = useLocale();
+  const money = (amount: number) => formatMoney(amount, locale);
   const refunds = order.items.flatMap((item) =>
     item.substitution && item.substitution.refundAmount > 0
       ? [{ item, substitution: item.substitution }]

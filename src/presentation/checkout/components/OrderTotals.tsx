@@ -1,4 +1,5 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { formatMoney } from "@/src/lib/formatMoney";
 
 interface OrderTotalsProps {
   subtotal: number;
@@ -7,14 +8,14 @@ interface OrderTotalsProps {
   total: number;
 }
 
-const money = (amount: number) => `$ ${amount.toFixed(2)}`;
-
 /**
  * The price breakdown: subtotal, delivery fee and discount (each underlined),
  * then the emphasized total payment.
  */
 export function OrderTotals({ subtotal, shipping, discount, total }: OrderTotalsProps) {
   const t = useTranslations("checkout");
+  const locale = useLocale();
+  const money = (amount: number) => formatMoney(amount, locale);
   const rows = [
     { label: t("subtotal"), value: money(subtotal) },
     { label: t("deliveryFee"), value: money(shipping) },

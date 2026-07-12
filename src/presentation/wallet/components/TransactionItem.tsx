@@ -1,5 +1,7 @@
+import { useLocale } from "next-intl";
 import type { WalletTransaction } from "@/src/domain/entities/Wallet";
 import { cn } from "@/src/lib/utils";
+import { formatMoney } from "@/src/lib/formatMoney";
 
 // Fixed UTC formatters → deterministic output (same on server and client).
 const dateFormatter = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
@@ -20,6 +22,7 @@ interface TransactionItemProps {
 }
 
 export function TransactionItem({ transaction }: TransactionItemProps) {
+  const locale = useLocale();
   const isCredit = transaction.type === "credit";
 
   return (
@@ -30,7 +33,7 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
       </div>
 
       <span className={cn("shrink-0 text-body-b8", isCredit ? "text-primary" : "text-foreground")}>
-        {isCredit ? "+" : "-"}${transaction.amount.toFixed(2)}
+        {isCredit ? "+" : "-"}{formatMoney(transaction.amount, locale)}
       </span>
     </div>
   );

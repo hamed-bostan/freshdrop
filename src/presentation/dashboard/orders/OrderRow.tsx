@@ -2,13 +2,14 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, ArrowLeftRight, RotateCcw } from "lucide-react";
 import type { Order, OrderItem } from "@/src/domain/entities/Order";
 import { isPicking } from "@/src/domain/entities/Order";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Icon } from "@/src/presentation/design-system";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
+import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDate } from "@/src/lib/formatOrderDate";
 import { OrderStageSelect } from "./OrderStageSelect";
 import { OrderReturnControl } from "./OrderReturnControl";
@@ -58,6 +59,7 @@ function ItemSubstitutionBadge({ item }: { item: OrderItem }) {
  */
 export function OrderRow({ order, customer, columnCount }: OrderRowProps) {
   const t = useTranslations("dashOrders");
+  const locale = useLocale();
   const [open, setOpen] = React.useState(false);
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const pickable = isPicking(order);
@@ -155,7 +157,7 @@ export function OrderRow({ order, customer, columnCount }: OrderRowProps) {
               </ul>
               <div className="flex items-center justify-between border-t border-border pt-3">
                 <span className="text-body-b7 text-muted-foreground">{t("total")}</span>
-                <span className="text-body-b5 text-foreground">$ {order.total.toFixed(2)}</span>
+                <span className="text-body-b5 text-foreground">{formatMoney(order.total, locale)}</span>
               </div>
             </div>
           </td>

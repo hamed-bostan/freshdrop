@@ -1,8 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Star } from "lucide-react";
 import { Icon } from "@/src/presentation/design-system";
+import { formatMoney } from "@/src/lib/formatMoney";
 import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
 import { CartQuantityControl } from "./CartQuantityControl";
@@ -23,6 +24,7 @@ interface ProductPurchasePanelProps {
  */
 export function ProductPurchasePanel({ product, initialStockAlert }: ProductPurchasePanelProps) {
   const t = useTranslations("product");
+  const locale = useLocale();
   const hasDiscount = product.originalPrice != null;
   const stock = getStockStatus(product.stockQuantity);
   const outOfStock = stock.level === "out";
@@ -52,10 +54,10 @@ export function ProductPurchasePanel({ product, initialStockAlert }: ProductPurc
         <div className="mt-4 flex items-baseline justify-end gap-2">
           {hasDiscount && (
             <span className="text-body-b1 text-muted-foreground line-through">
-              ${product.originalPrice!.toFixed(2)}
+              {formatMoney(product.originalPrice!, locale)}
             </span>
           )}
-          <span className="text-heading-h2 text-accent-foreground">${product.price.toFixed(2)}</span>
+          <span className="text-heading-h2 text-accent-foreground">{formatMoney(product.price, locale)}</span>
         </div>
       </div>
 

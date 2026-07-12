@@ -1,5 +1,7 @@
 import Image from "next/image";
+import { useLocale } from "next-intl";
 import type { Product } from "@/src/domain/entities/Product";
+import { formatMoney } from "@/src/lib/formatMoney";
 
 interface SearchSuggestionsProps {
   results: Product[];
@@ -13,6 +15,7 @@ interface SearchSuggestionsProps {
  * panel. Mirrors the map's `PlaceSearchResults`.
  */
 export function SearchSuggestions({ results, onSelect }: SearchSuggestionsProps) {
+  const locale = useLocale();
   if (results.length === 0) return null;
 
   return (
@@ -38,7 +41,7 @@ export function SearchSuggestions({ results, onSelect }: SearchSuggestionsProps)
               )}
             </span>
             <span className="shrink-0 text-body-b8 font-bold text-foreground">
-              ${product.price.toFixed(2)}
+              {formatMoney(product.price, locale)}
             </span>
           </button>
         </li>
