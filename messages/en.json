@@ -17,5 +17,13 @@
     "filterAll": "All",
     "emptyTitle": "Your favorite list is empty.",
     "emptyBody": "Start Adding Products To Your Favorites And Find Them Here Easily"
+  },
+  "home": {
+    "categorySection": "Category",
+    "heroTitle": "Fresh Veggies<br></br>Fresh Discounts",
+    "heroCta": "Get Fresh Now",
+    "heroImageAlt": "Fresh vegetables",
+    "featured": "Featured Products",
+    "specialOffers": "Special Offers"
   }
 }

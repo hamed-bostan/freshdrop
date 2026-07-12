@@ -1,20 +1,20 @@
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import { ShoppingCart } from "lucide-react";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { heroBanner } from "@/src/shared/assets/images";
 
-export function HeroBanner() {
+export async function HeroBanner() {
+  const t = await getTranslations("home");
+
   return (
     <div className="relative overflow-hidden rounded-card-xl min-h-40 bg-linear-to-t from-primary/50 to-primary">
       <div className="absolute top-7 left-8 z-20">
-        <h4 className="mb-2 text-heading-h4 text-accent">
-          Fresh Veggies
-          <br />
-          Fresh Discounts
-        </h4>
+        {/* rich text so each locale controls its own line break */}
+        <h4 className="mb-2 text-heading-h4 text-accent">{t.rich("heroTitle", { br: () => <br /> })}</h4>
         <Button variant="ghost" size="sm" className="gap-2 text-accent">
           <Icon icon={ShoppingCart} size="lg" />
-          Get Fresh Now
+          {t("heroCta")}
         </Button>
       </div>
 
@@ -24,7 +24,7 @@ export function HeroBanner() {
       />
 
       <div className="absolute top-4 right-4 z-10">
-        <Image src={heroBanner} alt="Fresh vegetables" className="object-cover" priority />
+        <Image src={heroBanner} alt={t("heroImageAlt")} className="object-cover" priority />
       </div>
     </div>
   );
