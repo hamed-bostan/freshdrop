@@ -129,6 +129,8 @@
     "detailTitle": "Product Detail",
     "outOfStock": "Out of stock",
     "onlyLeft": "Only {count} left",
+    "badgeSale": "Sale",
+    "badgeBogo": "Buy 1, Get 1 Free",
     "similar": "Similar To This Item",
     "infoDetail": "Product detail",
     "infoNutrition": "Nutritions",

@@ -10,6 +10,16 @@ import { getStockStatus } from "@/src/domain/entities/stock";
 import Image from "next/image";
 import { Link } from "@/src/i18n/navigation";
 
+/**
+ * Promo badges are stored as free-form text on the product, but the catalogue draws from a
+ * small, fixed promotional vocabulary. Map those known values to a localized `product` key so
+ * the ribbon reads in the active locale; any custom badge falls back to its raw stored text.
+ */
+const BADGE_LABEL_KEYS: Record<string, "badgeSale" | "badgeBogo"> = {
+  Sale: "badgeSale",
+  "Buy 1, Get 1 Free": "badgeBogo",
+};
+
 interface ProductCardProps {
   product: Product;
   className?: string;
@@ -39,6 +49,8 @@ export function ProductCard({
   const hasDiscount = product.originalPrice != null && product.discountPercent != null;
   const stock = getStockStatus(product.stockQuantity);
   const outOfStock = stock.level === "out";
+  const badgeKey = product.badge ? BADGE_LABEL_KEYS[product.badge] : undefined;
+  const badgeLabel = badgeKey ? t(badgeKey) : product.badge;
 
   return (
     <article className={cn("rounded-card-xl bg-surface py-2 relative overflow-hidden", className)}>
@@ -70,7 +82,7 @@ export function ProductCard({
       ) : (
         product.badge && (
           <span className="absolute end-0 top-2 z-10 rounded-ss-lg rounded-es-lg rounded-se-xs rounded-ee-none bg-primary p-1 text-label-l3 text-primary-foreground">
-            {product.badge}
+            {badgeLabel}
           </span>
         )
       )}
