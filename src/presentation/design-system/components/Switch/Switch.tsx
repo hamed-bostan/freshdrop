@@ -27,7 +27,10 @@ export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(({ classN
     <SwitchPrimitive.Thumb
       className={cn(
         "pointer-events-none block size-6 rounded-full bg-background shadow-md transition-transform",
+        // Physical translate, so mirror the checked offset under RTL — flexbox already
+        // parks the unchecked thumb at the right (start) edge, the checked state moves it left.
         "data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0",
+        "rtl:data-[state=checked]:-translate-x-5",
       )}
     />
   </SwitchPrimitive.Root>
