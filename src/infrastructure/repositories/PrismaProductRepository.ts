@@ -43,12 +43,29 @@ export class PrismaProductRepository implements IProductRepository {
     const and: Prisma.ProductWhereInput[] = [];
 
     if (filters.query) {
-      and.push({
-        OR: [
-          { name: { contains: filters.query, mode: "insensitive" } },
-          { description: { contains: filters.query, mode: "insensitive" } },
-        ],
-      });
+      const or: Prisma.ProductWhereInput[] = [
+        { name: { contains: filters.query, mode: "insensitive" } },
+        { description: { contains: filters.query, mode: "insensitive" } },
+      ];
+      // Also match the localized text so a search in the active language finds the
+      // product (e.g. «انگور» → «انگور بی‌دانه»). Translations live in a side table
+      // with no Prisma relation (the schema's loose coupling), so resolve the
+      // matching product ids first, then widen the OR by id. Canonical (English)
+      // matching stays too — a query in either language works.
+      if (locale) {
+        const matches = await prisma.productTranslation.findMany({
+          where: {
+            locale,
+            OR: [
+              { name: { contains: filters.query, mode: "insensitive" } },
+              { description: { contains: filters.query, mode: "insensitive" } },
+            ],
+          },
+          select: { productId: true },
+        });
+        if (matches.length > 0) or.push({ id: { in: matches.map((m) => m.productId) } });
+      }
+      and.push({ OR: or });
     }
     if (filters.categoryId) and.push({ categoryId: filters.categoryId });
     if (filters.minPrice != null) and.push({ price: { gte: filters.minPrice } });
@@ -60,9 +77,7 @@ export class PrismaProductRepository implements IProductRepository {
       where: and.length ? { AND: and } : {},
       orderBy: orderByFor(filters.sort),
     });
-    // The term matches the canonical (default-locale) name/description above; the
-    // returned rows are then localized for display. Matching translated text is a
-    // deferred enhancement.
+    // Matched on canonical + localized text above; localize the rows for display.
     return localizeProducts(rows.map(toProduct), locale);
   }
 
