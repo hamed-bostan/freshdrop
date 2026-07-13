@@ -6,6 +6,7 @@ import { Link } from "@/src/i18n/navigation";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
+import { ADDRESS_PRESET_LABEL_KEY } from "../addressLabel";
 import { DeliveryLocationSummary } from "./DeliveryLocationSummary";
 
 interface DeliveryLocationItemProps {
@@ -19,6 +20,8 @@ interface DeliveryLocationItemProps {
 
 export function DeliveryLocationItem({ location, selected, onSelect, editHref }: DeliveryLocationItemProps) {
   const t = useTranslations("addresses");
+  const presetKey = ADDRESS_PRESET_LABEL_KEY[location.kind];
+  const label = presetKey ? t(presetKey) : location.label;
 
   return (
     <div
@@ -31,7 +34,7 @@ export function DeliveryLocationItem({ location, selected, onSelect, editHref }:
         <DeliveryLocationSummary location={location} />
       </button>
 
-      <Button asChild variant="ghost" iconOnly aria-label={t("editAria", { label: location.label })}>
+      <Button asChild variant="ghost" iconOnly aria-label={t("editAria", { label })}>
         <Link href={editHref}>
           <Icon icon={Pencil} size="sm" />
         </Link>
