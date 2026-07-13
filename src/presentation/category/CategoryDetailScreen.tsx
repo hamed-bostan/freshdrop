@@ -15,7 +15,7 @@ export default async function CategoryDetailScreen({ category, products }: Categ
 
   return (
     <div className="flex flex-col gap-6 px-6 pb-24">
-      {/* category.name is catalog content — localized once content translation lands. */}
+      {/* category.name is catalog content, localized per-locale by the repository. */}
       <PageHeader title={category.name} />
 
       <SearchBar
