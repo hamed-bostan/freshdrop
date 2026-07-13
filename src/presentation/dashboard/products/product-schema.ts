@@ -77,11 +77,35 @@ export const productFormSchema = z
     origin: optionalText,
     brand: brandField,
     dietary: dietaryField,
+    // Persian (fa) content overrides — optional. A blank fa name means "no fa
+    // translation" for this product (the storefront falls back to the base row).
+    faName: optionalText,
+    faUnit: optionalText,
+    faDescription: optionalText,
+    faNutrition: optionalText,
+    faOrigin: optionalText,
   })
   .refine((data) => data.originalPrice === undefined || data.originalPrice > data.price, {
     path: ["originalPrice"],
     message: "Original price must be higher than the price.",
-  });
+  })
+  .transform(({ faName, faUnit, faDescription, faNutrition, faOrigin, ...base }) => ({
+    ...base,
+    // Only author a translation when a localized name is provided (the DB requires
+    // it); clearing the name drops the fa translation on save.
+    translations: faName
+      ? [
+          {
+            locale: "fa",
+            name: faName,
+            unit: faUnit,
+            description: faDescription,
+            nutrition: faNutrition,
+            origin: faOrigin,
+          },
+        ]
+      : [],
+  }));
 
 /** Form value shape (what the controls hold). */
 export type ProductFormInput = z.input<typeof productFormSchema>;

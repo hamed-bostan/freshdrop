@@ -1,4 +1,5 @@
 import type { Category } from "@/src/domain/entities/Category";
+import type { CategoryTranslationInput } from "@/src/domain/repositories/ICategoryRepository";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
 
@@ -22,5 +23,10 @@ export const categoriesServerApi = {
       if (error instanceof ApiError && error.status === 404) return null;
       throw error;
     }
+  },
+
+  /** The category's stored per-locale translations, to prefill the edit form. */
+  getTranslations(id: string): Promise<CategoryTranslationInput[]> {
+    return serverApiGet<CategoryTranslationInput[]>(`/categories/${id}/translations`);
   },
 };

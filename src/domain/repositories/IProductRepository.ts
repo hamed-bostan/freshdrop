@@ -2,10 +2,30 @@ import type { Product } from "../entities/Product";
 import type { ProductFilters } from "../entities/ProductFilters";
 
 /**
+ * One locale's content overrides for a product — the admin-authored translation.
+ * `name` is required (the base row's name is never blank); the rest fall back to the
+ * base row field-by-field when omitted.
+ */
+export type ProductTranslationInput = {
+  locale: string;
+  name: string;
+  unit?: string;
+  description?: string;
+  nutrition?: string;
+  origin?: string;
+};
+
+/**
  * A product before it exists. The admin controls these fields; everything derived
  * (id, ratings, `discountPercent`) is filled in by the repository on create.
+ *
+ * `translations` carries the per-locale content to persist alongside the base row:
+ * `undefined` leaves any existing translations untouched, while a list *replaces*
+ * them (locales absent from it are removed, so `[]` clears all).
  */
-export type NewProduct = Omit<Product, "id" | "discountPercent" | "rating" | "ratingCount" | "images">;
+export type NewProduct = Omit<Product, "id" | "discountPercent" | "rating" | "ratingCount" | "images"> & {
+  translations?: ProductTranslationInput[];
+};
 
 /** One line of a stock decrement: which product, its name (for error messages), and how many units. */
 export type StockAdjustment = {
@@ -29,6 +49,8 @@ export type IProductRepository = {
   create(input: NewProduct): Promise<Product>;
   update(id: string, input: NewProduct): Promise<Product>;
   delete(id: string): Promise<void>;
+  /** The stored per-locale translations for a product (for the admin edit form); empty when none. */
+  getTranslations(productId: string): Promise<ProductTranslationInput[]>;
 
   /**
    * Atomically reduce on-hand stock for each line, all-or-nothing: if any line

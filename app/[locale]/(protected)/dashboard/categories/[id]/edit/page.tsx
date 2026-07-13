@@ -10,8 +10,11 @@ type EditCategoryPageProps = {
 // one renders the not-found boundary. The screen is presentational from there.
 export default async function EditCategoryPage({ params }: EditCategoryPageProps) {
   const { id } = await params;
-  const category = await categoriesServerApi.getById(id);
+  const [category, translations] = await Promise.all([
+    categoriesServerApi.getById(id),
+    categoriesServerApi.getTranslations(id),
+  ]);
   if (!category) notFound();
 
-  return <EditCategoryScreen category={category} />;
+  return <EditCategoryScreen category={category} translations={translations} />;
 }

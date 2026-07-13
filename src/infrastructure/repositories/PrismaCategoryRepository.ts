@@ -1,6 +1,10 @@
 import { Prisma } from "@prisma/client";
 import type { Category } from "@/src/domain/entities/Category";
-import type { ICategoryRepository, NewCategory } from "@/src/domain/repositories/ICategoryRepository";
+import type {
+  CategoryTranslationInput,
+  ICategoryRepository,
+  NewCategory,
+} from "@/src/domain/repositories/ICategoryRepository";
 import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { prisma } from "@/src/infrastructure/prisma/client";
@@ -28,8 +32,11 @@ export class PrismaCategoryRepository implements ICategoryRepository {
   }
 
   async create(input: NewCategory): Promise<Category> {
+    // `translations` isn't a `categories` column — persist it into the side table.
+    const { translations, ...data } = input;
     try {
-      const row = await prisma.category.create({ data: input });
+      const row = await prisma.category.create({ data });
+      await replaceCategoryTranslations(row.id, translations);
       return toCategory(row);
     } catch (error) {
       throw toDomainError(error);
@@ -37,12 +44,22 @@ export class PrismaCategoryRepository implements ICategoryRepository {
   }
 
   async update(id: string, input: NewCategory): Promise<Category> {
+    const { translations, ...data } = input;
     try {
-      const row = await prisma.category.update({ where: { id }, data: input });
+      const row = await prisma.category.update({ where: { id }, data });
+      await replaceCategoryTranslations(row.id, translations);
       return toCategory(row);
     } catch (error) {
       throw toDomainError(error);
     }
+  }
+
+  async getTranslations(categoryId: string): Promise<CategoryTranslationInput[]> {
+    const rows = await prisma.categoryTranslation.findMany({
+      where: { categoryId },
+      orderBy: { locale: "asc" },
+    });
+    return rows.map((row) => ({ locale: row.locale, name: row.name }));
   }
 
   async delete(id: string): Promise<void> {
@@ -57,6 +74,31 @@ export class PrismaCategoryRepository implements ICategoryRepository {
 /** Map a Prisma row to the domain entity (dropping DB-only timestamps). */
 function toCategory(row: { id: string; name: string; slug: string; iconUrl: string }): Category {
   return { id: row.id, name: row.name, slug: row.slug, iconUrl: row.iconUrl };
+}
+
+/**
+ * Persist a category's per-locale translations to the side table. `undefined` leaves
+ * them untouched; a list replaces the set — locales absent from it are deleted (so
+ * `[]` clears all), the rest upserted.
+ */
+async function replaceCategoryTranslations(
+  categoryId: string,
+  translations?: CategoryTranslationInput[],
+): Promise<void> {
+  if (translations === undefined) return;
+
+  const locales = translations.map((t) => t.locale);
+  const where: Prisma.CategoryTranslationWhereInput = { categoryId };
+  if (locales.length > 0) where.locale = { notIn: locales };
+  await prisma.categoryTranslation.deleteMany({ where });
+
+  for (const t of translations) {
+    await prisma.categoryTranslation.upsert({
+      where: { categoryId_locale: { categoryId, locale: t.locale } },
+      create: { categoryId, locale: t.locale, name: t.name },
+      update: { name: t.name },
+    });
+  }
 }
 
 /**

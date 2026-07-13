@@ -5,18 +5,21 @@ import { useTranslations } from "next-intl";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@/src/domain/entities/Category";
+import type { CategoryTranslationInput } from "@/src/domain/repositories/ICategoryRepository";
 import { Button, Field, Input, TextField } from "@/src/presentation/design-system";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { slugify } from "@/src/lib/slugify";
-import { categoryFormSchema, type CategoryFormValues } from "./category-schema";
+import { categoryFormSchema, type CategoryFormInput } from "./category-schema";
 import { categoriesApi } from "./category-api";
 import { IconUpload } from "./IconUpload";
 
 /** Fields the API can return targeted `fieldErrors` for. */
 const FORM_FIELDS = ["name", "slug", "iconUrl"] as const;
 
-type CategoryFormProps = { mode: "create" } | { mode: "edit"; category: Category };
+type CategoryFormProps =
+  | { mode: "create" }
+  | { mode: "edit"; category: Category; translations: CategoryTranslationInput[] };
 
 /**
  * Create/edit category form. React Hook Form + Zod (shared `categoryFormSchema`).
@@ -36,11 +39,17 @@ export function CategoryForm(props: CategoryFormProps) {
     control,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<CategoryFormValues>({
-    resolver: zodResolver(categoryFormSchema),
-    defaultValues: editing
-      ? { name: props.category.name, slug: props.category.slug, iconUrl: props.category.iconUrl }
-      : { name: "", slug: "", iconUrl: "" },
+  } = useForm<CategoryFormInput>({
+    resolver: zodResolver(categoryFormSchema, undefined, { raw: true }),
+    defaultValues:
+      props.mode === "edit"
+        ? {
+            name: props.category.name,
+            slug: props.category.slug,
+            iconUrl: props.category.iconUrl,
+            faName: props.translations.find((translation) => translation.locale === "fa")?.name ?? "",
+          }
+        : { name: "", slug: "", iconUrl: "", faName: "" },
   });
 
   // Mirror the name into the slug until the user edits the slug directly (and
@@ -122,6 +131,16 @@ export function CategoryForm(props: CategoryFormProps) {
       </Field>
       {/* Keeps iconUrl registered (set imperatively by IconUpload) so it's tracked + submitted. */}
       <input type="hidden" {...register("iconUrl")} />
+
+      {/* Persian (fa) name override. Optional — leaving it blank stores no fa
+          translation, so the storefront falls back to the name above under fa. */}
+      <fieldset className="flex flex-col gap-5 rounded-card-md border border-border p-4">
+        <legend className="px-1 text-body-b7 text-input-foreground">{t("translationLegend")}</legend>
+        <p className="-mt-2 text-body-b10 text-muted-foreground">{t("translationDescription")}</p>
+        <TextField label={t("faNameLabel")} error={errors.faName?.message}>
+          {(control) => <Input {...control} {...register("faName")} dir="rtl" placeholder={t("faNamePlaceholder")} />}
+        </TextField>
+      </fieldset>
 
       {errors.root?.message && (
         <p role="alert" className="text-body-b8 text-destructive">

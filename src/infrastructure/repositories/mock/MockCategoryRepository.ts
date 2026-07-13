@@ -1,5 +1,9 @@
 import type { Category } from "@/src/domain/entities/Category";
-import type { ICategoryRepository, NewCategory } from "@/src/domain/repositories/ICategoryRepository";
+import type {
+  CategoryTranslationInput,
+  ICategoryRepository,
+  NewCategory,
+} from "@/src/domain/repositories/ICategoryRepository";
 
 /**
  * Exported so the product mock can reuse each category's grid image as the image
@@ -59,5 +63,10 @@ export class MockCategoryRepository implements ICategoryRepository {
   async delete(id: string): Promise<void> {
     const index = MOCK_CATEGORIES.findIndex((c) => c.id === id);
     if (index !== -1) MOCK_CATEGORIES.splice(index, 1);
+  }
+
+  // The mock catalog is single-locale (English only); no stored translations.
+  async getTranslations(): Promise<CategoryTranslationInput[]> {
+    return [];
   }
 }

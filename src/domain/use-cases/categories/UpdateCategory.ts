@@ -29,7 +29,12 @@ export class UpdateCategory {
     const previous = await this.categoryRepo.getById(id);
     if (!previous) throw new NotFoundError("category", id);
 
-    const updated = await this.categoryRepo.update(id, { name, slug, iconUrl: input.iconUrl });
+    const updated = await this.categoryRepo.update(id, {
+      name,
+      slug,
+      iconUrl: input.iconUrl,
+      translations: input.translations,
+    });
 
     // Reclaim the previous icon when it's been swapped out (best-effort).
     if (previous.iconUrl !== updated.iconUrl) {

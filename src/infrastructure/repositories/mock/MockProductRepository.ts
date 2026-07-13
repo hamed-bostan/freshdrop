@@ -3,7 +3,12 @@ import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
 import type { ProductFilters, ProductSort } from "@/src/domain/entities/ProductFilters";
 import { PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
-import type { IProductRepository, NewProduct, StockAdjustment } from "@/src/domain/repositories/IProductRepository";
+import type {
+  IProductRepository,
+  NewProduct,
+  ProductTranslationInput,
+  StockAdjustment,
+} from "@/src/domain/repositories/IProductRepository";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { InsufficientStockError, type StockShortfall } from "@/src/domain/errors/InsufficientStockError";
 import { MOCK_CATEGORIES } from "./MockCategoryRepository";
@@ -375,6 +380,11 @@ export class MockProductRepository implements IProductRepository {
   async delete(id: string): Promise<void> {
     const index = PRODUCTS.findIndex((p) => p.id === id);
     if (index !== -1) PRODUCTS.splice(index, 1);
+  }
+
+  // The mock catalog is single-locale (English only); no stored translations.
+  async getTranslations(): Promise<ProductTranslationInput[]> {
+    return [];
   }
 
   async decrementStock(lines: readonly StockAdjustment[]): Promise<void> {

@@ -20,6 +20,6 @@ export class CreateCategory {
     const existing = await this.categoryRepo.getBySlug(slug);
     if (existing) throw new UniqueConstraintError(["slug"]);
 
-    return this.categoryRepo.create({ name, slug, iconUrl: input.iconUrl });
+    return this.categoryRepo.create({ name, slug, iconUrl: input.iconUrl, translations: input.translations });
   }
 }

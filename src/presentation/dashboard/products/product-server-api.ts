@@ -1,4 +1,5 @@
 import type { Product } from "@/src/domain/entities/Product";
+import type { ProductTranslationInput } from "@/src/domain/repositories/IProductRepository";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
 
@@ -22,5 +23,10 @@ export const productsServerApi = {
       if (error instanceof ApiError && error.status === 404) return null;
       throw error;
     }
+  },
+
+  /** The product's stored per-locale translations, to prefill the edit form. */
+  getTranslations(id: string): Promise<ProductTranslationInput[]> {
+    return serverApiGet<ProductTranslationInput[]>(`/products/${id}/translations`);
   },
 };

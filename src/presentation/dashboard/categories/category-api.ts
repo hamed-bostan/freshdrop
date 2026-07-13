@@ -1,6 +1,6 @@
 import type { Category } from "@/src/domain/entities/Category";
 import { apiClient } from "@/src/lib/api/client";
-import type { CategoryFormValues } from "./category-schema";
+import type { CategoryFormInput } from "./category-schema";
 
 /**
  * Typed client for the category REST *mutations*. UI components call these instead
@@ -9,12 +9,12 @@ import type { CategoryFormValues } from "./category-schema";
  * Reads are server-side (see `categoriesServerApi`).
  */
 export const categoriesApi = {
-  async create(values: CategoryFormValues): Promise<Category> {
+  async create(values: CategoryFormInput): Promise<Category> {
     const { data } = await apiClient.post<Category>("/categories", values);
     return data;
   },
 
-  async update(id: string, values: CategoryFormValues): Promise<Category> {
+  async update(id: string, values: CategoryFormInput): Promise<Category> {
     const { data } = await apiClient.put<Category>(`/categories/${id}`, values);
     return data;
   },

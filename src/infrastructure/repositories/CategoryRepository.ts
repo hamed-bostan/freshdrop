@@ -1,5 +1,9 @@
 import type { Category } from "@/src/domain/entities/Category";
-import type { ICategoryRepository, NewCategory } from "@/src/domain/repositories/ICategoryRepository";
+import type {
+  CategoryTranslationInput,
+  ICategoryRepository,
+  NewCategory,
+} from "@/src/domain/repositories/ICategoryRepository";
 
 export class CategoryRepository implements ICategoryRepository {
   constructor(private readonly baseUrl: string) {}
@@ -44,5 +48,11 @@ export class CategoryRepository implements ICategoryRepository {
   async delete(id: string): Promise<void> {
     const res = await fetch(`${this.baseUrl}/categories/${id}`, { method: "DELETE" });
     if (!res.ok) throw new Error("CategoryRepository: delete failed.");
+  }
+
+  async getTranslations(id: string): Promise<CategoryTranslationInput[]> {
+    const res = await fetch(`${this.baseUrl}/categories/${id}/translations`);
+    if (!res.ok) return [];
+    return res.json();
   }
 }

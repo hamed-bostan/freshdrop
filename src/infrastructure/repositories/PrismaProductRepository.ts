@@ -1,7 +1,12 @@
 import { Prisma } from "@prisma/client";
 import type { Product } from "@/src/domain/entities/Product";
 import type { ProductFilters, ProductSort } from "@/src/domain/entities/ProductFilters";
-import type { IProductRepository, NewProduct, StockAdjustment } from "@/src/domain/repositories/IProductRepository";
+import type {
+  IProductRepository,
+  NewProduct,
+  ProductTranslationInput,
+  StockAdjustment,
+} from "@/src/domain/repositories/IProductRepository";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { InsufficientStockError, type StockShortfall } from "@/src/domain/errors/InsufficientStockError";
 import { prisma } from "@/src/infrastructure/prisma/client";
@@ -103,8 +108,11 @@ export class PrismaProductRepository implements IProductRepository {
   }
 
   async create(input: NewProduct): Promise<Product> {
+    // `translations` isn't a `products` column — persist it into the side table.
+    const { translations, ...data } = input;
     try {
-      const row = await prisma.product.create({ data: input });
+      const row = await prisma.product.create({ data });
+      await replaceProductTranslations(row.id, translations);
       return toProduct(row);
     } catch (error) {
       throw toDomainError(error);
@@ -112,12 +120,29 @@ export class PrismaProductRepository implements IProductRepository {
   }
 
   async update(id: string, input: NewProduct): Promise<Product> {
+    const { translations, ...data } = input;
     try {
-      const row = await prisma.product.update({ where: { id }, data: input });
+      const row = await prisma.product.update({ where: { id }, data });
+      await replaceProductTranslations(row.id, translations);
       return toProduct(row);
     } catch (error) {
       throw toDomainError(error);
     }
+  }
+
+  async getTranslations(productId: string): Promise<ProductTranslationInput[]> {
+    const rows = await prisma.productTranslation.findMany({
+      where: { productId },
+      orderBy: { locale: "asc" },
+    });
+    return rows.map((row) => ({
+      locale: row.locale,
+      name: row.name,
+      unit: row.unit ?? undefined,
+      description: row.description ?? undefined,
+      nutrition: row.nutrition ?? undefined,
+      origin: row.origin ?? undefined,
+    }));
   }
 
   async delete(id: string): Promise<void> {
@@ -246,6 +271,39 @@ function toProduct(row: ProductRow): Product {
     brand: row.brand ?? undefined,
     dietary: row.dietary,
   };
+}
+
+/**
+ * Persist a product's per-locale translations to the side table. `undefined` leaves
+ * them untouched (e.g. a caller that doesn't manage translations); a list replaces
+ * the set — locales absent from it are deleted (so `[]` clears all), the rest upserted.
+ */
+async function replaceProductTranslations(
+  productId: string,
+  translations?: ProductTranslationInput[],
+): Promise<void> {
+  if (translations === undefined) return;
+
+  const locales = translations.map((t) => t.locale);
+  const where: Prisma.ProductTranslationWhereInput = { productId };
+  // Remove locales no longer present (all of them when the list is empty).
+  if (locales.length > 0) where.locale = { notIn: locales };
+  await prisma.productTranslation.deleteMany({ where });
+
+  for (const t of translations) {
+    const fields = {
+      name: t.name,
+      unit: t.unit ?? null,
+      description: t.description ?? null,
+      nutrition: t.nutrition ?? null,
+      origin: t.origin ?? null,
+    };
+    await prisma.productTranslation.upsert({
+      where: { productId_locale: { productId, locale: t.locale } },
+      create: { productId, locale: t.locale, ...fields },
+      update: fields,
+    });
+  }
 }
 
 /**

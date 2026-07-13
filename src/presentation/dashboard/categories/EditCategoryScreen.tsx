@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Category } from "@/src/domain/entities/Category";
+import type { CategoryTranslationInput } from "@/src/domain/repositories/ICategoryRepository";
 import { CategoryForm } from "./CategoryForm";
 
 /**
@@ -7,7 +8,13 @@ import { CategoryForm } from "./CategoryForm";
  * (BFF) during server render and passes it in, then hands it to the shared
  * `CategoryForm`. A missing category is handled upstream via `notFound()`.
  */
-export async function EditCategoryScreen({ category }: { category: Category }) {
+export async function EditCategoryScreen({
+  category,
+  translations,
+}: {
+  category: Category;
+  translations: CategoryTranslationInput[];
+}) {
   const t = await getTranslations("dashCategories");
 
   return (
@@ -16,7 +23,7 @@ export async function EditCategoryScreen({ category }: { category: Category }) {
         <h1 className="text-heading-h2 text-foreground">{t("editHeading")}</h1>
         <p className="text-body-b6 text-muted-foreground">{t("editSubtitle", { name: category.name })}</p>
       </div>
-      <CategoryForm mode="edit" category={category} />
+      <CategoryForm mode="edit" category={category} translations={translations} />
     </div>
   );
 }

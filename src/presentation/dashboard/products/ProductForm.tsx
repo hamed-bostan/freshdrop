@@ -6,6 +6,7 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
+import type { ProductTranslationInput } from "@/src/domain/repositories/IProductRepository";
 import { DIETARY_TAGS, PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
 import { Button, Field, Input, Switch, TextField, Textarea } from "@/src/presentation/design-system";
 import { Link, useRouter } from "@/src/i18n/navigation";
@@ -38,10 +39,11 @@ const SELECT_CLASSES =
 
 type ProductFormProps =
   | { mode: "create"; categories: Category[] }
-  | { mode: "edit"; categories: Category[]; product: Product };
+  | { mode: "edit"; categories: Category[]; product: Product; translations: ProductTranslationInput[] };
 
 /** Build the form's initial values, coercing the numeric/optional domain fields to the string controls. */
-function toDefaults(product?: Product): ProductFormInput {
+function toDefaults(product?: Product, translations?: ProductTranslationInput[]): ProductFormInput {
+  const fa = translations?.find((translation) => translation.locale === "fa");
   return {
     name: product?.name ?? "",
     categoryId: product?.categoryId ?? "",
@@ -57,6 +59,11 @@ function toDefaults(product?: Product): ProductFormInput {
     origin: product?.origin ?? "",
     brand: product?.brand ?? "",
     dietary: product?.dietary ?? [],
+    faName: fa?.name ?? "",
+    faUnit: fa?.unit ?? "",
+    faDescription: fa?.description ?? "",
+    faNutrition: fa?.nutrition ?? "",
+    faOrigin: fa?.origin ?? "",
   };
 }
 
@@ -82,7 +89,10 @@ export function ProductForm(props: ProductFormProps) {
     formState: { errors, isSubmitting },
   } = useForm<ProductFormInput>({
     resolver: zodResolver(productFormSchema, undefined, { raw: true }),
-    defaultValues: toDefaults(editing ? props.product : undefined),
+    defaultValues: toDefaults(
+      editing ? props.product : undefined,
+      editing ? props.translations : undefined,
+    ),
   });
 
   const imageUrl = useWatch({ control, name: "imageUrl" });
@@ -310,6 +320,33 @@ export function ProductForm(props: ProductFormProps) {
       <TextField label={t("originLabel")} error={errors.origin?.message}>
         {(control) => <Textarea {...control} {...register("origin")} placeholder={t("originPlaceholder")} />}
       </TextField>
+
+      {/* Persian (fa) content overrides. Optional — leaving the name blank stores no
+          fa translation, so the storefront falls back to the fields above under fa. */}
+      <fieldset className="flex flex-col gap-5 rounded-card-md border border-border p-4">
+        <legend className="px-1 text-body-b7 text-input-foreground">{t("translationLegend")}</legend>
+        <p className="-mt-2 text-body-b10 text-muted-foreground">{t("translationDescription")}</p>
+
+        <TextField label={t("faNameLabel")} error={errors.faName?.message}>
+          {(control) => <Input {...control} {...register("faName")} dir="rtl" placeholder={t("faNamePlaceholder")} />}
+        </TextField>
+
+        <TextField label={t("faUnitLabel")} error={errors.faUnit?.message}>
+          {(control) => <Input {...control} {...register("faUnit")} dir="rtl" placeholder={t("faUnitPlaceholder")} />}
+        </TextField>
+
+        <TextField label={t("faDescriptionLabel")} error={errors.faDescription?.message}>
+          {(control) => <Textarea {...control} {...register("faDescription")} dir="rtl" />}
+        </TextField>
+
+        <TextField label={t("faNutritionLabel")} error={errors.faNutrition?.message}>
+          {(control) => <Textarea {...control} {...register("faNutrition")} dir="rtl" />}
+        </TextField>
+
+        <TextField label={t("faOriginLabel")} error={errors.faOrigin?.message}>
+          {(control) => <Textarea {...control} {...register("faOrigin")} dir="rtl" />}
+        </TextField>
+      </fieldset>
 
       {errors.root?.message && (
         <p role="alert" className="text-body-b8 text-destructive">
