@@ -13,7 +13,7 @@ import { prisma } from "@/src/infrastructure/prisma/client";
 export class PrismaCartRepository implements ICartRepository {
   constructor(private readonly products: IProductRepository) {}
 
-  async getItems(userId: string): Promise<CartItem[]> {
+  async getItems(userId: string, locale?: string): Promise<CartItem[]> {
     const rows = await prisma.cartItem.findMany({
       where: { userId },
       // Insertion order (with a deterministic tiebreak) so the list stays stable.
@@ -21,7 +21,7 @@ export class PrismaCartRepository implements ICartRepository {
     });
     if (rows.length === 0) return [];
 
-    const all = await this.products.getAll();
+    const all = await this.products.getAll(locale);
     const byId = new Map(all.map((product) => [product.id, product]));
 
     return rows

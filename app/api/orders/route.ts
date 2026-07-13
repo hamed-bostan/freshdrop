@@ -14,6 +14,7 @@ import {
   orderNotifier,
 } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
+import { getRequestLocale } from "@/src/lib/api/request-locale";
 import { placeOrderSchema } from "@/src/presentation/checkout/checkout-schema";
 import {
   errorResponse,
@@ -84,7 +85,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const promo = parsed.data.promo
       ? await new FindPromoCode(promoCodeRepository).execute(parsed.data.promo)
       : null;
-    const cart = await new GetCart(cartRepository).execute({ userId: session.user.id, promo });
+    const cart = await new GetCart(cartRepository).execute({
+      userId: session.user.id,
+      promo,
+      // Snapshot the order in the locale the shopper is checking out in — matches
+      // what they saw, and is the fallback the order-history re-resolve falls back to.
+      locale: getRequestLocale(request),
+    });
 
     // Collapse the per-line substitution choices into a productId→preference map
     // for the use-case; unlisted lines default to "substitute" there.

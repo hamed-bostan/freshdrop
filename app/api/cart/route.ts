@@ -5,6 +5,7 @@ import { ClearCart } from "@/src/domain/use-cases/cart/ClearCart";
 import { FindPromoCode } from "@/src/domain/use-cases/promo-codes/FindPromoCode";
 import { cartRepository, promoCodeRepository } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
+import { getRequestLocale } from "@/src/lib/api/request-locale";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 
 // The cart (and any applied discount) is per-user, read per request — never cached.
@@ -28,7 +29,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const code = request.nextUrl.searchParams.get("promo");
     const promo = code ? await new FindPromoCode(promoCodeRepository).execute(code) : null;
-    const cart = await new GetCart(cartRepository).execute({ userId: session.user.id, promo });
+    const cart = await new GetCart(cartRepository).execute({
+      userId: session.user.id,
+      promo,
+      locale: getRequestLocale(request),
+    });
     return NextResponse.json(cart);
   } catch (error) {
     return errorResponseFromException(error, "GET /api/cart failed");

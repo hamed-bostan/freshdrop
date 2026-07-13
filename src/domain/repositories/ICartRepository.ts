@@ -5,7 +5,9 @@ import type { CartItem } from "../entities/Cart";
  * per-user data (like orders and favorites), not a global singleton.
  */
 export type ICartRepository = {
-  getItems(userId: string): Promise<CartItem[]>;
+  // `locale` localizes the resolved product snapshots (name/unit) for display —
+  // omitted or the default locale returns canonical text; see IProductRepository.
+  getItems(userId: string, locale?: string): Promise<CartItem[]>;
   /** Add `quantity` of a product, accumulating onto any existing line. */
   addItem(userId: string, productId: string, quantity: number): Promise<void>;
   removeItem(userId: string, productId: string): Promise<void>;
