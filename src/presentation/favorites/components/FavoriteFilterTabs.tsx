@@ -1,12 +1,60 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { RadioGroup } from "radix-ui";
+import { getLangDir } from "@/src/i18n/direction";
 import { cn } from "@/src/lib/utils";
 import type { Category } from "@/src/domain/entities/Category";
 
 /** Sentinel value for the "All" tab (no category filter). */
 export const ALL_FILTER = "all";
+
+/** Localized name keys under `category.names`, mirroring the catalog slugs. */
+type CategoryNameKey =
+  | "vegetables"
+  | "dairy"
+  | "meat-fish"
+  | "grains-pulses"
+  | "drinks"
+  | "fruits"
+  | "spices"
+  | "sauce"
+  | "spaghetti"
+  | "bakery"
+  | "sweets"
+  | "jams"
+  | "alcoholic-drink"
+  | "teas"
+  | "sausage"
+  | "candys"
+  | "soaps"
+  | "oils";
+
+/**
+ * Category slug → its localized name key. Presentation owns this mapping so the
+ * fixed catalog of categories renders in the active locale; a slug without a key
+ * yet (e.g. a category added later) falls back to the stored catalog name.
+ */
+const NAME_KEYS: Record<string, CategoryNameKey> = {
+  vegetables: "vegetables",
+  dairy: "dairy",
+  "meat-fish": "meat-fish",
+  "grains-pulses": "grains-pulses",
+  drinks: "drinks",
+  fruits: "fruits",
+  spices: "spices",
+  sauce: "sauce",
+  spaghetti: "spaghetti",
+  bakery: "bakery",
+  sweets: "sweets",
+  jams: "jams",
+  "alcoholic-drink": "alcoholic-drink",
+  teas: "teas",
+  sausage: "sausage",
+  candys: "candys",
+  soaps: "soaps",
+  oils: "oils",
+};
 
 interface FavoriteFilterTabsProps {
   /** Categories to offer as filters (typically only those present in favorites). */
@@ -23,13 +71,23 @@ interface FavoriteFilterTabsProps {
  * edge-to-edge while staying aligned to the page gutter.
  */
 export function FavoriteFilterTabs({ categories, value, onValueChange }: FavoriteFilterTabsProps) {
+  const locale = useLocale();
   const t = useTranslations("favorites");
-  // Category names come from the catalog (English until content translation lands); only
-  // the synthetic "All" tab is localized.
-  const tabs = [{ id: ALL_FILTER, name: t("filterAll") }, ...categories];
+  const tName = useTranslations("category.names");
+  // Localize each category by slug; the synthetic "All" tab is localized separately.
+  const tabs = [
+    { id: ALL_FILTER, name: t("filterAll") },
+    ...categories.map((category) => {
+      const key = NAME_KEYS[category.slug];
+      return { id: category.id, name: key ? tName(key) : category.name };
+    }),
+  ];
 
   return (
     <RadioGroup.Root
+      // Match the reading direction so arrow-key roving between tabs follows the
+      // visual order under `fa` (Radix defaults to LTR without an explicit dir).
+      dir={getLangDir(locale)}
       value={value}
       onValueChange={onValueChange}
       orientation="horizontal"

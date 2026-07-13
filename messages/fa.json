@@ -45,7 +45,27 @@
     "specialOffers": "پیشنهادهای ویژه"
   },
   "category": {
-    "allCategories": "همه دسته‌بندی‌ها"
+    "allCategories": "همه دسته‌بندی‌ها",
+    "names": {
+      "vegetables": "سبزیجات",
+      "dairy": "لبنیات",
+      "meat-fish": "گوشت و ماهی",
+      "grains-pulses": "غلات و حبوبات",
+      "drinks": "نوشیدنی‌ها",
+      "fruits": "میوه‌ها",
+      "spices": "ادویه‌جات",
+      "sauce": "سس",
+      "spaghetti": "اسپاگتی",
+      "bakery": "محصولات نانوایی",
+      "sweets": "شیرینی‌جات",
+      "jams": "مرباجات",
+      "alcoholic-drink": "نوشیدنی الکلی",
+      "teas": "چای",
+      "sausage": "سوسیس و کالباس",
+      "candys": "آبنبات",
+      "soaps": "صابون",
+      "oils": "روغن‌ها"
+    }
   },
   "search": {
     "brandHint": "جستجو در <brand>FRESH DROP</brand>",

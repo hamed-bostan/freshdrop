@@ -45,7 +45,27 @@
     "specialOffers": "Special Offers"
   },
   "category": {
-    "allCategories": "All Categories"
+    "allCategories": "All Categories",
+    "names": {
+      "vegetables": "Vegetables",
+      "dairy": "Dairy",
+      "meat-fish": "Meat & Fish",
+      "grains-pulses": "Grains & Pulses",
+      "drinks": "Drinks",
+      "fruits": "Fruits",
+      "spices": "Spices",
+      "sauce": "Sauce",
+      "spaghetti": "Spaghetti",
+      "bakery": "Bakery",
+      "sweets": "Sweets",
+      "jams": "Jams",
+      "alcoholic-drink": "Alcoholic Drink",
+      "teas": "Teas",
+      "sausage": "Sausage",
+      "candys": "Candys",
+      "soaps": "Soaps",
+      "oils": "Oils"
+    }
   },
   "search": {
     "brandHint": "Search on <brand>FRESH DROP</brand>",
