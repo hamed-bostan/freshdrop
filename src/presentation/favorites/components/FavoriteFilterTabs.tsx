@@ -1,8 +1,7 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { RadioGroup } from "radix-ui";
-import { getLangDir } from "@/src/i18n/direction";
 import { cn } from "@/src/lib/utils";
 import type { Category } from "@/src/domain/entities/Category";
 
@@ -71,7 +70,6 @@ interface FavoriteFilterTabsProps {
  * edge-to-edge while staying aligned to the page gutter.
  */
 export function FavoriteFilterTabs({ categories, value, onValueChange }: FavoriteFilterTabsProps) {
-  const locale = useLocale();
   const t = useTranslations("favorites");
   const tName = useTranslations("category.names");
   // Localize each category by slug; the synthetic "All" tab is localized separately.
@@ -85,9 +83,6 @@ export function FavoriteFilterTabs({ categories, value, onValueChange }: Favorit
 
   return (
     <RadioGroup.Root
-      // Match the reading direction so arrow-key roving between tabs follows the
-      // visual order under `fa` (Radix defaults to LTR without an explicit dir).
-      dir={getLangDir(locale)}
       value={value}
       onValueChange={onValueChange}
       orientation="horizontal"

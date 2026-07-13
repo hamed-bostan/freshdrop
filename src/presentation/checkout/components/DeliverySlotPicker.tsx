@@ -5,7 +5,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/src/lib/utils";
 import type { DeliverySlot, DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import { faJalaliDate, faWindowRange } from "@/src/lib/deliveryWindowFormat";
-import { getLangDir } from "@/src/i18n/direction";
 import { Chip, ChipGroup } from "@/src/presentation/design-system";
 
 /** The shopper's chosen slot — a day plus a window within it. */
@@ -64,9 +63,6 @@ export function DeliverySlotPicker({ days, selected, onSelect }: DeliverySlotPic
   return (
     <div className="flex flex-col gap-4">
       <ChipGroup
-        // Match the reading direction so the pills lay out and rove (arrow keys)
-        // the natural way under `fa` — Radix RadioGroup defaults to LTR otherwise.
-        dir={getLangDir(locale)}
         aria-label={t("dayAria")}
         value={activeDay.date}
         onValueChange={setActiveDate}

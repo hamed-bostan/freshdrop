@@ -2,6 +2,7 @@ import { Inter, Vazirmatn } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
+import { Direction } from "radix-ui";
 import type { ReactNode } from "react";
 import { getLangDir } from "@/src/i18n/direction";
 import { routing } from "@/src/i18n/routing";
@@ -49,7 +50,12 @@ export default async function LocaleLayout({
     >
       <body className="font-sans">
         {/* Locale + messages are inherited from the request config (src/i18n/request.ts). */}
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          {/* Reading direction for every Radix primitive (Radix reads this context,
+              not the DOM `dir`), so RTL under `fa` flips roving focus + alignment
+              app-wide — no per-component `dir` prop needed. */}
+          <Direction.Provider dir={getLangDir(locale)}>{children}</Direction.Provider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
