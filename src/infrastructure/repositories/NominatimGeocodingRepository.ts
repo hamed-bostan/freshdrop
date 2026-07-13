@@ -124,8 +124,25 @@ function toPlace(dto: NominatimPlaceDto): Place {
   return {
     id: String(dto.place_id),
     name,
-    address: dto.display_name,
+    address: stripPostcode(dto.display_name, address.postcode),
     city,
     point: { latitude: Number(dto.lat), longitude: Number(dto.lon) },
   };
+}
+
+/**
+ * Nominatim bakes the postcode into `display_name` (e.g. "…, Tehran Province,
+ * 19578-34653, Iran"). Drop that one segment — it's structural, not something this
+ * delivery UI shows, and it renders in Western digits which jars against the rest of
+ * a Persian address. Matched against the structured `postcode`, so only that exact
+ * segment is removed; anything else (including an absent postcode) is left untouched.
+ */
+function stripPostcode(displayName: string, postcode?: string): string {
+  if (!postcode) return displayName;
+  const target = postcode.trim();
+  return displayName
+    .split(",")
+    .map((part) => part.trim())
+    .filter((part) => part !== target)
+    .join(", ");
 }
