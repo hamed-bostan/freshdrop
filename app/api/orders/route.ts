@@ -34,12 +34,15 @@ export const dynamic = "force-dynamic";
  * scoped to the caller — the admin dashboard's cross-user view is a separate
  * endpoint (`GET /api/admin/orders`).
  */
-export async function GET(): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   const session = await getUserSession();
   if (!session) return unauthorizedResponse();
 
   try {
-    const orders = await new GetOrders(orderRepository).execute(session.user.id);
+    const orders = await new GetOrders(orderRepository, productRepository).execute(
+      session.user.id,
+      getRequestLocale(request),
+    );
     return NextResponse.json(orders);
   } catch (error) {
     return errorResponseFromException(error, "GET /api/orders failed");
