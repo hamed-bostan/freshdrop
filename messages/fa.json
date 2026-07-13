@@ -195,7 +195,25 @@
     "totalLabel": "جمع کل:",
     "checkOut": "تسویه حساب",
     "promoAria": "کد تخفیف",
-    "applyPromoAria": "اعمال کد تخفیف"
+    "applyPromoAria": "اعمال کد تخفیف",
+    "promos": {
+      "SNAPP15": {
+        "title": "پرومو اسنپ",
+        "description": "۱۵٪ تخفیف برای اولین سفارش"
+      },
+      "FRESH10": {
+        "title": "خوش‌آمد تازه",
+        "description": "۱۰٪ تخفیف روی اولین خرید خواربار"
+      },
+      "GREENS20": {
+        "title": "آخر هفته سبز",
+        "description": "۲۰٪ تخفیف روی میوه و سبزیجات تازه"
+      },
+      "SAVE5": {
+        "title": "پیشنهاد اقتصادی",
+        "description": "۵٪ تخفیف روی هر سفارش، در هر زمان"
+      }
+    }
   },
   "orders": {
     "title": "سفارش من",

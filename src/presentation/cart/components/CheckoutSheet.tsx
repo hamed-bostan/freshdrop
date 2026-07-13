@@ -8,6 +8,7 @@ import { Link } from "@/src/i18n/navigation";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
 import { formatMoney } from "@/src/lib/formatMoney";
+import { isLocalizedPromo } from "../localizedPromos";
 
 interface SummaryRowProps {
   label: string;
@@ -54,7 +55,16 @@ export function CheckoutSheet({
   onConfirm,
 }: CheckoutSheetProps) {
   const t = useTranslations("checkout");
+  const tPromo = useTranslations("checkout.promos");
   const locale = useLocale();
+
+  // Localize the applied promo's title by code, falling back to the stored copy.
+  const promoTitle =
+    appliedPromo == null
+      ? null
+      : isLocalizedPromo(appliedPromo.code)
+        ? tPromo(`${appliedPromo.code}.title`)
+        : appliedPromo.title;
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -93,7 +103,7 @@ export function CheckoutSheet({
             <Icon icon={Ticket} size="md" className="text-icon-muted" />
             {appliedPromo ? (
               <span className="flex-1 truncate text-body-b2 text-input-foreground">
-                {appliedPromo.title}
+                {promoTitle}
                 <span className="text-muted-foreground"> · {t("percentOff", { percent: appliedPromo.discountPercent })}</span>
               </span>
             ) : (

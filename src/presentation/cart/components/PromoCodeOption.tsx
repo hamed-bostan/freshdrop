@@ -1,5 +1,7 @@
+import { useTranslations } from "next-intl";
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
 import { cn } from "@/src/lib/utils";
+import { isLocalizedPromo } from "../localizedPromos";
 
 interface PromoCodeOptionProps {
   promo: PromoCode;
@@ -14,6 +16,15 @@ interface PromoCodeOptionProps {
  * border, matching the payment-method option style.
  */
 export function PromoCodeOption({ promo, selected, onSelect }: PromoCodeOptionProps) {
+  const t = useTranslations("checkout.promos");
+  // Localize by code when we have copy for it; otherwise show the stored copy.
+  let title = promo.title;
+  let description = promo.description;
+  if (isLocalizedPromo(promo.code)) {
+    title = t(`${promo.code}.title`);
+    description = t(`${promo.code}.description`);
+  }
+
   return (
     <button
       type="button"
@@ -25,8 +36,8 @@ export function PromoCodeOption({ promo, selected, onSelect }: PromoCodeOptionPr
         selected ? "border-foreground" : "border-transparent",
       )}
     >
-      <span className="text-body-b4 text-foreground">{promo.title}</span>
-      <span className="text-body-b10 text-muted-foreground">{promo.description}</span>
+      <span className="text-body-b4 text-foreground">{title}</span>
+      <span className="text-body-b10 text-muted-foreground">{description}</span>
     </button>
   );
 }

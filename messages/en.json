@@ -195,7 +195,25 @@
     "totalLabel": "Total :",
     "checkOut": "Check Out",
     "promoAria": "Promo code",
-    "applyPromoAria": "Apply promo code"
+    "applyPromoAria": "Apply promo code",
+    "promos": {
+      "SNAPP15": {
+        "title": "Promo Snapp",
+        "description": "15% discount on first order"
+      },
+      "FRESH10": {
+        "title": "Fresh Welcome",
+        "description": "10% off your first groceries"
+      },
+      "GREENS20": {
+        "title": "Green Weekend",
+        "description": "20% off fresh fruit & veg"
+      },
+      "SAVE5": {
+        "title": "Saver Deal",
+        "description": "5% off any order, anytime"
+      }
+    }
   },
   "orders": {
     "title": "My Order",
