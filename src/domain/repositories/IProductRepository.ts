@@ -15,14 +15,17 @@ export type StockAdjustment = {
 };
 
 export type IProductRepository = {
-  getAll(): Promise<Product[]>;
-  getById(id: string): Promise<Product | null>;
-  getFeatured(): Promise<Product[]>;
-  getSpecialOffers(): Promise<Product[]>;
+  // `locale` selects the language for user-facing text (name/unit/accordion copy):
+  // omitted or the default locale returns the canonical (base row) copy; a supported
+  // locale overlays its translation, falling back field-by-field to the base row.
+  getAll(locale?: string): Promise<Product[]>;
+  getById(id: string, locale?: string): Promise<Product | null>;
+  getFeatured(locale?: string): Promise<Product[]>;
+  getSpecialOffers(locale?: string): Promise<Product[]>;
   /** Catalog search over name/description plus category, price, dietary and brand filters. At least one criterion is always set. */
-  search(filters: ProductFilters): Promise<Product[]>;
+  search(filters: ProductFilters, locale?: string): Promise<Product[]>;
   /** Products related to `productId` (same category first), excluding itself. */
-  getSimilar(productId: string): Promise<Product[]>;
+  getSimilar(productId: string, locale?: string): Promise<Product[]>;
   create(input: NewProduct): Promise<Product>;
   update(id: string, input: NewProduct): Promise<Product>;
   delete(id: string): Promise<void>;

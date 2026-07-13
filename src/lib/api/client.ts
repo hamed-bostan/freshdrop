@@ -19,6 +19,18 @@ export const apiClient: AxiosInstance = axios.create({
 });
 
 /**
+ * Request interceptor: forward the active locale as `Accept-Language` so the API can
+ * serve localized catalog content — the BFF's language negotiation, mirroring the
+ * server client. The active locale is read from the document's `lang` (set by the root
+ * layout), which stays current across the switcher's full re-navigation.
+ */
+apiClient.interceptors.request.use((config) => {
+  const lang = typeof document !== "undefined" ? document.documentElement.lang : "";
+  if (lang) config.headers.set("Accept-Language", lang);
+  return config;
+});
+
+/**
  * Response interceptor: pass successful responses straight through, and normalize
  * every failure into an `ApiError` so callers catch one predictable type and
  * never reach into Axios internals.

@@ -14,28 +14,29 @@ const SIMILAR_LIMIT = 6;
  * connection), bound through the container — never imported by client code.
  */
 export class PrismaProductRepository implements IProductRepository {
-  async getAll(): Promise<Product[]> {
+  async getAll(locale?: string): Promise<Product[]> {
     const rows = await prisma.product.findMany({ orderBy: { createdAt: "asc" } });
-    return rows.map(toProduct);
+    return localizeProducts(rows.map(toProduct), locale);
   }
 
-  async getById(id: string): Promise<Product | null> {
+  async getById(id: string, locale?: string): Promise<Product | null> {
     const row = await prisma.product.findUnique({ where: { id } });
-    return row ? toProduct(row) : null;
+    if (!row) return null;
+    return (await localizeProducts([toProduct(row)], locale))[0];
   }
 
-  async getFeatured(): Promise<Product[]> {
+  async getFeatured(locale?: string): Promise<Product[]> {
     const rows = await prisma.product.findMany({ where: { isFeatured: true }, orderBy: { createdAt: "asc" } });
-    return rows.map(toProduct);
+    return localizeProducts(rows.map(toProduct), locale);
   }
 
-  async getSpecialOffers(): Promise<Product[]> {
+  async getSpecialOffers(locale?: string): Promise<Product[]> {
     // "Special offers" are products carrying a badge — mirrors the mock's rule.
     const rows = await prisma.product.findMany({ where: { badge: { not: null } }, orderBy: { createdAt: "asc" } });
-    return rows.map(toProduct);
+    return localizeProducts(rows.map(toProduct), locale);
   }
 
-  async search(filters: ProductFilters): Promise<Product[]> {
+  async search(filters: ProductFilters, locale?: string): Promise<Product[]> {
     // Each supplied filter is one AND clause; the text term matches name OR
     // description (case-insensitive), dietary/brand match ANY of their values.
     // Alphabetical by name is a stable default; relevance ranking and sort follow.
@@ -59,10 +60,13 @@ export class PrismaProductRepository implements IProductRepository {
       where: and.length ? { AND: and } : {},
       orderBy: orderByFor(filters.sort),
     });
-    return rows.map(toProduct);
+    // The term matches the canonical (default-locale) name/description above; the
+    // returned rows are then localized for display. Matching translated text is a
+    // deferred enhancement.
+    return localizeProducts(rows.map(toProduct), locale);
   }
 
-  async getSimilar(productId: string): Promise<Product[]> {
+  async getSimilar(productId: string, locale?: string): Promise<Product[]> {
     const product = await prisma.product.findUnique({ where: { id: productId } });
     if (!product) return [];
 
@@ -80,7 +84,7 @@ export class PrismaProductRepository implements IProductRepository {
       }),
     ]);
 
-    return [...sameCategory, ...others].slice(0, SIMILAR_LIMIT).map(toProduct);
+    return localizeProducts([...sameCategory, ...others].slice(0, SIMILAR_LIMIT).map(toProduct), locale);
   }
 
   async create(input: NewProduct): Promise<Product> {
@@ -227,6 +231,35 @@ function toProduct(row: ProductRow): Product {
     brand: row.brand ?? undefined,
     dietary: row.dietary,
   };
+}
+
+/**
+ * Overlay per-locale translations onto canonical products. For the default locale (no
+ * `locale` passed) the base rows are returned as-is; otherwise each product's
+ * translated fields (when present) replace the canonical text, falling back
+ * field-by-field to the base row. One extra indexed query per non-default-locale read.
+ */
+async function localizeProducts(products: Product[], locale?: string): Promise<Product[]> {
+  if (!locale || products.length === 0) return products;
+
+  const translations = await prisma.productTranslation.findMany({
+    where: { locale, productId: { in: products.map((p) => p.id) } },
+  });
+  if (translations.length === 0) return products;
+
+  const byId = new Map(translations.map((t) => [t.productId, t]));
+  return products.map((product) => {
+    const t = byId.get(product.id);
+    if (!t) return product;
+    return {
+      ...product,
+      name: t.name,
+      unit: t.unit ?? product.unit,
+      description: t.description ?? product.description,
+      nutrition: t.nutrition ?? product.nutrition,
+      origin: t.origin ?? product.origin,
+    };
+  });
 }
 
 /**

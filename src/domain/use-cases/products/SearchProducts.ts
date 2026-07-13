@@ -13,11 +13,11 @@ import type { IProductRepository } from "../../repositories/IProductRepository";
 export class SearchProducts {
   constructor(private readonly productRepo: IProductRepository) {}
 
-  execute(filters: ProductFilters): Promise<Product[]> {
+  execute(filters: ProductFilters, locale?: string): Promise<Product[]> {
     const query = filters.query?.trim() ?? "";
     const normalized: ProductFilters = { ...filters, query: query || undefined };
 
     if (!hasProductSearchCriteria(normalized)) return Promise.resolve([]);
-    return this.productRepo.search(normalized);
+    return this.productRepo.search(normalized, locale);
   }
 }

@@ -10,13 +10,14 @@ import { serverApiGet } from "@/src/lib/api/server-client";
  */
 export const categoriesServerApi = {
   list(): Promise<Category[]> {
-    return serverApiGet<Category[]>("/categories");
+    // Canonical reads: the dashboard manages and edits the base (default-locale) row.
+    return serverApiGet<Category[]>("/categories", { canonical: true });
   },
 
   /** Resolve a category by id; `null` on 404 so callers can `notFound()`. */
   async getById(id: string): Promise<Category | null> {
     try {
-      return await serverApiGet<Category>(`/categories/${id}`);
+      return await serverApiGet<Category>(`/categories/${id}`, { canonical: true });
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) return null;
       throw error;

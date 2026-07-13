@@ -4,7 +4,7 @@ import type { ICategoryRepository } from "../../repositories/ICategoryRepository
 export class GetCategories {
   constructor(private readonly categoryRepo: ICategoryRepository) {}
 
-  execute(): Promise<Category[]> {
-    return this.categoryRepo.getAll();
+  execute(locale?: string): Promise<Category[]> {
+    return this.categoryRepo.getAll(locale);
   }
 }

@@ -10,13 +10,14 @@ import { serverApiGet } from "@/src/lib/api/server-client";
  */
 export const productsServerApi = {
   list(): Promise<Product[]> {
-    return serverApiGet<Product[]>("/products");
+    // Canonical reads: the dashboard manages and edits the base (default-locale) row.
+    return serverApiGet<Product[]>("/products", { canonical: true });
   },
 
   /** Resolve a product by id; `null` on 404 so callers can `notFound()`. */
   async getById(id: string): Promise<Product | null> {
     try {
-      return await serverApiGet<Product>(`/products/${id}`);
+      return await serverApiGet<Product>(`/products/${id}`, { canonical: true });
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) return null;
       throw error;

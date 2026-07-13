@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { getLocale } from "next-intl/server";
 import { ApiError } from "./ApiError";
 import { defaultMessageForStatus, type ErrorEnvelope } from "./normalizeAxiosError";
 
@@ -25,12 +26,22 @@ const DEFAULT_TIMEOUT_MS = 15_000;
 type ServerGetConfig = {
   /** Query parameters appended to the URL. */
   params?: Record<string, string | number | boolean>;
+  /**
+   * Skip locale negotiation and fetch canonical (default-locale) content. The admin
+   * dashboard reads the canonical row it will edit — localized text there would be
+   * written back over the base row on save — so its reads set this.
+   */
+  canonical?: boolean;
 };
 
 /** GET a resource from the REST API during server rendering; rejects with `ApiError`. */
 export async function serverApiGet<T>(path: string, config?: ServerGetConfig): Promise<T> {
   const requestHeaders = await headers();
   const cookie = requestHeaders.get("cookie") ?? undefined;
+  // Forward the active locale as the BFF's language negotiation, so the API serves
+  // localized catalog content during server render (the route reads `Accept-Language`).
+  // Canonical reads (admin/dashboard) opt out so they receive the base-row content.
+  const locale = config?.canonical ? undefined : await getLocale();
 
   const url = buildUrl(resolveBaseUrl(requestHeaders), path, config?.params);
 
@@ -40,7 +51,11 @@ export async function serverApiGet<T>(path: string, config?: ServerGetConfig): P
       // Per-user, request-time data (cookies are forwarded) — never cache.
       cache: "no-store",
       signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
-      headers: { Accept: "application/json", ...(cookie ? { cookie } : {}) },
+      headers: {
+        Accept: "application/json",
+        ...(locale ? { "Accept-Language": locale } : {}),
+        ...(cookie ? { cookie } : {}),
+      },
     });
   } catch (error) {
     // The request never produced a response (offline, DNS, abort/timeout).

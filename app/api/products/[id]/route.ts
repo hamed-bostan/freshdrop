@@ -4,6 +4,7 @@ import { UpdateProduct } from "@/src/domain/use-cases/products/UpdateProduct";
 import { DeleteProduct } from "@/src/domain/use-cases/products/DeleteProduct";
 import { productRepository, stockAlertRepository, stockAlertNotifier } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
+import { getRequestLocale } from "@/src/lib/api/request-locale";
 import { productFormSchema } from "@/src/presentation/dashboard/products/product-schema";
 import {
   errorResponse,
@@ -20,10 +21,10 @@ type RouteContext = { params: Promise<{ id: string }> };
 /**
  * GET /api/products/:id — fetch one product. Public. 404 when it doesn't exist.
  */
-export async function GET(_request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
+export async function GET(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
   const { id } = await params;
   try {
-    const product = await new GetProductById(productRepository).execute(id);
+    const product = await new GetProductById(productRepository).execute(id, getRequestLocale(request));
     if (!product) return errorResponse(404, { message: "Product not found.", code: "NOT_FOUND" });
     return NextResponse.json(product);
   } catch (error) {

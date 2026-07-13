@@ -10,19 +10,21 @@ import { prisma } from "@/src/infrastructure/prisma/client";
  * connection), bound through the container — never imported by client code.
  */
 export class PrismaCategoryRepository implements ICategoryRepository {
-  async getAll(): Promise<Category[]> {
+  async getAll(locale?: string): Promise<Category[]> {
     const rows = await prisma.category.findMany({ orderBy: { createdAt: "asc" } });
-    return rows.map(toCategory);
+    return localizeCategories(rows.map(toCategory), locale);
   }
 
-  async getById(id: string): Promise<Category | null> {
+  async getById(id: string, locale?: string): Promise<Category | null> {
     const row = await prisma.category.findUnique({ where: { id } });
-    return row ? toCategory(row) : null;
+    if (!row) return null;
+    return (await localizeCategories([toCategory(row)], locale))[0];
   }
 
-  async getBySlug(slug: string): Promise<Category | null> {
+  async getBySlug(slug: string, locale?: string): Promise<Category | null> {
     const row = await prisma.category.findUnique({ where: { slug } });
-    return row ? toCategory(row) : null;
+    if (!row) return null;
+    return (await localizeCategories([toCategory(row)], locale))[0];
   }
 
   async create(input: NewCategory): Promise<Category> {
@@ -55,6 +57,27 @@ export class PrismaCategoryRepository implements ICategoryRepository {
 /** Map a Prisma row to the domain entity (dropping DB-only timestamps). */
 function toCategory(row: { id: string; name: string; slug: string; iconUrl: string }): Category {
   return { id: row.id, name: row.name, slug: row.slug, iconUrl: row.iconUrl };
+}
+
+/**
+ * Overlay per-locale translations onto canonical categories. For the default locale
+ * (no `locale` passed) the base names are returned as-is; otherwise a category's
+ * translated `name` replaces the canonical one, falling back to the base name when no
+ * translation row exists.
+ */
+async function localizeCategories(categories: Category[], locale?: string): Promise<Category[]> {
+  if (!locale || categories.length === 0) return categories;
+
+  const translations = await prisma.categoryTranslation.findMany({
+    where: { locale, categoryId: { in: categories.map((c) => c.id) } },
+  });
+  if (translations.length === 0) return categories;
+
+  const nameById = new Map(translations.map((t) => [t.categoryId, t.name]));
+  return categories.map((category) => {
+    const name = nameById.get(category.id);
+    return name ? { ...category, name } : category;
+  });
 }
 
 /**

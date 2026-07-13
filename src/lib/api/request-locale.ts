@@ -1,0 +1,18 @@
+import type { NextRequest } from "next/server";
+import { routing } from "@/src/i18n/routing";
+
+/**
+ * Resolve the caller's target locale from the request's `Accept-Language` header —
+ * the BFF's language negotiation. The storefront clients send the active locale there
+ * (`serverApiGet` from the server render, the browser Axios client from the page), so
+ * the route can serve localized catalog content without the locale living in the URL.
+ *
+ * Returns `undefined` for the default locale or an unsupported/absent value, so the
+ * repository serves canonical (default-locale) content and skips the translation query.
+ */
+export function getRequestLocale(request: NextRequest): string | undefined {
+  const tag = (request.headers.get("accept-language") ?? "").split(",")[0]?.trim().toLowerCase();
+  const base = tag?.split("-")[0] ?? "";
+  if (!base || base === routing.defaultLocale) return undefined;
+  return (routing.locales as readonly string[]).includes(base) ? base : undefined;
+}

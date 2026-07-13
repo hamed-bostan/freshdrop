@@ -4,6 +4,7 @@ import { GetCategoryBySlug } from "@/src/domain/use-cases/categories/GetCategory
 import { CreateCategory } from "@/src/domain/use-cases/categories/CreateCategory";
 import { categoryRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
+import { getRequestLocale } from "@/src/lib/api/request-locale";
 import { categoryFormSchema } from "@/src/presentation/dashboard/categories/category-schema";
 import {
   errorResponse,
@@ -23,12 +24,13 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const slug = request.nextUrl.searchParams.get("slug");
+  const locale = getRequestLocale(request);
   try {
     if (slug) {
-      const category = await new GetCategoryBySlug(categoryRepository).execute(slug);
+      const category = await new GetCategoryBySlug(categoryRepository).execute(slug, locale);
       return NextResponse.json(category ? [category] : []);
     }
-    const categories = await new GetCategories(categoryRepository).execute();
+    const categories = await new GetCategories(categoryRepository).execute(locale);
     return NextResponse.json(categories);
   } catch (error) {
     return errorResponseFromException(error, "GET /api/categories failed");

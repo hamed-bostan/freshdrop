@@ -22,6 +22,24 @@ model Category {
   @@map("categories")
 }
 
+// Localized overrides for a Category's user-facing text. The base `categories` row
+// holds the default-locale (English) copy; one row here per non-default locale
+// supplies the translated `name`. `categoryId` is a plain reference (not a DB foreign
+// key) — the same loose coupling the rest of the schema uses; a missing translation
+// simply falls back to the base row. One row per (category, locale).
+model CategoryTranslation {
+  id         String   @id @default(uuid())
+  categoryId String   @map("category_id")
+  locale     String
+  name       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([categoryId, locale])
+  @@index([categoryId])
+  @@map("category_translations")
+}
+
 model User {
   // id is the user's normalized phone digits — the stable identifier carried on
   // the Auth.js session (and matched against ADMIN_USER_IDS), so it is supplied
@@ -160,6 +178,28 @@ model Product {
 
   @@index([categoryId])
   @@map("products")
+}
+
+// Localized overrides for a Product's user-facing text. The base `products` row holds
+// the default-locale (English) copy; one row here per non-default locale supplies the
+// translated fields, each nullable so a partial translation falls back field-by-field
+// to the base row. `productId` is a plain reference (not a DB foreign key) — the same
+// loose coupling the rest of the schema uses. One row per (product, locale).
+model ProductTranslation {
+  id          String   @id @default(uuid())
+  productId   String   @map("product_id")
+  locale      String
+  name        String
+  unit        String?
+  description String?
+  nutrition   String?
+  origin      String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([productId, locale])
+  @@index([productId])
+  @@map("product_translations")
 }
 
 // A redeemable promo code — reference/catalog data (like products/categories),

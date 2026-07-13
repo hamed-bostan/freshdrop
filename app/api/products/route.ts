@@ -10,6 +10,7 @@ import { productRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import { productFormSchema } from "@/src/presentation/dashboard/products/product-schema";
 import { parseProductFilters } from "@/src/lib/api/product-search-params";
+import { getRequestLocale } from "@/src/lib/api/request-locale";
 import {
   errorResponse,
   errorResponseFromException,
@@ -39,17 +40,18 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const params = request.nextUrl.searchParams;
   const filters = parseProductFilters(params);
+  const locale = getRequestLocale(request);
 
   try {
     let products: Product[];
     if (hasProductSearchCriteria(filters)) {
-      products = await new SearchProducts(productRepository).execute(filters);
+      products = await new SearchProducts(productRepository).execute(filters, locale);
     } else if (params.get("featured") === "true") {
-      products = await new GetFeaturedProducts(productRepository).execute();
+      products = await new GetFeaturedProducts(productRepository).execute(locale);
     } else if (params.get("special") === "true") {
-      products = await new GetSpecialOffers(productRepository).execute();
+      products = await new GetSpecialOffers(productRepository).execute(locale);
     } else {
-      products = await new GetProducts(productRepository).execute();
+      products = await new GetProducts(productRepository).execute(locale);
     }
     return NextResponse.json(products);
   } catch (error) {
