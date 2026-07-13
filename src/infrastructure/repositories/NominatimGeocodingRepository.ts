@@ -1,5 +1,6 @@
 import type { GeoPoint, Place } from "@/src/domain/entities/Place";
 import type {
+  GeocodingOptions,
   GeocodingSearchOptions,
   IGeocodingRepository,
 } from "@/src/domain/repositories/IGeocodingRepository";
@@ -68,6 +69,9 @@ export class NominatimGeocodingRepository implements IGeocodingRepository {
       format: "jsonv2",
       addressdetails: "1",
       limit: String(options.limit ?? 5),
+      // In the query string (not just the header) so localised names actually vary
+      // Next's URL-keyed data cache — a header alone would serve one language to all.
+      "accept-language": options.language ?? this.language,
     });
 
     if (options.countryCodes?.length) {
@@ -78,12 +82,13 @@ export class NominatimGeocodingRepository implements IGeocodingRepository {
     return results.map(toPlace);
   }
 
-  async reverse(point: GeoPoint): Promise<Place | null> {
+  async reverse(point: GeoPoint, options: GeocodingOptions = {}): Promise<Place | null> {
     const params = new URLSearchParams({
       lat: String(point.latitude),
       lon: String(point.longitude),
       format: "jsonv2",
       addressdetails: "1",
+      "accept-language": options.language ?? this.language,
     });
 
     const result = await this.request<NominatimPlaceDto>(`/reverse?${params.toString()}`);
@@ -99,7 +104,6 @@ export class NominatimGeocodingRepository implements IGeocodingRepository {
     const response = await fetch(`${this.baseUrl}${path}`, {
       headers: {
         "User-Agent": this.userAgent,
-        "Accept-Language": this.language,
       },
       next: { revalidate: CACHE_TTL_SECONDS },
     });

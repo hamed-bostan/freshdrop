@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useLocale } from "next-intl";
 import type { Place } from "@/src/domain/entities/Place";
 import { searchPlaces } from "../lib/geocoding-client";
 
@@ -10,6 +11,7 @@ const DEBOUNCE_MS = 350;
  * request whenever the query changes, so only the latest result set wins.
  */
 export function usePlaceSearch(query: string) {
+  const locale = useLocale();
   const [results, setResults] = React.useState<Place[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
 
@@ -26,7 +28,7 @@ export function usePlaceSearch(query: string) {
     const timer = setTimeout(async () => {
       setIsLoading(true);
       try {
-        setResults(await searchPlaces(trimmed, controller.signal));
+        setResults(await searchPlaces(trimmed, locale, controller.signal));
       } catch {
         if (!controller.signal.aborted) setResults([]);
       } finally {
@@ -38,7 +40,7 @@ export function usePlaceSearch(query: string) {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [query]);
+  }, [query, locale]);
 
   const clear = React.useCallback(() => setResults([]), []);
 

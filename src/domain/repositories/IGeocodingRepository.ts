@@ -1,6 +1,12 @@
 import type { GeoPoint, Place } from "../entities/Place";
 
-export type GeocodingSearchOptions = {
+/** Options common to every geocoding lookup. */
+export type GeocodingOptions = {
+  /** BCP-47 language for the provider's localised display names (its `Accept-Language`). */
+  language?: string;
+}
+
+export type GeocodingSearchOptions = GeocodingOptions & {
   /** Maximum number of results to return. */
   limit?: number;
   /** ISO 3166-1 alpha-2 codes (e.g. `["ca"]`) to bias/restrict results to. */
@@ -16,5 +22,5 @@ export type IGeocodingRepository = {
   /** Forward geocoding: free-text query → ranked places. */
   search(query: string, options?: GeocodingSearchOptions): Promise<Place[]>;
   /** Reverse geocoding: a coordinate → the place at it (or `null` if none). */
-  reverse(point: GeoPoint): Promise<Place | null>;
+  reverse(point: GeoPoint, options?: GeocodingOptions): Promise<Place | null>;
 }

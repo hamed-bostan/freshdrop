@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SearchPlaces } from "@/src/domain/use-cases/geocoding/SearchPlaces";
 import { geocodingRepository } from "@/src/infrastructure/container";
+import { parseLocale } from "@/src/i18n/parseLocale";
 
 const MAX_LIMIT = 10;
 const DEFAULT_LIMIT = 5;
@@ -22,7 +23,10 @@ export async function GET(request: NextRequest) {
   const limit = Number.isFinite(limitParam) && limitParam > 0 ? Math.min(limitParam, MAX_LIMIT) : DEFAULT_LIMIT;
 
   try {
-    const places = await new SearchPlaces(geocodingRepository).execute(query, { limit });
+    const places = await new SearchPlaces(geocodingRepository).execute(query, {
+      limit,
+      language: parseLocale(request.nextUrl.searchParams.get("lang")),
+    });
     return NextResponse.json({ places });
   } catch (error) {
     console.error("Geocoding search failed:", error);

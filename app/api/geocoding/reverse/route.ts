@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isValidGeoPoint } from "@/src/domain/entities/Place";
 import { ReverseGeocode } from "@/src/domain/use-cases/geocoding/ReverseGeocode";
 import { geocodingRepository } from "@/src/infrastructure/container";
+import { parseLocale } from "@/src/i18n/parseLocale";
 
 /**
  * Reverse geocoding endpoint: `GET /api/geocoding/reverse?lat=...&lon=...`.
@@ -17,7 +18,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const place = await new ReverseGeocode(geocodingRepository).execute({ latitude, longitude });
+    const place = await new ReverseGeocode(geocodingRepository).execute(
+      { latitude, longitude },
+      { language: parseLocale(request.nextUrl.searchParams.get("lang")) },
+    );
     return NextResponse.json({ place });
   } catch (error) {
     console.error("Reverse geocoding failed:", error);

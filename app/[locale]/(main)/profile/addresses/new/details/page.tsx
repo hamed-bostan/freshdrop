@@ -5,10 +5,12 @@ import LocationDetailScreen from "@/src/presentation/map/LocationDetailScreen";
 import { DEFAULT_CENTER } from "@/src/presentation/map/constants";
 
 interface LocationDetailsPageProps {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ lat?: string; lon?: string; address?: string; city?: string }>;
 }
 
-export default async function LocationDetailsPage({ searchParams }: LocationDetailsPageProps) {
+export default async function LocationDetailsPage({ params, searchParams }: LocationDetailsPageProps) {
+  const { locale } = await params;
   const { lat, lon, address, city } = await searchParams;
   const candidate: GeoPoint = { latitude: Number(lat), longitude: Number(lon) };
 
@@ -22,7 +24,7 @@ export default async function LocationDetailsPage({ searchParams }: LocationDeta
   let initialCity = city ?? "";
   if (!initialAddress || !initialCity) {
     try {
-      const place = await new ReverseGeocode(geocodingRepository).execute(center);
+      const place = await new ReverseGeocode(geocodingRepository).execute(center, { language: locale });
       if (!initialAddress) initialAddress = place?.address ?? "";
       if (!initialCity) initialCity = place?.city ?? "";
     } catch {

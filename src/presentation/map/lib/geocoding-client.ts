@@ -2,7 +2,8 @@ import type { GeoPoint, Place } from "@/src/domain/entities/Place";
 
 /**
  * Browser-side wrappers around our own `/api/geocoding/*` route handlers (never
- * Nominatim directly). Both accept an `AbortSignal` so callers can cancel
+ * Nominatim directly). Each takes the active `language` (forwarded as `lang` so
+ * results come back localised) and an optional `AbortSignal` so callers can cancel
  * in-flight requests when the query changes or the component unmounts.
  */
 
@@ -14,8 +15,8 @@ interface ReverseResponse {
   place: Place | null;
 }
 
-export async function searchPlaces(query: string, signal?: AbortSignal): Promise<Place[]> {
-  const params = new URLSearchParams({ q: query });
+export async function searchPlaces(query: string, language: string, signal?: AbortSignal): Promise<Place[]> {
+  const params = new URLSearchParams({ q: query, lang: language });
   const response = await fetch(`/api/geocoding/search?${params.toString()}`, { signal });
 
   if (!response.ok) {
@@ -26,10 +27,11 @@ export async function searchPlaces(query: string, signal?: AbortSignal): Promise
   return data.places;
 }
 
-export async function reverseGeocode(point: GeoPoint, signal?: AbortSignal): Promise<Place | null> {
+export async function reverseGeocode(point: GeoPoint, language: string, signal?: AbortSignal): Promise<Place | null> {
   const params = new URLSearchParams({
     lat: String(point.latitude),
     lon: String(point.longitude),
+    lang: language,
   });
   const response = await fetch(`/api/geocoding/reverse?${params.toString()}`, { signal });
 

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button, Input, TextField, Textarea } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import type { GeoPoint } from "@/src/domain/entities/Place";
@@ -69,6 +69,7 @@ export default function LocationDetailScreen({
   initialCity,
 }: LocationDetailScreenProps) {
   const t = useTranslations("addresses");
+  const locale = useLocale();
   const router = useRouter();
 
   const isEditing = location !== undefined;
@@ -135,7 +136,7 @@ export default function LocationDetailScreen({
           point && (!addressEditedRef.current || !cityEditedRef.current);
         if (needsResolve) {
           try {
-            const place = await reverseGeocode(coordinate);
+            const place = await reverseGeocode(coordinate, locale);
             if (place?.address && !addressEditedRef.current) resolvedAddress = place.address;
             if (place?.city && !cityEditedRef.current) resolvedCity = place.city;
           } catch {

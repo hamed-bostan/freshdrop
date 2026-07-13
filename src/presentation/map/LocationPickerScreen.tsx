@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/src/presentation/design-system";
 import type { GeoPoint, Place } from "@/src/domain/entities/Place";
 import { useRouter } from "@/src/i18n/navigation";
@@ -27,6 +27,7 @@ interface LocationPickerScreenProps {
 
 export default function LocationPickerScreen({ initialCenter, initialPlace }: LocationPickerScreenProps) {
   const t = useTranslations("addresses");
+  const locale = useLocale();
   const router = useRouter();
 
   const [query, setQuery] = React.useState("");
@@ -74,7 +75,7 @@ export default function LocationPickerScreen({ initialCenter, initialPlace }: Lo
       let address = "";
       let city = "";
       try {
-        const resolved = await reverseGeocode(target);
+        const resolved = await reverseGeocode(target, locale);
         address = resolved?.address ?? "";
         city = resolved?.city ?? "";
       } catch {
