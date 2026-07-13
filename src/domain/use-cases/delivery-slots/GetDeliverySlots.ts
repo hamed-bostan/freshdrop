@@ -1,4 +1,4 @@
-import type { DeliverySlot, DeliverySlotDay } from "../../entities/DeliverySlot";
+import type { DeliverySlot, DeliverySlotDay, RelativeDay } from "../../entities/DeliverySlot";
 import { getSlotAvailability } from "../../entities/DeliverySlot";
 import { formatWindowRange } from "../../entities/DeliveryWindow";
 import {
@@ -73,7 +73,7 @@ export class GetDeliverySlots {
 
       if (slots.length === 0) return; // nothing bookable this day — omit the pill
 
-      days.push({ date, label: dayLabel(dayIndex, date), slots });
+      days.push({ date, label: dayLabel(dayIndex, date), relativeDay: relativeDay(dayIndex), slots });
     });
 
     return days;
@@ -85,4 +85,11 @@ function dayLabel(dayIndex: number, date: string): string {
   if (dayIndex === 0) return "Today";
   if (dayIndex === 1) return "Tomorrow";
   return dayLabelFormatter.format(new Date(`${date}T00:00:00Z`));
+}
+
+/** The today/tomorrow standing of a horizon day, for locale-aware labeling. */
+function relativeDay(dayIndex: number): RelativeDay {
+  if (dayIndex === 0) return "today";
+  if (dayIndex === 1) return "tomorrow";
+  return null;
 }

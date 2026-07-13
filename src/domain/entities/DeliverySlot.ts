@@ -43,6 +43,14 @@ export type DeliverySlot = {
 };
 
 /**
+ * Whether a bookable day is today or tomorrow — decided server-side against the
+ * store's "now", so a non-English locale can render "امروز"/"فردا" without redoing
+ * store-relative date math on the client (which would risk hydration drift). `null`
+ * for later days, which show their calendar date instead.
+ */
+export type RelativeDay = "today" | "tomorrow" | null;
+
+/**
  * One bookable day in the delivery horizon: its calendar date plus a
  * presentation-ready relative label and the day's windows. The label is computed
  * server-side (relative to the store's "now") so the client stays free of date
@@ -51,7 +59,9 @@ export type DeliverySlot = {
 export type DeliverySlotDay = {
   /** Calendar date, `YYYY-MM-DD` (store-local) — free of timezone drift. */
   date: string;
-  /** Relative label: "Today" | "Tomorrow" | "Fri, Jul 4". */
+  /** English display snapshot: "Today" | "Tomorrow" | "Fri, Jul 4". */
   label: string;
+  /** The day's today/tomorrow standing, so other locales can localize the label. */
+  relativeDay: RelativeDay;
   slots: DeliverySlot[];
 };

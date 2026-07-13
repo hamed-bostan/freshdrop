@@ -1,13 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/src/lib/utils";
 import type { DeliverySlot, DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
+import { faJalaliDate, faWindowRange } from "@/src/lib/deliveryWindowFormat";
 import { Chip, ChipGroup } from "@/src/presentation/design-system";
 
 /** The shopper's chosen slot — a day plus a window within it. */
 export type SlotSelection = { date: string; windowId: string };
+
+/** Window ids with a localized name under `checkout.slots`; others fall back to the stored name. */
+const SLOT_NAME_KEYS = ["morning", "midday", "afternoon", "evening"] as const;
+type SlotNameKey = (typeof SLOT_NAME_KEYS)[number];
+
+const isSlotNameKey = (windowId: string): windowId is SlotNameKey =>
+  (SLOT_NAME_KEYS as readonly string[]).includes(windowId);
 
 interface DeliverySlotPickerProps {
   days: DeliverySlotDay[];
@@ -23,8 +31,19 @@ interface DeliverySlotPickerProps {
  */
 export function DeliverySlotPicker({ days, selected, onSelect }: DeliverySlotPickerProps) {
   const t = useTranslations("checkout");
+  const locale = useLocale();
   // Which day's windows are shown. Follows the selected slot's day, else the first.
   const [activeDate, setActiveDate] = React.useState(() => selected?.date ?? days[0]?.date ?? "");
+
+  // English shows the domain's snapshot as-is; `fa` localizes the relative label and
+  // re-derives dated days as a Jalali date (the today/tomorrow standing is decided
+  // server-side, so no store-relative date math runs on the client).
+  const dayLabel = (day: DeliverySlotDay): string => {
+    if (locale !== "fa") return day.label;
+    if (day.relativeDay === "today") return t("today");
+    if (day.relativeDay === "tomorrow") return t("tomorrow");
+    return faJalaliDate(day.date);
+  };
 
   // When the selection's day changes on its own — e.g. a slot restored from a
   // previous session lands on a different day than the default — bring that day's
@@ -51,7 +70,7 @@ export function DeliverySlotPicker({ days, selected, onSelect }: DeliverySlotPic
       >
         {days.map((day) => (
           <Chip key={day.date} value={day.date} className="shrink-0">
-            {day.label}
+            {dayLabel(day)}
           </Chip>
         ))}
       </ChipGroup>
@@ -88,7 +107,15 @@ interface SlotOptionProps {
  */
 function SlotOption({ slot, selected, onSelect, disabled }: SlotOptionProps) {
   const t = useTranslations("checkout");
+  const tSlots = useTranslations("checkout.slots");
+  const locale = useLocale();
   const { availability } = slot;
+
+  // Window name from the localized catalog (keyed by the stable window id, like the
+  // payment-method labels); an unknown id falls back to the stored English name.
+  const name = isSlotNameKey(slot.windowId) ? tSlots(slot.windowId) : slot.label;
+  // English keeps the domain's range snapshot; `fa` re-derives a Persian-numeral 24h range.
+  const timeRange = locale === "fa" ? (faWindowRange(slot.windowId) ?? slot.timeRange) : slot.timeRange;
 
   return (
     <label
@@ -100,8 +127,8 @@ function SlotOption({ slot, selected, onSelect, disabled }: SlotOptionProps) {
       )}
     >
       <span className="flex flex-col gap-1">
-        <span className="text-body-b6 text-foreground">{slot.label}</span>
-        <span className="text-body-b10 text-muted-foreground">{slot.timeRange}</span>
+        <span className="text-body-b6 text-foreground">{name}</span>
+        <span className="text-body-b10 text-muted-foreground">{timeRange}</span>
       </span>
 
       <input
