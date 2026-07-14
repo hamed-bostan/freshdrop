@@ -233,7 +233,9 @@ export function ProductForm(props: ProductFormProps) {
                 {t("selectCategory")}
               </option>
               {props.categories.map((category) => (
-                <option key={category.id} value={category.id}>
+                // `auto`: a category that has no translation yet falls back to its base
+                // (Latin) name, which must not be reordered by the RTL control.
+                <option key={category.id} value={category.id} dir="auto">
                   {category.name}
                 </option>
               ))}
@@ -306,14 +308,20 @@ export function ProductForm(props: ProductFormProps) {
             <label htmlFor={id} className="text-body-b7 text-input-foreground">
               {t("brandLabel")}
             </label>
+            {/* Brands are Latin proper nouns, never translated, so the control reads LTR:
+                under RTL the trailing punctuation in a name like "Pantry Co." jumps to
+                the front (".Pantry Co"). */}
             <select
               id={id}
+              dir="ltr"
               className={SELECT_CLASSES}
               aria-invalid={ariaInvalid}
               aria-describedby={ariaDescribedBy}
               {...register("brand")}
             >
-              <option value="">{t("noBrand")}</option>
+              <option value="" dir="auto">
+                {t("noBrand")}
+              </option>
               {PRODUCT_BRANDS.map((brand) => (
                 <option key={brand} value={brand}>
                   {brand}
