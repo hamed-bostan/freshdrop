@@ -1,7 +1,8 @@
 import type { User } from "@/src/domain/entities/User";
-import { apiPost, apiPut } from "@/src/lib/api/client";
+import { apiPut } from "@/src/lib/api/client";
 import { AVATAR_IMAGE_FOLDER } from "@/src/lib/imageFolders";
-import { imageUploadResponseSchema, userResponseSchema } from "./profile-response-schema";
+import { imagesApi } from "@/src/presentation/images/image-api";
+import { userResponseSchema } from "./profile-response-schema";
 import type { ProfileUpdateValues } from "./profile-schema";
 
 /**
@@ -17,15 +18,10 @@ export const profilesApi = {
 
   /**
    * Upload a new avatar image and return its public URL. Goes through the shared
-   * image-upload endpoint (Supabase, `avatars` folder); the returned URL is then
+   * image-upload service (Supabase, `avatars` folder); the returned URL is then
    * saved on the profile via {@link update}.
    */
-  async uploadAvatar(file: File): Promise<string> {
-    const body = new FormData();
-    body.append("file", file);
-    body.append("folder", AVATAR_IMAGE_FOLDER);
-
-    const { image } = await apiPost("/images/upload", body, imageUploadResponseSchema);
-    return image.url;
+  uploadAvatar(file: File): Promise<string> {
+    return imagesApi.upload(file, AVATAR_IMAGE_FOLDER);
   },
 };

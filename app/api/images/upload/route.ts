@@ -4,6 +4,7 @@ import { imageStorageRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import { getUserSession } from "@/src/lib/require-auth";
 import { AVATAR_IMAGE_FOLDER, MANAGED_IMAGE_FOLDERS } from "@/src/lib/imageFolders";
+import { errorResponse, unauthorizedResponse } from "@/src/lib/api/responses";
 
 const ADMIN_FOLDERS = new Set<string>(MANAGED_IMAGE_FOLDERS);
 const ALLOWED_FOLDERS = new Set<string>([...MANAGED_IMAGE_FOLDERS, AVATAR_IMAGE_FOLDER]);
@@ -18,37 +19,33 @@ const ALLOWED_FOLDERS = new Set<string>([...MANAGED_IMAGE_FOLDERS, AVATAR_IMAGE_
  * `avatars` folder is open to any signed-in user uploading their own profile
  * picture. Anonymous callers can never write to a billable, service-role bucket.
  */
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   // Decide which session this caller has up front; the folder check below picks
   // the right requirement. (Admins satisfy the user check too.)
   const [adminSession, userSession] = await Promise.all([getAdminSession(), getUserSession()]);
-  if (!adminSession && !userSession) {
-    return NextResponse.json({ error: "Not authorized." }, { status: 401 });
-  }
+  if (!adminSession && !userSession) return unauthorizedResponse();
 
   let formData: FormData;
   try {
     formData = await request.formData();
   } catch {
-    return NextResponse.json({ error: "Expected multipart/form-data." }, { status: 400 });
+    return errorResponse(400, { message: "Expected multipart/form-data.", code: "BAD_REQUEST" });
   }
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
-    return NextResponse.json({ error: "Missing 'file'." }, { status: 400 });
+    return errorResponse(400, { message: "Missing 'file'.", code: "VALIDATION", fieldErrors: { file: "Required." } });
   }
 
   const folderRaw = formData.get("folder");
   const folder = typeof folderRaw === "string" && folderRaw ? folderRaw : undefined;
   if (folder && !ALLOWED_FOLDERS.has(folder)) {
-    return NextResponse.json({ error: `Unknown folder "${folder}".` }, { status: 400 });
+    return errorResponse(400, { message: `Unknown folder "${folder}".`, code: "VALIDATION" });
   }
 
   // An unspecified folder (or any managed catalog folder) is admin-only; only the
   // `avatars` folder is reachable by a non-admin signed-in user.
-  if ((!folder || ADMIN_FOLDERS.has(folder)) && !adminSession) {
-    return NextResponse.json({ error: "Not authorized." }, { status: 401 });
-  }
+  if ((!folder || ADMIN_FOLDERS.has(folder)) && !adminSession) return unauthorizedResponse();
 
   try {
     const image = await new UploadImage(imageStorageRepository).execute({
@@ -60,6 +57,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ image }, { status: 201 });
   } catch (error) {
     console.error("Image upload failed:", error);
-    return NextResponse.json({ error: "Image upload failed." }, { status: 502 });
+    return errorResponse(502, { message: "Image upload failed. Please try again.", code: "UPLOAD_FAILED" });
   }
 }

@@ -15,3 +15,6 @@ export type ManagedImageFolder = (typeof MANAGED_IMAGE_FOLDERS)[number];
  * (`UpdateProfile` → `removeByUrl`).
  */
 export const AVATAR_IMAGE_FOLDER = "avatars";
+
+/** Every folder an upload may target — the allowlist the route enforces. */
+export type ImageFolder = ManagedImageFolder | typeof AVATAR_IMAGE_FOLDER;

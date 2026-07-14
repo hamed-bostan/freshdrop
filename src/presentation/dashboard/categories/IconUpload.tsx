@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { ImagePlus, Loader2 } from "lucide-react";
 import { Button, Icon } from "@/src/presentation/design-system";
+import { imagesApi } from "@/src/presentation/images/image-api";
 
 interface IconUploadProps {
   value?: string;
@@ -36,15 +37,7 @@ export function IconUpload({ value, onChange, id, ...aria }: IconUploadProps) {
     setError(null);
     setUploading(true);
     try {
-      const body = new FormData();
-      body.append("file", file);
-      body.append("folder", "categories");
-
-      const res = await fetch("/api/images/upload", { method: "POST", body });
-      const json: { image?: { url: string }; error?: string } = await res.json();
-      if (!res.ok || !json.image) throw new Error(json.error ?? t("uploadFailed"));
-
-      onChange(json.image.url);
+      onChange(await imagesApi.upload(file, "categories"));
     } catch (err) {
       // The route's error strings are developer-facing (bad form shape, unknown
       // folder) — log them for debugging, show the localized copy to the admin.
