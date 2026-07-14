@@ -1,5 +1,5 @@
 import type { Locale } from "@/src/i18n/routing";
-import { USD_TO_TOMAN } from "@/src/config/currency";
+import { getUsdToToman } from "@/src/config/currency";
 
 // Single source of truth for presenting a stored USD amount per locale:
 //   • en → US dollars via `Intl` ("$4.50")
@@ -27,7 +27,7 @@ const tomanFormatter = new Intl.NumberFormat("fa-IR", {
 /** Format a stored USD amount for display in the given locale. */
 export function formatMoney(amountUsd: number, locale: Locale): string {
   if (locale === "fa") {
-    const toman = Math.round(amountUsd * USD_TO_TOMAN);
+    const toman = Math.round(amountUsd * getUsdToToman());
     return `${tomanFormatter.format(toman)} تومان`;
   }
 

@@ -6,6 +6,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 import { getLangDir } from "@/src/i18n/direction";
 import { DirectionProvider } from "@/src/presentation/components/DirectionProvider";
+import { CurrencyProvider } from "@/src/presentation/components/CurrencyProvider";
+import { resolveUsdToToman } from "@/src/config/exchange-rate";
 import { routing } from "@/src/i18n/routing";
 import "@/src/styles/globals.css";
 
@@ -83,6 +85,11 @@ export default async function LocaleLayout({
   // Opt this locale's routes into static rendering (next-intl reads the locale here).
   setRequestLocale(locale);
 
+  // Resolve the live USD→Toman rate once per render (cached; falls back to the
+  // configured constant). CurrencyProvider mirrors it to the client so server render
+  // and hydration price identically.
+  const usdToToman = await resolveUsdToToman();
+
   return (
     <html
       lang={locale}
@@ -92,10 +99,12 @@ export default async function LocaleLayout({
       <body className="font-sans">
         {/* Locale + messages are inherited from the request config (src/i18n/request.ts). */}
         <NextIntlClientProvider>
-          {/* Reading direction for every Radix primitive (Radix reads this context,
-              not the DOM `dir`), so RTL under `fa` flips roving focus + alignment
-              app-wide — no per-component `dir` prop needed. */}
-          <DirectionProvider dir={getLangDir(locale)}>{children}</DirectionProvider>
+          <CurrencyProvider rate={usdToToman}>
+            {/* Reading direction for every Radix primitive (Radix reads this context,
+                not the DOM `dir`), so RTL under `fa` flips roving focus + alignment
+                app-wide — no per-component `dir` prop needed. */}
+            <DirectionProvider dir={getLangDir(locale)}>{children}</DirectionProvider>
+          </CurrencyProvider>
         </NextIntlClientProvider>
       </body>
     </html>
