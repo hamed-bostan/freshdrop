@@ -1,7 +1,8 @@
+import type { Metadata } from "next";
 import { Inter, Vazirmatn } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 import { getLangDir } from "@/src/i18n/direction";
 import { DirectionProvider } from "@/src/presentation/components/DirectionProvider";
@@ -23,6 +24,46 @@ const vazirmatn = Vazirmatn({
 
 export function generateStaticParams(): { locale: string }[] {
   return routing.locales.map((locale) => ({ locale }));
+}
+
+/**
+ * Per-locale document metadata: a localized title (+ template for child pages) and
+ * description, plus SEO alternates. `alternates.languages` emits `<link rel="alternate"
+ * hreflang>` for each locale in `<head>` (complementing the `Link` headers next-intl's
+ * middleware already sets), and `x-default` points crawlers at the default locale.
+ * `localePrefix: "as-needed"` means English is un-prefixed and Persian lives under `/fa`.
+ * URLs resolve against `metadataBase` (`NEXT_PUBLIC_SITE_URL`, unset in dev → relative).
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: requested } = await params;
+  const locale = hasLocale(routing.locales, requested) ? requested : routing.defaultLocale;
+  const t = await getTranslations({ locale, namespace: "meta" });
+  const isFa = locale === "fa";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
+  return {
+    metadataBase: siteUrl ? new URL(siteUrl) : undefined,
+    title: { default: t("title"), template: t("titleTemplate") },
+    description: t("description"),
+    applicationName: "FreshDrop",
+    alternates: {
+      canonical: isFa ? "/fa" : "/",
+      languages: { en: "/", fa: "/fa", "x-default": "/" },
+    },
+    openGraph: {
+      type: "website",
+      siteName: "FreshDrop",
+      title: t("title"),
+      description: t("description"),
+      url: isFa ? "/fa" : "/",
+      locale: isFa ? "fa_IR" : "en_US",
+      alternateLocale: isFa ? "en_US" : "fa_IR",
+    },
+  };
 }
 
 export default async function LocaleLayout({

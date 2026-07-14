@@ -1,4 +1,9 @@
 {
+  "meta": {
+    "title": "FreshDrop",
+    "titleTemplate": "%s · FreshDrop",
+    "description": "Fresh groceries delivered fast — fruit, veg, dairy, meat and everyday pantry staples."
+  },
   "common": {
     "goBack": "Go back",
     "startShopping": "Start Shopping",

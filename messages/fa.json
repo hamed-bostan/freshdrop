@@ -1,4 +1,9 @@
 {
+  "meta": {
+    "title": "FreshDrop",
+    "titleTemplate": "%s · FreshDrop",
+    "description": "خواربار تازه با ارسال سریع — میوه، سبزیجات، لبنیات، گوشت و مایحتاج روزانه."
+  },
   "common": {
     "goBack": "بازگشت",
     "startShopping": "شروع خرید",
