@@ -81,7 +81,22 @@ export async function serverApiGet<T>(path: string, config?: ServerGetConfig): P
     );
   }
 
-  return (await response.json()) as T;
+  // A successful status is no guarantee of a JSON body: a proxy can answer with an
+  // HTML error page, and a truncated or corrupted body parses no better. Left bare,
+  // `response.json()` throws a raw `SyntaxError` that escapes the `ApiError` contract
+  // every caller is written against — so it surfaces as an unhandled 500 rather than
+  // the route's error boundary. Normalize it like any other failure.
+  try {
+    return (await response.json()) as T;
+  } catch (error) {
+    throw new ApiError(
+      "The server returned a malformed response. Please try again.",
+      response.status,
+      "EBADRESPONSE",
+      undefined,
+      { cause: error },
+    );
+  }
 }
 
 /** Join base + path and append query params via the WHATWG URL API. */
