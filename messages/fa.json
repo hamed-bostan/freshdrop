@@ -633,7 +633,7 @@
   },
   "dashReviews": {
     "heading": "نظرات",
-    "summary": "{count} در انتظار تأیید · برای انتشار در فروشگاه تأیید کنید",
+    "summary": "{count, plural, other {# در انتظار تأیید}} · برای انتشار در فروشگاه تأیید کنید",
     "filterAll": "همه",
     "statusPending": "در انتظار",
     "statusApproved": "تأییدشده",

@@ -10,6 +10,7 @@ import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSu
 import { Icon } from "@/src/presentation/design-system";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatMoney } from "@/src/lib/formatMoney";
+import { formatNumber } from "@/src/lib/formatNumber";
 import { formatOrderDate } from "@/src/lib/formatOrderDate";
 import { OrderStageSelect } from "./OrderStageSelect";
 import { OrderReturnControl } from "./OrderReturnControl";
@@ -141,7 +142,7 @@ export function OrderRow({ order, customer, columnCount }: OrderRowProps) {
                         {item.name}
                       </span>
                       <span className="shrink-0 text-body-b7 text-muted-foreground">
-                        × {item.quantity}
+                        × {formatNumber(item.quantity, locale)}
                       </span>
                     </div>
 

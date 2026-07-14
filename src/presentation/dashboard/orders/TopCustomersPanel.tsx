@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { formatMoney } from "@/src/lib/formatMoney";
+import { formatNumber } from "@/src/lib/formatNumber";
 
 type TopCustomersPanelProps = {
   /** Customers ranked by total spend (highest first) — the parent screen passes them pre-sorted. */
@@ -34,7 +35,7 @@ export async function TopCustomersPanel({ customers }: TopCustomersPanelProps) {
         {top.map((customer, index) => (
           <li key={customer.userId} className="flex items-center gap-3">
             <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-body-b8 text-muted-foreground">
-              {index + 1}
+              {formatNumber(index + 1, locale)}
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-body-b7 text-foreground">{customer.name}</p>

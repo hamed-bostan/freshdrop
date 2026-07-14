@@ -633,7 +633,7 @@
   },
   "dashReviews": {
     "heading": "Reviews",
-    "summary": "{count} awaiting approval · approve to publish to the storefront",
+    "summary": "{count, plural, other {# awaiting approval}} · approve to publish to the storefront",
     "filterAll": "All",
     "statusPending": "Pending",
     "statusApproved": "Approved",

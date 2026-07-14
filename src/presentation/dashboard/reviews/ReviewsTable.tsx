@@ -4,6 +4,7 @@ import { Star } from "lucide-react";
 import type { Locale } from "@/src/i18n/routing";
 import type { Review, ReviewStatus } from "@/src/domain/entities/Review";
 import type { Product } from "@/src/domain/entities/Product";
+import { formatNumber } from "@/src/lib/formatNumber";
 import { Badge, Icon } from "@/src/presentation/design-system";
 import { Link } from "@/src/i18n/navigation";
 import { ReviewStatusSelect } from "./ReviewStatusSelect";
@@ -150,7 +151,7 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
                 <td className="px-4 py-4">
                   <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-surface-sunken px-2 py-0.5">
                     <Icon icon={Star} size="xs" className="fill-rating text-rating" />
-                    <span className="text-body-b8 text-foreground">{review.rating.toFixed(1)}</span>
+                    <span className="text-body-b8 text-foreground">{formatNumber(review.rating, locale, 1)}</span>
                   </span>
                 </td>
                 <td className="px-4 py-4">

@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { Review, ReviewStatus } from "@/src/domain/entities/Review";
 import type { Product } from "@/src/domain/entities/Product";
+import { formatNumber } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
 import { ReviewsTable } from "./ReviewsTable";
 
@@ -31,6 +32,7 @@ const FILTERS: { value: FilterValue; labelKey: "statusPending" | "statusApproved
  */
 export function ReviewsScreen({ reviews, products }: ReviewsScreenProps) {
   const t = useTranslations("dashReviews");
+  const locale = useLocale();
   const [filter, setFilter] = React.useState<FilterValue>("pending");
 
   const productsById = React.useMemo(
@@ -75,7 +77,7 @@ export function ReviewsScreen({ reviews, products }: ReviewsScreenProps) {
               )}
             >
               {t(tab.labelKey)}
-              <span className="ms-1.5 text-muted-foreground">{counts[tab.value]}</span>
+              <span className="ms-1.5 text-muted-foreground">{formatNumber(counts[tab.value], locale)}</span>
             </button>
           );
         })}
