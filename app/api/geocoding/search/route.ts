@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     });
     return NextResponse.json({ places });
   } catch (error) {
-    console.error("Geocoding search failed:", error);
+    console.error("Geocoding search failed:", error instanceof Error ? error.message : error);
     return NextResponse.json({ error: "Geocoding search failed." }, { status: 502 });
   }
 }

@@ -24,7 +24,9 @@ export async function GET(request: NextRequest) {
     );
     return NextResponse.json({ place });
   } catch (error) {
-    console.error("Reverse geocoding failed:", error);
+    // Message only: the upstream is unreachable often enough that a stack per
+    // failed map drag would bury everything else in the log.
+    console.error("Reverse geocoding failed:", error instanceof Error ? error.message : error);
     return NextResponse.json({ error: "Reverse geocoding failed." }, { status: 502 });
   }
 }

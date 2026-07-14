@@ -34,6 +34,11 @@ const DEFAULT_BASE_URL = "https://nominatim.openstreetmap.org";
 // Geocoding results are stable; cache aggressively to stay within Nominatim's
 // usage policy. Next's data cache keys on the full request URL.
 const CACHE_TTL_SECONDS = 60 * 60 * 24;
+// The public OSM server is regularly unreachable from some networks, where the
+// connection hangs until undici's 10s connect timeout. Callers seed a *render*
+// (the address picker) with this, so a slow failure is worse than a quick one:
+// give up early and let them fall back rather than stalling the page.
+const DEFAULT_TIMEOUT_MS = 4000;
 
 export interface NominatimConfig {
   /** Base URL of the Nominatim instance. Defaults to the public OSM server. */
@@ -45,6 +50,8 @@ export interface NominatimConfig {
   userAgent: string;
   /** `Accept-Language` for localised display names. */
   language?: string;
+  /** Abort an upstream request that takes longer than this. */
+  timeoutMs?: number;
 }
 
 /**
@@ -56,11 +63,13 @@ export class NominatimGeocodingRepository implements IGeocodingRepository {
   private readonly baseUrl: string;
   private readonly userAgent: string;
   private readonly language: string;
+  private readonly timeoutMs: number;
 
   constructor(config: NominatimConfig) {
     this.baseUrl = (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, "");
     this.userAgent = config.userAgent;
     this.language = config.language ?? "en";
+    this.timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   }
 
   async search(query: string, options: GeocodingSearchOptions = {}): Promise<Place[]> {
@@ -105,6 +114,7 @@ export class NominatimGeocodingRepository implements IGeocodingRepository {
       headers: {
         "User-Agent": this.userAgent,
       },
+      signal: AbortSignal.timeout(this.timeoutMs),
       next: { revalidate: CACHE_TTL_SECONDS },
     });
 

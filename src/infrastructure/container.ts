@@ -177,6 +177,7 @@ export const geocodingRepository: IGeocodingRepository = new NominatimGeocodingR
   baseUrl: process.env.NOMINATIM_BASE_URL,
   userAgent: process.env.NOMINATIM_USER_AGENT ?? "FreshDrop/0.1 (+https://example.com/contact)",
   language: process.env.NOMINATIM_LANGUAGE ?? "en",
+  timeoutMs: Number(process.env.NOMINATIM_TIMEOUT_MS) || undefined,
 });
 
 // Supabase Storage for images. Server-side only — it holds the service-role key,
