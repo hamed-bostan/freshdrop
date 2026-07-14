@@ -1,31 +1,29 @@
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
-import { apiClient } from "@/src/lib/api/client";
+import { apiDelete, apiPost, apiPut } from "@/src/lib/api/client";
+import { deliveryLocationResponseSchema } from "./delivery-location-response-schema";
 import type { DeliveryLocationInput } from "./delivery-location-schema";
 
 /**
  * Typed client for the delivery-address REST *mutations*. UI components call these
- * instead of touching Axios directly; each method resolves with domain data or
- * rejects with an `ApiError` (normalized by the Axios response interceptor in
- * `client.ts`). Reads are server-side (see `deliveryLocationsServerApi`).
+ * instead of touching Axios directly; each method resolves with domain data —
+ * validated against `deliveryLocationResponseSchema` — or rejects with an
+ * `ApiError`. Reads are server-side (see `deliveryLocationsServerApi`).
  */
 export const deliveryLocationsApi = {
-  async create(input: DeliveryLocationInput): Promise<DeliveryLocation> {
-    const { data } = await apiClient.post<DeliveryLocation>("/delivery-locations", input);
-    return data;
+  create(input: DeliveryLocationInput): Promise<DeliveryLocation> {
+    return apiPost("/delivery-locations", input, deliveryLocationResponseSchema);
   },
 
-  async update(id: string, input: DeliveryLocationInput): Promise<DeliveryLocation> {
-    const { data } = await apiClient.put<DeliveryLocation>(`/delivery-locations/${id}`, input);
-    return data;
+  update(id: string, input: DeliveryLocationInput): Promise<DeliveryLocation> {
+    return apiPut(`/delivery-locations/${id}`, input, deliveryLocationResponseSchema);
   },
 
   /** Make this address the user's checkout default; resolves with the updated address. */
-  async setDefault(id: string): Promise<DeliveryLocation> {
-    const { data } = await apiClient.put<DeliveryLocation>(`/delivery-locations/${id}/default`);
-    return data;
+  setDefault(id: string): Promise<DeliveryLocation> {
+    return apiPut(`/delivery-locations/${id}/default`, undefined, deliveryLocationResponseSchema);
   },
 
-  async remove(id: string): Promise<void> {
-    await apiClient.delete(`/delivery-locations/${id}`);
+  remove(id: string): Promise<void> {
+    return apiDelete(`/delivery-locations/${id}`);
   },
 };

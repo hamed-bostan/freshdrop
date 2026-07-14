@@ -1,0 +1,71 @@
+import { z } from "zod";
+import type { Order } from "@/src/domain/entities/Order";
+import type { ReorderItemsResult } from "@/src/domain/use-cases/orders/ReorderItems";
+
+/**
+ * The shape an order endpoint promises to return, validated at the typed-service
+ * boundary (see `parseApiResponse`). The canonical order response contract: the
+ * storefront's own-orders reads, checkout's placed order, the customer mutations
+ * (cancel, return) and the dashboard's cross-user admin reads all go through it.
+ *
+ * Distinct from `checkout-schema.ts` and the dashboard's order input schemas, which
+ * describe what a caller may *submit*. An order carries far more back than any of
+ * them sends — the timestamps, the captured price breakdown, the picker's
+ * substitution outcomes — which is exactly the drift worth catching.
+ *
+ * The wire timestamps (`placedAt`, `deliveryDate`) are ISO strings in the entity
+ * too, so nothing is coerced to `Date` here; the presentation layer formats them.
+ */
+const substitutionResponseSchema = z.object({
+  status: z.enum(["substituted", "refunded"]),
+  replacement: z
+    .object({
+      productId: z.string(),
+      name: z.string(),
+      imageUrl: z.string(),
+    })
+    .optional(),
+  refundAmount: z.number(),
+});
+
+const orderItemResponseSchema = z.object({
+  productId: z.string(),
+  name: z.string(),
+  imageUrl: z.string(),
+  quantity: z.number(),
+  price: z.number(),
+  substitutionPreference: z.enum(["substitute", "refund"]),
+  substitution: substitutionResponseSchema.optional(),
+});
+
+export const orderResponseSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  status: z.enum(["completed", "processing", "cancelled", "return_requested", "refunded"]),
+  phase: z.enum(["current", "previous"]),
+  placedAt: z.string(),
+  location: z.string(),
+  locationLabel: z.string().optional(),
+  items: z.array(orderItemResponseSchema),
+  subtotal: z.number(),
+  shipping: z.number(),
+  discount: z.number(),
+  total: z.number(),
+  stage: z.enum(["confirmed", "shipped", "arrived"]).optional(),
+  deliveryDate: z.string().optional(),
+  deliveryWindowId: z.string().optional(),
+  deliveryWindow: z.string().optional(),
+}) satisfies z.ZodType<Order>;
+
+export const orderListResponseSchema = z.array(orderResponseSchema);
+
+/**
+ * `POST /orders/:id/reorder` — how many of a past order's lines made it back into
+ * the cart. A use-case result rather than an entity, but it's still a response body
+ * the UI reports to the shopper ("3 items added, 1 unavailable"), so it's held to
+ * the same contract.
+ */
+export const reorderResultResponseSchema = z.object({
+  added: z.number(),
+  skipped: z.number(),
+}) satisfies z.ZodType<ReorderItemsResult>;

@@ -1,18 +1,18 @@
 import type { User } from "@/src/domain/entities/User";
-import { apiClient } from "@/src/lib/api/client";
+import { apiPost, apiPut } from "@/src/lib/api/client";
 import { AVATAR_IMAGE_FOLDER } from "@/src/lib/imageFolders";
+import { imageUploadResponseSchema, userResponseSchema } from "./profile-response-schema";
 import type { ProfileUpdateValues } from "./profile-schema";
 
 /**
  * Typed client for the profile REST endpoint. UI components call these instead of
- * touching Axios directly; each method resolves with domain data or rejects with
- * an `ApiError` (normalized by the response interceptor in `client.ts`). The read
- * is server-side (see `profilesServerApi`).
+ * touching Axios directly; each method resolves with domain data — validated against
+ * the endpoint's response schema — or rejects with an `ApiError`. The read is
+ * server-side (see `profilesServerApi`).
  */
 export const profilesApi = {
-  async update(values: ProfileUpdateValues): Promise<User> {
-    const { data } = await apiClient.put<User>("/profile", values);
-    return data;
+  update(values: ProfileUpdateValues): Promise<User> {
+    return apiPut("/profile", values, userResponseSchema);
   },
 
   /**
@@ -25,7 +25,7 @@ export const profilesApi = {
     body.append("file", file);
     body.append("folder", AVATAR_IMAGE_FOLDER);
 
-    const { data } = await apiClient.post<{ image: { url: string } }>("/images/upload", body);
-    return data.image.url;
+    const { image } = await apiPost("/images/upload", body, imageUploadResponseSchema);
+    return image.url;
   },
 };

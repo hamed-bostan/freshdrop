@@ -1,5 +1,6 @@
 import type { SavedCard } from "@/src/domain/entities/Wallet";
-import { apiClient } from "@/src/lib/api/client";
+import { apiPost } from "@/src/lib/api/client";
+import { savedCardResponseSchema } from "./wallet-response-schema";
 import type { AddCardInput, AddFundsInput } from "./wallet-schema";
 
 /**
@@ -9,12 +10,11 @@ import type { AddCardInput, AddFundsInput } from "./wallet-schema";
  * so the server re-renders the authoritative wallet (never patch a local copy).
  */
 export const walletsApi = {
-  async addFunds(values: AddFundsInput): Promise<void> {
-    await apiClient.post("/wallet/funds", values);
+  addFunds(values: AddFundsInput): Promise<void> {
+    return apiPost("/wallet/funds", values);
   },
 
-  async addCard(values: AddCardInput): Promise<SavedCard> {
-    const { data } = await apiClient.post<SavedCard>("/wallet/cards", values);
-    return data;
+  addCard(values: AddCardInput): Promise<SavedCard> {
+    return apiPost("/wallet/cards", values, savedCardResponseSchema);
   },
 };

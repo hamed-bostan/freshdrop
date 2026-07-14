@@ -39,21 +39,12 @@ type ServerGetConfig = {
 /**
  * GET a resource from the REST API during server rendering; rejects with `ApiError`.
  *
- * Pass the schema of the body you expect and it is validated before it reaches the
- * caller (see `parseApiResponse`). The unvalidated overload is the pre-existing
- * contract, kept only while the remaining services migrate feature by feature — it
- * still guards the JSON parse, but takes the response's *shape* on faith.
+ * The schema of the expected body is required, not optional: the response is checked
+ * against it before the caller sees it (see `parseApiResponse`), so `T` is something
+ * the server actually sent rather than a cast taken on faith. Callers that only want
+ * one field still validate the whole envelope and destructure from the result.
  */
-export function serverApiGet<T>(path: string, schema: ZodType<T>, config?: ServerGetConfig): Promise<T>;
-export function serverApiGet<T>(path: string, config?: ServerGetConfig): Promise<T>;
-export async function serverApiGet<T>(
-  path: string,
-  schemaOrConfig?: ZodType<T> | ServerGetConfig,
-  maybeConfig?: ServerGetConfig,
-): Promise<T> {
-  const schema = isSchema<T>(schemaOrConfig) ? schemaOrConfig : undefined;
-  const config = isSchema<T>(schemaOrConfig) ? maybeConfig : schemaOrConfig;
-
+export async function serverApiGet<T>(path: string, schema: ZodType<T>, config?: ServerGetConfig): Promise<T> {
   const requestHeaders = await headers();
   const cookie = requestHeaders.get("cookie") ?? undefined;
   // Forward the active locale as the BFF's language negotiation, so the API serves
@@ -111,12 +102,7 @@ export async function serverApiGet<T>(
     throw badResponseError(response.status, error);
   }
 
-  return schema ? parseApiResponse(schema, body, response.status) : (body as T);
-}
-
-/** Distinguish the schema overload from the config-only one. */
-function isSchema<T>(value: ZodType<T> | ServerGetConfig | undefined): value is ZodType<T> {
-  return typeof value === "object" && value !== null && "safeParse" in value;
+  return parseApiResponse(schema, body, response.status);
 }
 
 /** Join base + path and append query params via the WHATWG URL API. */

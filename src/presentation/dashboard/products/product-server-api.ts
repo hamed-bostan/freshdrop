@@ -2,6 +2,7 @@ import type { Product } from "@/src/domain/entities/Product";
 import type { ProductTranslationInput } from "@/src/domain/repositories/IProductRepository";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
+import { productListResponseSchema, productResponseSchema } from "@/src/presentation/product/product-response-schema";
 
 /**
  * Server-side product reads for the dashboard (BFF). Fetched during server render
@@ -13,7 +14,7 @@ export const productsServerApi = {
   list(): Promise<Product[]> {
     // Localized: the admin list is for reading, so it follows the active locale
     // (falling back to the base name where a product has no translation yet).
-    return serverApiGet<Product[]>("/products");
+    return serverApiGet("/products", productListResponseSchema);
   },
 
   /**
@@ -24,7 +25,7 @@ export const productsServerApi = {
    */
   async getById(id: string): Promise<Product | null> {
     try {
-      return await serverApiGet<Product>(`/products/${id}`, { canonical: true });
+      return await serverApiGet(`/products/${id}`, productResponseSchema, { canonical: true });
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) return null;
       throw error;

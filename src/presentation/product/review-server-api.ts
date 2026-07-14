@@ -1,5 +1,6 @@
 import type { Review } from "@/src/domain/entities/Review";
 import { serverApiGet } from "@/src/lib/api/server-client";
+import { reviewListResponseSchema } from "./review-response-schema";
 
 /**
  * Server-side review reads for Server Components (BFF). The storefront mirror of
@@ -7,6 +8,6 @@ import { serverApiGet } from "@/src/lib/api/server-client";
  */
 export const reviewsServerApi = {
   listByProduct(productId: string): Promise<Review[]> {
-    return serverApiGet<Review[]>("/reviews", { params: { productId } });
+    return serverApiGet("/reviews", reviewListResponseSchema, { params: { productId } });
   },
 };

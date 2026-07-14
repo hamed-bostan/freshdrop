@@ -1,15 +1,18 @@
 import type { Order } from "@/src/domain/entities/Order";
 import type { OrderTracking } from "@/src/domain/entities/OrderTracking";
 import type { ReorderItemsResult } from "@/src/domain/use-cases/orders/ReorderItems";
-import { apiClient } from "@/src/lib/api/client";
+import { apiGet, apiPost } from "@/src/lib/api/client";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { orderResponseSchema, reorderResultResponseSchema } from "./order-response-schema";
+import { orderTrackingResponseSchema } from "./order-tracking-response-schema";
 
 /**
  * Typed client for the customer order *mutations*, plus the live-tracking poll.
- * UI components call these instead of touching Axios directly; each resolves
- * with domain data or rejects with a normalized `ApiError`. First-paint reads
- * are server-side (see `ordersServerApi`); admin-side order mutations live in
- * the dashboard's own `ordersApi`.
+ * UI components call these instead of touching Axios directly; each resolves with
+ * domain data — validated against the endpoint's response schema — or rejects with
+ * a normalized `ApiError`. First-paint reads are server-side (see
+ * `ordersServerApi`); admin-side order mutations live in the dashboard's own
+ * `ordersApi`.
  */
 export const ordersApi = {
   /**
@@ -19,8 +22,7 @@ export const ordersApi = {
    */
   async getTracking(orderId: string): Promise<OrderTracking | null> {
     try {
-      const { data } = await apiClient.get<OrderTracking>(`/orders/${orderId}/tracking`);
-      return data;
+      return await apiGet(`/orders/${orderId}/tracking`, orderTrackingResponseSchema);
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) return null;
       throw error;
@@ -28,20 +30,17 @@ export const ordersApi = {
   },
 
   /** Add a past order's items back to the cart; resolves with the added/skipped counts. */
-  async reorder(orderId: string): Promise<ReorderItemsResult> {
-    const { data } = await apiClient.post<ReorderItemsResult>(`/orders/${orderId}/reorder`);
-    return data;
+  reorder(orderId: string): Promise<ReorderItemsResult> {
+    return apiPost(`/orders/${orderId}/reorder`, undefined, reorderResultResponseSchema);
   },
 
   /** Cancel a live, pre-dispatch order (restock + wallet refund); resolves with the updated order. */
-  async cancel(orderId: string): Promise<Order> {
-    const { data } = await apiClient.post<Order>(`/orders/${orderId}/cancel`);
-    return data;
+  cancel(orderId: string): Promise<Order> {
+    return apiPost(`/orders/${orderId}/cancel`, undefined, orderResponseSchema);
   },
 
   /** Open a return request on a delivered order; resolves with the updated order. */
-  async requestReturn(orderId: string): Promise<Order> {
-    const { data } = await apiClient.post<Order>(`/orders/${orderId}/return`);
-    return data;
+  requestReturn(orderId: string): Promise<Order> {
+    return apiPost(`/orders/${orderId}/return`, undefined, orderResponseSchema);
   },
 };

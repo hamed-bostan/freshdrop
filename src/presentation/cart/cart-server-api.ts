@@ -1,5 +1,6 @@
 import type { Cart } from "@/src/domain/entities/Cart";
 import { serverApiGet } from "@/src/lib/api/server-client";
+import { cartResponseSchema } from "./cart-response-schema";
 
 /**
  * Server-side cart read for Server Components (BFF). The storefront fetches the
@@ -10,6 +11,10 @@ import { serverApiGet } from "@/src/lib/api/server-client";
  */
 export const cartsServerApi = {
   get(options?: { promo?: string | null }): Promise<Cart> {
-    return serverApiGet<Cart>("/cart", options?.promo ? { params: { promo: options.promo } } : undefined);
+    return serverApiGet(
+      "/cart",
+      cartResponseSchema,
+      options?.promo ? { params: { promo: options.promo } } : undefined,
+    );
   },
 };

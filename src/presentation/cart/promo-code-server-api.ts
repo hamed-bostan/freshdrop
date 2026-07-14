@@ -1,5 +1,6 @@
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
 import { serverApiGet } from "@/src/lib/api/server-client";
+import { promoCodeListResponseSchema } from "./promo-code-response-schema";
 
 /**
  * Server-side promo-code reads for Server Components (BFF) — the same REST
@@ -7,12 +8,12 @@ import { serverApiGet } from "@/src/lib/api/server-client";
  */
 export const promoCodesServerApi = {
   list(): Promise<PromoCode[]> {
-    return serverApiGet<PromoCode[]>("/promo-codes");
+    return serverApiGet("/promo-codes", promoCodeListResponseSchema);
   },
 
   /** Resolve a single code (case-insensitive); `null` when none matches. */
   async getByCode(code: string): Promise<PromoCode | null> {
-    const matches = await serverApiGet<PromoCode[]>("/promo-codes", { params: { code } });
+    const matches = await serverApiGet("/promo-codes", promoCodeListResponseSchema, { params: { code } });
     return matches[0] ?? null;
   },
 };

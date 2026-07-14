@@ -1,5 +1,6 @@
 import type { Product } from "@/src/domain/entities/Product";
-import { apiClient } from "@/src/lib/api/client";
+import { apiGet } from "@/src/lib/api/client";
+import { productListResponseSchema } from "./product-response-schema";
 
 /**
  * Browser-side product search for the storefront's interactive typeahead.
@@ -11,11 +12,7 @@ import { apiClient } from "@/src/lib/api/client";
  * `AbortSignal` so the caller drops an in-flight request when the query changes.
  */
 export const productSearchApi = {
-  async search(query: string, signal?: AbortSignal): Promise<Product[]> {
-    const { data } = await apiClient.get<Product[]>("/products", {
-      params: { q: query },
-      signal,
-    });
-    return data;
+  search(query: string, signal?: AbortSignal): Promise<Product[]> {
+    return apiGet("/products", productListResponseSchema, { params: { q: query }, signal });
   },
 };

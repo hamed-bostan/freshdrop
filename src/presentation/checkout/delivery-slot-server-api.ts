@@ -1,5 +1,6 @@
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import { serverApiGet } from "@/src/lib/api/server-client";
+import { deliverySlotDayListResponseSchema } from "./delivery-slot-response-schema";
 
 /**
  * Server-side delivery-slot reads for Server Components (BFF) — fetched from the
@@ -7,6 +8,6 @@ import { serverApiGet } from "@/src/lib/api/server-client";
  */
 export const deliverySlotsServerApi = {
   list(): Promise<DeliverySlotDay[]> {
-    return serverApiGet<DeliverySlotDay[]>("/delivery-slots");
+    return serverApiGet("/delivery-slots", deliverySlotDayListResponseSchema);
   },
 };

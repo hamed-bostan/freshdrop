@@ -1,5 +1,6 @@
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { serverApiGet } from "@/src/lib/api/server-client";
+import { customerOrderSummaryListResponseSchema } from "./customer-response-schema";
 
 /**
  * Server-side customer-analytics read for the admin dashboard (BFF). Returns the
@@ -10,6 +11,6 @@ import { serverApiGet } from "@/src/lib/api/server-client";
  */
 export const customersServerApi = {
   listSummaries(): Promise<CustomerOrderSummary[]> {
-    return serverApiGet<CustomerOrderSummary[]>("/admin/customers");
+    return serverApiGet("/admin/customers", customerOrderSummaryListResponseSchema);
   },
 };

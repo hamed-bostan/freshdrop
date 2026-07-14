@@ -1,6 +1,10 @@
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
+import {
+  deliveryLocationListResponseSchema,
+  deliveryLocationResponseSchema,
+} from "./delivery-location-response-schema";
 
 /**
  * Server-side delivery-location reads for Server Components (BFF) — fetched from
@@ -14,7 +18,7 @@ import { serverApiGet } from "@/src/lib/api/server-client";
 export const deliveryLocationsServerApi = {
   async list(): Promise<DeliveryLocation[]> {
     try {
-      return await serverApiGet<DeliveryLocation[]>("/delivery-locations");
+      return await serverApiGet("/delivery-locations", deliveryLocationListResponseSchema);
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) return [];
       throw error;
@@ -28,7 +32,7 @@ export const deliveryLocationsServerApi = {
    */
   async getById(id: string): Promise<DeliveryLocation | null> {
     try {
-      return await serverApiGet<DeliveryLocation>(`/delivery-locations/${id}`);
+      return await serverApiGet(`/delivery-locations/${id}`, deliveryLocationResponseSchema);
     } catch (error) {
       if (error instanceof ApiError && (error.status === 404 || error.status === 401)) return null;
       throw error;

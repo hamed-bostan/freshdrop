@@ -1,5 +1,6 @@
 import type { Review } from "@/src/domain/entities/Review";
 import { serverApiGet } from "@/src/lib/api/server-client";
+import { reviewListResponseSchema } from "@/src/presentation/product/review-response-schema";
 
 /**
  * Server-side review reads for the admin dashboard (BFF). Unlike the storefront's
@@ -10,6 +11,6 @@ import { serverApiGet } from "@/src/lib/api/server-client";
  */
 export const reviewsServerApi = {
   listAll(): Promise<Review[]> {
-    return serverApiGet<Review[]>("/admin/reviews");
+    return serverApiGet("/admin/reviews", reviewListResponseSchema);
   },
 };

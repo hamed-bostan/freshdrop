@@ -43,24 +43,39 @@ apiClient.interceptors.response.use(
 );
 
 /**
- * Validated request helpers. Typed services call these rather than `apiClient`
- * directly: each takes the schema for the body it expects and rejects with an
- * `ApiError` (`EBADRESPONSE`) when the response doesn't match — instead of casting
- * whatever arrived to `T` and letting a raw string reach a component.
+ * Validated request helpers — what the typed services call instead of reaching for
+ * `apiClient` directly.
+ *
+ * Pass the schema of the body you expect and the response is checked against it
+ * before the caller sees it, so a malformed or drifted body rejects with an
+ * `ApiError` (`EBADRESPONSE`) rather than being cast to `T` on faith. Omit the
+ * schema on a mutation whose body the caller ignores: nothing is parsed, and the
+ * call resolves with `void`.
  */
 export async function apiGet<T>(path: string, schema: ZodType<T>, config?: AxiosRequestConfig): Promise<T> {
   const { data, status } = await apiClient.get<unknown>(path, config);
   return parseApiResponse(schema, data, status);
 }
 
-export async function apiPost<T>(path: string, body: unknown, schema: ZodType<T>): Promise<T> {
+export function apiPost<T>(path: string, body: unknown, schema: ZodType<T>): Promise<T>;
+export function apiPost(path: string, body?: unknown): Promise<void>;
+export async function apiPost<T>(path: string, body?: unknown, schema?: ZodType<T>): Promise<T | void> {
   const { data, status } = await apiClient.post<unknown>(path, body);
-  return parseApiResponse(schema, data, status);
+  if (schema) return parseApiResponse(schema, data, status);
 }
 
-export async function apiPut<T>(path: string, body: unknown, schema: ZodType<T>): Promise<T> {
+export function apiPut<T>(path: string, body: unknown, schema: ZodType<T>): Promise<T>;
+export function apiPut(path: string, body?: unknown): Promise<void>;
+export async function apiPut<T>(path: string, body?: unknown, schema?: ZodType<T>): Promise<T | void> {
   const { data, status } = await apiClient.put<unknown>(path, body);
-  return parseApiResponse(schema, data, status);
+  if (schema) return parseApiResponse(schema, data, status);
+}
+
+export function apiPatch<T>(path: string, body: unknown, schema: ZodType<T>): Promise<T>;
+export function apiPatch(path: string, body?: unknown): Promise<void>;
+export async function apiPatch<T>(path: string, body?: unknown, schema?: ZodType<T>): Promise<T | void> {
+  const { data, status } = await apiClient.patch<unknown>(path, body);
+  if (schema) return parseApiResponse(schema, data, status);
 }
 
 /** DELETE a resource. Endpoints answer `204 No Content`, so there's no body to validate. */

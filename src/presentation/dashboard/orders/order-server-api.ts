@@ -1,6 +1,7 @@
 import type { Order } from "@/src/domain/entities/Order";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
+import { orderListResponseSchema } from "@/src/presentation/orders/order-response-schema";
 
 /**
  * Server-side order reads for the admin dashboard (BFF). Unlike the storefront's
@@ -9,7 +10,7 @@ import { serverApiGet } from "@/src/lib/api/server-client";
  */
 export const ordersServerApi = {
   listAll(): Promise<Order[]> {
-    return serverApiGet<Order[]>("/admin/orders");
+    return serverApiGet("/admin/orders", orderListResponseSchema);
   },
 
   /** A single order by id; returns `null` for a missing order (404) so callers can `notFound()`. */
