@@ -1,5 +1,7 @@
-import axios, { type AxiosError, type AxiosInstance } from "axios";
+import axios, { type AxiosError, type AxiosInstance, type AxiosRequestConfig } from "axios";
+import type { ZodType } from "zod";
 import { normalizeAxiosError } from "./normalizeAxiosError";
+import { parseApiResponse } from "./parseApiResponse";
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 
@@ -39,3 +41,29 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => Promise.reject(normalizeAxiosError(error)),
 );
+
+/**
+ * Validated request helpers. Typed services call these rather than `apiClient`
+ * directly: each takes the schema for the body it expects and rejects with an
+ * `ApiError` (`EBADRESPONSE`) when the response doesn't match — instead of casting
+ * whatever arrived to `T` and letting a raw string reach a component.
+ */
+export async function apiGet<T>(path: string, schema: ZodType<T>, config?: AxiosRequestConfig): Promise<T> {
+  const { data, status } = await apiClient.get<unknown>(path, config);
+  return parseApiResponse(schema, data, status);
+}
+
+export async function apiPost<T>(path: string, body: unknown, schema: ZodType<T>): Promise<T> {
+  const { data, status } = await apiClient.post<unknown>(path, body);
+  return parseApiResponse(schema, data, status);
+}
+
+export async function apiPut<T>(path: string, body: unknown, schema: ZodType<T>): Promise<T> {
+  const { data, status } = await apiClient.put<unknown>(path, body);
+  return parseApiResponse(schema, data, status);
+}
+
+/** DELETE a resource. Endpoints answer `204 No Content`, so there's no body to validate. */
+export async function apiDelete(path: string): Promise<void> {
+  await apiClient.delete(path);
+}

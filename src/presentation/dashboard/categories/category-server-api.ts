@@ -2,6 +2,7 @@ import type { Category } from "@/src/domain/entities/Category";
 import type { CategoryTranslationInput } from "@/src/domain/repositories/ICategoryRepository";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
+import { categoryListResponseSchema, categoryResponseSchema } from "@/src/presentation/category/category-response-schema";
 
 /**
  * Server-side category reads for the dashboard (BFF). Fetched during server
@@ -13,7 +14,7 @@ export const categoriesServerApi = {
   list(): Promise<Category[]> {
     // Localized: the admin list is for reading, so it follows the active locale
     // (falling back to the base name where a category has no translation yet).
-    return serverApiGet<Category[]>("/categories");
+    return serverApiGet("/categories", categoryListResponseSchema);
   },
 
   /**
@@ -24,7 +25,7 @@ export const categoriesServerApi = {
    */
   async getById(id: string): Promise<Category | null> {
     try {
-      return await serverApiGet<Category>(`/categories/${id}`, { canonical: true });
+      return await serverApiGet(`/categories/${id}`, categoryResponseSchema, { canonical: true });
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) return null;
       throw error;

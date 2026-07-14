@@ -1,7 +1,9 @@
 import { headers } from "next/headers";
 import { getLocale } from "next-intl/server";
+import type { ZodType } from "zod";
 import { ApiError } from "./ApiError";
 import { defaultMessageForStatus, type ErrorEnvelope } from "./normalizeAxiosError";
+import { badResponseError, parseApiResponse } from "./parseApiResponse";
 
 /**
  * Server-side REST client for React Server Components (the BFF pattern): the
@@ -34,8 +36,24 @@ type ServerGetConfig = {
   canonical?: boolean;
 };
 
-/** GET a resource from the REST API during server rendering; rejects with `ApiError`. */
-export async function serverApiGet<T>(path: string, config?: ServerGetConfig): Promise<T> {
+/**
+ * GET a resource from the REST API during server rendering; rejects with `ApiError`.
+ *
+ * Pass the schema of the body you expect and it is validated before it reaches the
+ * caller (see `parseApiResponse`). The unvalidated overload is the pre-existing
+ * contract, kept only while the remaining services migrate feature by feature — it
+ * still guards the JSON parse, but takes the response's *shape* on faith.
+ */
+export function serverApiGet<T>(path: string, schema: ZodType<T>, config?: ServerGetConfig): Promise<T>;
+export function serverApiGet<T>(path: string, config?: ServerGetConfig): Promise<T>;
+export async function serverApiGet<T>(
+  path: string,
+  schemaOrConfig?: ZodType<T> | ServerGetConfig,
+  maybeConfig?: ServerGetConfig,
+): Promise<T> {
+  const schema = isSchema<T>(schemaOrConfig) ? schemaOrConfig : undefined;
+  const config = isSchema<T>(schemaOrConfig) ? maybeConfig : schemaOrConfig;
+
   const requestHeaders = await headers();
   const cookie = requestHeaders.get("cookie") ?? undefined;
   // Forward the active locale as the BFF's language negotiation, so the API serves
@@ -85,18 +103,20 @@ export async function serverApiGet<T>(path: string, config?: ServerGetConfig): P
   // HTML error page, and a truncated or corrupted body parses no better. Left bare,
   // `response.json()` throws a raw `SyntaxError` that escapes the `ApiError` contract
   // every caller is written against — so it surfaces as an unhandled 500 rather than
-  // the route's error boundary. Normalize it like any other failure.
+  // the route's error boundary.
+  let body: unknown;
   try {
-    return (await response.json()) as T;
+    body = await response.json();
   } catch (error) {
-    throw new ApiError(
-      "The server returned a malformed response. Please try again.",
-      response.status,
-      "EBADRESPONSE",
-      undefined,
-      { cause: error },
-    );
+    throw badResponseError(response.status, error);
   }
+
+  return schema ? parseApiResponse(schema, body, response.status) : (body as T);
+}
+
+/** Distinguish the schema overload from the config-only one. */
+function isSchema<T>(value: ZodType<T> | ServerGetConfig | undefined): value is ZodType<T> {
+  return typeof value === "object" && value !== null && "safeParse" in value;
 }
 
 /** Join base + path and append query params via the WHATWG URL API. */

@@ -1,25 +1,25 @@
 import type { Category } from "@/src/domain/entities/Category";
-import { apiClient } from "@/src/lib/api/client";
+import { apiDelete, apiPost, apiPut } from "@/src/lib/api/client";
+import { categoryResponseSchema } from "@/src/presentation/category/category-response-schema";
 import type { CategoryFormInput } from "./category-schema";
 
 /**
  * Typed client for the category REST *mutations*. UI components call these instead
  * of touching Axios directly; each method resolves with domain data or rejects
- * with an `ApiError` (normalized by the Axios response interceptor in `client.ts`).
+ * with an `ApiError` — either normalized from the failure (see `client.ts`) or
+ * raised because the response body didn't match `categoryResponseSchema`.
  * Reads are server-side (see `categoriesServerApi`).
  */
 export const categoriesApi = {
-  async create(values: CategoryFormInput): Promise<Category> {
-    const { data } = await apiClient.post<Category>("/categories", values);
-    return data;
+  create(values: CategoryFormInput): Promise<Category> {
+    return apiPost("/categories", values, categoryResponseSchema);
   },
 
-  async update(id: string, values: CategoryFormInput): Promise<Category> {
-    const { data } = await apiClient.put<Category>(`/categories/${id}`, values);
-    return data;
+  update(id: string, values: CategoryFormInput): Promise<Category> {
+    return apiPut(`/categories/${id}`, values, categoryResponseSchema);
   },
 
-  async remove(id: string): Promise<void> {
-    await apiClient.delete(`/categories/${id}`);
+  remove(id: string): Promise<void> {
+    return apiDelete(`/categories/${id}`);
   },
 };

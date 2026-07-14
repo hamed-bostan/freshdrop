@@ -1,6 +1,7 @@
 import type { Category } from "@/src/domain/entities/Category";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
+import { categoryListResponseSchema } from "./category-response-schema";
 
 /**
  * Server-side category reads for Server Components (BFF). The storefront mirror of
@@ -8,7 +9,7 @@ import { serverApiGet } from "@/src/lib/api/server-client";
  */
 export const categoriesServerApi = {
   list(): Promise<Category[]> {
-    return serverApiGet<Category[]>("/categories");
+    return serverApiGet("/categories", categoryListResponseSchema);
   },
 
   /**
@@ -26,7 +27,7 @@ export const categoriesServerApi = {
 
   /** Resolve a category by its URL slug; `null` when none matches (so callers can `notFound()`). */
   async getBySlug(slug: string): Promise<Category | null> {
-    const matches = await serverApiGet<Category[]>("/categories", { params: { slug } });
+    const matches = await serverApiGet("/categories", categoryListResponseSchema, { params: { slug } });
     return matches[0] ?? null;
   },
 };
