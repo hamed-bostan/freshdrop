@@ -11,11 +11,17 @@ import { serverApiGet } from "@/src/lib/api/server-client";
  */
 export const categoriesServerApi = {
   list(): Promise<Category[]> {
-    // Canonical reads: the dashboard manages and edits the base (default-locale) row.
-    return serverApiGet<Category[]>("/categories", { canonical: true });
+    // Localized: the admin list is for reading, so it follows the active locale
+    // (falling back to the base name where a category has no translation yet).
+    return serverApiGet<Category[]>("/categories");
   },
 
-  /** Resolve a category by id; `null` on 404 so callers can `notFound()`. */
+  /**
+   * Resolve a category by id; `null` on 404 so callers can `notFound()`.
+   *
+   * Canonical: this feeds the edit form, which writes back to the base row —
+   * prefilling it with translated text would overwrite that row on save.
+   */
   async getById(id: string): Promise<Category | null> {
     try {
       return await serverApiGet<Category>(`/categories/${id}`, { canonical: true });

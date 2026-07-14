@@ -11,11 +11,17 @@ import { serverApiGet } from "@/src/lib/api/server-client";
  */
 export const productsServerApi = {
   list(): Promise<Product[]> {
-    // Canonical reads: the dashboard manages and edits the base (default-locale) row.
-    return serverApiGet<Product[]>("/products", { canonical: true });
+    // Localized: the admin list is for reading, so it follows the active locale
+    // (falling back to the base name where a product has no translation yet).
+    return serverApiGet<Product[]>("/products");
   },
 
-  /** Resolve a product by id; `null` on 404 so callers can `notFound()`. */
+  /**
+   * Resolve a product by id; `null` on 404 so callers can `notFound()`.
+   *
+   * Canonical: this feeds the edit form, which writes back to the base row —
+   * prefilling it with translated text would overwrite that row on save.
+   */
   async getById(id: string): Promise<Product | null> {
     try {
       return await serverApiGet<Product>(`/products/${id}`, { canonical: true });
