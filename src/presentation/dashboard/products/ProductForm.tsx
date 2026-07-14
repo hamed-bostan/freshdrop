@@ -8,7 +8,18 @@ import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
 import type { ProductTranslationInput } from "@/src/domain/repositories/IProductRepository";
 import { DIETARY_TAGS, PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
-import { Button, Field, Input, Switch, TextField, Textarea } from "@/src/presentation/design-system";
+import {
+  Button,
+  Field,
+  Input,
+  Switch,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  TextField,
+  Textarea,
+} from "@/src/presentation/design-system";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { cn } from "@/src/lib/utils";
@@ -123,9 +134,71 @@ export function ProductForm(props: ProductFormProps) {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5" noValidate>
-      <TextField label={t("nameLabel")} required error={errors.name?.message}>
-        {(control) => <Input {...control} {...register("name")} placeholder={t("namePlaceholder")} />}
-      </TextField>
+      {/* The shopper-facing copy is per-locale: the base row holds the source (English)
+          text and the `fa` tab its optional translation. Everything below the tabs
+          (price, stock, image, category…) is locale-independent, so it lives once on the
+          base row. Both panels stay mounted (`forceMount`) so switching tabs never drops
+          a value or hides a server-side field error. */}
+      <Tabs defaultValue="base">
+        <TabsList>
+          <TabsTrigger value="base">{t("localeTabBase")}</TabsTrigger>
+          <TabsTrigger value="fa">{t("localeTabFa")}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="base" forceMount className="flex flex-col gap-5 pt-4 data-[state=inactive]:hidden">
+          <p className="text-body-b10 text-muted-foreground">{t("baseTabDescription")}</p>
+
+          <TextField label={t("nameLabel")} required error={errors.name?.message}>
+            {(control) => <Input {...control} {...register("name")} dir="ltr" placeholder={t("namePlaceholder")} />}
+          </TextField>
+
+          <TextField label={t("unitLabel")} description={t("unitDescription")} error={errors.unit?.message}>
+            {(control) => <Input {...control} {...register("unit")} dir="ltr" placeholder={t("unitPlaceholder")} />}
+          </TextField>
+
+          <TextField label={t("descriptionLabel")} error={errors.description?.message}>
+            {(control) => (
+              <Textarea {...control} {...register("description")} dir="ltr" placeholder={t("descriptionPlaceholder")} />
+            )}
+          </TextField>
+
+          <TextField label={t("nutritionLabel")} error={errors.nutrition?.message}>
+            {(control) => (
+              <Textarea {...control} {...register("nutrition")} dir="ltr" placeholder={t("nutritionPlaceholder")} />
+            )}
+          </TextField>
+
+          <TextField label={t("originLabel")} error={errors.origin?.message}>
+            {(control) => (
+              <Textarea {...control} {...register("origin")} dir="ltr" placeholder={t("originPlaceholder")} />
+            )}
+          </TextField>
+        </TabsContent>
+
+        <TabsContent value="fa" forceMount className="flex flex-col gap-5 pt-4 data-[state=inactive]:hidden">
+          <p className="text-body-b10 text-muted-foreground">{t("translationDescription")}</p>
+
+          <TextField label={t("nameLabel")} error={errors.faName?.message}>
+            {(control) => <Input {...control} {...register("faName")} dir="rtl" placeholder={t("faNamePlaceholder")} />}
+          </TextField>
+
+          <TextField label={t("unitLabel")} description={t("unitDescription")} error={errors.faUnit?.message}>
+            {(control) => <Input {...control} {...register("faUnit")} dir="rtl" placeholder={t("faUnitPlaceholder")} />}
+          </TextField>
+
+          <TextField label={t("descriptionLabel")} error={errors.faDescription?.message}>
+            {(control) => <Textarea {...control} {...register("faDescription")} dir="rtl" />}
+          </TextField>
+
+          <TextField label={t("nutritionLabel")} error={errors.faNutrition?.message}>
+            {(control) => <Textarea {...control} {...register("faNutrition")} dir="rtl" />}
+          </TextField>
+
+          <TextField label={t("originLabel")} error={errors.faOrigin?.message}>
+            {(control) => <Textarea {...control} {...register("faOrigin")} dir="rtl" />}
+          </TextField>
+        </TabsContent>
+      </Tabs>
 
       <Field error={errors.categoryId?.message}>
         {({ id, ariaDescribedBy, ariaInvalid }) => (
@@ -208,15 +281,9 @@ export function ProductForm(props: ProductFormProps) {
       {/* Keeps imageUrl registered (set imperatively by ProductImageUpload) so it's tracked + submitted. */}
       <input type="hidden" {...register("imageUrl")} />
 
-      <div className="grid grid-cols-2 gap-4">
-        <TextField label={t("unitLabel")} description={t("unitDescription")} error={errors.unit?.message}>
-          {(control) => <Input {...control} {...register("unit")} placeholder={t("unitPlaceholder")} />}
-        </TextField>
-
-        <TextField label={t("badgeLabel")} description={t("badgeDescription")} error={errors.badge?.message}>
-          {(control) => <Input {...control} {...register("badge")} placeholder={t("badgePlaceholder")} />}
-        </TextField>
-      </div>
+      <TextField label={t("badgeLabel")} description={t("badgeDescription")} error={errors.badge?.message}>
+        {(control) => <Input {...control} {...register("badge")} dir="ltr" placeholder={t("badgePlaceholder")} />}
+      </TextField>
 
       <Field error={errors.brand?.message}>
         {({ id, ariaDescribedBy, ariaInvalid }) => (
@@ -306,47 +373,6 @@ export function ProductForm(props: ProductFormProps) {
           </div>
         )}
       />
-
-      <TextField label={t("descriptionLabel")} error={errors.description?.message}>
-        {(control) => (
-          <Textarea {...control} {...register("description")} placeholder={t("descriptionPlaceholder")} />
-        )}
-      </TextField>
-
-      <TextField label={t("nutritionLabel")} error={errors.nutrition?.message}>
-        {(control) => <Textarea {...control} {...register("nutrition")} placeholder={t("nutritionPlaceholder")} />}
-      </TextField>
-
-      <TextField label={t("originLabel")} error={errors.origin?.message}>
-        {(control) => <Textarea {...control} {...register("origin")} placeholder={t("originPlaceholder")} />}
-      </TextField>
-
-      {/* Persian (fa) content overrides. Optional — leaving the name blank stores no
-          fa translation, so the storefront falls back to the fields above under fa. */}
-      <fieldset className="flex flex-col gap-5 rounded-card-md border border-border p-4">
-        <legend className="px-1 text-body-b7 text-input-foreground">{t("translationLegend")}</legend>
-        <p className="-mt-2 text-body-b10 text-muted-foreground">{t("translationDescription")}</p>
-
-        <TextField label={t("faNameLabel")} error={errors.faName?.message}>
-          {(control) => <Input {...control} {...register("faName")} dir="rtl" placeholder={t("faNamePlaceholder")} />}
-        </TextField>
-
-        <TextField label={t("faUnitLabel")} error={errors.faUnit?.message}>
-          {(control) => <Input {...control} {...register("faUnit")} dir="rtl" placeholder={t("faUnitPlaceholder")} />}
-        </TextField>
-
-        <TextField label={t("faDescriptionLabel")} error={errors.faDescription?.message}>
-          {(control) => <Textarea {...control} {...register("faDescription")} dir="rtl" />}
-        </TextField>
-
-        <TextField label={t("faNutritionLabel")} error={errors.faNutrition?.message}>
-          {(control) => <Textarea {...control} {...register("faNutrition")} dir="rtl" />}
-        </TextField>
-
-        <TextField label={t("faOriginLabel")} error={errors.faOrigin?.message}>
-          {(control) => <Textarea {...control} {...register("faOrigin")} dir="rtl" />}
-        </TextField>
-      </fieldset>
 
       {errors.root?.message && (
         <p role="alert" className="text-body-b8 text-destructive">

@@ -6,6 +6,7 @@ export * from "./components/Icon";
 export * from "./components/Sheet";
 export * from "./components/Modal";
 export * from "./components/Switch";
+export * from "./components/Tabs";
 export * from "./components/Chip";
 export * from "./components/RatingStars";
 export * from "./icons";
