@@ -12,24 +12,38 @@ import { pointAtFraction } from "@/src/lib/geo";
 /** Courier used for every tracked order in the mock. */
 const RIDER = {
   name: "Joey Smith",
-  role: "Delivery Man",
   avatarUrl: "/images/rider-avatar.png",
   phone: "+14165550123",
 } as const;
 
-// Fixed Toronto coordinates (around Queen's Park, matching the design) standing
-// in for per-order geocoded points. The route is a few hand-placed waypoints
-// approximating a routing provider's road geometry; the courier is interpolated
-// along it (see `simulateCourier`) as a stand-in for a live GPS feed.
-const DESTINATION: GeoPoint = { latitude: 43.6629, longitude: -79.3925 };
-const ROUTE_START: GeoPoint = { latitude: 43.6566, longitude: -79.3852 };
-const ROUTE: GeoPoint[] = [
-  ROUTE_START,
-  { latitude: 43.6582, longitude: -79.3873 },
-  { latitude: 43.66, longitude: -79.3894 },
-  { latitude: 43.6617, longitude: -79.3911 },
-  DESTINATION,
-];
+// Where the delivery is headed: the coordinate snapshotted onto the order at
+// checkout. Orders placed before that was recorded (and addresses saved without a
+// picked point) have none, so they fall back to the design's Toronto coordinates
+// (around Queen's Park) — the map still renders, just not at their real address.
+const FALLBACK_DESTINATION: GeoPoint = { latitude: 43.6629, longitude: -79.3925 };
+
+// The courier sets off from a fixed offset southeast of the destination (~800m),
+// so every order gets a plausible approach without a routing provider. The route
+// itself is a straight line sampled into waypoints, standing in for a provider's
+// road geometry; the courier is interpolated along it (see `simulateCourier`) as a
+// stand-in for a live GPS feed.
+const APPROACH_OFFSET: GeoPoint = { latitude: -0.0063, longitude: 0.0073 };
+const ROUTE_WAYPOINTS = 4;
+
+/** The courier's straight-line approach to `destination`, sampled into waypoints. */
+function buildRoute(destination: GeoPoint): GeoPoint[] {
+  const start: GeoPoint = {
+    latitude: destination.latitude + APPROACH_OFFSET.latitude,
+    longitude: destination.longitude + APPROACH_OFFSET.longitude,
+  };
+  return Array.from({ length: ROUTE_WAYPOINTS + 1 }, (_, index) => {
+    const fraction = index / ROUTE_WAYPOINTS;
+    return {
+      latitude: start.latitude + (destination.latitude - start.latitude) * fraction,
+      longitude: start.longitude + (destination.longitude - start.longitude) * fraction,
+    };
+  });
+}
 
 // Assumed door-to-door duration once an order is out for delivery. The mock has
 // no recorded dispatch time (and seeded orders were "placed" long ago), so the
@@ -64,23 +78,24 @@ function simulateCourier(
   orderId: string,
   stage: TrackingMilestone,
   now: number,
+  route: GeoPoint[],
 ): { courier: GeoPoint; etaMinutes: number | null } {
-  if (stage === "arrived") return { courier: DESTINATION, etaMinutes: null };
-  if (stage !== "shipped") return { courier: ROUTE_START, etaMinutes: null };
+  if (stage === "arrived") return { courier: route[route.length - 1], etaMinutes: null };
+  if (stage !== "shipped") return { courier: route[0], etaMinutes: null };
 
   const elapsed = (now + orderPhaseOffset(orderId)) % TRIP_DURATION_MS;
   const fraction = elapsed / TRIP_DURATION_MS;
   const etaMinutes = Math.max(1, Math.ceil((TRIP_DURATION_MS - elapsed) / MS_PER_MINUTE));
-  return { courier: pointAtFraction(ROUTE, fraction), etaMinutes };
+  return { courier: pointAtFraction(route, fraction), etaMinutes };
 }
 
 const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
 
-/** The timeline, in order, with the human label and minutes-after-placement each milestone is reached. */
-const TIMELINE: { milestone: TrackingMilestone; label: string; offsetMs: number }[] = [
-  { milestone: "confirmed", label: "Order confirmed", offsetMs: 0 },
-  { milestone: "shipped", label: "Order shipped", offsetMs: FIFTEEN_MINUTES_MS },
-  { milestone: "arrived", label: "Order arrived", offsetMs: 3 * FIFTEEN_MINUTES_MS },
+/** The timeline, in order, with the minutes-after-placement each milestone is reached. */
+const TIMELINE: { milestone: TrackingMilestone; offsetMs: number }[] = [
+  { milestone: "confirmed", offsetMs: 0 },
+  { milestone: "shipped", offsetMs: FIFTEEN_MINUTES_MS },
+  { milestone: "arrived", offsetMs: 3 * FIFTEEN_MINUTES_MS },
 ];
 
 /**
@@ -94,7 +109,7 @@ function buildSteps(stage: TrackingMilestone, placedAt: Date): TrackingStep[] {
   const stageIndex = TIMELINE.findIndex((step) => step.milestone === stage);
   const lastIndex = TIMELINE.length - 1;
 
-  return TIMELINE.map(({ milestone, label, offsetMs }, index) => {
+  return TIMELINE.map(({ milestone, offsetMs }, index) => {
     const reached = index <= stageIndex;
     const status: TrackingStepStatus = !reached
       ? "pending"
@@ -103,7 +118,6 @@ function buildSteps(stage: TrackingMilestone, placedAt: Date): TrackingStep[] {
         : "current";
     return {
       milestone,
-      label,
       status,
       ...(reached ? { occurredAt: new Date(placedAt.getTime() + offsetMs).toISOString() } : {}),
     };
@@ -138,15 +152,17 @@ export class MockOrderTrackingRepository implements IOrderTrackingRepository {
     // the first milestone if one is somehow missing.
     const stage = order.stage ?? "confirmed";
     const steps = buildSteps(stage, new Date(order.placedAt));
-    const { courier, etaMinutes } = simulateCourier(order.id, stage, Date.now());
+    const destination = order.destination ?? FALLBACK_DESTINATION;
+    const route = buildRoute(destination);
+    const { courier, etaMinutes } = simulateCourier(order.id, stage, Date.now(), route);
 
     return {
       orderId: order.id,
       deliveryAddress: order.location,
-      destination: DESTINATION,
+      destination,
       courier,
       etaMinutes,
-      route: ROUTE,
+      route,
       steps,
       rider: { ...RIDER },
     };

@@ -112,6 +112,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       userId: session.user.id,
       location: address.address,
       locationLabel: address.label,
+      // Snapshot the coordinate so tracking maps the order to its real destination.
+      // Addresses saved without one (typed, not picked on the map) have none.
+      destination:
+        address.latitude != null && address.longitude != null
+          ? { latitude: address.latitude, longitude: address.longitude }
+          : undefined,
       cart,
       deliveryDate: parsed.data.deliveryDate,
       deliveryWindowId: parsed.data.deliveryWindowId,

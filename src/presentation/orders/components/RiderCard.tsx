@@ -24,7 +24,7 @@ export function RiderCard({ rider }: RiderCardProps) {
         />
         <div className="flex min-w-0 flex-col gap-2">
           <p className="truncate text-body-b7 text-foreground">{rider.name}</p>
-          <p className="truncate text-body-b10 text-muted-foreground">{rider.role}</p>
+          <p className="truncate text-body-b10 text-muted-foreground">{t("riderRole")}</p>
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import type { Cart } from "../../entities/Cart";
 import type { DeliveryWindow } from "../../entities/DeliveryWindow";
 import { formatWindowRange } from "../../entities/DeliveryWindow";
 import type { Order, OrderItem, SubstitutionPreference } from "../../entities/Order";
+import type { GeoPoint } from "../../entities/Place";
 import type { ICartRepository } from "../../repositories/ICartRepository";
 import type { IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
@@ -18,6 +19,12 @@ export type CreateOrderInput = {
   location: string;
   /** Saved-address label of the selected location ("Home", "Gym"), snapshotted onto the order. */
   locationLabel?: string;
+  /**
+   * The selected location's coordinate, snapshotted so tracking maps the order to
+   * where it's going. Omitted when the saved address carries none (older addresses
+   * were saved without one) — tracking falls back to a default destination.
+   */
+  destination?: GeoPoint;
   /** The server-computed cart (items + authoritative totals) being checked out. */
   cart: Cart;
   /** Delivery calendar date the shopper booked, `YYYY-MM-DD`. */
@@ -70,6 +77,7 @@ export class CreateOrder {
     userId,
     location,
     locationLabel,
+    destination,
     cart,
     deliveryDate,
     deliveryWindowId,
@@ -125,6 +133,7 @@ export class CreateOrder {
       placedAt: new Date().toISOString(),
       location,
       locationLabel,
+      destination,
       subtotal: cart.subtotal,
       shipping: cart.shipping,
       discount: cart.discount,

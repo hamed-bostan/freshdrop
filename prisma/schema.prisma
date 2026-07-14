@@ -82,6 +82,12 @@ model Order {
   // card can collapse the address to its label. Nullable: seeded/legacy orders
   // predate it and read as NULL (the card falls back to the address's city).
   locationLabel String? @map("location_label")
+  // The delivery coordinate snapshotted from the selected address at checkout, so
+  // tracking can map the order to its real destination. Nullable: seeded/legacy
+  // orders predate it, and a saved address may carry no coordinate — tracking then
+  // falls back to a default point.
+  destinationLat Float? @map("destination_lat")
+  destinationLng Float? @map("destination_lng")
   // Price breakdown captured at checkout — the faithful record of what was charged
   // and the basis for pro-rating a partial (out-of-stock) refund. `total = subtotal
   // + shipping - discount`. `subtotal`/`shipping`/`discount` default to 0 so orders

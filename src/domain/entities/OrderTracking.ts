@@ -10,21 +10,20 @@ export type TrackingMilestone = "confirmed" | "shipped" | "arrived";
  */
 export type TrackingStepStatus = "done" | "current" | "pending";
 
-/** A single step in the order's delivery timeline. */
+/**
+ * A single step in the order's delivery timeline. Carries no display copy: the
+ * `milestone` is the machine key the presentation layer localizes off.
+ */
 export type TrackingStep = {
   milestone: TrackingMilestone;
-  /** Human-readable label, e.g. "Order shipped". */
-  label: string;
   /** ISO 8601 timestamp (UTC) the step was reached. Absent while pending. */
   occurredAt?: string;
   status: TrackingStepStatus;
 }
 
-/** The courier delivering the order. */
+/** The courier delivering the order. The job title shown under the name is UI copy, not data. */
 export type DeliveryRider = {
   name: string;
-  /** Job title shown under the name, e.g. "Delivery Man". */
-  role: string;
   avatarUrl: string;
   /** E.164 phone number used for the call action. */
   phone: string;

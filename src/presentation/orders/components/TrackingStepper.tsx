@@ -1,4 +1,4 @@
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Check, Truck, PackageCheck, type LucideIcon } from "lucide-react";
 import type { TrackingMilestone, TrackingStep, TrackingStepStatus } from "@/src/domain/entities/OrderTracking";
 import { Icon } from "@/src/presentation/design-system";
@@ -11,6 +11,13 @@ const MILESTONE_ICONS: Record<TrackingMilestone, LucideIcon> = {
   shipped: Truck,
   arrived: PackageCheck,
 };
+
+/** The milestone is the machine key; its copy is owned (and localized) here. */
+const MILESTONE_LABEL_KEYS = {
+  confirmed: "milestoneConfirmed",
+  shipped: "milestoneShipped",
+  arrived: "milestoneArrived",
+} as const satisfies Record<TrackingMilestone, string>;
 
 interface StepNodeProps {
   milestone: TrackingMilestone;
@@ -58,6 +65,7 @@ interface TrackingStepperProps {
  * line, mirroring how far the order has progressed.
  */
 export function TrackingStepper({ steps }: TrackingStepperProps) {
+  const t = useTranslations("orders");
   const locale = useLocale();
   return (
     <ol className="flex flex-col">
@@ -79,7 +87,7 @@ export function TrackingStepper({ steps }: TrackingStepperProps) {
             </div>
 
             <div className={cn("flex flex-col gap-1", !isLast && "pb-6")}>
-              <p className="text-body-b8 text-foreground">{step.label}</p>
+              <p className="text-body-b8 text-foreground">{t(MILESTONE_LABEL_KEYS[step.milestone])}</p>
               {step.occurredAt && (
                 <p className="text-body-b10 text-icon-muted">{formatOrderTime(step.occurredAt, locale)}</p>
               )}

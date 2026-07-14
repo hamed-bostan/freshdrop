@@ -98,10 +98,11 @@ export const walletRepository: IWalletRepository = new PrismaWalletRepository();
 // delivery stages from the dashboard.
 export const orderRepository: IOrderRepository = new PrismaOrderRepository();
 // Tracking composes the real order (its persisted stage drives the stepper) with
-// a SIMULATED courier feed. The stage is production data; everything spatial is a
-// stand-in — the courier position/ETA are interpolated from a synthetic trip
-// clock (see MockOrderTrackingRepository), and the destination, route geometry
-// and rider are static placeholders.
+// a SIMULATED courier feed. The stage and the destination (snapshotted from the
+// address at checkout) are production data; the movement is a stand-in — the
+// courier position/ETA are interpolated from a synthetic trip clock along a
+// straight-line route to that destination (see MockOrderTrackingRepository), and
+// the rider is a static placeholder.
 //
 // Going live is a single swap here: bind `orderTrackingRepository` to a real
 // adapter implementing `IOrderTrackingRepository`, fed by two paid services —

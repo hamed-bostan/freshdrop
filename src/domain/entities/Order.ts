@@ -1,3 +1,4 @@
+import type { GeoPoint } from "./Place";
 import type { TrackingMilestone } from "./OrderTracking";
 
 /**
@@ -99,6 +100,13 @@ export type Order = {
    * placed before it was recorded — the order card then falls back to the city.
    */
   locationLabel?: string;
+  /**
+   * The delivery coordinate, snapshotted from the selected location at checkout so
+   * tracking maps the order to where it's actually going. `undefined` for legacy
+   * orders (and for saved addresses that carry no coordinate) — tracking then falls
+   * back to a default destination.
+   */
+  destination?: GeoPoint;
   items: OrderItem[];
   /**
    * The order's price breakdown captured at checkout — the faithful record of what
