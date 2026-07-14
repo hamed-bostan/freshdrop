@@ -32,6 +32,9 @@ export function ProductFilterSheet({
   onApply,
 }: ProductFilterSheetProps) {
   const t = useTranslations("search");
+  // Dietary tags are a closed vocabulary stored as canonical English keys; only the
+  // label is localized (the chip's value stays `tag`, so filtering is unaffected).
+  const tDietary = useTranslations("dietary");
   const [categoryId, setCategoryId] = React.useState<string | undefined>(initial.categoryId);
   const [minPrice, setMinPrice] = React.useState(initial.minPrice != null ? String(initial.minPrice) : "");
   const [maxPrice, setMaxPrice] = React.useState(initial.maxPrice != null ? String(initial.maxPrice) : "");
@@ -126,7 +129,7 @@ export function ProductFilterSheet({
               {DIETARY_TAGS.map((tag) => (
                 <FilterChip
                   key={tag}
-                  label={tag}
+                  label={tDietary(tag)}
                   selected={dietary.includes(tag)}
                   onToggle={() => toggleIn(setDietary, tag)}
                 />

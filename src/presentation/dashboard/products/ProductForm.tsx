@@ -89,6 +89,9 @@ function toDefaults(product?: Product, translations?: ProductTranslationInput[])
  */
 export function ProductForm(props: ProductFormProps) {
   const t = useTranslations("dashProducts");
+  // Closed vocabulary stored as canonical English keys — the checkbox still submits
+  // `tag`; only its label follows the admin's locale.
+  const tDietary = useTranslations("dietary");
   const editing = props.mode === "edit";
   const router = useRouter();
   const {
@@ -367,7 +370,7 @@ export function ProductForm(props: ProductFormProps) {
                         )
                       }
                     />
-                    {tag}
+                    {tDietary(tag)}
                   </label>
                 );
               })}

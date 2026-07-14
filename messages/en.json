@@ -52,6 +52,13 @@
   "category": {
     "allCategories": "All Categories"
   },
+  "dietary": {
+    "Vegan": "Vegan",
+    "Vegetarian": "Vegetarian",
+    "Gluten-Free": "Gluten-Free",
+    "Organic": "Organic",
+    "Dairy-Free": "Dairy-Free"
+  },
   "search": {
     "brandHint": "Search on <brand>FRESH DROP</brand>",
     "inputAria": "Search products",

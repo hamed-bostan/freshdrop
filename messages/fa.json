@@ -52,6 +52,13 @@
   "category": {
     "allCategories": "همه دسته‌بندی‌ها"
   },
+  "dietary": {
+    "Vegan": "وگان",
+    "Vegetarian": "گیاه‌خواری",
+    "Gluten-Free": "بدون گلوتن",
+    "Organic": "ارگانیک",
+    "Dairy-Free": "بدون لبنیات"
+  },
   "search": {
     "brandHint": "جستجو در <brand>FRESH DROP</brand>",
     "inputAria": "جستجوی محصولات",
