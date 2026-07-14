@@ -157,15 +157,21 @@ export function ProductForm(props: ProductFormProps) {
           </TextField>
 
           <TextField label={t("descriptionLabel")} description={t("descriptionHelp")} error={errors.description?.message}>
-            {(control) => <Textarea {...control} {...register("description")} dir="ltr" />}
+            {(control) => (
+              <Textarea {...control} {...register("description")} dir="ltr" placeholder={t("descriptionPlaceholder")} />
+            )}
           </TextField>
 
           <TextField label={t("nutritionLabel")} description={t("nutritionHelp")} error={errors.nutrition?.message}>
-            {(control) => <Textarea {...control} {...register("nutrition")} dir="ltr" />}
+            {(control) => (
+              <Textarea {...control} {...register("nutrition")} dir="ltr" placeholder={t("nutritionPlaceholder")} />
+            )}
           </TextField>
 
           <TextField label={t("originLabel")} description={t("originHelp")} error={errors.origin?.message}>
-            {(control) => <Textarea {...control} {...register("origin")} dir="ltr" />}
+            {(control) => (
+              <Textarea {...control} {...register("origin")} dir="ltr" placeholder={t("originPlaceholder")} />
+            )}
           </TextField>
         </TabsContent>
 
@@ -185,15 +191,26 @@ export function ProductForm(props: ProductFormProps) {
             description={t("descriptionHelp")}
             error={errors.faDescription?.message}
           >
-            {(control) => <Textarea {...control} {...register("faDescription")} dir="rtl" />}
+            {(control) => (
+              <Textarea
+                {...control}
+                {...register("faDescription")}
+                dir="rtl"
+                placeholder={t("faDescriptionPlaceholder")}
+              />
+            )}
           </TextField>
 
           <TextField label={t("nutritionLabel")} description={t("nutritionHelp")} error={errors.faNutrition?.message}>
-            {(control) => <Textarea {...control} {...register("faNutrition")} dir="rtl" />}
+            {(control) => (
+              <Textarea {...control} {...register("faNutrition")} dir="rtl" placeholder={t("faNutritionPlaceholder")} />
+            )}
           </TextField>
 
           <TextField label={t("originLabel")} description={t("originHelp")} error={errors.faOrigin?.message}>
-            {(control) => <Textarea {...control} {...register("faOrigin")} dir="rtl" />}
+            {(control) => (
+              <Textarea {...control} {...register("faOrigin")} dir="rtl" placeholder={t("faOriginPlaceholder")} />
+            )}
           </TextField>
         </TabsContent>
       </Tabs>
