@@ -81,8 +81,9 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   // Resolve the live USD→Toman rate once per render (cached; falls back to the
-  // configured constant). CurrencyProvider mirrors it to the client so server render
-  // and hydration price identically.
+  // configured constant). The resolver warms the server-graph rate slot for Server
+  // Components; CurrencyProvider mirrors the same value into the client graph so the
+  // SSR pass and hydration price identically.
   const usdToToman = await resolveUsdToToman();
 
   return (
