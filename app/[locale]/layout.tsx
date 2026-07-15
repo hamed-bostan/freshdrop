@@ -30,11 +30,11 @@ export function generateStaticParams(): { locale: string }[] {
 
 /**
  * Per-locale document metadata: a localized title (+ template for child pages) and
- * description, plus SEO alternates. `alternates.languages` emits `<link rel="alternate"
- * hreflang>` for each locale in `<head>` (complementing the `Link` headers next-intl's
- * middleware already sets), and `x-default` points crawlers at the default locale.
- * `localePrefix: "as-needed"` means English is un-prefixed and Persian lives under `/fa`.
- * URLs resolve against `metadataBase` (`NEXT_PUBLIC_SITE_URL`, unset in dev → relative).
+ * description. Locale is negotiated per request from the `NEXT_LOCALE` cookie, so a page
+ * lives at a single locale-agnostic URL (no per-locale paths → no `hreflang` alternates);
+ * the served `<html lang>` and copy reflect the active locale. `openGraph.locale` still
+ * advertises that language. URLs resolve against `metadataBase` (`NEXT_PUBLIC_SITE_URL`,
+ * unset in dev → relative).
  */
 export async function generateMetadata({
   params,
@@ -52,16 +52,11 @@ export async function generateMetadata({
     title: { default: t("title"), template: t("titleTemplate") },
     description: t("description"),
     applicationName: "FreshDrop",
-    alternates: {
-      canonical: isFa ? "/fa" : "/",
-      languages: { en: "/", fa: "/fa", "x-default": "/" },
-    },
     openGraph: {
       type: "website",
       siteName: "FreshDrop",
       title: t("title"),
       description: t("description"),
-      url: isFa ? "/fa" : "/",
       locale: isFa ? "fa_IR" : "en_US",
       alternateLocale: isFa ? "en_US" : "fa_IR",
     },

@@ -3,8 +3,7 @@
 import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ToggleGroup } from "radix-ui";
-import { usePathname, useRouter } from "@/src/i18n/navigation";
-import { routing, type Locale } from "@/src/i18n/routing";
+import { LOCALE_COOKIE_MAX_AGE, LOCALE_COOKIE_NAME, routing, type Locale } from "@/src/i18n/routing";
 import { cn } from "@/src/lib/utils";
 import { settingCardClass } from "./settingRowStyles";
 
@@ -18,34 +17,30 @@ const LOCALE_NAMES: Record<Locale, string> = {
 };
 
 /**
- * Settings row that switches the app locale on the current route. Uses the i18n
- * navigation helpers: `usePathname` gives the locale-stripped path, and
- * `router.replace(pathname, { locale })` re-navigates under the chosen locale —
- * which re-runs the root layout so `<html lang/dir>`, the font and message catalog
- * all update. The switch is wrapped in a transition so the segmented control shows
- * a pending state while the new locale streams in.
- *
- * Note: `replace` swaps the current history entry, so the switch itself isn't left
- * on the back stack. Pressing Back still returns to the page visited *before* this
- * one, which — under URL-based i18n — keeps its own locale-stamped URL and so
- * renders in the locale it was in. That is inherent to per-locale URLs, not a bug
- * in this control.
+ * Settings row that switches the app locale. Locale is a persisted preference, not part
+ * of the URL (`localePrefix: "never"`): writing the `NEXT_LOCALE` cookie and doing a full
+ * reload makes the server re-render the current URL — and, because the client router
+ * cache is discarded, every later Back/Forward target too — in the chosen locale. That is
+ * what makes the choice stick across the Back button, which a soft (in-app) navigation
+ * cannot do: App Router restores prior pages from its client cache without re-consulting
+ * the cookie. A reload on a (rare) language change is the industry-standard trade for
+ * guaranteed correctness. `<html lang/dir>`, the font and the message catalog all follow.
  */
 export function LocaleSwitcher() {
   const t = useTranslations("settings");
   const locale = useLocale();
-  const router = useRouter();
-  const pathname = usePathname();
-  const [pending, startTransition] = React.useTransition();
+  const [pending, setPending] = React.useState(false);
   const labelId = React.useId();
 
   function handleChange(next: string): void {
     // Radix emits "" when the active item is toggled off — ignore that and no-ops.
     if (!next || next === locale) return;
 
-    startTransition(() => {
-      router.replace(pathname, { locale: next as Locale });
-    });
+    setPending(true);
+    // Persist the choice (must be set before the reload so the request carries it), then
+    // hard-reload the current locale-agnostic URL to re-render server-side under it.
+    document.cookie = `${LOCALE_COOKIE_NAME}=${next}; path=/; max-age=${LOCALE_COOKIE_MAX_AGE}; samesite=lax`;
+    window.location.reload();
   }
 
   return (
