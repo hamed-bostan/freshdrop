@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Claude Code session state — worktrees carry a full repo copy (incl. its own
+    // .next build output), which otherwise floods lint with generated-code errors.
+    ".claude/**",
   ]),
 ]);
 
