@@ -9,6 +9,11 @@
     "startShopping": "Start Shopping",
     "viewAll": "view all"
   },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you're looking for doesn't exist or has moved.",
+    "goHome": "Back to home"
+  },
   "ds": {
     "otpLabel": "One-time password code",
     "otpDigit": "Digit {index} of {length}",
