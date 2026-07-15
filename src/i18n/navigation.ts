@@ -5,5 +5,5 @@ import { routing } from "./routing";
 // `next/navigation` that preserve the active locale (adding the `/fa` prefix when
 // needed). Components import `Link`/`useRouter`/`usePathname` from here, never from
 // `next/link` or `next/navigation`, so internal navigation never loses the locale.
-export const { Link, redirect, usePathname, useRouter, getPathname } =
+export const { Link, redirect, permanentRedirect, usePathname, useRouter, getPathname } =
   createNavigation(routing);

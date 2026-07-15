@@ -4,6 +4,7 @@ import { UpdateCategory } from "@/src/domain/use-cases/categories/UpdateCategory
 import { DeleteCategory } from "@/src/domain/use-cases/categories/DeleteCategory";
 import { categoryRepository, imageStorageRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
+import { getRequestLocale } from "@/src/lib/api/request-locale";
 import { categoryFormSchema } from "@/src/presentation/dashboard/categories/category-schema";
 import {
   errorResponse,
@@ -21,10 +22,11 @@ type RouteContext = { params: Promise<{ id: string }> };
 /**
  * GET /api/categories/:id — fetch one category. Public. 404 when it doesn't exist.
  */
-export async function GET(_request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
+export async function GET(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
   const { id } = await params;
+  const locale = getRequestLocale(request);
   try {
-    const category = await new GetCategoryById(categoryRepository).execute(id);
+    const category = await new GetCategoryById(categoryRepository).execute(id, locale);
     if (!category) return errorResponse(404, { message: "Category not found.", code: "NOT_FOUND" });
     return NextResponse.json(category);
   } catch (error) {

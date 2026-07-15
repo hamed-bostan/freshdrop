@@ -483,7 +483,7 @@
     "nameLabel": "Name",
     "namePlaceholder": "Vegetables",
     "slugLabel": "Slug",
-    "slugDescription": "Appears in the URL: /category/[slug]",
+    "slugDescription": "A stable identifier that keeps older links working. The visible URL slug follows the category name.",
     "slugPlaceholder": "vegetables",
     "iconLabel": "Icon image",
     "localeTabBase": "English",

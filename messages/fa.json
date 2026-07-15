@@ -483,7 +483,7 @@
     "nameLabel": "نام",
     "namePlaceholder": "Vegetables",
     "slugLabel": "اسلاگ",
-    "slugDescription": "در نشانی نمایش داده می‌شود: /category/[slug]",
+    "slugDescription": "شناسه‌ای پایدار که پیوندهای قدیمی را کارا نگه می‌دارد. اسلاگِ نمایشیِ نشانی از نام دسته‌بندی پیروی می‌کند.",
     "slugPlaceholder": "vegetables",
     "iconLabel": "تصویر آیکون",
     "localeTabBase": "انگلیسی",
