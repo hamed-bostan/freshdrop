@@ -24,6 +24,12 @@ const LOCALE_NAMES: Record<Locale, string> = {
  * which re-runs the root layout so `<html lang/dir>`, the font and message catalog
  * all update. The switch is wrapped in a transition so the segmented control shows
  * a pending state while the new locale streams in.
+ *
+ * Note: `replace` swaps the current history entry, so the switch itself isn't left
+ * on the back stack. Pressing Back still returns to the page visited *before* this
+ * one, which — under URL-based i18n — keeps its own locale-stamped URL and so
+ * renders in the locale it was in. That is inherent to per-locale URLs, not a bug
+ * in this control.
  */
 export function LocaleSwitcher() {
   const t = useTranslations("settings");
