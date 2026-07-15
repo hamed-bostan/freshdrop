@@ -349,7 +349,15 @@
     "continue": "Continue",
     "errZero": "Enter an amount greater than zero.",
     "errGeneric": "Something went wrong. Please try again.",
-    "deleteKey": "Delete"
+    "deleteKey": "Delete",
+    "transactions": {
+      "addedToWallet": "Added to Wallet",
+      "refundCancelledOrder": "Refund for cancelled order",
+      "refundCancelledOrderDelivery": "Refund for cancelled order delivery",
+      "refundReturnedOrder": "Refund for returned order",
+      "refundOutOfStock": "Refund for out-of-stock {item}",
+      "substitutionSaving": "Substitution saving for {item}"
+    }
   },
   "payment": {
     "title": "Payment Method",

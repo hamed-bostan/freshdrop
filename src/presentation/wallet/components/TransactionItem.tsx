@@ -1,8 +1,9 @@
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { Locale } from "@/src/i18n/routing";
 import type { WalletTransaction } from "@/src/domain/entities/Wallet";
 import { cn } from "@/src/lib/utils";
 import { formatMoney } from "@/src/lib/formatMoney";
+import { resolveTransactionDescription } from "../localizedTransaction";
 
 // Fixed UTC formatters → deterministic output (same on server and client). Under
 // `fa` the date is Jalali with Persian numerals (`fa-IR-u-ca-persian`); `en` keeps
@@ -41,12 +42,23 @@ interface TransactionItemProps {
 
 export function TransactionItem({ transaction }: TransactionItemProps) {
   const locale = useLocale();
+  const t = useTranslations("wallet.transactions");
   const isCredit = transaction.type === "credit";
+
+  // Descriptions are stored in English; localize the ones we recognise and fall
+  // back to the stored copy for anything else (see resolveTransactionDescription).
+  const resolved = resolveTransactionDescription(transaction.description);
+  const description =
+    resolved?.kind === "static"
+      ? t(resolved.key)
+      : resolved?.kind === "dynamic"
+        ? t(resolved.key, { item: resolved.item })
+        : transaction.description;
 
   return (
     <div className="flex items-center justify-between gap-4 rounded-card-lg bg-background px-4 py-2">
       <div className="min-w-0">
-        <p className="truncate text-body-b2 text-foreground">{transaction.description}</p>
+        <p className="truncate text-body-b2 text-foreground">{description}</p>
         <p className="text-body-b10 text-muted-foreground">{formatTransactionDate(transaction.date, locale)}</p>
       </div>
 

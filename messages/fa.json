@@ -349,7 +349,15 @@
     "continue": "ادامه",
     "errZero": "مبلغی بیشتر از صفر وارد کنید.",
     "errGeneric": "مشکلی پیش آمد. لطفاً دوباره تلاش کنید.",
-    "deleteKey": "حذف"
+    "deleteKey": "حذف",
+    "transactions": {
+      "addedToWallet": "افزودن به کیف پول",
+      "refundCancelledOrder": "بازپرداخت سفارش لغوشده",
+      "refundCancelledOrderDelivery": "بازپرداخت هزینه ارسال سفارش لغوشده",
+      "refundReturnedOrder": "بازپرداخت سفارش مرجوعی",
+      "refundOutOfStock": "بازپرداخت کالای ناموجود: {item}",
+      "substitutionSaving": "صرفه‌جویی جایگزینی: {item}"
+    }
   },
   "payment": {
     "title": "روش پرداخت",
