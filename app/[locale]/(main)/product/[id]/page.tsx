@@ -1,3 +1,5 @@
+import { cache } from "react";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { productsServerApi } from "@/src/presentation/product/product-server-api";
 import { reviewsServerApi } from "@/src/presentation/product/review-server-api";
@@ -13,10 +15,30 @@ interface ProductDetailPageProps {
 // dynamically.
 export const dynamic = "force-dynamic";
 
+// Per-request memo so `generateMetadata` and the page render share one BFF fetch.
+const getProduct = cache((id: string) => productsServerApi.getById(id));
+
+/**
+ * Localized document metadata: the product's (translated) name fills the layout's
+ * `%s · FreshDrop` title template; its description, when authored, replaces the
+ * generic site description. A missing product contributes nothing — the page render
+ * 404s right after.
+ */
+export async function generateMetadata({ params }: ProductDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const product = await getProduct(id);
+  if (!product) return {};
+
+  return {
+    title: product.name,
+    ...(product.description ? { description: product.description } : {}),
+  };
+}
+
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { id } = await params;
 
-  const product = await productsServerApi.getById(id);
+  const product = await getProduct(id);
   if (!product) notFound();
 
   const [similar, reviews, isFavorite, isStockAlertSubscribed] = await Promise.all([

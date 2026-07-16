@@ -1,3 +1,5 @@
+import { cache } from "react";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { permanentRedirect } from "@/src/i18n/navigation";
@@ -13,11 +15,25 @@ interface CategoryDetailPageProps {
 // Category + products are fetched from the REST API at request time — render dynamically.
 export const dynamic = "force-dynamic";
 
+// Per-request memo so `generateMetadata` and the page render share one BFF fetch.
+const getCategory = cache((id: string) => categoriesServerApi.getById(id));
+
+/**
+ * Localized document metadata: the category's (translated) name fills the layout's
+ * `%s · FreshDrop` title template. A missing category contributes nothing — the page
+ * render 404s right after.
+ */
+export async function generateMetadata({ params }: CategoryDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const category = await getCategory(id);
+  return category ? { title: category.name } : {};
+}
+
 export default async function CategoryDetailPage({ params }: CategoryDetailPageProps) {
   const { id, slug } = await params;
 
   // The id is the source of truth; the slug is decorative.
-  const category = await categoriesServerApi.getById(id);
+  const category = await getCategory(id);
   if (!category) notFound();
 
   // Keep one indexable address per category: if the slug in the URL isn't the
