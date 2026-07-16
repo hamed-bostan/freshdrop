@@ -1,31 +1,25 @@
+import {
+  WALLET_DYNAMIC_DESCRIPTIONS,
+  WALLET_STATIC_DESCRIPTIONS,
+} from "@/src/domain/entities/WalletTransactionDescription";
+
 /**
  * Wallet transaction descriptions are written in English by the order use-cases
  * and `PrismaWalletRepository.addFunds`, then persisted, so the presentation layer
  * localizes them here — same approach as `localizedPromos`. A description we don't
- * recognise (a reason added later, or legacy data) falls back to the stored copy,
- * so it still renders, just in the original language.
+ * recognise (legacy data, or text composed outside the shared vocabulary) falls
+ * back to the stored copy, so it still renders, just in the original language.
  *
- * The mapped strings must stay in sync with what those writers emit; keeping the
- * list here (and the copy under `wallet.transactions`) is the single source of
- * truth the render reads from.
+ * The recognised strings come from the same domain module the writers compose them
+ * from (`WalletTransactionDescription`), so writer and reader can't drift; the
+ * vocabulary's keys double as the message keys under `wallet.transactions`.
  */
 
-// Exact descriptions → message key under `wallet.transactions`.
-const STATIC_KEYS = {
-  "Added to Wallet": "addedToWallet",
-  "Refund for cancelled order": "refundCancelledOrder",
-  "Refund for cancelled order delivery": "refundCancelledOrderDelivery",
-  "Refund for returned order": "refundReturnedOrder",
-} as const;
+type StaticKey = keyof typeof WALLET_STATIC_DESCRIPTIONS;
+type DynamicKey = keyof typeof WALLET_DYNAMIC_DESCRIPTIONS;
 
-// Descriptions built as `<prefix><item name>` → a message key taking an `{item}` param.
-const DYNAMIC_KEYS = [
-  { prefix: "Refund for out-of-stock ", key: "refundOutOfStock" },
-  { prefix: "Substitution saving for ", key: "substitutionSaving" },
-] as const;
-
-type StaticKey = (typeof STATIC_KEYS)[keyof typeof STATIC_KEYS];
-type DynamicKey = (typeof DYNAMIC_KEYS)[number]["key"];
+const STATIC_ENTRIES = Object.entries(WALLET_STATIC_DESCRIPTIONS) as [StaticKey, string][];
+const DYNAMIC_ENTRIES = Object.entries(WALLET_DYNAMIC_DESCRIPTIONS) as [DynamicKey, string][];
 
 /** A recognised description resolved to a localizable key (plus the item name for dynamic ones). */
 export type ResolvedTransaction =
@@ -37,10 +31,11 @@ export type ResolvedTransaction =
  * one we localize — the caller then shows the stored string as-is.
  */
 export function resolveTransactionDescription(description: string): ResolvedTransaction | null {
-  const staticKey = (STATIC_KEYS as Record<string, StaticKey | undefined>)[description];
-  if (staticKey) return { kind: "static", key: staticKey };
+  for (const [key, text] of STATIC_ENTRIES) {
+    if (description === text) return { kind: "static", key };
+  }
 
-  for (const { prefix, key } of DYNAMIC_KEYS) {
+  for (const [key, prefix] of DYNAMIC_ENTRIES) {
     if (description.startsWith(prefix)) {
       return { kind: "dynamic", key, item: description.slice(prefix.length) };
     }

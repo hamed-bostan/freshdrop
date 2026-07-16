@@ -1,4 +1,5 @@
 import type { Order } from "../../entities/Order";
+import { WALLET_STATIC_DESCRIPTIONS } from "../../entities/WalletTransactionDescription";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 import type { IWalletRepository } from "../../repositories/IWalletRepository";
@@ -54,7 +55,7 @@ export class ResolveOrderReturn {
     await this.productRepo.incrementStock(
       refunded.items.map((item) => ({ productId: item.productId, name: item.name, quantity: item.quantity })),
     );
-    await this.walletRepo.addFunds(refunded.userId, refunded.total, "Refund for returned order");
+    await this.walletRepo.addFunds(refunded.userId, refunded.total, WALLET_STATIC_DESCRIPTIONS.refundReturnedOrder);
 
     // Tell the customer their return was approved and refunded. Best-effort: the
     // refund has already committed, so the notifier swallows any delivery failure.

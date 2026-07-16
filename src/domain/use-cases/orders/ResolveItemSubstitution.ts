@@ -1,5 +1,10 @@
 import type { ItemSubstitution, Order } from "../../entities/Order";
 import { isFullyRefunded, isPicking, refundForLineValue } from "../../entities/Order";
+import {
+  WALLET_STATIC_DESCRIPTIONS,
+  describeOutOfStockRefund,
+  describeSubstitutionSaving,
+} from "../../entities/WalletTransactionDescription";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 import type { IWalletRepository } from "../../repositories/IWalletRepository";
@@ -88,7 +93,7 @@ export class ResolveItemSubstitution {
     if (!updated) throw new ValidationError("productId", "This item has already been resolved.");
 
     if (amount > 0) {
-      await this.walletRepo.addFunds(order.userId, amount, `Refund for out-of-stock ${itemName}`);
+      await this.walletRepo.addFunds(order.userId, amount, describeOutOfStockRefund(itemName));
     }
 
     // If this refund resolved the order's last remaining line, there's nothing
@@ -125,7 +130,11 @@ export class ResolveItemSubstitution {
     if (!cancelled) return order;
 
     if (cancelled.shipping > 0) {
-      await this.walletRepo.addFunds(order.userId, cancelled.shipping, "Refund for cancelled order delivery");
+      await this.walletRepo.addFunds(
+        order.userId,
+        cancelled.shipping,
+        WALLET_STATIC_DESCRIPTIONS.refundCancelledOrderDelivery,
+      );
     }
     await this.notifier.orderCancelledOutOfStock(cancelled);
     return cancelled;
@@ -175,7 +184,7 @@ export class ResolveItemSubstitution {
 
     // Only the wallet moves — the order total is left as charged.
     if (saving > 0) {
-      await this.walletRepo.addFunds(order.userId, saving, `Substitution saving for ${item.name}`);
+      await this.walletRepo.addFunds(order.userId, saving, describeSubstitutionSaving(item.name));
     }
 
     await this.notifier.itemSubstituted(updated, item.name, replacement.name);

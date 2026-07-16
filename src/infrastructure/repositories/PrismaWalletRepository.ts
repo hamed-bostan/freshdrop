@@ -1,4 +1,5 @@
 import type { CardBrand, SavedCard, TransactionType, Wallet } from "@/src/domain/entities/Wallet";
+import { WALLET_STATIC_DESCRIPTIONS } from "@/src/domain/entities/WalletTransactionDescription";
 import type { IWalletRepository } from "@/src/domain/repositories/IWalletRepository";
 import { prisma } from "@/src/infrastructure/prisma/client";
 
@@ -61,7 +62,11 @@ export class PrismaWalletRepository implements IWalletRepository {
     };
   }
 
-  async addFunds(userId: string, amount: number, description = "Added to Wallet"): Promise<void> {
+  async addFunds(
+    userId: string,
+    amount: number,
+    description: string = WALLET_STATIC_DESCRIPTIONS.addedToWallet,
+  ): Promise<void> {
     // Balance change and its transaction are written together so the two never
     // drift; the account row is created on first top-up (upsert).
     await prisma.$transaction([
