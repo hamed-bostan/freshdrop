@@ -90,15 +90,19 @@ async function replaceCategoryTranslations(
   const locales = translations.map((t) => t.locale);
   const where: Prisma.CategoryTranslationWhereInput = { categoryId };
   if (locales.length > 0) where.locale = { notIn: locales };
-  await prisma.categoryTranslation.deleteMany({ where });
 
-  for (const t of translations) {
-    await prisma.categoryTranslation.upsert({
-      where: { categoryId_locale: { categoryId, locale: t.locale } },
-      create: { categoryId, locale: t.locale, name: t.name },
-      update: { name: t.name },
-    });
-  }
+  // One atomic batch — the delete and the upserts land together or not at all, so a
+  // failure mid-way can't leave the translation set half-replaced.
+  await prisma.$transaction([
+    prisma.categoryTranslation.deleteMany({ where }),
+    ...translations.map((t) =>
+      prisma.categoryTranslation.upsert({
+        where: { categoryId_locale: { categoryId, locale: t.locale } },
+        create: { categoryId, locale: t.locale, name: t.name },
+        update: { name: t.name },
+      }),
+    ),
+  ]);
 }
 
 /**

@@ -288,22 +288,26 @@ async function replaceProductTranslations(
   const where: Prisma.ProductTranslationWhereInput = { productId };
   // Remove locales no longer present (all of them when the list is empty).
   if (locales.length > 0) where.locale = { notIn: locales };
-  await prisma.productTranslation.deleteMany({ where });
 
-  for (const t of translations) {
-    const fields = {
-      name: t.name,
-      unit: t.unit ?? null,
-      description: t.description ?? null,
-      nutrition: t.nutrition ?? null,
-      origin: t.origin ?? null,
-    };
-    await prisma.productTranslation.upsert({
-      where: { productId_locale: { productId, locale: t.locale } },
-      create: { productId, locale: t.locale, ...fields },
-      update: fields,
-    });
-  }
+  // One atomic batch — the delete and the upserts land together or not at all, so a
+  // failure mid-way can't leave the translation set half-replaced.
+  await prisma.$transaction([
+    prisma.productTranslation.deleteMany({ where }),
+    ...translations.map((t) => {
+      const fields = {
+        name: t.name,
+        unit: t.unit ?? null,
+        description: t.description ?? null,
+        nutrition: t.nutrition ?? null,
+        origin: t.origin ?? null,
+      };
+      return prisma.productTranslation.upsert({
+        where: { productId_locale: { productId, locale: t.locale } },
+        create: { productId, locale: t.locale, ...fields },
+        update: fields,
+      });
+    }),
+  ]);
 }
 
 /**
