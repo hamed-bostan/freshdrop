@@ -39,8 +39,10 @@ export class MockFavoriteRepository implements IFavoriteRepository {
     this.favoriteIds = new Set(FAVORITE_IDS);
   }
 
-  async getFavorites(): Promise<Product[]> {
-    const all = await this.products.getAll();
+  async getFavorites(locale?: string): Promise<Product[]> {
+    // Resolve through the product repo in the active locale so favorited products
+    // read in the user's language (like the catalog/cart/order paths).
+    const all = await this.products.getAll(locale);
     const byId = new Map(all.map((product) => [product.id, product]));
 
     // Set preserves insertion order, so seeded favorites keep their listed order
