@@ -4,6 +4,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import type { CartItem } from "@/src/domain/entities/Cart";
 import { Icon } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
+import { formatNumber } from "@/src/lib/formatNumber";
 
 interface CartItemCardProps {
   item: CartItem;
@@ -75,7 +76,7 @@ export function CartItemCard({ item, onIncrement, onDecrement, onRemove }: CartI
               aria-live="polite"
               className="grid h-11 min-w-11 place-items-center rounded-card-xl bg-background text-body-b4 text-foreground"
             >
-              {quantity}
+              {formatNumber(quantity, locale)}
             </span>
 
             <button

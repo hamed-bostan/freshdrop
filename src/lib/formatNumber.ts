@@ -38,3 +38,13 @@ function getFormatter(locale: Locale, fractionDigits: number): Intl.NumberFormat
 export function formatNumber(value: number, locale: Locale, fractionDigits = 0): string {
   return getFormatter(locale, fractionDigits).format(value);
 }
+
+/**
+ * Format a star rating for the given locale, preserving its natural precision — a
+ * whole rating shows no decimals ("۴"), a fractional one shows the single decimal it
+ * carries ("۴٫۵"). Ratings are stored as `Math.round(avg * 10) / 10`, so one decimal
+ * is the most they ever hold.
+ */
+export function formatRating(value: number, locale: Locale): string {
+  return formatNumber(value, locale, Number.isInteger(value) ? 0 : 1);
+}

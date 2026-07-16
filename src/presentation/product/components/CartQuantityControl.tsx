@@ -1,12 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Check, Minus, Plus } from "lucide-react";
 import { usePathname, useRouter } from "@/src/i18n/navigation";
 import { Button, Icon } from "@/src/presentation/design-system";
 import type { Product } from "@/src/domain/entities/Product";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { formatNumber } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
 import { useCart } from "@/src/presentation/cart/CartProvider";
 
@@ -43,6 +44,7 @@ export function CartQuantityControl({
   addOnly = false,
 }: CartQuantityControlProps) {
   const t = useTranslations("cart");
+  const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const { getQuantity, setItemQuantity } = useCart();
@@ -132,7 +134,7 @@ export function CartQuantityControl({
       </button>
 
       <span aria-live="polite" className={cn("text-center", block ? "text-button-btn4" : "min-w-5 text-body-b4")}>
-        {quantity}
+        {formatNumber(quantity, locale)}
       </span>
 
       <button

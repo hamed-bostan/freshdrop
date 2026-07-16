@@ -178,7 +178,7 @@
   "product": {
     "detailTitle": "Product Detail",
     "outOfStock": "Out of stock",
-    "onlyLeft": "Only {count} left",
+    "onlyLeft": "Only {count, number} left",
     "badgeSale": "Sale",
     "badgeBogo": "Buy 1, Get 1 Free",
     "similar": "Similar To This Item",
@@ -242,7 +242,7 @@
       "evening": "Evening"
     },
     "full": "Full",
-    "slotOnlyLeft": "Only {count} left",
+    "slotOnlyLeft": "Only {count, number} left",
     "confirmedTitle": "Order Confirmed",
     "confirmedThanks": "Thank you for shopping with us",
     "backToHome": "Back to Home",

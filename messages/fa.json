@@ -178,7 +178,7 @@
   "product": {
     "detailTitle": "جزئیات محصول",
     "outOfStock": "ناموجود",
-    "onlyLeft": "فقط {count} عدد باقی مانده",
+    "onlyLeft": "فقط {count, number} عدد باقی مانده",
     "badgeSale": "فروش ویژه",
     "badgeBogo": "یکی بخر، یکی ببر",
     "similar": "محصولات مشابه",
@@ -242,7 +242,7 @@
       "evening": "عصر"
     },
     "full": "تکمیل",
-    "slotOnlyLeft": "فقط {count} جای باقی‌مانده",
+    "slotOnlyLeft": "فقط {count, number} جای باقی‌مانده",
     "confirmedTitle": "سفارش ثبت شد",
     "confirmedThanks": "از خرید شما سپاسگزاریم",
     "backToHome": "بازگشت به خانه",

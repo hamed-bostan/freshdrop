@@ -1,10 +1,11 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Home, LayoutGrid, ShoppingCart, User, type LucideIcon } from "lucide-react";
 import { Link, usePathname } from "@/src/i18n/navigation";
 import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
+import { formatNumber } from "@/src/lib/formatNumber";
 import { useCart } from "@/src/presentation/cart/CartProvider";
 
 interface NavItem {
@@ -36,6 +37,7 @@ const HIDE_NAV_ON_PREFIXES = [
 
 export function MainNav () {
   const t = useTranslations("nav");
+  const locale = useLocale();
   // next-intl's usePathname returns the path without the locale prefix, so the active
   // and hide-nav checks below match for both English (/cart) and Persian (/fa/cart).
   const pathname = usePathname();
@@ -78,7 +80,7 @@ export function MainNav () {
                   aria-hidden
                   className="absolute -end-2.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-label-l3 font-semibold text-primary-foreground"
                 >
-                  {cartCount > 99 ? "99+" : cartCount}
+                  {cartCount > 99 ? `${formatNumber(99, locale)}+` : formatNumber(cartCount, locale)}
                 </span>
               )}
             </span>

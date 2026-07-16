@@ -3,6 +3,7 @@ import { useLocale } from "next-intl";
 import { Star } from "lucide-react";
 import { Icon } from "@/src/presentation/design-system";
 import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
+import { formatRating } from "@/src/lib/formatNumber";
 import type { Review } from "@/src/domain/entities/Review";
 
 interface ReviewItemProps {
@@ -51,7 +52,7 @@ export function ReviewItem({ review }: ReviewItemProps) {
 
         <span className="flex shrink-0 items-center gap-1">
           <Icon icon={Star} size="xs" className="fill-rating text-rating" />
-          <span className="text-body-b8 text-foreground">{review.rating}</span>
+          <span className="text-body-b8 text-foreground">{formatRating(review.rating, locale)}</span>
         </span>
       </div>
 

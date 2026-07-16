@@ -3,6 +3,7 @@ import { Star } from "lucide-react";
 import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
 import { formatMoney } from "@/src/lib/formatMoney";
+import { formatNumber, formatRating } from "@/src/lib/formatNumber";
 import { CartQuantityControl } from "./CartQuantityControl";
 import { FavoriteToggle } from "./FavoriteToggle";
 import type { Product } from "@/src/domain/entities/Product";
@@ -103,7 +104,7 @@ export function ProductCard({
       {product.ratingCount > 0 && (
         <div className="flex items-center gap-1 px-2 mb-1">
           <Icon icon={Star} size="xs" className="fill-rating text-rating" />
-          <span className="text-body-b8 text-foreground">{product.rating}</span>
+          <span className="text-body-b8 text-foreground">{formatRating(product.rating, locale)}</span>
         </div>
       )}
 
@@ -117,7 +118,7 @@ export function ProductCard({
           {hasDiscount && (
             <div className="flex items-center gap-1">
               <span className="rounded-full size-4 bg-discount flex items-center justify-center text-[0.5rem] font-semibold text-primary-foreground">
-                {product.discountPercent}%
+                {formatNumber(product.discountPercent!, locale)}%
               </span>
               <span className="text-body-b11 font-bold text-muted-foreground line-through">
                 {formatMoney(product.originalPrice!, locale)}

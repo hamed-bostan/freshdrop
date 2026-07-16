@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Star } from "lucide-react";
 import { Icon } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
+import { formatRating } from "@/src/lib/formatNumber";
 import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
 import { CartQuantityControl } from "./CartQuantityControl";
@@ -37,7 +38,7 @@ export function ProductPurchasePanel({ product, initialStockAlert }: ProductPurc
           {product.ratingCount > 0 && (
             <span className="flex shrink-0 items-center gap-1">
               <Icon icon={Star} size="xs" className="fill-rating text-rating" />
-              <span className="text-body-b8 text-foreground">{product.rating}</span>
+              <span className="text-body-b8 text-foreground">{formatRating(product.rating, locale)}</span>
             </span>
           )}
         </div>
