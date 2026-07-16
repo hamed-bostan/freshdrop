@@ -24,12 +24,37 @@ const tomanFormatter = new Intl.NumberFormat("fa-IR", {
   maximumFractionDigits: 0,
 });
 
+/** A stored USD amount as whole Toman — the exact number `fa` renders for it. */
+function usdToToman(amountUsd: number): number {
+  return Math.round(amountUsd * getUsdToToman());
+}
+
+/** Format a whole-Toman amount with Persian numerals and the تومان label. */
+function formatToman(toman: number): string {
+  return `${tomanFormatter.format(toman)} تومان`;
+}
+
 /** Format a stored USD amount for display in the given locale. */
 export function formatMoney(amountUsd: number, locale: Locale): string {
-  if (locale === "fa") {
-    const toman = Math.round(amountUsd * getUsdToToman());
-    return `${tomanFormatter.format(toman)} تومان`;
-  }
-
+  if (locale === "fa") return formatToman(usdToToman(amountUsd));
   return usdFormatter.format(amountUsd);
+}
+
+/**
+ * Format the bottom line of a visible breakdown (subtotal + shipping − discount,
+ * total − refunds, …), given the breakdown's signed USD parts.
+ *
+ * Under `fa` every displayed line is independently rounded to whole Toman, so the
+ * total is derived from those *rounded* values — the arithmetic a shopper can check
+ * on screen always adds up, where converting the exact USD total could drift by a
+ * few Toman. Each part contributes exactly what its own line shows: `sign × round(|part|)`
+ * (signed rounding would skew ties, since `Math.round` rounds halves up). Under `en`
+ * cents are exact, so the parts are simply summed.
+ */
+export function formatMoneySum(partsUsd: number[], locale: Locale): string {
+  if (locale === "fa") {
+    const toman = partsUsd.reduce((sum, part) => sum + Math.sign(part) * usdToToman(Math.abs(part)), 0);
+    return formatToman(toman);
+  }
+  return usdFormatter.format(partsUsd.reduce((sum, part) => sum + part, 0));
 }

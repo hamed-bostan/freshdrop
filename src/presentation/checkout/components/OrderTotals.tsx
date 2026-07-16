@@ -1,18 +1,18 @@
 import { useLocale, useTranslations } from "next-intl";
-import { formatMoney } from "@/src/lib/formatMoney";
+import { formatMoney, formatMoneySum } from "@/src/lib/formatMoney";
 
 interface OrderTotalsProps {
   subtotal: number;
   shipping: number;
   discount: number;
-  total: number;
 }
 
 /**
  * The price breakdown: subtotal, delivery fee and discount (each underlined),
- * then the emphasized total payment.
+ * then the emphasized total payment — always displayed as the sum of the rows
+ * above it (`total = subtotal + shipping - discount` is the stored invariant).
  */
-export function OrderTotals({ subtotal, shipping, discount, total }: OrderTotalsProps) {
+export function OrderTotals({ subtotal, shipping, discount }: OrderTotalsProps) {
   const t = useTranslations("checkout");
   const locale = useLocale();
   const money = (amount: number) => formatMoney(amount, locale);
@@ -21,6 +21,9 @@ export function OrderTotals({ subtotal, shipping, discount, total }: OrderTotals
     { label: t("deliveryFee"), value: money(shipping) },
     { label: t("discount"), value: money(discount) },
   ];
+  // Derived from the displayed (rounded) rows rather than `total`, so the visible
+  // arithmetic always adds up under fa's whole-Toman rounding.
+  const totalValue = formatMoneySum([subtotal, shipping, -discount], locale);
 
   return (
     <div className="flex w-full flex-col gap-2 px-4 py-2">
@@ -38,7 +41,7 @@ export function OrderTotals({ subtotal, shipping, discount, total }: OrderTotals
 
       <div className="flex items-center justify-between gap-4">
         <span className="text-body-b7 text-foreground">{t("totalPayment")}</span>
-        <span className="text-body-b6 text-foreground">{money(total)}</span>
+        <span className="text-body-b6 text-foreground">{totalValue}</span>
       </div>
     </div>
   );

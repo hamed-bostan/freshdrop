@@ -1,7 +1,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import type { Order } from "@/src/domain/entities/Order";
-import { orderNetPaid, orderShippingRefunded } from "@/src/domain/entities/Order";
-import { formatMoney } from "@/src/lib/formatMoney";
+import { orderShippingRefunded } from "@/src/domain/entities/Order";
+import { formatMoney, formatMoneySum } from "@/src/lib/formatMoney";
 
 interface OrderAdjustmentsProps {
   order: Order;
@@ -53,7 +53,19 @@ export function OrderAdjustments({ order }: OrderAdjustmentsProps) {
 
       <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
         <dt className="text-foreground">{t("netPaid")}</dt>
-        <dd className="text-body-b7 text-foreground">{money(orderNetPaid(order))}</dd>
+        {/* Net paid derived from the displayed (rounded) lines — the order card's total
+            minus each refund shown above — so the receipt's arithmetic always adds up
+            under fa's whole-Toman rounding (mirrors `orderNetPaid`). */}
+        <dd className="text-body-b7 text-foreground">
+          {formatMoneySum(
+            [
+              order.total,
+              ...refunds.map(({ substitution }) => -substitution.refundAmount),
+              -shippingRefund,
+            ],
+            locale,
+          )}
+        </dd>
       </div>
     </dl>
   );
