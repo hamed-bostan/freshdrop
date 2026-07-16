@@ -1,6 +1,5 @@
 import type { Order } from "../../entities/Order";
 import { isCancellable } from "../../entities/Order";
-import { WALLET_STATIC_DESCRIPTIONS } from "../../entities/WalletTransactionDescription";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 import type { IWalletRepository } from "../../repositories/IWalletRepository";
@@ -55,7 +54,7 @@ export class CancelOrder {
     await this.productRepo.incrementStock(
       cancelled.items.map((item) => ({ productId: item.productId, name: item.name, quantity: item.quantity })),
     );
-    await this.walletRepo.addFunds(userId, cancelled.total, WALLET_STATIC_DESCRIPTIONS.refundCancelledOrder);
+    await this.walletRepo.addFunds(userId, cancelled.total, { kind: "refundCancelledOrder" });
 
     return cancelled;
   }

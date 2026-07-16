@@ -3,7 +3,7 @@ import type { Locale } from "@/src/i18n/routing";
 import type { WalletTransaction } from "@/src/domain/entities/Wallet";
 import { cn } from "@/src/lib/utils";
 import { formatMoney } from "@/src/lib/formatMoney";
-import { resolveTransactionDescription } from "../localizedTransaction";
+import { resolveTransaction } from "../localizedTransaction";
 
 // Fixed UTC formatters → deterministic output (same on server and client). Under
 // `fa` the date is Jalali with Persian numerals (`fa-IR-u-ca-persian`); `en` keeps
@@ -45,9 +45,10 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
   const t = useTranslations("wallet.transactions");
   const isCredit = transaction.type === "credit";
 
-  // Descriptions are stored in English; localize the ones we recognise and fall
-  // back to the stored copy for anything else (see resolveTransactionDescription).
-  const resolved = resolveTransactionDescription(transaction.description);
+  // Localize from the stored machine reason (or the recognized English description
+  // on legacy rows); anything unrecognized shows its stored copy (see
+  // resolveTransaction).
+  const resolved = resolveTransaction(transaction);
   const description =
     resolved?.kind === "static"
       ? t(resolved.key)

@@ -244,6 +244,12 @@ model WalletTransaction {
   id          String   @id @default(uuid())
   userId      String   @map("user_id")
   description String
+  // Machine reason for the credit — a `WalletTransactionDescription` vocabulary key,
+  // plus the item name for the per-item reasons (out-of-stock refund, substitution
+  // saving). `description` stays the English display snapshot; both are NULL on rows
+  // that predate the columns (the reader falls back to matching the description).
+  reason      String?
+  reasonItem  String?  @map("reason_item")
   amount      Float
   type        String
   date        DateTime

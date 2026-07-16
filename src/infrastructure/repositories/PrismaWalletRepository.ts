@@ -1,5 +1,8 @@
 import type { CardBrand, SavedCard, TransactionType, Wallet } from "@/src/domain/entities/Wallet";
-import { WALLET_STATIC_DESCRIPTIONS } from "@/src/domain/entities/WalletTransactionDescription";
+import {
+  describeTransaction,
+  type WalletTransactionReason,
+} from "@/src/domain/entities/WalletTransactionDescription";
 import type { IWalletRepository } from "@/src/domain/repositories/IWalletRepository";
 import { prisma } from "@/src/infrastructure/prisma/client";
 
@@ -27,6 +30,8 @@ export class PrismaWalletRepository implements IWalletRepository {
       transactions: transactions.map((row) => ({
         id: row.id,
         description: row.description,
+        reason: row.reason,
+        reasonItem: row.reasonItem,
         date: row.date.toISOString(),
         amount: row.amount,
         type: row.type as TransactionType,
@@ -65,10 +70,11 @@ export class PrismaWalletRepository implements IWalletRepository {
   async addFunds(
     userId: string,
     amount: number,
-    description: string = WALLET_STATIC_DESCRIPTIONS.addedToWallet,
+    reason: WalletTransactionReason = { kind: "addedToWallet" },
   ): Promise<void> {
     // Balance change and its transaction are written together so the two never
-    // drift; the account row is created on first top-up (upsert).
+    // drift; the account row is created on first top-up (upsert). The row stores
+    // the machine reason plus the English description snapshot derived from it.
     await prisma.$transaction([
       prisma.walletAccount.upsert({
         where: { userId },
@@ -76,7 +82,15 @@ export class PrismaWalletRepository implements IWalletRepository {
         update: { balance: { increment: amount } },
       }),
       prisma.walletTransaction.create({
-        data: { userId, description, amount, type: "credit", date: new Date() },
+        data: {
+          userId,
+          description: describeTransaction(reason),
+          reason: reason.kind,
+          reasonItem: "item" in reason ? reason.item : null,
+          amount,
+          type: "credit",
+          date: new Date(),
+        },
       }),
     ]);
   }

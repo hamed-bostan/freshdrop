@@ -1,4 +1,5 @@
 import type { SavedCard, Wallet } from "../entities/Wallet";
+import type { WalletTransactionReason } from "../entities/WalletTransactionDescription";
 
 export type IWalletRepository = {
   /** The user's wallet aggregate: balance + saved cards + recent transactions. */
@@ -9,8 +10,9 @@ export type IWalletRepository = {
   addCard(userId: string, card: Omit<SavedCard, "id">): Promise<SavedCard>;
   /**
    * Credit the wallet by `amount`, recording the matching transaction atomically.
-   * `description` labels that transaction (e.g. an order refund); it defaults to
-   * the top-up label when omitted, so existing "add money" callers are unaffected.
+   * `reason` says why (an order refund, a substitution saving, …) and is stored as
+   * machine data alongside the English description snapshot derived from it; it
+   * defaults to the plain top-up, so "add money" callers pass nothing.
    */
-  addFunds(userId: string, amount: number, description?: string): Promise<void>;
+  addFunds(userId: string, amount: number, reason?: WalletTransactionReason): Promise<void>;
 }

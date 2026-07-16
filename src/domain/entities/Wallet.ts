@@ -30,7 +30,15 @@ export type TransactionType = "credit" | "debit";
 
 export type WalletTransaction = {
   id: string;
+  /** English display snapshot — the fallback when `reason` is absent/unrecognized. */
   description: string;
+  /**
+   * Machine reason (a `WalletTransactionDescription` vocabulary key), with the item
+   * name for the per-item reasons. `null` on rows that predate the columns; the
+   * presentation layer localizes from these and falls back to `description`.
+   */
+  reason: string | null;
+  reasonItem: string | null;
   /** ISO 8601 timestamp (UTC). Formatted for display in the presentation layer. */
   date: string;
   /** Absolute amount; the sign is derived from `type`. */
