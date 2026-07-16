@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import { Button, ConfirmSheet, Icon } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
-import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { deliveryLocationsApi } from "../delivery-location-api";
 
 type RemoveAddressButtonProps = {
@@ -16,6 +16,7 @@ type RemoveAddressButtonProps = {
 /** Trash action that confirms via the DS ConfirmSheet, then removes the address over the API. */
 export function RemoveAddressButton({ id, label }: RemoveAddressButtonProps) {
   const t = useTranslations("addresses");
+  const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -33,7 +34,7 @@ export function RemoveAddressButton({ id, label }: RemoveAddressButtonProps) {
       } catch (err) {
         // Re-open the sheet in a failure state so the error reads in context and
         // the user can retry — instead of a disruptive window.alert.
-        const message = err instanceof ApiError ? err.message : t("removeError");
+        const message = localizeApiError(err, tApiErrors, t("removeError"));
         setError(message);
         setOpen(true);
       }

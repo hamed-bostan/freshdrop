@@ -45,7 +45,9 @@ export function errorResponseFromException(error: unknown, context: string): Nex
     return errorResponse(409, {
       message,
       code: "UNIQUE_CONSTRAINT",
-      fieldErrors: Object.fromEntries(error.fields.map((field) => [field, "Already taken."])),
+      // `fieldErrors` speak `formErrors` message keys (like the Zod schemas the routes
+      // re-validate with), so the client translates them at display time.
+      fieldErrors: Object.fromEntries(error.fields.map((field) => [field, "alreadyTaken"])),
     });
   }
 

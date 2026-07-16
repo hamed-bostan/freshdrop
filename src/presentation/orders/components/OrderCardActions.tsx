@@ -7,7 +7,7 @@ import type { Order } from "@/src/domain/entities/Order";
 import { isCancellable, isReturnable } from "@/src/domain/entities/Order";
 import { Button } from "@/src/presentation/design-system";
 import { ConfirmDialog } from "@/src/presentation/components/ConfirmDialog";
-import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { useCart } from "@/src/presentation/cart/CartProvider";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { ordersApi } from "../order-api";
@@ -32,6 +32,7 @@ interface OrderCardActionsProps {
  */
 export function OrderCardActions({ order }: OrderCardActionsProps) {
   const t = useTranslations("orders");
+  const tApiErrors = useTranslations("apiErrors");
   const locale = useLocale();
   const router = useRouter();
   const { refresh: refreshCart } = useCart();
@@ -62,7 +63,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
         await mutate();
         onSuccess();
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : t("actionError"));
+        setError(localizeApiError(err, tApiErrors, t("actionError")));
         setRunning(null);
         // Close any open confirmation so the inline error isn't hidden behind it.
         setConfirm(null);

@@ -7,7 +7,7 @@ import { z } from "zod";
  */
 export const orderReturnDecisionSchema = z.object({
   decision: z.enum(["approve", "reject"], {
-    message: "Pick approve or reject.",
+    message: "returnDecisionInvalid",
   }),
 });
 

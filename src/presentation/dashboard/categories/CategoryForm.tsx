@@ -9,6 +9,8 @@ import type { CategoryTranslationInput } from "@/src/domain/repositories/ICatego
 import { Button, Field, Input, Tabs, TabsContent, TabsList, TabsTrigger, TextField } from "@/src/presentation/design-system";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { formErrorMessage } from "@/src/lib/formErrorMessage";
 import { slugify } from "@/src/lib/slugify";
 import { categoryFormSchema, type CategoryFormInput } from "./category-schema";
 import { categoriesApi } from "./category-api";
@@ -30,6 +32,11 @@ type CategoryFormProps =
  */
 export function CategoryForm(props: CategoryFormProps) {
   const t = useTranslations("dashCategories");
+  const tApiErrors = useTranslations("apiErrors");
+  const tFormErrors = useTranslations("formErrors");
+  // Field errors arrive as `formErrors` keys — from the client resolver and the
+  // API's `fieldErrors` alike — and resolve to copy here, at display time.
+  const fieldError = (message?: string): string | undefined => formErrorMessage(tFormErrors, message);
   const editing = props.mode === "edit";
   const router = useRouter();
   const {
@@ -77,7 +84,7 @@ export function CategoryForm(props: CategoryFormProps) {
           appliedField = true;
         }
       }
-      if (!appliedField) setError("root", { message: error.message });
+      if (!appliedField) setError("root", { message: localizeApiError(error, tApiErrors, t("formError")) });
     }
   });
 
@@ -95,7 +102,7 @@ export function CategoryForm(props: CategoryFormProps) {
         <TabsContent value="base" forceMount className="flex flex-col gap-5 pt-4 data-[state=inactive]:hidden">
           <p className="text-body-b10 text-muted-foreground">{t("baseTabDescription")}</p>
 
-          <TextField label={t("nameLabel")} required error={errors.name?.message}>
+          <TextField label={t("nameLabel")} required error={fieldError(errors.name?.message)}>
             {(control) => (
               <Input
                 {...control}
@@ -114,7 +121,7 @@ export function CategoryForm(props: CategoryFormProps) {
         <TabsContent value="fa" forceMount className="flex flex-col gap-5 pt-4 data-[state=inactive]:hidden">
           <p className="text-body-b10 text-muted-foreground">{t("translationDescription")}</p>
 
-          <TextField label={t("nameLabel")} error={errors.faName?.message}>
+          <TextField label={t("nameLabel")} error={fieldError(errors.faName?.message)}>
             {(control) => <Input {...control} {...register("faName")} dir="rtl" placeholder={t("faNamePlaceholder")} />}
           </TextField>
         </TabsContent>
@@ -124,7 +131,7 @@ export function CategoryForm(props: CategoryFormProps) {
         label={t("slugLabel")}
         required
         description={t("slugDescription")}
-        error={errors.slug?.message}
+        error={fieldError(errors.slug?.message)}
       >
         {(control) => (
           <Input
@@ -136,7 +143,7 @@ export function CategoryForm(props: CategoryFormProps) {
         )}
       </TextField>
 
-      <Field error={errors.iconUrl?.message}>
+      <Field error={fieldError(errors.iconUrl?.message)}>
         {({ id, ariaDescribedBy, ariaInvalid }) => (
           <>
             <label htmlFor={id} className="text-body-b7 text-input-foreground">

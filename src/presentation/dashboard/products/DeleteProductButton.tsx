@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import { Button, ConfirmSheet, Icon } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
-import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { productsApi } from "./product-api";
 
 type DeleteProductButtonProps = {
@@ -16,6 +16,7 @@ type DeleteProductButtonProps = {
 /** Trash action that confirms via the DS ConfirmSheet, then deletes over the API. */
 export function DeleteProductButton({ id, name }: DeleteProductButtonProps) {
   const t = useTranslations("dashProducts");
+  const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -33,7 +34,7 @@ export function DeleteProductButton({ id, name }: DeleteProductButtonProps) {
       } catch (err) {
         // Re-open the sheet in a failure state so the error reads in context and
         // the user can retry — instead of a disruptive window.alert.
-        const message = err instanceof ApiError ? err.message : t("deleteError");
+        const message = localizeApiError(err, tApiErrors, t("deleteError"));
         setError(message);
         setOpen(true);
       }

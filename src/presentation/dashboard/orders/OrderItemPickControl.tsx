@@ -9,7 +9,7 @@ import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
-import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { ordersApi } from "./order-api";
 
@@ -31,6 +31,7 @@ type OrderItemPickControlProps = {
  */
 export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProps) {
   const t = useTranslations("dashOrders");
+  const tApiErrors = useTranslations("apiErrors");
   const locale = useLocale();
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
@@ -74,7 +75,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
         setOpen(false);
         router.refresh();
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : t("substituteError"));
+        setError(localizeApiError(err, tApiErrors, t("substituteError")));
       }
     });
   }
@@ -87,7 +88,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
         setOpen(false);
         router.refresh();
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : t("refundError"));
+        setError(localizeApiError(err, tApiErrors, t("refundError")));
       }
     });
   }

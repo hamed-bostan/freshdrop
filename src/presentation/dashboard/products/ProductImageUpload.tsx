@@ -47,7 +47,10 @@ export function ProductImageUpload({ value, onChange, id, ...aria }: ProductImag
 
       onChange(json.image.url);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("uploadFailed"));
+      // The route's error strings are developer-facing (bad form shape, unknown
+      // folder) — log them for debugging, show the localized copy to the admin.
+      console.error("Image upload failed:", err);
+      setError(t("uploadFailed"));
     } finally {
       setUploading(false);
     }

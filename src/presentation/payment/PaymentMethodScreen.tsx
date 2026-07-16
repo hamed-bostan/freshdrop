@@ -7,7 +7,7 @@ import { PageHeader } from "@/src/presentation/components/PageHeader";
 import type { PaymentMethod, PaymentMethodGroup } from "@/src/domain/entities/PaymentMethod";
 import type { SavedCard } from "@/src/domain/entities/Wallet";
 import { useRouter } from "@/src/i18n/navigation";
-import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { paymentMethodsApi } from "./payment-method-api";
 import { PaymentMethodOption, SavedCardOption, AddCardRow } from "./components";
 
@@ -33,6 +33,7 @@ interface PaymentMethodScreenProps {
 
 export default function PaymentMethodScreen({ methods, cards, selectedId }: PaymentMethodScreenProps) {
   const t = useTranslations("payment");
+  const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
   const [selected, setSelected] = React.useState(() => selectedId ?? methods[0]?.id);
   const [error, setError] = React.useState<string | null>(null);
@@ -55,7 +56,7 @@ export default function PaymentMethodScreen({ methods, cards, selectedId }: Paym
         router.refresh();
         router.back();
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : t("saveError"));
+        setError(localizeApiError(err, tApiErrors, t("saveError")));
       }
     });
   };

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/src/presentation/design-system";
 import { ConfirmDialog } from "@/src/presentation/components/ConfirmDialog";
 import { useRouter } from "@/src/i18n/navigation";
-import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { ordersApi } from "./order-api";
 
 type OrderReturnControlProps = {
@@ -21,6 +21,7 @@ type OrderReturnControlProps = {
  */
 export function OrderReturnControl({ orderId }: OrderReturnControlProps) {
   const t = useTranslations("dashOrders");
+  const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
   const [error, setError] = React.useState<string | null>(null);
   const [confirmingApprove, setConfirmingApprove] = React.useState(false);
@@ -34,7 +35,7 @@ export function OrderReturnControl({ orderId }: OrderReturnControlProps) {
         setConfirmingApprove(false);
         router.refresh();
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : t("returnError"));
+        setError(localizeApiError(err, tApiErrors, t("returnError")));
         setConfirmingApprove(false);
       }
     });

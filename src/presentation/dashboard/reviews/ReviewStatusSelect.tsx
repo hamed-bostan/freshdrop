@@ -4,7 +4,7 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import type { ReviewStatus } from "@/src/domain/entities/Review";
 import { useRouter } from "@/src/i18n/navigation";
-import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { cn } from "@/src/lib/utils";
 import { reviewsApi } from "./review-api";
 
@@ -38,6 +38,7 @@ type ReviewStatusSelectProps = {
  */
 export function ReviewStatusSelect({ id, status }: ReviewStatusSelectProps) {
   const t = useTranslations("dashReviews");
+  const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
@@ -52,7 +53,7 @@ export function ReviewStatusSelect({ id, status }: ReviewStatusSelectProps) {
         await reviewsApi.setStatus(id, { status: next });
         router.refresh();
       } catch (err) {
-        const message = err instanceof ApiError ? err.message : t("updateError");
+        const message = localizeApiError(err, tApiErrors, t("updateError"));
         setError(message);
       }
     });

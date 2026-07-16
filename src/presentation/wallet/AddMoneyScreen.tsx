@@ -8,6 +8,7 @@ import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { usePathname, useRouter } from "@/src/i18n/navigation";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { addMoney } from "@/src/shared/assets/images";
 import { walletsApi } from "./wallet-api";
 import { NumericKeypad } from "./components";
@@ -16,6 +17,7 @@ const MAX_DIGITS = 6;
 
 export default function AddMoneyScreen() {
   const t = useTranslations("wallet");
+  const tApiErrors = useTranslations("apiErrors");
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -52,7 +54,7 @@ export default function AddMoneyScreen() {
           router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
           return;
         }
-        setError(caught instanceof ApiError ? caught.message : t("errGeneric"));
+        setError(localizeApiError(caught, tApiErrors, t("errGeneric")));
       }
     });
   };

@@ -78,7 +78,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!address) {
       return errorResponse(400, {
         message: "That delivery address no longer exists.",
-        code: "VALIDATION",
+        code: "ADDRESS_GONE",
         fieldErrors: { addressId: "Select a delivery address." },
       });
     }

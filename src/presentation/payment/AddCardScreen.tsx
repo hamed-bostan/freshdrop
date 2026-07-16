@@ -7,10 +7,12 @@ import { Button, Icon, Input, PasswordInput, TextField } from "@/src/presentatio
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { usePathname, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { walletsApi } from "@/src/presentation/wallet/wallet-api";
 
 export default function AddCardScreen() {
   const t = useTranslations("payment");
+  const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
   const pathname = usePathname();
 
@@ -45,7 +47,7 @@ export default function AddCardScreen() {
           router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
           return;
         }
-        setError(caught instanceof ApiError ? caught.message : t("addCardError"));
+        setError(localizeApiError(caught, tApiErrors, t("addCardError")));
       }
     });
   };

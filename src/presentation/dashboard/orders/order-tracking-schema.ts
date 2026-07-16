@@ -7,7 +7,7 @@ import { z } from "zod";
  */
 export const orderTrackingStageSchema = z.object({
   stage: z.enum(["confirmed", "shipped", "arrived"], {
-    message: "Pick a valid delivery stage.",
+    message: "stageInvalid",
   }),
 });
 

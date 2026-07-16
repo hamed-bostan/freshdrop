@@ -7,9 +7,9 @@ import { z } from "zod";
  * taken from the session server-side, so they can't be spoofed.
  */
 export const reviewSubmissionSchema = z.object({
-  productId: z.string().trim().min(1, "Missing product."),
-  rating: z.number().int().min(1, "Pick a rating.").max(5, "Pick a rating."),
-  comment: z.string().trim().max(2000, "Keep it under 2000 characters.").optional().default(""),
+  productId: z.string().trim().min(1, "productMissing"),
+  rating: z.number().int().min(1, "ratingRequired").max(5, "ratingRequired"),
+  comment: z.string().trim().max(2000, "commentTooLong").optional().default(""),
 });
 
 export type ReviewSubmissionInput = z.infer<typeof reviewSubmissionSchema>;

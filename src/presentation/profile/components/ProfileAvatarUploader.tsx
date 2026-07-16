@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { User, ImagePlus, Images, Camera, Trash2, Loader2, type LucideIcon } from "lucide-react";
 import { Icon, Sheet, SheetTrigger, SheetContent, SheetClose } from "@/src/presentation/design-system";
-import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { cn } from "@/src/lib/utils";
 import { profilesApi } from "../profile-api";
 
@@ -55,6 +55,7 @@ interface ProfileAvatarUploaderProps {
  */
 export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploaderProps) {
   const t = useTranslations("profile");
+  const tApiErrors = useTranslations("apiErrors");
   const libraryInputRef = React.useRef<HTMLInputElement>(null);
   const cameraInputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = React.useState(false);
@@ -71,7 +72,7 @@ export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploader
       const url = await profilesApi.uploadAvatar(file);
       onChange(url);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t("uploadFailed"));
+      setError(localizeApiError(err, tApiErrors, t("uploadFailed")));
     } finally {
       setUploading(false);
     }

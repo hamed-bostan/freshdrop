@@ -8,7 +8,7 @@ import { z } from "zod";
  * the session server-side, so it never travels over the wire.
  */
 export const selectPaymentMethodSchema = z.object({
-  methodId: z.string().trim().min(1, "Choose a payment method."),
+  methodId: z.string().trim().min(1, "paymentMethodRequired"),
 });
 
 export type SelectPaymentMethodInput = z.infer<typeof selectPaymentMethodSchema>;

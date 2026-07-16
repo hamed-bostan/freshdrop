@@ -4,6 +4,7 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/src/presentation/design-system";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { useRouter } from "@/src/i18n/navigation";
 import { reviewsApi } from "../review-api";
 import { AddReviewSheet, type ReviewDraft } from "./AddReviewSheet";
@@ -24,6 +25,7 @@ interface AddReviewFlowProps {
  */
 export function AddReviewFlow({ productId }: AddReviewFlowProps) {
   const t = useTranslations("reviews");
+  const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [successOpen, setSuccessOpen] = React.useState(false);
@@ -44,11 +46,11 @@ export function AddReviewFlow({ productId }: AddReviewFlowProps) {
         setSuccessOpen(true);
       } catch (err) {
         setError(
+          // 401 keeps the feature's own copy (a sign-in prompt beats the generic
+          // "not authorized"); everything else resolves through the shared map.
           err instanceof ApiError && err.status === 401
             ? t("signInError")
-            : err instanceof ApiError
-              ? err.message
-              : t("genericError"),
+            : localizeApiError(err, tApiErrors, t("genericError")),
         );
       }
     });

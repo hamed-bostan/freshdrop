@@ -8,7 +8,7 @@ const MAX_QUANTITY = 99;
  * is never trusted. `quantity` defaults to one item.
  */
 export const addToCartSchema = z.object({
-  productId: z.string().trim().min(1, "A product is required."),
+  productId: z.string().trim().min(1, "productRequired"),
   quantity: z.coerce.number().int().positive().max(MAX_QUANTITY).default(1),
 });
 

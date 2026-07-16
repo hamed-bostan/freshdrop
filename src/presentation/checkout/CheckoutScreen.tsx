@@ -16,7 +16,7 @@ import { DeliveryLocationPickerSheet } from "@/src/presentation/delivery-locatio
 import { DeliveryLocationSummary } from "@/src/presentation/delivery-location/components/DeliveryLocationSummary";
 import { PaymentMethodOption, SavedCardOption } from "@/src/presentation/payment/components";
 import { paymentMethodsApi } from "@/src/presentation/payment/payment-method-api";
-import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { useSessionStorageState } from "@/src/lib/hooks/useSessionStorageState";
 import {
   CheckoutSection,
@@ -101,6 +101,7 @@ export default function CheckoutScreen({
   promoCode,
 }: CheckoutScreenProps) {
   const t = useTranslations("checkout");
+  const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
   const { refresh: refreshCart } = useCart();
   // The delivery address isn't chosen here — the user selects it in the home sheet or
@@ -188,7 +189,7 @@ export default function CheckoutScreen({
         router.push("/cart/checkout/confirmed");
         router.refresh();
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : t("errGeneric"));
+        setError(localizeApiError(err, tApiErrors, t("errGeneric")));
       }
     });
   };

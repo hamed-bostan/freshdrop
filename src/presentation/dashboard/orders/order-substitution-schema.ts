@@ -11,7 +11,7 @@ export const orderSubstitutionSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("substitute"),
     productId: z.string().trim().min(1),
-    replacementProductId: z.string().trim().min(1, "Pick a replacement product."),
+    replacementProductId: z.string().trim().min(1, "replacementRequired"),
   }),
   z.object({
     action: z.literal("refund"),

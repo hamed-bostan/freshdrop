@@ -22,6 +22,8 @@ import {
 } from "@/src/presentation/design-system";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { formErrorMessage } from "@/src/lib/formErrorMessage";
 import { cn } from "@/src/lib/utils";
 import { productFormSchema, type ProductFormInput } from "./product-schema";
 import { productsApi } from "./product-api";
@@ -89,6 +91,11 @@ function toDefaults(product?: Product, translations?: ProductTranslationInput[])
  */
 export function ProductForm(props: ProductFormProps) {
   const t = useTranslations("dashProducts");
+  const tApiErrors = useTranslations("apiErrors");
+  const tFormErrors = useTranslations("formErrors");
+  // Field errors arrive as `formErrors` keys — from the client resolver and the
+  // API's `fieldErrors` alike — and resolve to copy here, at display time.
+  const fieldError = (message?: string): string | undefined => formErrorMessage(tFormErrors, message);
   // Closed vocabulary stored as canonical English keys — the checkbox still submits
   // `tag`; only its label follows the admin's locale.
   const tDietary = useTranslations("dietary");
@@ -131,7 +138,7 @@ export function ProductForm(props: ProductFormProps) {
           appliedField = true;
         }
       }
-      if (!appliedField) setError("root", { message: error.message });
+      if (!appliedField) setError("root", { message: localizeApiError(error, tApiErrors, t("formError")) });
     }
   });
 
@@ -151,27 +158,27 @@ export function ProductForm(props: ProductFormProps) {
         <TabsContent value="base" forceMount className="flex flex-col gap-5 pt-4 data-[state=inactive]:hidden">
           <p className="text-body-b10 text-muted-foreground">{t("baseTabDescription")}</p>
 
-          <TextField label={t("nameLabel")} required error={errors.name?.message}>
+          <TextField label={t("nameLabel")} required error={fieldError(errors.name?.message)}>
             {(control) => <Input {...control} {...register("name")} dir="ltr" placeholder={t("namePlaceholder")} />}
           </TextField>
 
-          <TextField label={t("unitLabel")} description={t("unitDescription")} error={errors.unit?.message}>
+          <TextField label={t("unitLabel")} description={t("unitDescription")} error={fieldError(errors.unit?.message)}>
             {(control) => <Input {...control} {...register("unit")} dir="ltr" placeholder={t("unitPlaceholder")} />}
           </TextField>
 
-          <TextField label={t("descriptionLabel")} description={t("descriptionHelp")} error={errors.description?.message}>
+          <TextField label={t("descriptionLabel")} description={t("descriptionHelp")} error={fieldError(errors.description?.message)}>
             {(control) => (
               <Textarea {...control} {...register("description")} dir="ltr" placeholder={t("descriptionPlaceholder")} />
             )}
           </TextField>
 
-          <TextField label={t("nutritionLabel")} description={t("nutritionHelp")} error={errors.nutrition?.message}>
+          <TextField label={t("nutritionLabel")} description={t("nutritionHelp")} error={fieldError(errors.nutrition?.message)}>
             {(control) => (
               <Textarea {...control} {...register("nutrition")} dir="ltr" placeholder={t("nutritionPlaceholder")} />
             )}
           </TextField>
 
-          <TextField label={t("originLabel")} description={t("originHelp")} error={errors.origin?.message}>
+          <TextField label={t("originLabel")} description={t("originHelp")} error={fieldError(errors.origin?.message)}>
             {(control) => (
               <Textarea {...control} {...register("origin")} dir="ltr" placeholder={t("originPlaceholder")} />
             )}
@@ -181,18 +188,18 @@ export function ProductForm(props: ProductFormProps) {
         <TabsContent value="fa" forceMount className="flex flex-col gap-5 pt-4 data-[state=inactive]:hidden">
           <p className="text-body-b10 text-muted-foreground">{t("translationDescription")}</p>
 
-          <TextField label={t("nameLabel")} error={errors.faName?.message}>
+          <TextField label={t("nameLabel")} error={fieldError(errors.faName?.message)}>
             {(control) => <Input {...control} {...register("faName")} dir="rtl" placeholder={t("faNamePlaceholder")} />}
           </TextField>
 
-          <TextField label={t("unitLabel")} description={t("unitDescription")} error={errors.faUnit?.message}>
+          <TextField label={t("unitLabel")} description={t("unitDescription")} error={fieldError(errors.faUnit?.message)}>
             {(control) => <Input {...control} {...register("faUnit")} dir="rtl" placeholder={t("faUnitPlaceholder")} />}
           </TextField>
 
           <TextField
             label={t("descriptionLabel")}
             description={t("descriptionHelp")}
-            error={errors.faDescription?.message}
+            error={fieldError(errors.faDescription?.message)}
           >
             {(control) => (
               <Textarea
@@ -204,13 +211,13 @@ export function ProductForm(props: ProductFormProps) {
             )}
           </TextField>
 
-          <TextField label={t("nutritionLabel")} description={t("nutritionHelp")} error={errors.faNutrition?.message}>
+          <TextField label={t("nutritionLabel")} description={t("nutritionHelp")} error={fieldError(errors.faNutrition?.message)}>
             {(control) => (
               <Textarea {...control} {...register("faNutrition")} dir="rtl" placeholder={t("faNutritionPlaceholder")} />
             )}
           </TextField>
 
-          <TextField label={t("originLabel")} description={t("originHelp")} error={errors.faOrigin?.message}>
+          <TextField label={t("originLabel")} description={t("originHelp")} error={fieldError(errors.faOrigin?.message)}>
             {(control) => (
               <Textarea {...control} {...register("faOrigin")} dir="rtl" placeholder={t("faOriginPlaceholder")} />
             )}
@@ -218,7 +225,7 @@ export function ProductForm(props: ProductFormProps) {
         </TabsContent>
       </Tabs>
 
-      <Field error={errors.categoryId?.message}>
+      <Field error={fieldError(errors.categoryId?.message)}>
         {({ id, ariaDescribedBy, ariaInvalid }) => (
           <>
             <label htmlFor={id} className="text-body-b7 text-input-foreground">
@@ -252,7 +259,7 @@ export function ProductForm(props: ProductFormProps) {
           label={t("priceLabel")}
           required
           description={t("priceDescription")}
-          error={errors.price?.message}
+          error={fieldError(errors.price?.message)}
         >
           {(control) => (
             <Input {...control} {...register("price")} inputMode="decimal" placeholder={t("pricePlaceholder")} />
@@ -262,7 +269,7 @@ export function ProductForm(props: ProductFormProps) {
         <TextField
           label={t("originalPriceLabel")}
           description={t("originalPriceDescription")}
-          error={errors.originalPrice?.message}
+          error={fieldError(errors.originalPrice?.message)}
         >
           {(control) => (
             <Input {...control} {...register("originalPrice")} inputMode="decimal" placeholder={t("pricePlaceholder")} />
@@ -274,14 +281,14 @@ export function ProductForm(props: ProductFormProps) {
         label={t("stockLabel")}
         required
         description={t("stockDescription")}
-        error={errors.stockQuantity?.message}
+        error={fieldError(errors.stockQuantity?.message)}
       >
         {(control) => (
           <Input {...control} {...register("stockQuantity")} inputMode="numeric" placeholder={t("stockPlaceholder")} />
         )}
       </TextField>
 
-      <Field error={errors.imageUrl?.message}>
+      <Field error={fieldError(errors.imageUrl?.message)}>
         {({ id, ariaDescribedBy, ariaInvalid }) => (
           <>
             <label htmlFor={id} className="text-body-b7 text-input-foreground">
@@ -301,11 +308,11 @@ export function ProductForm(props: ProductFormProps) {
       {/* Keeps imageUrl registered (set imperatively by ProductImageUpload) so it's tracked + submitted. */}
       <input type="hidden" {...register("imageUrl")} />
 
-      <TextField label={t("badgeLabel")} description={t("badgeDescription")} error={errors.badge?.message}>
+      <TextField label={t("badgeLabel")} description={t("badgeDescription")} error={fieldError(errors.badge?.message)}>
         {(control) => <Input {...control} {...register("badge")} dir="ltr" placeholder={t("badgePlaceholder")} />}
       </TextField>
 
-      <Field error={errors.brand?.message}>
+      <Field error={fieldError(errors.brand?.message)}>
         {({ id, ariaDescribedBy, ariaInvalid }) => (
           <>
             <label htmlFor={id} className="text-body-b7 text-input-foreground">

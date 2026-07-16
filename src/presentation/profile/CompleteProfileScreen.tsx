@@ -7,7 +7,7 @@ import type { User } from "@/src/domain/entities/User";
 import { Button, Icon, TextField } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { useRouter } from "@/src/i18n/navigation";
-import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { ProfileAvatarUploader } from "./components/ProfileAvatarUploader";
 import { profilesApi } from "./profile-api";
 
@@ -49,6 +49,7 @@ interface CompleteProfileScreenProps {
 
 export default function CompleteProfileScreen({ user }: CompleteProfileScreenProps) {
   const t = useTranslations("profile");
+  const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
   const { firstName, lastName } = splitName(user.name);
   const [form, setForm] = React.useState<ProfileForm>({
@@ -78,7 +79,7 @@ export default function CompleteProfileScreen({ user }: CompleteProfileScreenPro
       router.push("/profile");
       router.refresh();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t("saveError"));
+      setError(localizeApiError(err, tApiErrors, t("saveError")));
       setSaving(false);
     }
   }

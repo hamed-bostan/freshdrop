@@ -10,6 +10,7 @@ import type { DeliveryLocation, DeliveryLocationKind } from "@/src/domain/entiti
 import { deliveryLocationsApi } from "@/src/presentation/delivery-location/delivery-location-api";
 import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { AddressLabelChips } from "./components";
 import { useReverseGeocodedPlace } from "./hooks/use-reverse-geocode";
 import { reverseGeocode } from "./lib/geocoding-client";
@@ -69,6 +70,7 @@ export default function LocationDetailScreen({
   initialCity,
 }: LocationDetailScreenProps) {
   const t = useTranslations("addresses");
+  const tApiErrors = useTranslations("apiErrors");
   const locale = useLocale();
   const router = useRouter();
 
@@ -164,11 +166,11 @@ export default function LocationDetailScreen({
         router.refresh();
       } catch (err) {
         setError(
+          // 401 keeps the feature's own copy (a sign-in prompt beats the generic
+          // "not authorized"); everything else resolves through the shared map.
           err instanceof ApiError && err.status === 401
             ? t("errSignIn")
-            : err instanceof ApiError
-              ? err.message
-              : t("errSave"),
+            : localizeApiError(err, tApiErrors, t("errSave")),
         );
       }
     });

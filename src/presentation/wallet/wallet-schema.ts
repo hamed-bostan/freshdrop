@@ -6,9 +6,11 @@ const MAX_FUNDS = 999_999;
 /**
  * Adding money to the wallet. The server re-validates with this same schema — the
  * client is never trusted. `amount` is coerced from the keypad's string value.
+ * Validation messages are `formErrors` message keys, translated at display time
+ * (see `src/lib/formErrorMessage.ts`).
  */
 export const addFundsSchema = z.object({
-  amount: z.coerce.number().positive("Enter an amount greater than zero.").max(MAX_FUNDS, "That amount is too large."),
+  amount: z.coerce.number().positive("amountPositive").max(MAX_FUNDS, "amountTooLarge"),
 });
 
 /**
@@ -20,11 +22,11 @@ export const addCardSchema = z.object({
     .string()
     .trim()
     .transform((value) => value.replace(/\D/g, ""))
-    .pipe(z.string().regex(/^\d{12,19}$/, "Enter a valid card number.")),
-  holderName: z.string().trim().min(1, "Cardholder name is required."),
-  expiryMonth: z.string().trim().regex(/^(0?[1-9]|1[0-2])$/, "Enter a month between 1 and 12."),
-  expiryYear: z.string().trim().regex(/^\d{2}$|^\d{4}$/, "Enter a valid expiry year."),
-  cvv: z.string().trim().regex(/^\d{3,4}$/, "Enter a valid CVV."),
+    .pipe(z.string().regex(/^\d{12,19}$/, "cardNumberInvalid")),
+  holderName: z.string().trim().min(1, "cardHolderRequired"),
+  expiryMonth: z.string().trim().regex(/^(0?[1-9]|1[0-2])$/, "expiryMonthInvalid"),
+  expiryYear: z.string().trim().regex(/^\d{2}$|^\d{4}$/, "expiryYearInvalid"),
+  cvv: z.string().trim().regex(/^\d{3,4}$/, "cvvInvalid"),
 });
 
 export type AddFundsInput = z.infer<typeof addFundsSchema>;

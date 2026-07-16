@@ -4,7 +4,7 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
 import { useRouter } from "@/src/i18n/navigation";
-import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { ordersApi } from "./order-api";
 
 /** The advanceable milestones, in delivery order, keyed to their dashboard labels. */
@@ -31,6 +31,7 @@ type OrderStageSelectProps = {
  */
 export function OrderStageSelect({ orderId, stage }: OrderStageSelectProps) {
   const t = useTranslations("dashOrders");
+  const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
@@ -45,7 +46,7 @@ export function OrderStageSelect({ orderId, stage }: OrderStageSelectProps) {
         await ordersApi.setTrackingStage(orderId, { stage: next });
         router.refresh();
       } catch (err) {
-        const message = err instanceof ApiError ? err.message : t("stageError");
+        const message = localizeApiError(err, tApiErrors, t("stageError"));
         setError(message);
       }
     });

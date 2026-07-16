@@ -8,7 +8,7 @@ import type { DeliveryLocationKind } from "@/src/domain/entities/DeliveryLocatio
  * it never travels over the wire.
  */
 export const deliveryLocationSchema = z.object({
-  address: z.string().trim().min(1, "Enter an address."),
+  address: z.string().trim().min(1, "addressLineRequired"),
   // Optional and auto-derived from the picked coordinate; a blank value is stored as
   // "unknown" (undefined) rather than an empty string.
   city: z
