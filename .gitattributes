@@ -1,0 +1,4 @@
+# Prisma records a SHA-256 of each migration file when it is applied; letting
+# autocrlf flip line endings on checkout changes that hash and makes `migrate dev`
+# demand a database reset. Pin SQL to LF everywhere so the on-disk bytes are stable.
+*.sql text eol=lf
