@@ -4,7 +4,7 @@ import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid } from "@/src/domain/entities/Order";
 import type { Review } from "@/src/domain/entities/Review";
 import type { Product } from "@/src/domain/entities/Product";
-import { LOW_STOCK_THRESHOLD } from "@/src/domain/entities/stock";
+import { LOW_STOCK_THRESHOLD, getStockStatus } from "@/src/domain/entities/stock";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
@@ -30,6 +30,18 @@ const RECENT_ORDERS_COUNT = 5;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
+ * Net-paid revenue over orders placed within the trailing {@link REVENUE_WINDOW_DAYS}.
+ * Pure — `now` is injected (defaulting to the current time) so the impure clock read
+ * stays out of the component render, mirroring the domain's `isReturnable(order, now)`.
+ */
+function revenueInWindow(orders: Order[], now: number = Date.now()): number {
+  const since = now - REVENUE_WINDOW_DAYS * DAY_MS;
+  return orders
+    .filter((order) => new Date(order.placedAt).getTime() >= since)
+    .reduce((sum, order) => sum + orderNetPaid(order), 0);
+}
+
+/**
  * Admin dashboard overview. Presentational: the dashboard root page fetches orders,
  * reviews, products, and customer summaries over the REST API (BFF) during server
  * render and passes them in. The KPIs and lists are derived here — no client data
@@ -44,14 +56,15 @@ export async function DashboardOverviewScreen({
   const t = await getTranslations("dashHome");
   const locale = await getLocale();
 
-  const since = Date.now() - REVENUE_WINDOW_DAYS * DAY_MS;
-  const revenue30d = orders
-    .filter((order) => new Date(order.placedAt).getTime() >= since)
-    .reduce((sum, order) => sum + orderNetPaid(order), 0);
+  const revenue30d = revenueInWindow(orders);
 
   const inProgress = orders.filter((order) => order.status === "processing").length;
   const pendingReviews = reviews.filter((review) => review.status === "pending").length;
-  const lowStock = products.filter((product) => product.stockQuantity <= LOW_STOCK_THRESHOLD).length;
+  // "Needs restocking" — anything not comfortably in stock. Classified through the
+  // domain's `getStockStatus` (the single source of truth for stock states) rather
+  // than re-deriving the threshold here, so it never diverges from the storefront.
+  // Out-of-stock counts too: it's the more urgent case, not one to hide from the tile.
+  const lowStock = products.filter((product) => getStockStatus(product.stockQuantity).level !== "in").length;
 
   // Latest orders first — the source order isn't guaranteed sorted, so sort by when
   // each was placed and take the leading few.
