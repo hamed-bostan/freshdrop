@@ -1,5 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { DollarSign, PackageCheck, MessageSquare, AlertTriangle } from "lucide-react";
+import { DollarSign, ClipboardList, Star, AlertTriangle } from "lucide-react";
 import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid } from "@/src/domain/entities/Order";
 import type { Review } from "@/src/domain/entities/Review";
@@ -10,7 +10,6 @@ import { Link } from "@/src/i18n/navigation";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
-import { formatOrderDate } from "@/src/lib/formatOrderDate";
 import { StatCard } from "./StatCard";
 import { TopCustomersPanel } from "./orders/TopCustomersPanel";
 
@@ -30,15 +29,14 @@ const RECENT_ORDERS_COUNT = 5;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Net-paid revenue over orders placed within the trailing {@link REVENUE_WINDOW_DAYS}.
- * Pure — `now` is injected (defaulting to the current time) so the impure clock read
- * stays out of the component render, mirroring the domain's `isReturnable(order, now)`.
+ * Orders placed within the trailing {@link REVENUE_WINDOW_DAYS}. Pure — `now` is
+ * injected (defaulting to the current time) so the impure clock read stays out of
+ * the component render, mirroring the domain's `isReturnable(order, now)`. The
+ * revenue KPI derives both its total and its order-count hint from this window.
  */
-function revenueInWindow(orders: Order[], now: number = Date.now()): number {
+function ordersInWindow(orders: Order[], now: number = Date.now()): Order[] {
   const since = now - REVENUE_WINDOW_DAYS * DAY_MS;
-  return orders
-    .filter((order) => new Date(order.placedAt).getTime() >= since)
-    .reduce((sum, order) => sum + orderNetPaid(order), 0);
+  return orders.filter((order) => new Date(order.placedAt).getTime() >= since);
 }
 
 /**
@@ -56,7 +54,8 @@ export async function DashboardOverviewScreen({
   const t = await getTranslations("dashHome");
   const locale = await getLocale();
 
-  const revenue30d = revenueInWindow(orders);
+  const windowOrders = ordersInWindow(orders);
+  const revenue30d = windowOrders.reduce((sum, order) => sum + orderNetPaid(order), 0);
 
   const inProgress = orders.filter((order) => order.status === "processing").length;
   const pendingReviews = reviews.filter((review) => review.status === "pending").length;
@@ -83,22 +82,28 @@ export async function DashboardOverviewScreen({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           icon={DollarSign}
+          tone="brand"
           value={formatMoney(revenue30d, locale)}
-          label={t("kpiRevenue")}
-          hint={t("kpiRevenueHint", { days: REVENUE_WINDOW_DAYS })}
+          label={t("kpiRevenue", { days: REVENUE_WINDOW_DAYS })}
+          hint={t("kpiRevenueHint", { count: windowOrders.length })}
         />
         <StatCard
-          icon={PackageCheck}
+          icon={ClipboardList}
+          tone="info"
           value={formatNumber(inProgress, locale)}
           label={t("kpiInProgress")}
+          hint={t("kpiInProgressHint")}
         />
         <StatCard
-          icon={MessageSquare}
+          icon={Star}
+          tone="warning"
           value={formatNumber(pendingReviews, locale)}
           label={t("kpiPendingReviews")}
+          hint={t("kpiPendingReviewsHint")}
         />
         <StatCard
           icon={AlertTriangle}
+          tone="danger"
           value={formatNumber(lowStock, locale)}
           label={t("kpiLowStock")}
           hint={t("kpiLowStockHint", { threshold: LOW_STOCK_THRESHOLD })}
@@ -108,10 +113,7 @@ export async function DashboardOverviewScreen({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <section className="rounded-card-lg border border-border p-4">
           <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-body-b5 text-foreground">{t("recentOrders")}</h2>
-              <p className="text-body-b8 text-muted-foreground">{t("recentOrdersHint")}</p>
-            </div>
+            <h2 className="text-body-b5 text-foreground">{t("recentOrders")}</h2>
             <Link href="/dashboard/orders" className="text-body-b8 text-primary hover:underline">
               {t("viewAll")}
             </Link>
@@ -123,14 +125,9 @@ export async function DashboardOverviewScreen({
                 const customer = customersById.get(order.userId);
                 return (
                   <li key={order.id} className="flex items-center gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-body-b7 text-foreground">
-                        {customer?.name ?? order.userId}
-                      </p>
-                      <p className="truncate text-body-b8 text-muted-foreground">
-                        {formatOrderDate(order.placedAt, locale)}
-                      </p>
-                    </div>
+                    <p className="min-w-0 flex-1 truncate text-body-b7 text-foreground">
+                      {customer?.name ?? order.userId}
+                    </p>
                     <OrderStatusBadge status={order.status} stage={order.stage} />
                     <p className="w-24 text-end text-body-b7 text-foreground">
                       {formatMoney(orderNetPaid(order), locale)}
@@ -144,7 +141,9 @@ export async function DashboardOverviewScreen({
           )}
         </section>
 
-        {customers.length > 0 ? <TopCustomersPanel customers={customers} /> : null}
+        {customers.length > 0 ? (
+          <TopCustomersPanel customers={customers} compact viewAllHref="/dashboard/customers" />
+        ) : null}
       </div>
     </div>
   );
