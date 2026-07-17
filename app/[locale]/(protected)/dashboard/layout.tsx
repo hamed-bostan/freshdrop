@@ -1,32 +1,20 @@
 import type { ReactNode } from "react";
-import { getTranslations } from "next-intl/server";
 import { requireAdmin } from "@/src/lib/require-admin";
-import { Link } from "@/src/i18n/navigation";
-import { DashboardNav } from "@/src/presentation/dashboard/DashboardNav";
+import { DashboardSidebar } from "@/src/presentation/dashboard/DashboardSidebar";
 
 /**
  * Admin shell for the dashboard. Gates the whole `/dashboard` tree to admins
- * (see `requireAdmin`); each server action re-checks independently. Desktop-width
- * — the storefront's mobile `max-w-md` lives in `(main)`, not here.
+ * (see `requireAdmin`); each server action re-checks independently. A fixed left
+ * sidebar (see `DashboardSidebar`) with the section content filling the rest of
+ * the width — the storefront's mobile `max-w-md` lives in `(main)`, not here.
  */
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   await requireAdmin();
-  const t = await getTranslations("dashboard");
 
   return (
-    <div className="min-h-dvh bg-background">
-      <header className="border-b border-border">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-4">
-          <Link href="/dashboard" className="text-heading-h3 text-foreground">
-            FreshDrop <span className="text-primary">{t("admin")}</span>
-          </Link>
-          <DashboardNav />
-          <Link href="/" className="text-body-b7 text-muted-foreground transition-colors hover:text-foreground">
-            {t("viewStore")}
-          </Link>
-        </div>
-      </header>
-      <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
+    <div className="flex min-h-dvh bg-background">
+      <DashboardSidebar />
+      <main className="min-w-0 flex-1 px-8 py-8">{children}</main>
     </div>
   );
 }

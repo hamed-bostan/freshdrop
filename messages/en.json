@@ -518,10 +518,12 @@
     "nextSlide": "Next slide"
   },
   "dashboard": {
+    "navDashboard": "Dashboard",
     "navCategories": "Categories",
     "navProducts": "Products",
     "navOrders": "Orders",
     "navReviews": "Reviews",
+    "navCustomers": "Customers",
     "admin": "Admin",
     "viewStore": "View store",
     "errorTitle": "Something went wrong",

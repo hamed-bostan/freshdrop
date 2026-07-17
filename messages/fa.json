@@ -518,10 +518,12 @@
     "nextSlide": "اسلاید بعدی"
   },
   "dashboard": {
+    "navDashboard": "داشبورد",
     "navCategories": "دسته‌بندی‌ها",
     "navProducts": "محصولات",
     "navOrders": "سفارش‌ها",
     "navReviews": "نظرات",
+    "navCustomers": "مشتریان",
     "admin": "مدیریت",
     "viewStore": "مشاهده فروشگاه",
     "errorTitle": "مشکلی پیش آمد",
