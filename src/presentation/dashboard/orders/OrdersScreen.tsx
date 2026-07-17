@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { Order } from "@/src/domain/entities/Order";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
-import { OrdersTrackingTable } from "./OrdersTrackingTable";
+import { OrdersTable } from "./OrdersTable";
 import { TopCustomersPanel } from "./TopCustomersPanel";
 
 type OrdersScreenProps = {
@@ -12,9 +12,10 @@ type OrdersScreenProps = {
 
 /**
  * Admin orders list. Presentational: the dashboard page fetches over the REST API
- * (BFF) during server render and passes the data in. Stage changes re-run this
- * server render via `router.refresh()` (see OrderStageSelect), so the server stays
- * the single source of truth — no client-side data cache to keep in sync.
+ * (BFF) during server render and passes the data in. Each row links to the order's
+ * detail route, where the stage/return/pick actions live; those writes re-run the
+ * server render via `router.refresh()`, so the server stays the single source of
+ * truth — no client-side data cache to keep in sync.
  *
  * Alongside the table it shows a "top customers" panel (who buys the most) and
  * labels each order row with the customer who placed it — both derived from the
@@ -37,7 +38,7 @@ export async function OrdersScreen({ orders, customers }: OrdersScreenProps) {
       {customers.length > 0 ? <TopCustomersPanel customers={customers} /> : null}
 
       {count > 0 ? (
-        <OrdersTrackingTable orders={orders} customersById={customersById} />
+        <OrdersTable orders={orders} customersById={customersById} />
       ) : (
         <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
           <p className="text-body-b4 text-foreground">{t("emptyTitle")}</p>

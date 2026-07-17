@@ -530,6 +530,20 @@
     "errorBody": "بارگذاری این صفحه ممکن نشد. لطفاً دوباره تلاش کنید.",
     "tryAgain": "تلاش مجدد"
   },
+  "dashHome": {
+    "heading": "نمای کلی",
+    "subtitle": "نگاهی گذرا به فعالیت فروشگاه شما.",
+    "kpiRevenue": "درآمد",
+    "kpiRevenueHint": "{days} روز گذشته",
+    "kpiInProgress": "سفارش‌های در جریان",
+    "kpiPendingReviews": "نظرات در انتظار",
+    "kpiLowStock": "موجودی کم",
+    "kpiLowStockHint": "{threshold} عدد یا کمتر در انبار",
+    "recentOrders": "سفارش‌های اخیر",
+    "recentOrdersHint": "آخرین سفارش‌های ثبت‌شده",
+    "viewAll": "مشاهده همه",
+    "noRecentOrders": "هنوز سفارشی ثبت نشده است."
+  },
   "dashCategories": {
     "heading": "دسته‌بندی‌ها",
     "count": "{count, plural, other {# دسته‌بندی}}",
@@ -704,7 +718,26 @@
     "loadingReplacements": "در حال بارگذاری جایگزین‌ها…",
     "noReplacements": "محصول مرتبطی برای جایگزینی نیست — به‌جایش بازپرداخت کنید.",
     "refundChosen": "مشتری در صورت ناموجود بودن این کالا، بازپرداخت را انتخاب کرده است.",
-    "refundThisItem": "بازپرداخت این کالا"
+    "refundThisItem": "بازپرداخت این کالا",
+    "colTotal": "جمع کل",
+    "viewOrderAria": "مشاهده سفارش {id}",
+    "backToOrders": "بازگشت به سفارش‌ها",
+    "orderNumber": "سفارش {id}",
+    "placedOn": "ثبت‌شده در {date}",
+    "advanceTo": "جلو بردن به {stage}",
+    "advancePending": "در حال جلو بردن…",
+    "timeline": "روند تحویل",
+    "returnHeading": "درخواست مرجوعی",
+    "returnBody": "مشتری درخواست مرجوعی این سفارش را داده است. با تأیید، کالاها به انبار برمی‌گردد و مبلغ کل به کیف پول او بازپرداخت می‌شود.",
+    "qtyTimesPrice": "{qty} × {price}",
+    "customerHeading": "مشتری",
+    "deliveryWindow": "بازه تحویل",
+    "summaryHeading": "خلاصه سفارش",
+    "subtotal": "جمع جزء",
+    "shipping": "هزینه ارسال",
+    "discount": "تخفیف",
+    "refundedToWallet": "بازپرداخت به کیف پول",
+    "netPaid": "پرداخت خالص"
   },
   "dashReviews": {
     "heading": "نظرات",

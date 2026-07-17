@@ -20,7 +20,7 @@ const DECISIONS: { value: ModerationDecision; labelKey: "statusApproved" | "stat
   { value: "rejected", labelKey: "statusRejected" },
 ];
 
-/** Native-select styling matching the DS field family (same as OrderStageSelect). */
+/** Native-select styling matching the DS field family (same as ProductForm). */
 const SELECT_CLASSES =
   "h-9 rounded-input border border-border bg-input px-2.5 text-body-b7 text-input-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
 

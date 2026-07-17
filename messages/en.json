@@ -530,6 +530,20 @@
     "errorBody": "We couldn't load this page. Please try again.",
     "tryAgain": "Try again"
   },
+  "dashHome": {
+    "heading": "Overview",
+    "subtitle": "A snapshot of your store's activity.",
+    "kpiRevenue": "Revenue",
+    "kpiRevenueHint": "Last {days} days",
+    "kpiInProgress": "Orders in progress",
+    "kpiPendingReviews": "Pending reviews",
+    "kpiLowStock": "Low stock",
+    "kpiLowStockHint": "{threshold} or fewer in stock",
+    "recentOrders": "Recent orders",
+    "recentOrdersHint": "The latest orders placed",
+    "viewAll": "View all",
+    "noRecentOrders": "No orders yet."
+  },
   "dashCategories": {
     "heading": "Categories",
     "count": "{count, plural, one {# category} other {# categories}}",
@@ -704,7 +718,26 @@
     "loadingReplacements": "Loading replacements…",
     "noReplacements": "No related products to substitute — refund instead.",
     "refundChosen": "The customer chose a refund if this item is unavailable.",
-    "refundThisItem": "Refund this item"
+    "refundThisItem": "Refund this item",
+    "colTotal": "Total",
+    "viewOrderAria": "View order {id}",
+    "backToOrders": "Back to orders",
+    "orderNumber": "Order {id}",
+    "placedOn": "Placed {date}",
+    "advanceTo": "Advance to {stage}",
+    "advancePending": "Advancing…",
+    "timeline": "Delivery timeline",
+    "returnHeading": "Return requested",
+    "returnBody": "The customer has asked to return this order. Approving restocks the items and refunds the total to their wallet.",
+    "qtyTimesPrice": "{qty} × {price}",
+    "customerHeading": "Customer",
+    "deliveryWindow": "Delivery window",
+    "summaryHeading": "Order summary",
+    "subtotal": "Subtotal",
+    "shipping": "Delivery",
+    "discount": "Discount",
+    "refundedToWallet": "Refunded to wallet",
+    "netPaid": "Net paid"
   },
   "dashReviews": {
     "heading": "Reviews",
