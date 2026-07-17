@@ -1,5 +1,5 @@
 import { ordersServerApi } from "@/src/presentation/dashboard/orders/order-server-api";
-import { customersServerApi } from "@/src/presentation/dashboard/orders/customer-server-api";
+import { customersServerApi } from "@/src/presentation/dashboard/customers/customer-server-api";
 import { reviewsServerApi } from "@/src/presentation/dashboard/reviews/review-server-api";
 import { productsServerApi } from "@/src/presentation/dashboard/products/product-server-api";
 import { DashboardOverviewScreen } from "@/src/presentation/dashboard/DashboardOverviewScreen";

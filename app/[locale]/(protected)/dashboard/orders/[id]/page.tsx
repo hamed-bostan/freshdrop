@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { ordersServerApi } from "@/src/presentation/dashboard/orders/order-server-api";
-import { customersServerApi } from "@/src/presentation/dashboard/orders/customer-server-api";
+import { customersServerApi } from "@/src/presentation/dashboard/customers/customer-server-api";
 import { OrderDetailScreen } from "@/src/presentation/dashboard/orders/OrderDetailScreen";
 
 // The order is read from the REST API (BFF) per request — never statically cached.

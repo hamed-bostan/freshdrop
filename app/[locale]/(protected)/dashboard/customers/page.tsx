@@ -1,4 +1,4 @@
-import { customersServerApi } from "@/src/presentation/dashboard/orders/customer-server-api";
+import { customersServerApi } from "@/src/presentation/dashboard/customers/customer-server-api";
 import { CustomersScreen } from "@/src/presentation/dashboard/customers/CustomersScreen";
 
 // Customer summaries are read from the REST API (BFF) per request — never statically cached.
