@@ -773,13 +773,16 @@
   "dashCustomers": {
     "heading": "Customers",
     "summary": "{count, plural, one {# customer} other {# customers}} · ranked by total spend",
+    "searchPlaceholder": "Search customers",
     "emptyTitle": "No customers yet",
     "emptyBody": "Customers will appear here once they start placing orders.",
+    "noResultsTitle": "No matches",
+    "noResultsBody": "No customers match “{query}”.",
+    "colRank": "#",
     "colCustomer": "Customer",
     "colPhone": "Phone",
     "colOrders": "Orders",
     "colSpent": "Total spent",
-    "colLastOrder": "Last order",
     "noPhone": "—"
   }
 }

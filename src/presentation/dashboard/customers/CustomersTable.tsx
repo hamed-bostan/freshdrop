@@ -1,32 +1,38 @@
-import { getLocale, getTranslations } from "next-intl/server";
+import { useLocale, useTranslations } from "next-intl";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
-import { formatOrderDate } from "@/src/lib/formatOrderDate";
 import { cn } from "@/src/lib/utils";
 
+/** One customer paired with their 1-based position in the full spend ranking. */
+type CustomerRow = {
+  rank: number;
+  customer: CustomerOrderSummary;
+};
+
 type CustomersTableProps = {
-  /** Customer summaries, ranked by total spend (highest first). */
-  customers: CustomerOrderSummary[];
+  /** Rows to render — the spend ranking, possibly narrowed by the search filter. */
+  rows: CustomerRow[];
 };
 
 /**
  * Shared grid template for the customers list — the header row and every data row use
- * it so the columns line up. Columns: customer, phone, orders, total spent, last order.
+ * it so the columns line up. Columns: rank, customer, phone, orders, total spent.
  */
 const CUSTOMERS_ROW_GRID =
-  "grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto_auto_minmax(0,1fr)] items-center gap-4";
+  "grid grid-cols-[auto_minmax(0,1.4fr)_minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4";
 
 /**
  * The admin customers list — a flat, read-only table (there is no customer-detail
  * route, so rows aren't links). Built on a shared CSS grid rather than a `<table>` so
  * the header and rows align on {@link CUSTOMERS_ROW_GRID}; scrolls horizontally on
- * narrow viewports rather than crushing the columns. Numeric columns (orders, spend)
- * are end-aligned for tabular scanning.
+ * narrow viewports rather than crushing the columns. The leading `#` column shows each
+ * customer's rank by total spend; the numeric columns (orders, spend) are end-aligned
+ * with tabular figures for clean scanning.
  */
-export async function CustomersTable({ customers }: CustomersTableProps) {
-  const t = await getTranslations("dashCustomers");
-  const locale = await getLocale();
+export function CustomersTable({ rows }: CustomersTableProps) {
+  const t = useTranslations("dashCustomers");
+  const locale = useLocale();
 
   return (
     <div className="overflow-hidden rounded-card-lg border border-border">
@@ -38,32 +44,32 @@ export async function CustomersTable({ customers }: CustomersTableProps) {
               "bg-surface-sunken px-4 py-3 text-body-b8 text-muted-foreground",
             )}
           >
+            <span>{t("colRank")}</span>
             <span>{t("colCustomer")}</span>
             <span>{t("colPhone")}</span>
             <span className="text-end">{t("colOrders")}</span>
             <span className="text-end">{t("colSpent")}</span>
-            <span className="text-end">{t("colLastOrder")}</span>
           </div>
           <div className="divide-y divide-border">
-            {customers.map((customer) => (
+            {rows.map(({ customer, rank }) => (
               <div
                 key={customer.userId}
                 className={cn(CUSTOMERS_ROW_GRID, "bg-background px-4 py-3")}
               >
+                <span className="text-body-b6 tabular-nums text-muted-foreground">
+                  {formatNumber(rank, locale)}
+                </span>
                 <span className="min-w-0 truncate text-body-b7 text-foreground">
                   {customer.name}
                 </span>
                 <span className="truncate text-body-b6 text-muted-foreground">
                   {customer.phone || t("noPhone")}
                 </span>
-                <span className="text-end text-body-b7 text-foreground">
+                <span className="text-end text-body-b6 tabular-nums text-muted-foreground">
                   {formatNumber(customer.orderCount, locale)}
                 </span>
-                <span className="text-end text-body-b7 text-foreground">
+                <span className="text-end text-body-b8 tabular-nums text-foreground">
                   {formatMoney(customer.totalSpent, locale)}
-                </span>
-                <span className="truncate text-end text-body-b6 text-muted-foreground">
-                  {formatOrderDate(customer.lastOrderAt, locale)}
                 </span>
               </div>
             ))}
