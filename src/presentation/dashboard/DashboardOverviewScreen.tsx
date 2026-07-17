@@ -4,6 +4,7 @@ import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid } from "@/src/domain/entities/Order";
 import type { Review } from "@/src/domain/entities/Review";
 import type { Product } from "@/src/domain/entities/Product";
+import { LOW_STOCK_THRESHOLD } from "@/src/domain/entities/stock";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
@@ -21,8 +22,6 @@ type DashboardOverviewScreenProps = {
   customers: CustomerOrderSummary[];
 };
 
-/** At or below this many units on hand, a product counts as "low stock". */
-const LOW_STOCK_THRESHOLD = 5;
 /** How many days back the revenue KPI sums over. */
 const REVENUE_WINDOW_DAYS = 30;
 /** How many of the latest orders the recent-orders mini-list shows. */
