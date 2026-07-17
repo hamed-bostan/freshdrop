@@ -25,6 +25,10 @@ export const walletResponseSchema = z.object({
     z.object({
       id: z.string(),
       description: z.string(),
+      // Machine reason + item name for localization; `null` on rows predating the
+      // columns, where the presentation layer falls back to `description`.
+      reason: z.string().nullable(),
+      reasonItem: z.string().nullable(),
       date: z.string(),
       amount: z.number(),
       type: z.enum(["credit", "debit"]),

@@ -3,6 +3,7 @@ import type { CategoryTranslationInput } from "@/src/domain/repositories/ICatego
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
 import { categoryListResponseSchema, categoryResponseSchema } from "@/src/presentation/category/category-response-schema";
+import { categoryTranslationListResponseSchema } from "./category-translation-response-schema";
 
 /**
  * Server-side category reads for the dashboard (BFF). Fetched during server
@@ -34,6 +35,6 @@ export const categoriesServerApi = {
 
   /** The category's stored per-locale translations, to prefill the edit form. */
   getTranslations(id: string): Promise<CategoryTranslationInput[]> {
-    return serverApiGet<CategoryTranslationInput[]>(`/categories/${id}/translations`);
+    return serverApiGet(`/categories/${id}/translations`, categoryTranslationListResponseSchema);
   },
 };

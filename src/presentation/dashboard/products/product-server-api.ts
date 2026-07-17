@@ -3,6 +3,7 @@ import type { ProductTranslationInput } from "@/src/domain/repositories/IProduct
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
 import { productListResponseSchema, productResponseSchema } from "@/src/presentation/product/product-response-schema";
+import { productTranslationListResponseSchema } from "./product-translation-response-schema";
 
 /**
  * Server-side product reads for the dashboard (BFF). Fetched during server render
@@ -34,6 +35,6 @@ export const productsServerApi = {
 
   /** The product's stored per-locale translations, to prefill the edit form. */
   getTranslations(id: string): Promise<ProductTranslationInput[]> {
-    return serverApiGet<ProductTranslationInput[]>(`/products/${id}/translations`);
+    return serverApiGet(`/products/${id}/translations`, productTranslationListResponseSchema);
   },
 };

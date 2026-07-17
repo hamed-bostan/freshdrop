@@ -1,7 +1,7 @@
 import type { Order } from "@/src/domain/entities/Order";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
-import { orderListResponseSchema } from "@/src/presentation/orders/order-response-schema";
+import { orderListResponseSchema, orderResponseSchema } from "@/src/presentation/orders/order-response-schema";
 
 /**
  * Server-side order reads for the admin dashboard (BFF). Unlike the storefront's
@@ -16,7 +16,7 @@ export const ordersServerApi = {
   /** A single order by id; returns `null` for a missing order (404) so callers can `notFound()`. */
   async getById(id: string): Promise<Order | null> {
     try {
-      return await serverApiGet<Order>(`/admin/orders/${id}`);
+      return await serverApiGet(`/admin/orders/${id}`, orderResponseSchema);
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) return null;
       throw error;

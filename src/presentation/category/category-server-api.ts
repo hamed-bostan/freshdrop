@@ -1,7 +1,7 @@
 import type { Category } from "@/src/domain/entities/Category";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
-import { categoryListResponseSchema } from "./category-response-schema";
+import { categoryListResponseSchema, categoryResponseSchema } from "./category-response-schema";
 
 /**
  * Server-side category reads for Server Components (BFF). The storefront mirror of
@@ -18,7 +18,7 @@ export const categoriesServerApi = {
    */
   async getById(id: string): Promise<Category | null> {
     try {
-      return await serverApiGet<Category>(`/categories/${id}`);
+      return await serverApiGet(`/categories/${id}`, categoryResponseSchema);
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) return null;
       throw error;

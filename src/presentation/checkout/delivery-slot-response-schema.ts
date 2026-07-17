@@ -18,6 +18,9 @@ const slotAvailabilityResponseSchema = z.discriminatedUnion("level", [
 export const deliverySlotDayResponseSchema = z.object({
   date: z.string(),
   label: z.string(),
+  // The day's today/tomorrow standing so other locales can localize the label;
+  // `null` for later days (see `RelativeDay`).
+  relativeDay: z.enum(["today", "tomorrow"]).nullable(),
   slots: z.array(
     z.object({
       windowId: z.string(),
