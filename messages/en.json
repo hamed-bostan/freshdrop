@@ -717,6 +717,7 @@
     "substituteError": "Couldn't substitute this item. Please try again.",
     "refundError": "Couldn't refund this item. Please try again.",
     "outOfStock": "Out of stock",
+    "reportOutOfStock": "Report out of stock",
     "replaceWith": "Replace with",
     "refundOnly": "Refund only",
     "cancel": "Cancel",

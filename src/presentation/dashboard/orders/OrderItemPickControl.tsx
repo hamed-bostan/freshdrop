@@ -103,7 +103,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
         className="gap-1.5"
       >
         <Icon icon={PackageX} size="xs" />
-        {t("outOfStock")}
+        {t("reportOutOfStock")}
       </Button>
     );
   }
