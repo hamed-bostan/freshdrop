@@ -2,9 +2,8 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { ArrowRight } from "lucide-react";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
-import { Button, Icon } from "@/src/presentation/design-system";
+import { Button } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { STAGE_LABEL_KEYS } from "./orderStages";
@@ -43,9 +42,8 @@ export function OrderStageAdvance({ orderId, next }: OrderStageAdvanceProps) {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <Button type="button" onClick={advance} disabled={pending} className="gap-1.5">
+      <Button type="button" onClick={advance} disabled={pending}>
         {pending ? t("advancePending") : t("advanceTo", { stage: t(STAGE_LABEL_KEYS[next]) })}
-        {!pending ? <Icon icon={ArrowRight} size="xs" className="rtl:-scale-x-100" /> : null}
       </Button>
       {error && (
         <p role="alert" className="text-body-b10 text-destructive">

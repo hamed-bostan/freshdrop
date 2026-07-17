@@ -22,7 +22,7 @@ export async function OrdersTable({ orders, customersById }: OrdersTableProps) {
   return (
     <div className="overflow-hidden rounded-card-lg border border-border">
       <div className="overflow-x-auto">
-        <div className="min-w-[52rem]">
+        <div className="min-w-[60rem]">
           <div
             className={cn(
               ORDERS_ROW_GRID,
@@ -33,7 +33,9 @@ export async function OrdersTable({ orders, customersById }: OrdersTableProps) {
             <span>{t("colOrder")}</span>
             <span>{t("colStatus")}</span>
             <span>{t("colPlaced")}</span>
+            <span>{t("colAddress")}</span>
             <span className="text-end">{t("colTotal")}</span>
+            <span aria-hidden className="w-4" />
           </div>
           <div className="divide-y divide-border">
             {orders.map((order) => (

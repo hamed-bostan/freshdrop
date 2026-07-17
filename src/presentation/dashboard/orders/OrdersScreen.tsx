@@ -2,11 +2,10 @@ import { getTranslations } from "next-intl/server";
 import type { Order } from "@/src/domain/entities/Order";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { OrdersTable } from "./OrdersTable";
-import { TopCustomersPanel } from "./TopCustomersPanel";
 
 type OrdersScreenProps = {
   orders: Order[];
-  /** Per-customer order summaries, ranked by total spend (highest first). */
+  /** Per-customer order summaries, used only to label each row with who placed it. */
   customers: CustomerOrderSummary[];
 };
 
@@ -17,9 +16,8 @@ type OrdersScreenProps = {
  * server render via `router.refresh()`, so the server stays the single source of
  * truth — no client-side data cache to keep in sync.
  *
- * Alongside the table it shows a "top customers" panel (who buys the most) and
- * labels each order row with the customer who placed it — both derived from the
- * same `customers` summaries.
+ * The `customers` summaries only label each order row with the name/phone of who
+ * placed it; the "top customers" ranking lives on the dashboard overview, not here.
  */
 export async function OrdersScreen({ orders, customers }: OrdersScreenProps) {
   const t = await getTranslations("dashOrders");
@@ -34,8 +32,6 @@ export async function OrdersScreen({ orders, customers }: OrdersScreenProps) {
         <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
         <p className="text-body-b6 text-muted-foreground">{t("summary", { count })}</p>
       </div>
-
-      {customers.length > 0 ? <TopCustomersPanel customers={customers} /> : null}
 
       {count > 0 ? (
         <OrdersTable orders={orders} customersById={customersById} />

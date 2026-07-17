@@ -2,16 +2,16 @@ import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ChevronLeft, ArrowLeftRight, RotateCcw } from "lucide-react";
 import type { Order } from "@/src/domain/entities/Order";
-import { isPicking, orderNetPaid, orderRefundedTotal } from "@/src/domain/entities/Order";
+import { isPicking, orderNetPaid } from "@/src/domain/entities/Order";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
 import { Icon } from "@/src/presentation/design-system";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
-import { TrackingStepper } from "@/src/presentation/orders/components/TrackingStepper";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { formatOrderDate } from "@/src/lib/formatOrderDate";
 import { deliverySteps, isAdvanceable, nextStage } from "./orderStages";
+import { OrderDeliveryTracker } from "./OrderDeliveryTracker";
 import { OrderStageAdvance } from "./OrderStageAdvance";
 import { OrderReturnControl } from "./OrderReturnControl";
 import { OrderItemPickControl } from "./OrderItemPickControl";
@@ -25,9 +25,9 @@ type OrderDetailScreenProps = {
 /**
  * Admin order-detail view. Presentational: the detail page fetches the order (and its
  * customer summary) over the REST API (BFF) during server render and passes them in.
- * Shows the delivery timeline, the primary "advance stage" action, the line items
- * (with pick controls while the order is being picked), and a customer/summary card.
- * Stage/return/pick writes re-run this server render via `router.refresh()`.
+ * Shows the horizontal delivery tracker, the primary "advance stage" action, the line
+ * items (with pick controls while the order is being picked) totalled at the foot, and
+ * a customer/address card. Stage/return/pick writes re-run this render via `router.refresh()`.
  */
 export async function OrderDetailScreen({ order, customer }: OrderDetailScreenProps) {
   const t = await getTranslations("dashOrders");
@@ -35,9 +35,8 @@ export async function OrderDetailScreen({ order, customer }: OrderDetailScreenPr
 
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const pickable = isPicking(order);
-  const showTimeline = order.status === "processing" || order.status === "completed";
+  const showTracking = order.status === "processing" || order.status === "completed";
   const advanceNext = isAdvanceable(order) && order.stage ? nextStage(order.stage) : null;
-  const refunded = orderRefundedTotal(order);
 
   return (
     <div className="flex flex-col gap-6">
@@ -50,27 +49,27 @@ export async function OrderDetailScreen({ order, customer }: OrderDetailScreenPr
           {t("backToOrders")}
         </Link>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-heading-h2 text-foreground">{t("orderNumber", { id: order.id })}</h1>
+          <div className="min-w-0">
+            <h1 className="truncate font-mono text-heading-h2 text-foreground">#{order.id}</h1>
             <p className="text-body-b6 text-muted-foreground">
               {t("placedOn", { date: formatOrderDate(order.placedAt, locale) })}
             </p>
           </div>
-          <OrderStatusBadge status={order.status} stage={order.stage} />
+          <OrderStatusBadge status={order.status} stage={order.stage} context="admin" />
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        {/* Left column: timeline + advance action, then the line items. */}
+        {/* Left column: delivery tracking + advance action, then the line items. */}
         <div className="flex flex-col gap-6">
-          {showTimeline ? (
+          {showTracking ? (
             <section className="rounded-card-lg border border-border p-5">
-              <h2 className="text-body-b5 text-foreground">{t("timeline")}</h2>
-              <div className="mt-4">
-                <TrackingStepper steps={deliverySteps(order)} />
+              <h2 className="text-body-b5 text-foreground">{t("tracking")}</h2>
+              <div className="mt-6">
+                <OrderDeliveryTracker steps={deliverySteps(order)} />
               </div>
               {advanceNext ? (
-                <div className="mt-4 border-t border-border pt-4">
+                <div className="mt-6">
                   <OrderStageAdvance orderId={order.id} next={advanceNext} />
                 </div>
               ) : null}
@@ -88,9 +87,7 @@ export async function OrderDetailScreen({ order, customer }: OrderDetailScreenPr
           ) : null}
 
           <section className="rounded-card-lg border border-border p-5">
-            <h2 className="text-body-b8 uppercase tracking-wide text-muted-foreground">
-              {t("itemCount", { count: itemCount })}
-            </h2>
+            <h2 className="text-body-b5 text-foreground">{t("itemCount", { count: itemCount })}</h2>
             <ul className="mt-4 flex flex-col gap-4">
               {order.items.map((item) => {
                 const isRefunded = item.substitution?.status === "refunded";
@@ -144,69 +141,32 @@ export async function OrderDetailScreen({ order, customer }: OrderDetailScreenPr
                 );
               })}
             </ul>
+
+            <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+              <span className="text-body-b7 text-muted-foreground">{t("total")}</span>
+              <span className="text-body-b5 text-foreground">{formatMoney(orderNetPaid(order), locale)}</span>
+            </div>
           </section>
         </div>
 
-        {/* Right column: customer + delivery, then the price breakdown. */}
+        {/* Right column: who placed the order and where it's going. */}
         <div className="flex flex-col gap-6">
           <section className="rounded-card-lg border border-border p-5">
-            <h2 className="text-body-b5 text-foreground">{t("customerHeading")}</h2>
-            <dl className="mt-4 flex flex-col gap-3 text-body-b7">
-              <div>
-                <dt className="text-body-b8 text-muted-foreground">{t("colCustomer")}</dt>
-                <dd className="text-foreground">{customer?.name ?? order.userId}</dd>
-                {customer?.phone ? <dd className="text-muted-foreground">{customer.phone}</dd> : null}
-              </div>
-              <div>
-                <dt className="text-body-b8 text-muted-foreground">{t("colAddress")}</dt>
-                <dd className="text-foreground">{order.location}</dd>
-                {order.locationLabel ? (
-                  <dd className="text-muted-foreground">{order.locationLabel}</dd>
-                ) : null}
-              </div>
-              {order.deliveryWindow ? (
-                <div>
-                  <dt className="text-body-b8 text-muted-foreground">{t("deliveryWindow")}</dt>
-                  <dd className="text-foreground">{order.deliveryWindow}</dd>
-                </div>
-              ) : null}
-            </dl>
-          </section>
+            <h2 className="text-body-b8 uppercase tracking-wide text-muted-foreground">
+              {t("customerHeading")}
+            </h2>
+            <p className="mt-2 text-body-b6 text-foreground">{customer?.name ?? order.userId}</p>
+            {customer?.phone ? (
+              <p className="mt-0.5 text-body-b7 text-muted-foreground">{customer.phone}</p>
+            ) : null}
 
-          <section className="rounded-card-lg border border-border p-5">
-            <h2 className="text-body-b5 text-foreground">{t("summaryHeading")}</h2>
-            <dl className="mt-4 flex flex-col gap-2 text-body-b7">
-              <div className="flex items-center justify-between">
-                <dt className="text-muted-foreground">{t("subtotal")}</dt>
-                <dd className="text-foreground">{formatMoney(order.subtotal, locale)}</dd>
-              </div>
-              <div className="flex items-center justify-between">
-                <dt className="text-muted-foreground">{t("shipping")}</dt>
-                <dd className="text-foreground">{formatMoney(order.shipping, locale)}</dd>
-              </div>
-              {order.discount > 0 ? (
-                <div className="flex items-center justify-between">
-                  <dt className="text-muted-foreground">{t("discount")}</dt>
-                  <dd className="text-primary">−{formatMoney(order.discount, locale)}</dd>
-                </div>
-              ) : null}
-              <div className="flex items-center justify-between border-t border-border pt-2">
-                <dt className="text-foreground">{t("total")}</dt>
-                <dd className="text-body-b5 text-foreground">{formatMoney(order.total, locale)}</dd>
-              </div>
-              {refunded > 0 ? (
-                <>
-                  <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground">{t("refundedToWallet")}</dt>
-                    <dd className="text-muted-foreground">−{formatMoney(refunded, locale)}</dd>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <dt className="text-foreground">{t("netPaid")}</dt>
-                    <dd className="text-foreground">{formatMoney(orderNetPaid(order), locale)}</dd>
-                  </div>
-                </>
-              ) : null}
-            </dl>
+            <h3 className="mt-6 text-body-b8 uppercase tracking-wide text-muted-foreground">
+              {t("deliveryAddress")}
+            </h3>
+            <p className="mt-2 text-body-b7 text-foreground">{order.location}</p>
+            {order.locationLabel ? (
+              <p className="mt-0.5 text-body-b7 text-muted-foreground">{order.locationLabel}</p>
+            ) : null}
           </section>
         </div>
       </div>
