@@ -2,9 +2,11 @@ import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Pencil } from "lucide-react";
 import type { Product } from "@/src/domain/entities/Product";
+import { getStockStatus } from "@/src/domain/entities/stock";
 import { Badge, Button, Icon } from "@/src/presentation/design-system";
 import { Link } from "@/src/i18n/navigation";
 import { formatMoney } from "@/src/lib/formatMoney";
+import { formatNumber } from "@/src/lib/formatNumber";
 import { DeleteProductButton } from "./DeleteProductButton";
 
 type ProductsTableProps = {
@@ -27,13 +29,15 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
             <th scope="col" className="px-4 py-3">{t("colName")}</th>
             <th scope="col" className="px-4 py-3">{t("colCategory")}</th>
             <th scope="col" className="px-4 py-3 text-end">{t("colPrice")}</th>
-            <th scope="col" className="px-4 py-3">{t("colFeatured")}</th>
+            <th scope="col" className="px-4 py-3">{t("colStatus")}</th>
             <th scope="col" className="px-4 py-3 text-end">{t("colActions")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
-          {products.map((product) => (
-            <tr key={product.id} className="bg-background">
+          {products.map((product) => {
+            const stock = getStockStatus(product.stockQuantity);
+            return (
+            <tr key={product.id} className="bg-background transition-colors hover:bg-surface-sunken/50">
               <td className="px-4 py-3">
                 <div className="flex size-10 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
                   <Image src={product.imageUrl} alt="" width={40} height={40} className="size-full object-cover" />
@@ -55,7 +59,13 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
                 )}
               </td>
               <td className="px-4 py-3">
-                {product.isFeatured && <Badge variant="success">{t("featuredBadge")}</Badge>}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {product.isFeatured && <Badge variant="success">{t("featuredBadge")}</Badge>}
+                  {stock.level === "out" && <Badge variant="destructive">{t("outOfStock")}</Badge>}
+                  {stock.level === "low" && (
+                    <Badge variant="warning">{t("lowStock", { count: formatNumber(stock.quantity, locale) })}</Badge>
+                  )}
+                </div>
               </td>
               <td className="px-4 py-3">
                 <div className="flex items-center justify-end gap-2">
@@ -69,7 +79,8 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
                 </div>
               </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>

@@ -27,7 +27,7 @@ export async function CategoriesTable({ categories }: CategoriesTableProps) {
         </thead>
         <tbody className="divide-y divide-border">
           {categories.map((category) => (
-            <tr key={category.id} className="bg-background">
+            <tr key={category.id} className="bg-background transition-colors hover:bg-surface-sunken/50">
               <td className="px-4 py-3">
                 <div className="flex size-10 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
                   <Image src={category.iconUrl} alt="" width={32} height={32} className="object-contain" />

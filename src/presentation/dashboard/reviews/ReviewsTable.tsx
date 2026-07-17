@@ -80,14 +80,14 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
   return (
     <div className="overflow-x-auto rounded-card-lg border border-border">
       <table className="w-full min-w-[48rem] border-collapse text-start">
-        <thead className="border-b border-border bg-surface-sunken text-body-b9 uppercase tracking-wide text-muted-foreground">
+        <thead className="bg-surface-sunken text-body-b8 text-muted-foreground">
           <tr>
-            <th scope="col" className="px-4 py-3 font-medium">{t("colAuthor")}</th>
-            <th scope="col" className="px-4 py-3 font-medium">{t("colProduct")}</th>
-            <th scope="col" className="px-4 py-3 font-medium">{t("colRating")}</th>
-            <th scope="col" className="px-4 py-3 font-medium">{t("colReview")}</th>
-            <th scope="col" className="px-4 py-3 font-medium">{t("colStatus")}</th>
-            <th scope="col" className="px-4 py-3 text-end font-medium">{t("colAction")}</th>
+            <th scope="col" className="px-4 py-3">{t("colAuthor")}</th>
+            <th scope="col" className="px-4 py-3">{t("colProduct")}</th>
+            <th scope="col" className="px-4 py-3">{t("colRating")}</th>
+            <th scope="col" className="px-4 py-3">{t("colReview")}</th>
+            <th scope="col" className="px-4 py-3">{t("colStatus")}</th>
+            <th scope="col" className="px-4 py-3 text-end">{t("colAction")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -95,7 +95,7 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
             const badge = STATUS_BADGE[review.status];
             const product = productsById.get(review.productId);
             return (
-              <tr key={review.id} className="bg-background align-top transition-colors hover:bg-surface-sunken/40">
+              <tr key={review.id} className="bg-background align-top transition-colors hover:bg-surface-sunken/50">
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
                     {review.authorAvatarUrl ? (
