@@ -762,5 +762,17 @@
     "moderateAria": "Moderate review",
     "moderatePlaceholder": "Moderate…",
     "updateError": "Couldn't update the review. Please try again."
+  },
+  "dashCustomers": {
+    "heading": "Customers",
+    "summary": "{count, plural, one {# customer} other {# customers}} · ranked by total spend",
+    "emptyTitle": "No customers yet",
+    "emptyBody": "Customers will appear here once they start placing orders.",
+    "colCustomer": "Customer",
+    "colPhone": "Phone",
+    "colOrders": "Orders",
+    "colSpent": "Total spent",
+    "colLastOrder": "Last order",
+    "noPhone": "—"
   }
 }

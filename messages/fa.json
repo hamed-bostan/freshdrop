@@ -762,5 +762,17 @@
     "moderateAria": "بررسی نظر",
     "moderatePlaceholder": "بررسی…",
     "updateError": "به‌روزرسانی نظر ممکن نشد. لطفاً دوباره تلاش کنید."
+  },
+  "dashCustomers": {
+    "heading": "مشتریان",
+    "summary": "{count, plural, other {# مشتری}} · بر اساس مجموع خرید مرتب شده",
+    "emptyTitle": "هنوز مشتری‌ای نیست",
+    "emptyBody": "مشتریان پس از ثبت اولین سفارش اینجا نمایش داده می‌شوند.",
+    "colCustomer": "مشتری",
+    "colPhone": "تلفن",
+    "colOrders": "سفارش‌ها",
+    "colSpent": "مجموع خرید",
+    "colLastOrder": "آخرین سفارش",
+    "noPhone": "—"
   }
 }
