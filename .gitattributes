@@ -2,3 +2,7 @@
 # autocrlf flip line endings on checkout changes that hash and makes `migrate dev`
 # demand a database reset. Pin SQL to LF everywhere so the on-disk bytes are stable.
 *.sql text eol=lf
+
+# .nvmrc is read by nvm and actions/setup-node on Linux; a trailing CR makes
+# the version string unparseable. Keep it LF regardless of core.autocrlf.
+.nvmrc text eol=lf
