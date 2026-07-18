@@ -1,7 +1,11 @@
 # syntax=docker/dockerfile:1
 
+# Keep in sync with .nvmrc — npm ships bundled with Node, so this pins the npm
+# that writes/reads package-lock.json. A mismatch desyncs the lockfile.
+ARG NODE_VERSION=24
+
 # ---- deps: install all deps (dev included — needed to build, and the Prisma CLI at runtime) ----
-FROM node:22-alpine AS deps
+FROM node:${NODE_VERSION}-alpine AS deps
 WORKDIR /app
 # libc6-compat for native modules; openssl for Prisma's query engine.
 RUN apk add --no-cache libc6-compat openssl
@@ -10,7 +14,7 @@ COPY prisma ./prisma
 RUN npm ci
 
 # ---- builder: generate the Prisma client, then run prebuild (tokens) + next build ----
-FROM node:22-alpine AS builder
+FROM node:${NODE_VERSION}-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache openssl
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -24,7 +28,7 @@ RUN npm run build
 
 # ---- runner: production server. Full node_modules so Prisma's client, engine, and
 #      migrate CLI are all present — no standalone file-tracing to fight. ----
-FROM node:22-alpine AS runner
+FROM node:${NODE_VERSION}-alpine AS runner
 WORKDIR /app
 RUN apk add --no-cache openssl
 ENV NODE_ENV=production
