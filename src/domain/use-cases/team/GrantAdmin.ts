@@ -1,8 +1,7 @@
-import type { User } from "../../entities/User";
+import { PLACEHOLDER_USER_NAME, type User } from "../../entities/User";
 import { isPlausiblePhone, normalizePhone } from "../../entities/Phone";
 import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { ITeamNotifier } from "../../repositories/ITeamNotifier";
-import type { IRoleChangeLog } from "../../repositories/IRoleChangeLog";
 import { ValidationError } from "../../errors/ValidationError";
 
 /** Who to promote, and where to tell them about it. */
@@ -36,7 +35,6 @@ export class GrantAdmin {
   constructor(
     private readonly userRepo: IUserRepository,
     private readonly notifier?: ITeamNotifier,
-    private readonly log?: IRoleChangeLog,
   ) {}
 
   async execute(input: GrantAdminCommand, actorId: string, signInUrl?: string): Promise<User> {
@@ -47,35 +45,34 @@ export class GrantAdmin {
     }
 
     const email = input.email?.trim() || null;
-    // Whether this grant actually changes anything decides if an invitation goes
-    // out. Re-granting someone who is already an admin is a harmless no-op on the
-    // row, but mailing them "you've been given access" a second time is not — it
-    // reads as a new event and invites a support question.
-    const existing = await this.userRepo.getById(id);
+    // Whether this grant actually changes anything decides both whether an
+    // invitation goes out and whether it's recorded. Re-granting someone who is
+    // already an admin is a harmless no-op on the row, but mailing them "you've
+    // been given access" a second time is not — and the log tracks changes, not
+    // clicks.
+    const [existing, actor] = await Promise.all([
+      this.userRepo.getById(id),
+      this.userRepo.getById(actorId),
+    ]);
     const alreadyAdmin = existing?.role === "admin";
 
-    const user = await this.userRepo.setRole({
-      id,
-      phone: input.phone.trim(),
-      role: "admin",
-      email,
+    const [user] = await this.userRepo.applyRoleChanges({
+      assignments: [{ id, phone: input.phone.trim(), role: "admin", email }],
+      entries: alreadyAdmin
+        ? []
+        : [
+            {
+              userId: id,
+              // The row may not exist yet, in which case it's about to be created
+              // under the placeholder — the same name the entry should carry.
+              userName: existing?.name ?? PLACEHOLDER_USER_NAME,
+              actorId,
+              actorName: actor?.name ?? actorId,
+              fromRole: existing?.role ?? "customer",
+              toRole: "admin",
+            },
+          ],
     });
-
-    // Record before notifying: the audit entry is the durable half and its
-    // failure should surface, whereas a failed notice is swallowed. Nothing is
-    // recorded when the grant changed nothing — the log tracks changes, not
-    // clicks.
-    if (this.log && !alreadyAdmin) {
-      const actor = await this.userRepo.getById(actorId);
-      await this.log.record({
-        userId: user.id,
-        userName: user.name,
-        actorId,
-        actorName: actor?.name ?? actorId,
-        fromRole: existing?.role ?? "customer",
-        toRole: "admin",
-      });
-    }
 
     // Best-effort, and after the write: the access is already real, so a mail or
     // SMS failure must not fail the grant or leave the caller thinking it didn't

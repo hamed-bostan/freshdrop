@@ -1,29 +1,17 @@
 import type { RoleChange } from "@/src/domain/entities/RoleChange";
 import { toUserRole } from "@/src/domain/entities/User";
-import type { IRoleChangeLog, NewRoleChange } from "@/src/domain/repositories/IRoleChangeLog";
+import type { IRoleChangeLog } from "@/src/domain/repositories/IRoleChangeLog";
 import { prisma } from "@/src/infrastructure/prisma/client";
 
 /**
  * Role change history backed by PostgreSQL via Prisma. Server-side only (it opens
  * a DB connection), bound through the container — never imported by client code.
  *
- * Append-only by construction: there is no update or delete here, and nothing
- * else writes the table.
+ * Read-only: entries are written by `PrismaUserRepository.applyRoleChanges`,
+ * inside the same transaction as the role change they describe. Nothing else
+ * writes this table, and there is no update or delete anywhere.
  */
 export class PrismaRoleChangeLog implements IRoleChangeLog {
-  async record(entry: NewRoleChange): Promise<void> {
-    await prisma.roleChange.create({
-      data: {
-        userId: entry.userId,
-        userName: entry.userName,
-        actorId: entry.actorId,
-        actorName: entry.actorName,
-        fromRole: entry.fromRole,
-        toRole: entry.toRole,
-      },
-    });
-  }
-
   async list(limit: number): Promise<RoleChange[]> {
     const rows = await prisma.roleChange.findMany({
       orderBy: { createdAt: "desc" },

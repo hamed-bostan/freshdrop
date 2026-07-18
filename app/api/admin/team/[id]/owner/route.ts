@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { TransferOwnership } from "@/src/domain/use-cases/team/TransferOwnership";
-import { roleChangeLog, teamNotifier, userRepository } from "@/src/infrastructure/container";
+import { teamNotifier, userRepository } from "@/src/infrastructure/container";
 import { getOwnerSession } from "@/src/lib/require-admin";
 import { getAppUrl } from "@/src/lib/appUrl";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
@@ -29,7 +29,7 @@ export async function PUT(_request: Request, { params }: RouteContext): Promise<
     // Both sides are notified, so the notice links to the page the change is
     // about; the origin comes from the request (only the web layer knows it).
     const dashboardUrl = `${await getAppUrl()}/dashboard/team`;
-    const owner = await new TransferOwnership(userRepository, teamNotifier, roleChangeLog).execute(
+    const owner = await new TransferOwnership(userRepository, teamNotifier).execute(
       id,
       session.user.id,
       dashboardUrl,

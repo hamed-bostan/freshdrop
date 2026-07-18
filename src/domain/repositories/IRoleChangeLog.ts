@@ -1,20 +1,22 @@
 import type { RoleChange } from "../entities/RoleChange";
 import type { UserRole } from "../entities/User";
 
-/** A change about to be recorded. The timestamp is the store's to assign. */
+/**
+ * A change about to be recorded. The timestamp is the store's to assign.
+ * Constructed by the team use-cases and handed to `applyRoleChanges`.
+ */
 export type NewRoleChange = Omit<RoleChange, "id" | "at">;
 
 /**
- * Append-only log of dashboard access changes.
+ * Read access to the append-only log of dashboard access changes.
  *
- * Deliberately *not* best-effort, unlike the notifiers: a silently missing audit
- * entry is worse than a failed request, so `record` propagates its errors and the
- * caller's operation fails with it. The write is not atomic with the role change
- * it describes — a crash between the two can still lose an entry — which is the
- * honest limit of doing this without a transaction spanning both.
+ * Read-only by design. Entries are written by `IUserRepository.applyRoleChanges`,
+ * in the same transaction as the role change they describe, so an entry cannot go
+ * missing while its change commits — or the reverse. Exposing a `record` here too
+ * would offer a second, non-atomic way to write the same table, which is exactly
+ * the gap that arrangement closes.
  */
 export type IRoleChangeLog = {
-  record(entry: NewRoleChange): Promise<void>;
   /** Most recent changes first, capped by `limit`. */
   list(limit: number): Promise<RoleChange[]>;
 };

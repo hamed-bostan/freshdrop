@@ -29,6 +29,14 @@ export function toUserRole(value: string): UserRole {
   return USER_ROLES.includes(value as UserRole) ? (value as UserRole) : "customer";
 }
 
+/**
+ * Stand-in name for a user whose row exists before they've ever signed in —
+ * someone granted dashboard access ahead of their first login. Theirs to
+ * overwrite once they complete their profile. Matches the placeholder OTP
+ * sign-in seeds a brand-new user with, so both paths produce the same row.
+ */
+export const PLACEHOLDER_USER_NAME = "FreshDrop Customer";
+
 export type User = {
   /** Stable identifier — the user's normalized phone digits (also the session id). */
   id: string;

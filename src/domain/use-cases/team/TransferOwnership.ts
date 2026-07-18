@@ -1,7 +1,6 @@
 import type { User } from "../../entities/User";
 import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { ITeamNotifier } from "../../repositories/ITeamNotifier";
-import type { IRoleChangeLog } from "../../repositories/IRoleChangeLog";
 import { AdminRevokeError } from "../../errors/AdminRevokeError";
 import { NotFoundError } from "../../errors/NotFoundError";
 
@@ -14,16 +13,15 @@ import { NotFoundError } from "../../errors/NotFoundError";
  * also makes this the *only* way to change who the owner is, which is what makes
  * "the owner can't be removed" a safe rule instead of a trap.
  *
- * The two writes aren't in one transaction. A failure between them leaves two
- * owners, which is recoverable (either can transfer again) and strictly safer
- * than the alternative ordering's failure mode — zero owners, i.e. nobody who can
- * manage the team. Promote first, demote second, deliberately.
+ * The promotion, every step-down, and the audit entries for all of them go in as
+ * one transaction. That's what makes "exactly one owner" an invariant rather than
+ * an aspiration: there is no instant at which a reader could observe two, and no
+ * failure that can leave the store in that state.
  */
 export class TransferOwnership {
   constructor(
     private readonly userRepo: IUserRepository,
     private readonly notifier?: ITeamNotifier,
-    private readonly log?: IRoleChangeLog,
   ) {}
 
   async execute(targetId: string, actorId: string, dashboardUrl?: string): Promise<User> {
@@ -45,56 +43,52 @@ export class TransferOwnership {
     // about to be stepped down.
     const incumbents = await this.userRepo.listByRoles(["owner"]);
 
-    const promoted = await this.userRepo.setRole({
-      id: target.id,
-      phone: target.phone,
-      role: "owner",
-    });
-
     // Step down whoever currently holds the role — not merely the caller. Those
     // differ whenever a break-glass admin transfers: their access comes from the
     // environment, so they may hold no role at all while someone else is owner,
     // and demoting only the caller left two owners behind. Written as "demote
     // every owner that isn't the target" so it also repairs a database that has
     // somehow ended up with more than one.
-    const steppedDown: User[] = [];
-    for (const incumbent of incumbents) {
-      if (incumbent.id === promoted.id) continue;
-      steppedDown.push(
-        await this.userRepo.setRole({
-          id: incumbent.id,
-          phone: incumbent.phone,
-          role: "admin",
-        }),
-      );
-    }
+    const outgoing = incumbents.filter((incumbent) => incumbent.id !== target.id);
+    const actorName = actor?.name ?? actorId;
 
-    // Every role this moved gets its own entry, so the history reads as the pair
-    // of facts it is — someone gained ownership, someone else lost it — rather
-    // than one event the reader has to infer a second half from.
-    if (this.log) {
-      const actorName = actor?.name ?? actorId;
-      if (target.role !== "owner") {
-        await this.log.record({
-          userId: promoted.id,
-          userName: promoted.name,
-          actorId,
-          actorName,
-          fromRole: target.role,
-          toRole: "owner",
-        });
-      }
-      for (const former of steppedDown) {
-        await this.log.record({
+    // Every role this moves gets its own audit entry, so the history reads as the
+    // pair of facts it is — someone gained ownership, someone else lost it —
+    // rather than one event the reader has to infer a second half from.
+    const [promoted, ...steppedDown] = await this.userRepo.applyRoleChanges({
+      assignments: [
+        { id: target.id, phone: target.phone, role: "owner" },
+        ...outgoing.map((former) => ({
+          id: former.id,
+          phone: former.phone,
+          role: "admin" as const,
+        })),
+      ],
+      entries: [
+        // Repairing a database with several owners re-promotes someone who
+        // already held the role; that isn't a change, so it isn't recorded.
+        ...(target.role === "owner"
+          ? []
+          : [
+              {
+                userId: target.id,
+                userName: target.name,
+                actorId,
+                actorName,
+                fromRole: target.role,
+                toRole: "owner" as const,
+              },
+            ]),
+        ...outgoing.map((former) => ({
           userId: former.id,
           userName: former.name,
           actorId,
           actorName,
-          fromRole: "owner",
-          toRole: "admin",
-        });
-      }
-    }
+          fromRole: "owner" as const,
+          toRole: "admin" as const,
+        })),
+      ],
+    });
 
     // Best-effort, and after every write. Both sides are told: gaining ownership
     // is worth confirming, and losing it is worth *knowing* — this can be taken
