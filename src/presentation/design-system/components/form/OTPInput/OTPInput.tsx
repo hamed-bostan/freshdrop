@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/src/lib/utils";
 import { baseFieldStyles } from "../shared/baseFieldStyles";
+import { focusRing } from "../../shared/focusRing";
 
 type OTPInputProps = {
   length?: number;
@@ -46,7 +47,6 @@ export function OTPInput({
   // parent reset), not when it merely echoes our own last emit.
   const [cells, setCells] = React.useState<string[]>(() => toCells(value, length));
   const [lastValue, setLastValue] = React.useState(value);
-  const [focusedIndex, setFocusedIndex] = React.useState<number | null>(null);
 
   const refs = useRef<Array<HTMLInputElement | null>>([]);
 
@@ -122,39 +122,34 @@ export function OTPInput({
       aria-label={ariaLabelledBy ? undefined : groupLabel}
       aria-labelledby={ariaLabelledBy}
     >
-      {cells.map((v, i) => {
-        const isFocused = focusedIndex === i;
-
-        return (
-          <input
-            key={i}
-            ref={(el) => {
-              refs.current[i] = el;
-            }}
-            maxLength={1}
-            value={v}
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            aria-label={t("otpDigit", { index: i + 1, length })}
-            aria-describedby={ariaDescribedBy}
-            aria-invalid={ariaInvalid || undefined}
-            onChange={(e) => updateValue(i, e.target.value)}
-            onFocus={(e) => {
-              setFocusedIndex(i);
-              e.target.setSelectionRange(1, 1);
-            }}
-            onBlur={() => setFocusedIndex(null)}
-            onKeyDown={(e) => handleKeyDown(i, e)}
-            className={cn(
-              baseFieldStyles(),
-              "size-12 text-center text-2xl",
-              "transition-all duration-200",
-              // JS-driven focus highlight (the cell isn't the :focus target via keyboard nav alone).
-              isFocused && "border-ring",
-            )}
-          />
-        );
-      })}
+      {cells.map((v, i) => (
+        <input
+          key={i}
+          ref={(el) => {
+            refs.current[i] = el;
+          }}
+          maxLength={1}
+          value={v}
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          aria-label={t("otpDigit", { index: i + 1, length })}
+          aria-describedby={ariaDescribedBy}
+          aria-invalid={ariaInvalid || undefined}
+          onChange={(e) => updateValue(i, e.target.value)}
+          onFocus={(e) => e.target.setSelectionRange(1, 1)}
+          onKeyDown={(e) => handleKeyDown(i, e)}
+          className={cn(
+            baseFieldStyles(),
+            "size-12 text-center text-2xl",
+            "transition-all duration-200",
+            // The active cell highlights on plain `:focus`, so it also shows when
+            // auto-advancing moves focus after a tap — `focusRing` is
+            // `focus-visible`, which pointer input deliberately doesn't match.
+            "focus:border-ring",
+            focusRing,
+          )}
+        />
+      ))}
     </div>
   );
 }

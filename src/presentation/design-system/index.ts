@@ -1,3 +1,4 @@
+export * from "./components/shared";
 export * from "./components/form";
 export * from "./components/Accordion";
 export * from "./components/Button";
