@@ -1,9 +1,9 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { Loader2 } from "lucide-react";
 
 import { cn } from "@/src/lib/utils";
+import { Spinner } from "../Spinner";
 import { focusRing } from "../shared/focusRing";
 
 const buttonVariants = cva(
@@ -99,9 +99,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...buttonProps}
       >
         {loading && (
-          <Loader2
-            aria-hidden
-            className={cn("size-4 animate-spin", !iconOnly && React.Children.count(children) > 0 && "me-2")}
+          <Spinner
+            size="xs"
+            className={cn(!iconOnly && React.Children.count(children) > 0 && "me-2")}
           />
         )}
         {/* An icon-only button is a fixed square: the spinner takes the icon's

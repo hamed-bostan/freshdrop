@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { ImagePlus, Loader2 } from "lucide-react";
+import { ImagePlus } from "lucide-react";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { imagesApi } from "@/src/presentation/images/image-api";
 
@@ -72,19 +72,10 @@ export function IconUpload({ value, onChange, id, ...aria }: IconUploadProps) {
           type="button"
           variant="outline"
           size="sm"
-          disabled={uploading}
+          loading={uploading}
           onClick={() => inputRef.current?.click()}
         >
-          {uploading ? (
-            <>
-              <Icon icon={Loader2} size="sm" className="me-2 animate-spin" />
-              {t("uploading")}
-            </>
-          ) : value ? (
-            t("replaceImage")
-          ) : (
-            t("uploadImage")
-          )}
+          {uploading ? t("uploading") : value ? t("replaceImage") : t("uploadImage")}
         </Button>
         {error ? (
           <p className="text-body-b10 text-destructive">{error}</p>

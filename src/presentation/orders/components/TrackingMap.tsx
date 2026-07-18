@@ -2,13 +2,14 @@
 
 import dynamic from "next/dynamic";
 import type { GeoPoint } from "@/src/domain/entities/Place";
+import { Skeleton } from "@/src/presentation/design-system";
 
 // Leaflet is client-only; load the map lazily and keep it out of the SSR bundle.
 const OrderTrackingMap = dynamic(
   () => import("./OrderTrackingMap").then((mod) => mod.OrderTrackingMap),
   {
     ssr: false,
-    loading: () => <div className="h-full w-full animate-pulse bg-muted-strong" />,
+    loading: () => <Skeleton className="h-full w-full" />,
   },
 );
 

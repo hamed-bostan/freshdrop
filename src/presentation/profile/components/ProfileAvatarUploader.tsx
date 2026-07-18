@@ -3,8 +3,8 @@
 import * as React from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { User, ImagePlus, Images, Camera, Trash2, Loader2, type LucideIcon } from "lucide-react";
-import { Icon, Sheet, SheetTrigger, SheetContent, SheetClose } from "@/src/presentation/design-system";
+import { User, ImagePlus, Images, Camera, Trash2, type LucideIcon } from "lucide-react";
+import { Icon, Sheet, SheetTrigger, SheetContent, SheetClose, Spinner } from "@/src/presentation/design-system";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { cn } from "@/src/lib/utils";
 import { profilesApi } from "../profile-api";
@@ -94,7 +94,7 @@ export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploader
         <div className="relative">
           <div className="flex size-24 items-center justify-center overflow-hidden rounded-full bg-surface">
             {uploading ? (
-              <Icon icon={Loader2} className="size-8 animate-spin text-icon-muted" />
+              <Spinner size="xl" className="text-icon-muted" />
             ) : value ? (
               <Image src={value} alt={t("avatarAlt")} width={96} height={96} className="size-full object-cover" />
             ) : (

@@ -3,7 +3,7 @@
 import * as React from "react";
 import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
-import { Button, Input, TextField, Textarea } from "@/src/presentation/design-system";
+import { Button, Input, Skeleton, TextField, Textarea } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import type { GeoPoint } from "@/src/domain/entities/Place";
 import type { DeliveryLocation, DeliveryLocationKind } from "@/src/domain/entities/DeliveryLocation";
@@ -20,7 +20,7 @@ const LocationPreviewMap = dynamic(
   () => import("./components/LocationPreviewMap").then((mod) => mod.LocationPreviewMap),
   {
     ssr: false,
-    loading: () => <div className="h-full w-full animate-pulse bg-muted-strong" />,
+    loading: () => <Skeleton className="h-full w-full" />,
   },
 );
 
@@ -28,7 +28,7 @@ const LocationRepinMap = dynamic(
   () => import("./components/LocationRepinMap").then((mod) => mod.LocationRepinMap),
   {
     ssr: false,
-    loading: () => <div className="h-full w-full animate-pulse bg-muted-strong" />,
+    loading: () => <Skeleton className="h-full w-full" />,
   },
 );
 

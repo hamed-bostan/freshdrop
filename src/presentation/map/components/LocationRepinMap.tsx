@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import type { GeoPoint } from "@/src/domain/entities/Place";
+import { Skeleton } from "@/src/presentation/design-system";
 import { DEFAULT_ZOOM, type MapViewCommand } from "../constants";
 import { CenterPin } from "./CenterPin";
 
@@ -10,7 +11,7 @@ import { CenterPin } from "./CenterPin";
 // the barrel) keeps Leaflet out of the SSR bundle.
 const LocationMap = dynamic(() => import("./LocationMap").then((mod) => mod.LocationMap), {
   ssr: false,
-  loading: () => <div className="h-full w-full animate-pulse bg-muted-strong" />,
+  loading: () => <Skeleton className="h-full w-full" />,
 });
 
 interface LocationRepinMapProps {
