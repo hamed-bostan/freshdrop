@@ -35,17 +35,29 @@ export class TransferOwnership {
     const target = await this.userRepo.getById(targetId);
     if (!target) throw new NotFoundError("user", targetId);
 
+    // Read the incumbents *before* promoting, so the new owner isn't in the set
+    // about to be stepped down.
+    const incumbents = await this.userRepo.listByRoles(["owner"]);
+
     const promoted = await this.userRepo.setRole({
       id: target.id,
       phone: target.phone,
       role: "owner",
     });
 
-    // Step the outgoing owner down. They may not hold the role in the database at
-    // all — a break-glass admin bootstrapping the first owner has env-based access
-    // and nothing to demote — so a missing row here is expected, not a failure.
-    if (actor && actor.id !== promoted.id && actor.role === "owner") {
-      await this.userRepo.setRole({ id: actor.id, phone: actor.phone, role: "admin" });
+    // Step down whoever currently holds the role — not merely the caller. Those
+    // differ whenever a break-glass admin transfers: their access comes from the
+    // environment, so they may hold no role at all while someone else is owner,
+    // and demoting only the caller left two owners behind. Written as "demote
+    // every owner that isn't the target" so it also repairs a database that has
+    // somehow ended up with more than one.
+    for (const incumbent of incumbents) {
+      if (incumbent.id === promoted.id) continue;
+      await this.userRepo.setRole({
+        id: incumbent.id,
+        phone: incumbent.phone,
+        role: "admin",
+      });
     }
 
     return promoted;

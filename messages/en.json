@@ -821,7 +821,7 @@
     "transferAria": "Make {name} the owner",
     "claimAria": "Become the owner",
     "claimTitle": "Become the owner?",
-    "claimMessage": "You'll hold the owner role in the database rather than only through the server config, so you can manage the team without ADMIN_USER_IDS. Nothing else about your access changes.",
+    "claimMessage": "You'll hold the owner role in the database rather than only through the server config, so you can manage the team without ADMIN_USER_IDS. If someone else currently owns the store, they become an admin.",
     "claimConfirm": "Become owner",
     "transferTitle": "Transfer ownership?",
     "transferMessage": "{name} becomes the owner and can manage the team. You stay an admin and keep running the store, but you'll no longer be able to add or remove people — only the new owner can transfer it back.",
