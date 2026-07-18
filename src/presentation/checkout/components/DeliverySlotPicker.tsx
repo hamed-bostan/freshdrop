@@ -2,10 +2,9 @@
 
 import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { cn } from "@/src/lib/utils";
 import type { DeliverySlot, DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import { faJalaliDate, faWindowRange } from "@/src/lib/deliveryWindowFormat";
-import { Chip, ChipGroup } from "@/src/presentation/design-system";
+import { Chip, ChipGroup, SelectableTile } from "@/src/presentation/design-system";
 
 /** The shopper's chosen slot — a day plus a window within it. */
 export type SlotSelection = { date: string; windowId: string };
@@ -98,12 +97,11 @@ interface SlotOptionProps {
 }
 
 /**
- * One bookable window, modelled as a native radio (the day's windows form one
- * keyboard-navigable group). Mirrors the payment-method option: the radio is
- * hidden, selection shown by the highlighted border, focus by the ring. A full
- * window is disabled and dimmed. Availability is only surfaced when it matters —
- * "Full" when booked out, an "Only N left" nudge when low (same scarcity cue as
- * the product cards), nothing when there's plenty.
+ * One bookable window, rendered as a design-system radio tile (the day's windows
+ * form one keyboard-navigable group). A full window is disabled and dimmed.
+ * Availability is only surfaced when it matters — "Full" when booked out, an
+ * "Only N left" nudge when low (the same scarcity cue as the product cards),
+ * nothing when there's plenty.
  */
 function SlotOption({ slot, selected, onSelect, disabled }: SlotOptionProps) {
   const t = useTranslations("checkout");
@@ -118,28 +116,18 @@ function SlotOption({ slot, selected, onSelect, disabled }: SlotOptionProps) {
   const timeRange = locale === "fa" ? (faWindowRange(slot.windowId) ?? slot.timeRange) : slot.timeRange;
 
   return (
-    <label
-      className={cn(
-        "flex cursor-pointer items-center justify-between gap-3 rounded-card-xl border bg-surface px-4 py-3 transition-colors",
-        "has-focus-visible:ring-2 has-focus-visible:ring-ring",
-        selected ? "border-foreground" : "border-transparent",
-        disabled && "cursor-not-allowed opacity-50",
-      )}
+    <SelectableTile
+      name="delivery-slot"
+      value={slot.windowId}
+      selected={selected}
+      onSelect={onSelect}
+      disabled={disabled}
+      align="between"
     >
       <span className="flex flex-col gap-1">
         <span className="text-body-b6 text-foreground">{name}</span>
         <span className="text-body-b10 text-muted-foreground">{timeRange}</span>
       </span>
-
-      <input
-        type="radio"
-        name="delivery-slot"
-        value={slot.windowId}
-        checked={selected}
-        disabled={disabled}
-        onChange={onSelect}
-        className="sr-only"
-      />
 
       {availability.level === "full" ? (
         <span className="shrink-0 text-body-b10 text-destructive">{t("full")}</span>
@@ -148,6 +136,6 @@ function SlotOption({ slot, selected, onSelect, disabled }: SlotOptionProps) {
           {t("slotOnlyLeft", { count: availability.remaining })}
         </span>
       ) : null}
-    </label>
+    </SelectableTile>
   );
 }

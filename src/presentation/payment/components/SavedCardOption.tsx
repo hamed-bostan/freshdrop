@@ -1,8 +1,7 @@
 "use client";
 
 import { CreditCard } from "lucide-react";
-import { Icon } from "@/src/presentation/design-system";
-import { cn } from "@/src/lib/utils";
+import { Icon, SelectableTile } from "@/src/presentation/design-system";
 import type { SavedCard } from "@/src/domain/entities/Wallet";
 
 interface SavedCardOptionProps {
@@ -20,25 +19,17 @@ export function SavedCardOption({ card, selected, onSelect }: SavedCardOptionPro
   const lastFour = card.number.replace(/\D/g, "").slice(-4);
 
   return (
-    <label
-      className={cn(
-        "flex cursor-pointer items-center gap-2 rounded-card-xl border bg-muted px-4 py-2 transition-colors",
-        "has-focus-visible:ring-2 has-focus-visible:ring-ring",
-        selected ? "border-foreground" : "border-transparent",
-      )}
+    <SelectableTile
+      name="payment-method"
+      value={card.id}
+      selected={selected}
+      onSelect={() => onSelect(card.id)}
+      size="sm"
     >
-      <input
-        type="radio"
-        name="payment-method"
-        value={card.id}
-        checked={selected}
-        onChange={() => onSelect(card.id)}
-        className="sr-only"
-      />
       <Icon icon={CreditCard} className="text-foreground" />
       <span className="text-body-b6 text-foreground">
         {card.brand} •••• {lastFour}
       </span>
-    </label>
+    </SelectableTile>
   );
 }
