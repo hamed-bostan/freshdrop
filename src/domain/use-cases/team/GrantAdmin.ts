@@ -1,7 +1,7 @@
 import type { User } from "../../entities/User";
 import { isPlausiblePhone, normalizePhone } from "../../entities/Phone";
 import type { IUserRepository } from "../../repositories/IUserRepository";
-import type { IAdminInviteNotifier } from "../../repositories/IAdminInviteNotifier";
+import type { ITeamNotifier } from "../../repositories/ITeamNotifier";
 import { ValidationError } from "../../errors/ValidationError";
 
 /** Who to promote, and where to tell them about it. */
@@ -34,7 +34,7 @@ export type GrantAdminCommand = {
 export class GrantAdmin {
   constructor(
     private readonly userRepo: IUserRepository,
-    private readonly notifier?: IAdminInviteNotifier,
+    private readonly notifier?: ITeamNotifier,
   ) {}
 
   async execute(input: GrantAdminCommand, signInUrl?: string): Promise<User> {
@@ -61,7 +61,7 @@ export class GrantAdmin {
 
     // Best-effort, and after the write: the access is already real, so a mail or
     // SMS failure must not fail the grant or leave the caller thinking it didn't
-    // happen (see `IAdminInviteNotifier`).
+    // happen (see `ITeamNotifier`).
     if (this.notifier && signInUrl && !alreadyAdmin) {
       await this.notifier.adminGranted(
         { name: user.name, phone: user.phone, email: user.email },

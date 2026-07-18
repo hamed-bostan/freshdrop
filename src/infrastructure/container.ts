@@ -19,7 +19,7 @@ import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository"
 import type { IImageStorageRepository } from "@/src/domain/repositories/IImageStorageRepository";
 import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
 import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
-import type { IAdminInviteNotifier } from "@/src/domain/repositories/IAdminInviteNotifier";
+import type { ITeamNotifier } from "@/src/domain/repositories/ITeamNotifier";
 
 import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepository";
 import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
@@ -38,7 +38,7 @@ import { LoggingStockAlertNotifier } from "./notifications/LoggingStockAlertNoti
 import { OrderNotifier } from "./notifications/OrderNotifier";
 import { LoggingNotificationChannel } from "./notifications/LoggingNotificationChannel";
 import { SmsIrNotificationChannel } from "./notifications/SmsIrNotificationChannel";
-import { AdminInviteNotifier } from "./notifications/AdminInviteNotifier";
+import { TeamNotifier } from "./notifications/TeamNotifier";
 import { LoggingEmailSender } from "./email/LoggingEmailSender";
 import { SmtpEmailSender } from "./email/SmtpEmailSender";
 import { PrismaPromoCodeRepository } from "./repositories/PrismaPromoCodeRepository";
@@ -194,16 +194,21 @@ export const emailSender: IEmailSender = process.env.SMTP_HOST
     })
   : new LoggingEmailSender();
 
-// Announces an admin grant to the person who received it, over email (when an
-// address was supplied) and SMS (when an approved pattern template is configured).
-// Both channels are best-effort — the access is already real either way.
-export const adminInviteNotifier: IAdminInviteNotifier = new AdminInviteNotifier(
+// Announces team changes — an admin grant, and both sides of an ownership move —
+// over email (when an address is on file) and SMS (when an approved pattern
+// template is configured for that event). Every channel is best-effort; the
+// change is already real either way.
+export const teamNotifier: ITeamNotifier = new TeamNotifier(
   emailSender,
   process.env.SMS_IR_API_KEY
     ? {
         apiKey: process.env.SMS_IR_API_KEY,
         baseUrl: process.env.SMS_IR_BASE_URL,
-        templateId: numericEnv("SMS_IR_ADMIN_INVITE_TEMPLATE_ID"),
+        templates: {
+          adminGranted: numericEnv("SMS_IR_ADMIN_INVITE_TEMPLATE_ID"),
+          ownershipReceived: numericEnv("SMS_IR_OWNERSHIP_RECEIVED_TEMPLATE_ID"),
+          ownershipLost: numericEnv("SMS_IR_OWNERSHIP_LOST_TEMPLATE_ID"),
+        },
       }
     : undefined,
 );
