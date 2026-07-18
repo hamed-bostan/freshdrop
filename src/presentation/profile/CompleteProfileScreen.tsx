@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { UserPen, Phone, MessageSquareText, type LucideIcon } from "lucide-react";
-import type { User } from "@/src/domain/entities/User";
+import type { UserProfile } from "./profile-response-schema";
 import { Button, Icon, TextField } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { useRouter } from "@/src/i18n/navigation";
@@ -44,7 +44,7 @@ function splitName(name: string): { firstName: string; lastName: string } {
 }
 
 interface CompleteProfileScreenProps {
-  user: User;
+  user: UserProfile;
 }
 
 export default function CompleteProfileScreen({ user }: CompleteProfileScreenProps) {

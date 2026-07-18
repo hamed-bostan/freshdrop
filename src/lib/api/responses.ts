@@ -5,6 +5,7 @@ import { ValidationError } from "@/src/domain/errors/ValidationError";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { InsufficientStockError } from "@/src/domain/errors/InsufficientStockError";
 import { SlotUnavailableError } from "@/src/domain/errors/SlotUnavailableError";
+import { AdminRevokeError } from "@/src/domain/errors/AdminRevokeError";
 
 /**
  * Server-side helpers for REST route handlers (Next.js `app/api/**` only — never
@@ -73,6 +74,16 @@ export function errorResponseFromException(error: unknown, context: string): Nex
   // landed. 409 Conflict — the message names the slot so the shopper can pick another.
   if (error instanceof SlotUnavailableError) {
     return errorResponse(409, { message: error.message, code: "SLOT_UNAVAILABLE" });
+  }
+
+  // Removing an admin was refused to keep the dashboard reachable (self-removal,
+  // or the last remaining admin). The input was fine, the state wasn't → 409, and
+  // `reason` picks the precise copy client-side.
+  if (error instanceof AdminRevokeError) {
+    return errorResponse(409, {
+      message: error.message,
+      code: error.reason === "self" ? "REVOKE_SELF" : "REVOKE_LAST_ADMIN",
+    });
   }
 
   console.error(`${context}:`, error);

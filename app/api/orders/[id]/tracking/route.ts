@@ -32,7 +32,7 @@ export async function GET(_request: NextRequest, { params }: RouteContext): Prom
 
   const { id } = await params;
   try {
-    const viewer = { userId: session.user.id, isAdmin: isAdmin(session) };
+    const viewer = { userId: session.user.id, isAdmin: await isAdmin(session) };
     const tracking = await new GetOrderTracking(orderTrackingRepository).execute(id, viewer);
     if (!tracking) return errorResponse(404, { message: "This order can't be tracked.", code: "NOT_FOUND" });
     return NextResponse.json(tracking);

@@ -22,6 +22,9 @@ type ApiErrorKey =
   | "insufficientStock"
   | "slotUnavailable"
   | "addressGone"
+  | "revokeSelf"
+  | "revokeLastAdmin"
+  | "revokeBreakGlass"
   | "timeout"
   | "network"
   | "server";
@@ -36,6 +39,9 @@ const CODE_KEYS: Readonly<Record<string, ApiErrorKey>> = {
   INSUFFICIENT_STOCK: "insufficientStock",
   SLOT_UNAVAILABLE: "slotUnavailable",
   ADDRESS_GONE: "addressGone",
+  REVOKE_SELF: "revokeSelf",
+  REVOKE_LAST_ADMIN: "revokeLastAdmin",
+  REVOKE_BREAK_GLASS: "revokeBreakGlass",
   INTERNAL: "server",
   EBADRESPONSE: "server",
   // Transport failures normalized by the Axios interceptor / server client.

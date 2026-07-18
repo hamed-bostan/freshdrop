@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Leaf,
   Package,
+  ShieldCheck,
   Star,
   Tag,
   Users,
@@ -28,6 +29,7 @@ const SECTIONS = [
   { href: "/dashboard/orders", labelKey: "navOrders", icon: ClipboardList },
   { href: "/dashboard/reviews", labelKey: "navReviews", icon: Star },
   { href: "/dashboard/customers", labelKey: "navCustomers", icon: Users },
+  { href: "/dashboard/team", labelKey: "navTeam", icon: ShieldCheck },
 ] as const satisfies readonly { href: string; labelKey: string; icon: LucideIcon }[];
 
 /**

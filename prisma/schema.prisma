@@ -49,6 +49,11 @@ model User {
   name      String
   email     String?
   avatarUrl String?  @map("avatar_url")
+  // Access level: "customer" (default) or "admin", stored as a plain string
+  // matching the domain union — the schema's enum-free style. This is the source
+  // of truth for dashboard access; ADMIN_USER_IDS remains only as a break-glass
+  // allowlist so an owner can always get back in. Indexed for the admin listing.
+  role      String   @default("customer")
   // The payment method the user last selected for checkout — a single per-user
   // preference, so it lives here as a nullable scalar rather than a per-row flag
   // like a default address. The id references either the payment_methods catalog
@@ -60,6 +65,7 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@index([role])
   @@map("users")
 }
 

@@ -38,16 +38,11 @@ export function resolveSmsIrBaseUrl(baseUrl?: string): string {
 }
 
 /**
- * Normalises to the local SMS.ir format (e.g. `09xxxxxxxxx`): strips non-digit
- * characters and rewrites a leading `98` country code to `0`.
+ * Re-exported from the domain so SMS callers and the rest of the app normalise
+ * identically — the local SMS.ir format (`09xxxxxxxxx`) happens to be exactly the
+ * canonical form a user's id is derived from. See `domain/entities/Phone`.
  */
-export function normalizePhone(phone: string): string {
-  const digits = phone.replace(/\D/g, "");
-  if (digits.startsWith("98") && digits.length === 12) {
-    return `0${digits.slice(2)}`;
-  }
-  return digits;
-}
+export { normalizePhone } from "@/src/domain/entities/Phone";
 
 /**
  * Send one approved template to `mobile`, substituting `params`. Resolves `true`

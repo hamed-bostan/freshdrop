@@ -1,8 +1,16 @@
 import { Prisma } from "@prisma/client";
-import type { User } from "@/src/domain/entities/User";
+import type { User, UserRole } from "@/src/domain/entities/User";
+import { toUserRole } from "@/src/domain/entities/User";
 import type { IUserRepository, NewUser, ProfileUpdate } from "@/src/domain/repositories/IUserRepository";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { prisma } from "@/src/infrastructure/prisma/client";
+
+/**
+ * Placeholder name for a row created by a role grant, before its owner has ever
+ * signed in. Mirrors the placeholder OTP sign-in seeds a brand-new user with, so
+ * the two paths produce the same shape of row.
+ */
+const PENDING_ADMIN_NAME = "FreshDrop Customer";
 
 /**
  * Users backed by PostgreSQL via Prisma. Server-side only (it opens a DB
@@ -22,7 +30,26 @@ export class PrismaUserRepository implements IUserRepository {
         name: input.name,
         email: input.email ?? null,
         avatarUrl: input.avatarUrl ?? null,
+        ...(input.role ? { role: input.role } : {}),
       },
+    });
+    return toUser(row);
+  }
+
+  async listByRole(role: UserRole): Promise<User[]> {
+    const rows = await prisma.user.findMany({ where: { role }, orderBy: { createdAt: "asc" } });
+    return rows.map(toUser);
+  }
+
+  async setRole(input: { id: string; phone: string; role: UserRole }): Promise<User> {
+    // Upsert rather than update: a role can be granted before the person has ever
+    // signed in, in which case we write the row they'd get at first sign-in. The
+    // placeholder name is theirs to overwrite once they complete their profile,
+    // and `GetOrCreateUser` leaves this row (and its role) alone at sign-in.
+    const row = await prisma.user.upsert({
+      where: { id: input.id },
+      update: { role: input.role },
+      create: { id: input.id, phone: input.phone, name: PENDING_ADMIN_NAME, role: input.role },
     });
     return toUser(row);
   }
@@ -72,6 +99,16 @@ function toUser(row: {
   name: string;
   email: string | null;
   avatarUrl: string | null;
+  role: string;
 }): User {
-  return { id: row.id, phone: row.phone, name: row.name, email: row.email, avatarUrl: row.avatarUrl };
+  return {
+    id: row.id,
+    phone: row.phone,
+    name: row.name,
+    email: row.email,
+    avatarUrl: row.avatarUrl,
+    // The column is a plain string (the schema is enum-free), so narrow it here
+    // rather than trusting the database to hold only known values.
+    role: toUserRole(row.role),
+  };
 }

@@ -1,0 +1,34 @@
+import { useTranslations } from "next-intl";
+import type { TeamMember } from "./team-response-schema";
+import { GrantAdminForm } from "./GrantAdminForm";
+import { TeamTable } from "./TeamTable";
+
+type TeamScreenProps = {
+  /** Everyone who can reach the dashboard, fetched over the BFF during server render. */
+  members: TeamMember[];
+};
+
+/**
+ * Admin team management. Presentational: the dashboard page fetches the members
+ * over the REST API (BFF) during server render and passes them in; mutations
+ * re-run that render via `router.refresh()`, so the server stays the single
+ * source of truth and this screen holds no data state.
+ */
+export function TeamScreen({ members }: TeamScreenProps) {
+  const t = useTranslations("dashTeam");
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
+        <p className="text-body-b6 text-muted-foreground">
+          {t("summary", { count: members.length })}
+        </p>
+      </div>
+
+      <GrantAdminForm />
+
+      <TeamTable members={members} />
+    </div>
+  );
+}

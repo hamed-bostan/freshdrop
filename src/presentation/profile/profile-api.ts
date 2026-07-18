@@ -1,8 +1,7 @@
-import type { User } from "@/src/domain/entities/User";
 import { apiPut } from "@/src/lib/api/client";
 import { AVATAR_IMAGE_FOLDER } from "@/src/lib/imageFolders";
 import { imagesApi } from "@/src/presentation/images/image-api";
-import { userResponseSchema } from "./profile-response-schema";
+import { userResponseSchema, type UserProfile } from "./profile-response-schema";
 import type { ProfileUpdateValues } from "./profile-schema";
 
 /**
@@ -12,7 +11,7 @@ import type { ProfileUpdateValues } from "./profile-schema";
  * server-side (see `profilesServerApi`).
  */
 export const profilesApi = {
-  update(values: ProfileUpdateValues): Promise<User> {
+  update(values: ProfileUpdateValues): Promise<UserProfile> {
     return apiPut("/profile", values, userResponseSchema);
   },
 

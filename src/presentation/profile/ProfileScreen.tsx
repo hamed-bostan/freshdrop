@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { User } from "lucide-react";
-import type { User as UserEntity } from "@/src/domain/entities/User";
+import type { UserProfile } from "./profile-response-schema";
 import { Icon } from "@/src/presentation/design-system";
 import { ProfileMenuItem } from "./components/ProfileMenuItem";
 
@@ -32,7 +32,7 @@ const PROFILE_MENU: ProfileMenuEntry[] = [
 ];
 
 interface ProfileScreenProps {
-  user: UserEntity;
+  user: UserProfile;
 }
 
 export default async function ProfileScreen({ user }: ProfileScreenProps) {
