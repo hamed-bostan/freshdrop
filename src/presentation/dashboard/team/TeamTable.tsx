@@ -30,6 +30,11 @@ const TEAM_ROW_GRID = "grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto_auto] 
  */
 export function TeamTable({ members }: TeamTableProps) {
   const t = useTranslations("dashTeam");
+  // Taking ownership means three different things depending on the situation —
+  // claiming a vacant seat, taking it off a sitting owner, or handing it over —
+  // and each needs its own confirmation. These decide only which copy to show;
+  // the server still decides what's permitted.
+  const hasOwner = members.some((member) => member.role === "owner");
 
   return (
     <div className="overflow-hidden rounded-card-lg border border-border">
@@ -80,7 +85,9 @@ export function TeamTable({ members }: TeamTableProps) {
                     <TransferOwnershipButton
                       id={member.id}
                       name={member.name}
-                      isSelf={member.isSelf}
+                      intent={
+                        !member.isSelf ? "transfer" : hasOwner ? "takeOver" : "claim"
+                      }
                     />
                   )}
                   {member.revokeBlocked === null ? (

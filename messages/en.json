@@ -818,14 +818,26 @@
       "owner": "Can't remove the owner — transfer ownership first.",
       "self": "You can't remove your own access."
     },
-    "transferAria": "Make {name} the owner",
-    "claimAria": "Become the owner",
-    "claimTitle": "Become the owner?",
-    "claimMessage": "You'll hold the owner role in the database rather than only through the server config, so you can manage the team without ADMIN_USER_IDS. If someone else currently owns the store, they become an admin.",
-    "claimConfirm": "Become owner",
-    "transferTitle": "Transfer ownership?",
-    "transferMessage": "{name} becomes the owner and can manage the team. You stay an admin and keep running the store, but you'll no longer be able to add or remove people — only the new owner can transfer it back.",
-    "transferConfirm": "Transfer ownership",
+    "ownership": {
+      "transfer": {
+        "aria": "Make {name} the owner",
+        "title": "Transfer ownership?",
+        "message": "{name} becomes the owner and can manage the team. You stay an admin and keep running the store, but you'll no longer be able to add or remove people.",
+        "confirm": "Transfer ownership"
+      },
+      "claim": {
+        "aria": "Become the owner",
+        "title": "Become the owner?",
+        "message": "Nobody owns this store yet. You'll hold the owner role in the database rather than only through the server config, so you can manage the team without ADMIN_USER_IDS.",
+        "confirm": "Become owner"
+      },
+      "takeOver": {
+        "aria": "Take ownership of the store",
+        "title": "Take ownership?",
+        "message": "Someone else owns this store. You can take it because your access is set in the server config — this is the recovery path for a lost owner account, not a routine change. The current owner becomes an admin.",
+        "confirm": "Take ownership"
+      }
+    },
     "transferErrorTitle": "Couldn't transfer ownership",
     "transferError": "Couldn't transfer ownership. Please try again.",
     "transferTryAgain": "Try again",

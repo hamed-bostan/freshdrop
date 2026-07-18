@@ -8,28 +8,41 @@ import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { teamApi } from "./team-api";
 
+/**
+ * Which direction ownership is moving, which decides the confirmation copy:
+ *
+ * - `transfer` — handing it to someone else. The caller steps down.
+ * - `claim` — taking a seat nobody holds (a fresh deployment, bootstrapped by a
+ *   break-glass admin).
+ * - `takeOver` — taking it *off* a sitting owner. Only reachable with break-glass
+ *   access, and worded as the emergency power it is: ordinary products make
+ *   ownership push-only precisely so it can't be seized.
+ */
+type TransferIntent = "transfer" | "claim" | "takeOver";
+
 type TransferOwnershipButtonProps = {
   id: string;
   name: string;
-  /** True when this is the viewer's own row — claiming the seat, not handing it over. */
-  isSelf: boolean;
+  intent: TransferIntent;
 };
 
 /**
- * Hand ownership of the store to another member, behind a confirmation.
+ * Move ownership of the store, behind a confirmation.
  *
- * The confirmation copy spells out that the caller steps down to admin, because
- * this is the one action on the page that removes power from the person taking
- * it — and it can't be undone from this side afterwards: only the new owner can
- * transfer it back.
+ * The copy is per-{@link TransferIntent} because the same request means very
+ * different things to the person making it. The `transfer` wording deliberately
+ * doesn't claim the move is irreversible from this side: a break-glass admin can
+ * take ownership back, and promising otherwise was a lie to the one person most
+ * likely to be reading it.
  */
-export function TransferOwnershipButton({ id, name, isSelf }: TransferOwnershipButtonProps) {
+export function TransferOwnershipButton({ id, name, intent }: TransferOwnershipButtonProps) {
   const t = useTranslations("dashTeam");
   const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
+  const label = t(`ownership.${intent}.aria`, { name });
 
   function handleConfirm() {
     setError(null);
@@ -59,8 +72,8 @@ export function TransferOwnershipButton({ id, name, isSelf }: TransferOwnershipB
         variant="ghost"
         size="sm"
         iconOnly
-        aria-label={isSelf ? t("claimAria") : t("transferAria", { name })}
-        title={isSelf ? t("claimAria") : t("transferAria", { name })}
+        aria-label={label}
+        title={label}
         onClick={() => setOpen(true)}
         disabled={pending}
       >
@@ -70,11 +83,9 @@ export function TransferOwnershipButton({ id, name, isSelf }: TransferOwnershipB
       <ConfirmSheet
         open={open}
         onOpenChange={handleOpenChange}
-        title={error ? t("transferErrorTitle") : isSelf ? t("claimTitle") : t("transferTitle")}
-        message={error ?? (isSelf ? t("claimMessage") : t("transferMessage", { name }))}
-        confirmLabel={
-          error ? t("transferTryAgain") : isSelf ? t("claimConfirm") : t("transferConfirm")
-        }
+        title={error ? t("transferErrorTitle") : t(`ownership.${intent}.title`)}
+        message={error ?? t(`ownership.${intent}.message`, { name })}
+        confirmLabel={error ? t("transferTryAgain") : t(`ownership.${intent}.confirm`)}
         onConfirm={handleConfirm}
       />
     </>
