@@ -1,4 +1,13 @@
 import { z } from "zod";
+import type { RoleChange } from "@/src/domain/entities/RoleChange";
+
+/**
+ * The wire form of a `RoleChange`: the entity as-is, except `at` crosses as an ISO
+ * string. The route builds it by spreading the entity, so naming the difference
+ * here — rather than restating the whole shape — is what lets `satisfies` below
+ * catch a field added to or renamed on the entity at compile time.
+ */
+type RoleChangeWire = Omit<RoleChange, "at"> & { at: string };
 
 /**
  * The shape the team history endpoint promises to return, validated at the
@@ -9,6 +18,11 @@ import { z } from "zod";
  * want the string, so parsing it here would only mean converting it straight
  * back. (A transforming schema also can't satisfy `serverApiGet`, which requires
  * one input type and output type.)
+ *
+ * `satisfies` ties it to the domain entity the same way the other response schemas
+ * do, so drift fails the build instead of surfacing as a parse error in the admin's
+ * face. Without it this schema was the only statement of the shape, and the route's
+ * `{ ...change }` spread meant a renamed entity field would quietly stop arriving.
  */
 export const roleChangeResponseSchema = z.object({
   id: z.string(),
@@ -19,7 +33,7 @@ export const roleChangeResponseSchema = z.object({
   fromRole: z.enum(["customer", "admin", "owner"]),
   toRole: z.enum(["customer", "admin", "owner"]),
   at: z.string(),
-});
+}) satisfies z.ZodType<RoleChangeWire>;
 
 export const roleChangeListResponseSchema = z.array(roleChangeResponseSchema);
 
