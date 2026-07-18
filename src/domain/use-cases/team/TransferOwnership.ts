@@ -1,6 +1,7 @@
 import type { User } from "../../entities/User";
 import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { ITeamNotifier } from "../../repositories/ITeamNotifier";
+import type { IRoleChangeLog } from "../../repositories/IRoleChangeLog";
 import { AdminRevokeError } from "../../errors/AdminRevokeError";
 import { NotFoundError } from "../../errors/NotFoundError";
 
@@ -22,6 +23,7 @@ export class TransferOwnership {
   constructor(
     private readonly userRepo: IUserRepository,
     private readonly notifier?: ITeamNotifier,
+    private readonly log?: IRoleChangeLog,
   ) {}
 
   async execute(targetId: string, actorId: string, dashboardUrl?: string): Promise<User> {
@@ -65,6 +67,33 @@ export class TransferOwnership {
           role: "admin",
         }),
       );
+    }
+
+    // Every role this moved gets its own entry, so the history reads as the pair
+    // of facts it is — someone gained ownership, someone else lost it — rather
+    // than one event the reader has to infer a second half from.
+    if (this.log) {
+      const actorName = actor?.name ?? actorId;
+      if (target.role !== "owner") {
+        await this.log.record({
+          userId: promoted.id,
+          userName: promoted.name,
+          actorId,
+          actorName,
+          fromRole: target.role,
+          toRole: "owner",
+        });
+      }
+      for (const former of steppedDown) {
+        await this.log.record({
+          userId: former.id,
+          userName: former.name,
+          actorId,
+          actorName,
+          fromRole: "owner",
+          toRole: "admin",
+        });
+      }
     }
 
     // Best-effort, and after every write. Both sides are told: gaining ownership

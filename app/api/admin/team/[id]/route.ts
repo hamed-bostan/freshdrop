@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { RevokeAdmin } from "@/src/domain/use-cases/team/RevokeAdmin";
-import { userRepository } from "@/src/infrastructure/container";
+import { roleChangeLog, userRepository } from "@/src/infrastructure/container";
 import { getOwnerSession, isBreakGlassAdmin } from "@/src/lib/require-admin";
 import { errorResponse, errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 
@@ -31,7 +31,7 @@ export async function DELETE(_request: Request, { params }: RouteContext): Promi
   }
 
   try {
-    await new RevokeAdmin(userRepository).execute(id, session.user.id);
+    await new RevokeAdmin(userRepository, roleChangeLog).execute(id, session.user.id);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     return errorResponseFromException(error, `DELETE /api/admin/team/${id} failed`);

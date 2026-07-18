@@ -18,12 +18,14 @@ import type { IPromoCodeRepository } from "@/src/domain/repositories/IPromoCodeR
 import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
 import type { IImageStorageRepository } from "@/src/domain/repositories/IImageStorageRepository";
 import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
+import type { IRoleChangeLog } from "@/src/domain/repositories/IRoleChangeLog";
 import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
 import type { ITeamNotifier } from "@/src/domain/repositories/ITeamNotifier";
 
 import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepository";
 import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
 import { PrismaUserRepository } from "./repositories/PrismaUserRepository";
+import { PrismaRoleChangeLog } from "./repositories/PrismaRoleChangeLog";
 import { MockFavoriteRepository } from "./repositories/mock/MockFavoriteRepository";
 import { PrismaReviewRepository } from "./repositories/PrismaReviewRepository";
 import { PrismaDeliveryLocationRepository } from "./repositories/PrismaDeliveryLocationRepository";
@@ -77,6 +79,10 @@ export const productRepository: IProductRepository = new PrismaProductRepository
 // Users are real data — PostgreSQL via Prisma. Rows are created on first sign-in
 // (auth `authorize` → GetOrCreateUser) and edited via the profile feature.
 export const userRepository: IUserRepository = new PrismaUserRepository();
+// Append-only audit trail for dashboard access changes. Real storage from the
+// start (no logging stub): an audit trail that only existed in stdout would be
+// worse than none, because it would read as one without being queryable.
+export const roleChangeLog: IRoleChangeLog = new PrismaRoleChangeLog();
 export const favoriteRepository: IFavoriteRepository = new MockFavoriteRepository(productRepository);
 // Reviews are real data now — PostgreSQL via Prisma. The demo reviews live on in
 // the seed migration that backfilled the table; new reviews are written by

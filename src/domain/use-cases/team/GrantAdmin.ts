@@ -2,6 +2,7 @@ import type { User } from "../../entities/User";
 import { isPlausiblePhone, normalizePhone } from "../../entities/Phone";
 import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { ITeamNotifier } from "../../repositories/ITeamNotifier";
+import type { IRoleChangeLog } from "../../repositories/IRoleChangeLog";
 import { ValidationError } from "../../errors/ValidationError";
 
 /** Who to promote, and where to tell them about it. */
@@ -35,9 +36,10 @@ export class GrantAdmin {
   constructor(
     private readonly userRepo: IUserRepository,
     private readonly notifier?: ITeamNotifier,
+    private readonly log?: IRoleChangeLog,
   ) {}
 
-  async execute(input: GrantAdminCommand, signInUrl?: string): Promise<User> {
+  async execute(input: GrantAdminCommand, actorId: string, signInUrl?: string): Promise<User> {
     const id = normalizePhone(input.phone);
 
     if (!isPlausiblePhone(input.phone)) {
@@ -58,6 +60,22 @@ export class GrantAdmin {
       role: "admin",
       email,
     });
+
+    // Record before notifying: the audit entry is the durable half and its
+    // failure should surface, whereas a failed notice is swallowed. Nothing is
+    // recorded when the grant changed nothing — the log tracks changes, not
+    // clicks.
+    if (this.log && !alreadyAdmin) {
+      const actor = await this.userRepo.getById(actorId);
+      await this.log.record({
+        userId: user.id,
+        userName: user.name,
+        actorId,
+        actorName: actor?.name ?? actorId,
+        fromRole: existing?.role ?? "customer",
+        toRole: "admin",
+      });
+    }
 
     // Best-effort, and after the write: the access is already real, so a mail or
     // SMS failure must not fail the grant or leave the caller thinking it didn't

@@ -49,10 +49,13 @@ model User {
   name      String
   email     String?
   avatarUrl String?  @map("avatar_url")
-  // Access level: "customer" (default) or "admin", stored as a plain string
-  // matching the domain union — the schema's enum-free style. This is the source
-  // of truth for dashboard access; ADMIN_USER_IDS remains only as a break-glass
-  // allowlist so an owner can always get back in. Indexed for the admin listing.
+  // Access level: "customer" (default), "admin", or "owner" — stored as a plain
+  // string matching the domain union, the schema's enum-free style. This is the
+  // source of truth for dashboard access; ADMIN_USER_IDS remains only as a
+  // break-glass allowlist so an owner can always get back in. Exactly one user
+  // holds "owner" (enforced by TransferOwnership, not by the schema — Postgres
+  // can't express it without a partial unique index the app would still have to
+  // honour). Indexed for the team listing.
   role      String   @default("customer")
   // The payment method the user last selected for checkout — a single per-user
   // preference, so it lives here as a nullable scalar rather than a per-row flag
@@ -67,6 +70,35 @@ model User {
 
   @@index([role])
   @@map("users")
+}
+
+// An append-only record of who changed whose dashboard access, and when. Never
+// updated or deleted: notifications tell the affected people at the time, this
+// answers "who has held ownership this year" afterwards — and it is the only
+// thing that does, since a notice with no email address on file simply never
+// arrives.
+//
+// Names are snapshotted rather than joined, the same faithful-historical-record
+// treatment orders give product names: the entry must still read correctly after
+// someone is renamed, and must survive a user row being removed entirely.
+// `userId`/`actorId` are plain references (not DB foreign keys), matching the
+// loose coupling used throughout.
+model RoleChange {
+  id         String   @id @default(uuid())
+  // Whose access changed.
+  userId     String   @map("user_id")
+  userName   String   @map("user_name")
+  // Who changed it. Snapshotted the same way; an actor may later be removed.
+  actorId    String   @map("actor_id")
+  actorName  String   @map("actor_name")
+  // Roles as plain strings matching the domain union (enum-free schema).
+  fromRole   String   @map("from_role")
+  toRole     String   @map("to_role")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // The listing reads newest-first across the whole table.
+  @@index([createdAt])
+  @@map("role_changes")
 }
 
 // An order is a faithful historical record: each line snapshots the product's

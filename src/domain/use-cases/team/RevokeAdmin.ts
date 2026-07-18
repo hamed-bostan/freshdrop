@@ -1,5 +1,6 @@
 import { isDashboardRole, type User } from "../../entities/User";
 import type { IUserRepository } from "../../repositories/IUserRepository";
+import type { IRoleChangeLog } from "../../repositories/IRoleChangeLog";
 import { AdminRevokeError } from "../../errors/AdminRevokeError";
 import { NotFoundError } from "../../errors/NotFoundError";
 
@@ -20,7 +21,10 @@ import { NotFoundError } from "../../errors/NotFoundError";
  * always remains. That invariant is far easier to hold than a count.
  */
 export class RevokeAdmin {
-  constructor(private readonly userRepo: IUserRepository) {}
+  constructor(
+    private readonly userRepo: IUserRepository,
+    private readonly log?: IRoleChangeLog,
+  ) {}
 
   async execute(id: string, actorId: string): Promise<User> {
     if (id === actorId) {
@@ -39,6 +43,24 @@ export class RevokeAdmin {
       );
     }
 
-    return this.userRepo.setRole({ id: target.id, phone: target.phone, role: "customer" });
+    const demoted = await this.userRepo.setRole({
+      id: target.id,
+      phone: target.phone,
+      role: "customer",
+    });
+
+    if (this.log) {
+      const actor = await this.userRepo.getById(actorId);
+      await this.log.record({
+        userId: demoted.id,
+        userName: demoted.name,
+        actorId,
+        actorName: actor?.name ?? actorId,
+        fromRole: target.role,
+        toRole: "customer",
+      });
+    }
+
+    return demoted;
   }
 }

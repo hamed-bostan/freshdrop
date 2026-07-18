@@ -838,6 +838,16 @@
         "confirm": "Take ownership"
       }
     },
+    "activityHeading": "Access history",
+    "activityDescription": "Every change to who can reach the dashboard. Kept permanently.",
+    "activityEmpty": "No changes recorded yet.",
+    "activity": {
+      "granted": "{actor} gave {user} admin access",
+      "revoked": "{actor} removed {user}'s access",
+      "ownershipTransferred": "{actor} made {user} the owner",
+      "ownershipClaimed": "{user} took ownership",
+      "steppedDown": "{user} stopped being the owner"
+    },
     "transferErrorTitle": "Couldn't transfer ownership",
     "transferError": "Couldn't transfer ownership. Please try again.",
     "transferTryAgain": "Try again",

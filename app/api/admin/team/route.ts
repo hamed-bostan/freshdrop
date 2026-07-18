@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { User } from "@/src/domain/entities/User";
 import { GrantAdmin } from "@/src/domain/use-cases/team/GrantAdmin";
 import { ListTeam } from "@/src/domain/use-cases/team/ListTeam";
-import { teamNotifier, userRepository } from "@/src/infrastructure/container";
+import { roleChangeLog, teamNotifier, userRepository } from "@/src/infrastructure/container";
 import { breakGlassAdminIds, getOwnerSession, isBreakGlassAdmin } from "@/src/lib/require-admin";
 import { getAppUrl } from "@/src/lib/appUrl";
 import { grantAdminSchema } from "@/src/presentation/dashboard/team/team-schema";
@@ -104,8 +104,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // The invitation links back to this deployment's sign-in page, so the origin
     // is resolved from the request (only the web layer knows the public host).
     const signInUrl = `${await getAppUrl()}/login`;
-    const granted = await new GrantAdmin(userRepository, teamNotifier).execute(
+    const granted = await new GrantAdmin(userRepository, teamNotifier, roleChangeLog).execute(
       parsed.data,
+      session.user.id,
       signInUrl,
     );
     const [member] = toTeamMembers([granted], session.user.id);

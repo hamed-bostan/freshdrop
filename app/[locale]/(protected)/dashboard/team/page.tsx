@@ -12,7 +12,11 @@ export default async function DashboardTeamPage() {
   // letting the owner-only endpoint fail at them. The BFF read forwards their
   // session cookie so that endpoint authorizes the call.
   await requireOwner();
-  const members = await teamServerApi.list();
+  // Two independent reads, so they go in parallel rather than in series.
+  const [members, changes] = await Promise.all([
+    teamServerApi.list(),
+    teamServerApi.listHistory(),
+  ]);
 
-  return <TeamScreen members={members} />;
+  return <TeamScreen members={members} changes={changes} />;
 }

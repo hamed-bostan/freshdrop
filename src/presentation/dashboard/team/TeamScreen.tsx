@@ -1,11 +1,15 @@
 import { useTranslations } from "next-intl";
 import type { TeamMember } from "./team-response-schema";
+import type { RoleChangeEntry } from "./team-history-response-schema";
 import { GrantAdminForm } from "./GrantAdminForm";
 import { TeamTable } from "./TeamTable";
+import { TeamActivity } from "./TeamActivity";
 
 type TeamScreenProps = {
   /** Everyone who can reach the dashboard, fetched over the BFF during server render. */
   members: TeamMember[];
+  /** Recent access changes, newest first. */
+  changes: RoleChangeEntry[];
 };
 
 /**
@@ -14,7 +18,7 @@ type TeamScreenProps = {
  * re-run that render via `router.refresh()`, so the server stays the single
  * source of truth and this screen holds no data state.
  */
-export function TeamScreen({ members }: TeamScreenProps) {
+export function TeamScreen({ members, changes }: TeamScreenProps) {
   const t = useTranslations("dashTeam");
 
   return (
@@ -29,6 +33,8 @@ export function TeamScreen({ members }: TeamScreenProps) {
       <GrantAdminForm />
 
       <TeamTable members={members} />
+
+      <TeamActivity changes={changes} />
     </div>
   );
 }

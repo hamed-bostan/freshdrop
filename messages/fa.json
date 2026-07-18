@@ -838,6 +838,16 @@
         "confirm": "به‌دست گرفتن مالکیت"
       }
     },
+    "activityHeading": "تاریخچهٔ دسترسی",
+    "activityDescription": "هر تغییری در اینکه چه کسی به داشبورد دسترسی دارد. برای همیشه نگهداری می‌شود.",
+    "activityEmpty": "هنوز تغییری ثبت نشده است.",
+    "activity": {
+      "granted": "{actor} به {user} دسترسی مدیریت داد",
+      "revoked": "{actor} دسترسی {user} را حذف کرد",
+      "ownershipTransferred": "{actor}، {user} را مالک کرد",
+      "ownershipClaimed": "{user} مالکیت را به‌دست گرفت",
+      "steppedDown": "{user} دیگر مالک نیست"
+    },
     "transferErrorTitle": "واگذاری مالکیت انجام نشد",
     "transferError": "واگذاری مالکیت انجام نشد. دوباره تلاش کنید.",
     "transferTryAgain": "تلاش دوباره",
