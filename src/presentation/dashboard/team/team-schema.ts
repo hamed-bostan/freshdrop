@@ -7,9 +7,11 @@ import { z } from "zod";
  * Validation messages are `formErrors` message keys, translated at display time
  * (see `src/lib/formErrorMessage.ts`).
  *
- * Only a phone is collected: the number *is* the invitation. A user's id is their
- * normalized phone and sign-in is OTP on that number, so granting the role to a
- * phone can only ever be redeemed by whoever holds the SIM.
+ * The phone is required and the email is not, because the number *is* the
+ * invitation: a user's id is their normalized phone and sign-in is OTP on that
+ * number, so granting the role to a phone can only ever be redeemed by whoever
+ * holds the SIM. The email only says where to *send* the invitation — a typo
+ * there costs an undelivered note, not a stranger with admin rights.
  */
 export const grantAdminSchema = z.object({
   phone: z
@@ -20,6 +22,13 @@ export const grantAdminSchema = z.object({
     // happens in the domain (see `normalizePhone`), so the form stays permissive
     // about how the number is typed (+98…, 98…, 09…).
     .regex(/^[+\d][\d\s()-]{7,19}$/, "phoneInvalid"),
+  email: z
+    .string()
+    .trim()
+    .email("emailInvalid")
+    .max(254, "emailTooLong")
+    .optional()
+    .or(z.literal("")),
 });
 
 /** Form value shape, and the validated payload the route forwards to the use-case. */

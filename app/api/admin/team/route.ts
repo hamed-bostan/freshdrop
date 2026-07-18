@@ -2,8 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { User } from "@/src/domain/entities/User";
 import { GrantAdmin } from "@/src/domain/use-cases/team/GrantAdmin";
 import { ListAdmins } from "@/src/domain/use-cases/team/ListAdmins";
-import { userRepository } from "@/src/infrastructure/container";
+import { adminInviteNotifier, userRepository } from "@/src/infrastructure/container";
 import { breakGlassAdminIds, getAdminSession, isBreakGlassAdmin } from "@/src/lib/require-admin";
+import { getAppUrl } from "@/src/lib/appUrl";
 import { grantAdminSchema } from "@/src/presentation/dashboard/team/team-schema";
 import type { TeamMember } from "@/src/presentation/dashboard/team/team-response-schema";
 import {
@@ -67,7 +68,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const granted = await new GrantAdmin(userRepository).execute(parsed.data.phone);
+    // The invitation links back to this deployment's sign-in page, so the origin
+    // is resolved from the request (only the web layer knows the public host).
+    const signInUrl = `${await getAppUrl()}/login`;
+    const granted = await new GrantAdmin(userRepository, adminInviteNotifier).execute(
+      parsed.data,
+      signInUrl,
+    );
     return NextResponse.json(toTeamMember(granted, session.user.id), { status: 201 });
   } catch (error) {
     return errorResponseFromException(error, "POST /api/admin/team failed");

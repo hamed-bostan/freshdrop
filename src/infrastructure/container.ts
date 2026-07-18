@@ -18,6 +18,8 @@ import type { IPromoCodeRepository } from "@/src/domain/repositories/IPromoCodeR
 import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
 import type { IImageStorageRepository } from "@/src/domain/repositories/IImageStorageRepository";
 import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
+import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
+import type { IAdminInviteNotifier } from "@/src/domain/repositories/IAdminInviteNotifier";
 
 import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepository";
 import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
@@ -36,6 +38,9 @@ import { LoggingStockAlertNotifier } from "./notifications/LoggingStockAlertNoti
 import { OrderNotifier } from "./notifications/OrderNotifier";
 import { LoggingNotificationChannel } from "./notifications/LoggingNotificationChannel";
 import { SmsIrNotificationChannel } from "./notifications/SmsIrNotificationChannel";
+import { AdminInviteNotifier } from "./notifications/AdminInviteNotifier";
+import { LoggingEmailSender } from "./email/LoggingEmailSender";
+import { SmtpEmailSender } from "./email/SmtpEmailSender";
 import { PrismaPromoCodeRepository } from "./repositories/PrismaPromoCodeRepository";
 import { MockAuthRepository } from "./repositories/mock/MockAuthRepository";
 import { SmsIrAuthRepository } from "./repositories/SmsIrAuthRepository";
@@ -169,6 +174,39 @@ const notificationChannels: INotificationChannel[] = [
   new LoggingNotificationChannel("push"),
 ];
 export const orderNotifier: IOrderNotifier = new OrderNotifier(userRepository, notificationChannels);
+
+// Transactional email. Real SMTP when a host is configured, a logging stub
+// otherwise — the same real-or-mock switch used for `authRepository`, so local dev
+// and a fresh deployment work without mail credentials.
+//
+// SMTP rather than a provider HTTP API because this deploys to a VPS in Iran,
+// where Resend/SendGrid/Postmark/Mailgun all geo-block the outbound call. See
+// `SmtpEmailSender`.
+export const emailSender: IEmailSender = process.env.SMTP_HOST
+  ? new SmtpEmailSender({
+      host: process.env.SMTP_HOST,
+      port: numericEnv("SMTP_PORT") ?? 587,
+      // Implicit TLS on 465; STARTTLS on 587 and everything else.
+      secure: (numericEnv("SMTP_PORT") ?? 587) === 465,
+      user: process.env.SMTP_USER,
+      password: process.env.SMTP_PASSWORD,
+      from: process.env.SMTP_FROM ?? "FreshDrop <no-reply@localhost>",
+    })
+  : new LoggingEmailSender();
+
+// Announces an admin grant to the person who received it, over email (when an
+// address was supplied) and SMS (when an approved pattern template is configured).
+// Both channels are best-effort — the access is already real either way.
+export const adminInviteNotifier: IAdminInviteNotifier = new AdminInviteNotifier(
+  emailSender,
+  process.env.SMS_IR_API_KEY
+    ? {
+        apiKey: process.env.SMS_IR_API_KEY,
+        baseUrl: process.env.SMS_IR_BASE_URL,
+        templateId: numericEnv("SMS_IR_ADMIN_INVITE_TEMPLATE_ID"),
+      }
+    : undefined,
+);
 
 // Real provider (not a mock): Nominatim runs server-side only — the route
 // handlers under `app/api/geocoding/*` are the only callers, which lets us send

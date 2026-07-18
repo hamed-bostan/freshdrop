@@ -41,15 +41,36 @@ export class PrismaUserRepository implements IUserRepository {
     return rows.map(toUser);
   }
 
-  async setRole(input: { id: string; phone: string; role: UserRole }): Promise<User> {
+  async setRole(input: {
+    id: string;
+    phone: string;
+    role: UserRole;
+    email?: string | null;
+  }): Promise<User> {
+    const email = input.email ?? null;
+    // Only fill a *blank* address: the one supplied here is a delivery detail typed
+    // by an admin, and must never clobber the address the user set on their own
+    // profile. Read first, since an upsert can't express "write only if empty".
+    const existing = await prisma.user.findUnique({
+      where: { id: input.id },
+      select: { email: true },
+    });
+    const fillEmail = email !== null && !existing?.email;
+
     // Upsert rather than update: a role can be granted before the person has ever
     // signed in, in which case we write the row they'd get at first sign-in. The
     // placeholder name is theirs to overwrite once they complete their profile,
     // and `GetOrCreateUser` leaves this row (and its role) alone at sign-in.
     const row = await prisma.user.upsert({
       where: { id: input.id },
-      update: { role: input.role },
-      create: { id: input.id, phone: input.phone, name: PENDING_ADMIN_NAME, role: input.role },
+      update: { role: input.role, ...(fillEmail ? { email } : {}) },
+      create: {
+        id: input.id,
+        phone: input.phone,
+        name: PENDING_ADMIN_NAME,
+        role: input.role,
+        email,
+      },
     });
     return toUser(row);
   }

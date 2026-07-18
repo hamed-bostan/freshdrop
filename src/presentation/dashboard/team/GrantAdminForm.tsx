@@ -33,7 +33,7 @@ export function GrantAdminForm() {
     formState: { errors, isSubmitting },
   } = useForm<GrantAdminInput>({
     resolver: zodResolver(grantAdminSchema, undefined, { raw: true }),
-    defaultValues: { phone: "" },
+    defaultValues: { phone: "", email: "" },
   });
 
   const onSubmit = handleSubmit(async (values) => {
@@ -48,9 +48,19 @@ export function GrantAdminForm() {
         setError("root", { message: t("grantError") });
         return;
       }
-      const fieldMessage = error.fieldErrors?.phone;
-      if (fieldMessage) setError("phone", { message: fieldMessage });
-      else setError("root", { message: localizeApiError(error, tApiErrors, t("grantError")) });
+      // Prefer field-level messages so they read in context; fall back to a single
+      // root message when the API didn't scope the error.
+      let appliedField = false;
+      for (const field of ["phone", "email"] as const) {
+        const message = error.fieldErrors?.[field];
+        if (message) {
+          setError(field, { message });
+          appliedField = true;
+        }
+      }
+      if (!appliedField) {
+        setError("root", { message: localizeApiError(error, tApiErrors, t("grantError")) });
+      }
     }
   });
 
@@ -68,7 +78,7 @@ export function GrantAdminForm() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
         {/* TextField drops extra props when a render-prop control is used, so the
             row's sizing lives on a wrapper rather than on the field itself. */}
-        <div className="sm:max-w-xs sm:flex-1">
+        <div className="sm:flex-1">
           <TextField
             label={t("phoneLabel")}
             required
@@ -82,6 +92,25 @@ export function GrantAdminForm() {
                 dir="ltr"
                 autoComplete="off"
                 placeholder={t("phonePlaceholder")}
+              />
+            )}
+          </TextField>
+        </div>
+
+        <div className="sm:flex-1">
+          <TextField
+            label={t("emailLabel")}
+            description={t("emailHint")}
+            error={formErrorMessage(tFormErrors, errors.email?.message)}
+          >
+            {(control) => (
+              <Input
+                {...control}
+                {...register("email")}
+                type="email"
+                dir="ltr"
+                autoComplete="off"
+                placeholder={t("emailPlaceholder")}
               />
             )}
           </TextField>
