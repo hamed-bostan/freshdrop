@@ -1,3 +1,4 @@
+import { orderRecognizedRevenue } from "../../entities/Order";
 import type { CustomerOrderSummary } from "../../entities/CustomerOrderSummary";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IUserRepository } from "../../repositories/IUserRepository";
@@ -27,17 +28,25 @@ export class GetCustomerOrderSummaries {
     // Group orders by the user who placed them, accumulating count, spend and the
     // most recent order date. `placedAt` is a fixed-format ISO UTC string, so a
     // lexicographic compare is also chronological.
+    //
+    // Spend is `orderRecognizedRevenue`, not the raw `total`: an order that was
+    // cancelled or returned had its total credited back, and a partially
+    // out-of-stock one was refunded per line, so neither is money this customer
+    // actually spent. This is also what every order row displays, so the ranking
+    // agrees with the figures beside it. `orderCount` stays every order placed —
+    // that's their history, independent of what was refunded.
     const byUser = new Map<string, CustomerStats>();
     for (const order of orders) {
+      const spent = orderRecognizedRevenue(order);
       const stats = byUser.get(order.userId);
       if (stats) {
         stats.orderCount += 1;
-        stats.totalSpent += order.total;
+        stats.totalSpent += spent;
         if (order.placedAt > stats.lastOrderAt) stats.lastOrderAt = order.placedAt;
       } else {
         byUser.set(order.userId, {
           orderCount: 1,
-          totalSpent: order.total,
+          totalSpent: spent,
           lastOrderAt: order.placedAt,
         });
       }

@@ -234,6 +234,27 @@ export function orderNetPaid(order: Order): number {
 }
 
 /**
+ * What this order contributes to revenue — 0 once the whole order was handed back
+ * to the customer, otherwise {@link orderNetPaid}.
+ *
+ * Distinct from `orderNetPaid`, which answers "what did this customer pay for what
+ * they kept" and so is what a *receipt* shows. Revenue needs the wallet-level view:
+ * `cancelled` and `refunded` orders return the full `total` to the wallet
+ * (`CancelOrder`, `ResolveOrderReturn`) without writing per-line `refundAmount`s, so
+ * `orderNetPaid` still reports their original charge. Summing that as revenue counts
+ * money the business gave back. Per-line out-of-stock refunds are already netted out
+ * by `orderNetPaid` for every other status.
+ *
+ * The single definition of "revenue-recognized" — use it for any figure that
+ * aggregates money *earned* (the overview KPI, per-customer spend), not for
+ * displaying one order's charge.
+ */
+export function orderRecognizedRevenue(order: Order): number {
+  if (order.status === "cancelled" || order.status === "refunded") return 0;
+  return orderNetPaid(order);
+}
+
+/**
  * Whether every line in `order` ended up refunded during picking — the order now
  * has nothing left to deliver. A `substituted` line still has something to
  * deliver, so any substitution (or any still-unresolved line) makes this false.

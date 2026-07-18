@@ -61,7 +61,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
     return () => {
       active = false;
     };
-  }, [open, canSubstitute, candidates, item.productId]);
+  }, [open, canSubstitute, candidates, item.productId, t]);
 
   function substitute(replacementProductId: string): void {
     setError(null);

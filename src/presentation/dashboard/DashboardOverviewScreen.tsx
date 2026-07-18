@@ -1,7 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { DollarSign, ClipboardList, Star, AlertTriangle } from "lucide-react";
 import type { Order } from "@/src/domain/entities/Order";
-import { orderNetPaid } from "@/src/domain/entities/Order";
+import { orderNetPaid, orderRecognizedRevenue } from "@/src/domain/entities/Order";
 import type { Review } from "@/src/domain/entities/Review";
 import type { Product } from "@/src/domain/entities/Product";
 import { LOW_STOCK_THRESHOLD, getStockStatus } from "@/src/domain/entities/stock";
@@ -54,8 +54,11 @@ export async function DashboardOverviewScreen({
   const t = await getTranslations("dashHome");
   const locale = await getLocale();
 
-  const windowOrders = ordersInWindow(orders);
-  const revenue30d = windowOrders.reduce((sum, order) => sum + orderNetPaid(order), 0);
+  // Only orders that actually earned money — a cancelled or fully-returned order
+  // had its total credited back, so it contributes neither revenue nor a count
+  // (see `orderRecognizedRevenue`). Otherwise the tile reads "0 from 5 orders".
+  const earningOrders = ordersInWindow(orders).filter((order) => orderRecognizedRevenue(order) > 0);
+  const revenue30d = earningOrders.reduce((sum, order) => sum + orderRecognizedRevenue(order), 0);
 
   const inProgress = orders.filter((order) => order.status === "processing").length;
   const pendingReviews = reviews.filter((review) => review.status === "pending").length;
@@ -85,7 +88,7 @@ export async function DashboardOverviewScreen({
           tone="brand"
           value={formatMoney(revenue30d, locale)}
           label={t("kpiRevenue", { days: REVENUE_WINDOW_DAYS })}
-          hint={t("kpiRevenueHint", { count: windowOrders.length })}
+          hint={t("kpiRevenueHint", { count: earningOrders.length })}
         />
         <StatCard
           icon={ClipboardList}
