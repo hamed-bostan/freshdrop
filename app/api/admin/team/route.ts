@@ -18,16 +18,29 @@ import {
 // Who holds admin access is read per request — never statically cached.
 export const dynamic = "force-dynamic";
 
-/** Project a user onto the team row shape, adding the flags only the API can know. */
-function toTeamMember(user: User, viewerId: string): TeamMember {
-  return {
-    id: user.id,
-    name: user.name,
-    phone: user.phone,
-    avatarUrl: user.avatarUrl,
-    isSelf: user.id === viewerId,
-    breakGlass: isBreakGlassAdmin(user.id),
-  };
+/**
+ * Project the admin list onto the team rows, adding the flags only the API can
+ * know. `revocable` mirrors exactly what `RevokeAdmin` (plus the break-glass
+ * check in the `[id]` route) will allow, so the UI never offers a Remove that the
+ * server would refuse — the count it depends on is of *database* admins, which is
+ * what the last-admin rule actually protects, not of rendered rows.
+ */
+function toTeamMembers(admins: User[], viewerId: string): TeamMember[] {
+  const dbAdminCount = admins.filter((admin) => admin.role === "admin").length;
+
+  return admins.map((user) => {
+    const breakGlass = isBreakGlassAdmin(user.id);
+    const isSelf = user.id === viewerId;
+    return {
+      id: user.id,
+      name: user.name,
+      phone: user.phone,
+      avatarUrl: user.avatarUrl,
+      isSelf,
+      breakGlass,
+      revocable: !isSelf && !breakGlass && user.role === "admin" && dbAdminCount > 1,
+    };
+  });
 }
 
 /**
@@ -39,7 +52,7 @@ export async function GET(): Promise<NextResponse> {
 
   try {
     const admins = await new ListAdmins(userRepository).execute(breakGlassAdminIds());
-    return NextResponse.json(admins.map((admin) => toTeamMember(admin, session.user.id)));
+    return NextResponse.json(toTeamMembers(admins, session.user.id));
   } catch (error) {
     return errorResponseFromException(error, "GET /api/admin/team failed");
   }
@@ -75,7 +88,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       parsed.data,
       signInUrl,
     );
-    return NextResponse.json(toTeamMember(granted, session.user.id), { status: 201 });
+    // Re-list so `revocable` is computed against the post-grant admin count rather
+    // than guessed from the single row we just wrote.
+    const admins = await new ListAdmins(userRepository).execute(breakGlassAdminIds());
+    const member = toTeamMembers(admins, session.user.id).find((row) => row.id === granted.id);
+    return NextResponse.json(member, { status: 201 });
   } catch (error) {
     return errorResponseFromException(error, "POST /api/admin/team failed");
   }

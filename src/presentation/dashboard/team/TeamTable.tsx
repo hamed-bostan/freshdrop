@@ -21,13 +21,13 @@ const TEAM_ROW_GRID = "grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto_auto] 
  * viewports rather than crushing the columns.
  *
  * A row's Remove button is omitted whenever the server would refuse the call
- * anyway — your own row, a break-glass admin, or the last remaining admin — so the
- * UI never offers an action that can only fail. Each case still carries a badge
- * explaining *why* there's nothing to click.
+ * anyway — your own row, a break-glass admin, or the last remaining admin. That
+ * decision is made server-side and arrives as `revocable`: re-deriving it here
+ * meant two copies of one rule, and they disagreed as soon as a break-glass admin
+ * was in the list. Each case still carries a badge explaining what it is.
  */
 export function TeamTable({ members }: TeamTableProps) {
   const t = useTranslations("dashTeam");
-  const isLastAdmin = members.length <= 1;
 
   return (
     <div className="overflow-hidden rounded-card-lg border border-border">
@@ -51,19 +51,19 @@ export function TeamTable({ members }: TeamTableProps) {
                 <span dir="ltr" className="truncate text-body-b6 text-muted-foreground">
                   {member.phone}
                 </span>
-                <span>
+                {/* Where the access comes from and whose row this is are independent
+                    facts, so they get their own badges — collapsing them into one
+                    slot hid "You" from anyone who was also break-glass. */}
+                <span className="flex items-center gap-2">
                   {member.breakGlass ? (
                     <Badge variant="warning">{t("badgeBreakGlass")}</Badge>
-                  ) : member.isSelf ? (
-                    <Badge variant="neutral">{t("badgeYou")}</Badge>
                   ) : (
                     <Badge variant="success">{t("badgeAdmin")}</Badge>
                   )}
+                  {member.isSelf && <Badge variant="neutral">{t("badgeYou")}</Badge>}
                 </span>
                 <span className="flex justify-end">
-                  {!member.isSelf && !member.breakGlass && !isLastAdmin && (
-                    <RevokeAdminButton id={member.id} name={member.name} />
-                  )}
+                  {member.revocable && <RevokeAdminButton id={member.id} name={member.name} />}
                 </span>
               </div>
             ))}

@@ -811,7 +811,7 @@
     "colActions": "Actions",
     "badgeAdmin": "Admin",
     "badgeYou": "You",
-    "badgeBreakGlass": "Env",
+    "badgeBreakGlass": "Server config",
     "revokeAria": "Remove admin access for {name}",
     "revokeTitle": "Remove admin access?",
     "revokeMessage": "{name} will lose access to the dashboard. Their account and order history stay untouched.",

@@ -19,6 +19,14 @@ export const teamMemberResponseSchema = z.object({
   isSelf: z.boolean(),
   /** True when access comes from the env allowlist and can't be revoked in the UI. */
   breakGlass: z.boolean(),
+  /**
+   * Whether Remove should be offered for this row. Computed server-side, because
+   * every input to that decision is server-side: who you are, what's in the env
+   * allowlist, and how many database admins remain. The client re-deriving it
+   * meant two versions of one rule that disagreed — a break-glass admin inflated
+   * the client's count, so it offered a Remove the server then refused.
+   */
+  revocable: z.boolean(),
 });
 
 export const teamMemberListResponseSchema = z.array(teamMemberResponseSchema);
