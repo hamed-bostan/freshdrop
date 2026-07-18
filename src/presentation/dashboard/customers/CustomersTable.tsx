@@ -2,7 +2,12 @@ import { useLocale, useTranslations } from "next-intl";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
-import { cn } from "@/src/lib/utils";
+import {
+  DataGridBody,
+  DataGridHeader,
+  DataGridRow,
+  DataTable,
+} from "@/src/presentation/design-system";
 
 /** One customer paired with their 1-based position in the full spend ranking. */
 type CustomerRow = {
@@ -35,47 +40,35 @@ export function CustomersTable({ rows }: CustomersTableProps) {
   const locale = useLocale();
 
   return (
-    <div className="overflow-hidden rounded-card-lg border border-border">
-      <div className="overflow-x-auto">
-        <div className="min-w-[48rem]">
-          <div
-            className={cn(
-              CUSTOMERS_ROW_GRID,
-              "bg-surface-sunken px-4 py-3 text-body-b8 text-muted-foreground",
-            )}
-          >
-            <span>{t("colRank")}</span>
-            <span>{t("colCustomer")}</span>
-            <span>{t("colPhone")}</span>
-            <span className="text-end">{t("colOrders")}</span>
-            <span className="text-end">{t("colSpent")}</span>
-          </div>
-          <div className="divide-y divide-border">
-            {rows.map(({ customer, rank }) => (
-              <div
-                key={customer.userId}
-                className={cn(CUSTOMERS_ROW_GRID, "bg-background px-4 py-3")}
-              >
-                <span className="text-body-b6 tabular-nums text-muted-foreground">
-                  {formatNumber(rank, locale)}
-                </span>
-                <span className="min-w-0 truncate text-body-b7 text-foreground">
-                  {customer.name}
-                </span>
-                <span className="truncate text-body-b6 text-muted-foreground">
-                  {customer.phone || t("noPhone")}
-                </span>
-                <span className="text-end text-body-b6 tabular-nums text-muted-foreground">
-                  {formatNumber(customer.orderCount, locale)}
-                </span>
-                <span className="text-end text-body-b8 tabular-nums text-foreground">
-                  {formatMoney(customer.totalSpent, locale)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+    <DataTable minWidthClassName="min-w-[48rem]">
+      <DataGridHeader template={CUSTOMERS_ROW_GRID}>
+        <span>{t("colRank")}</span>
+        <span>{t("colCustomer")}</span>
+        <span>{t("colPhone")}</span>
+        <span className="text-end">{t("colOrders")}</span>
+        <span className="text-end">{t("colSpent")}</span>
+      </DataGridHeader>
+      <DataGridBody>
+        {rows.map(({ customer, rank }) => (
+          <DataGridRow key={customer.userId} template={CUSTOMERS_ROW_GRID}>
+            <span className="text-body-b6 tabular-nums text-muted-foreground">
+              {formatNumber(rank, locale)}
+            </span>
+            <span className="min-w-0 truncate text-body-b7 text-foreground">
+              {customer.name}
+            </span>
+            <span className="truncate text-body-b6 text-muted-foreground">
+              {customer.phone || t("noPhone")}
+            </span>
+            <span className="text-end text-body-b6 tabular-nums text-muted-foreground">
+              {formatNumber(customer.orderCount, locale)}
+            </span>
+            <span className="text-end text-body-b8 tabular-nums text-foreground">
+              {formatMoney(customer.totalSpent, locale)}
+            </span>
+          </DataGridRow>
+        ))}
+      </DataGridBody>
+    </DataTable>
   );
 }

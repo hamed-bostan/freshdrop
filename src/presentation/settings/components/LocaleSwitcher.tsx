@@ -6,6 +6,7 @@ import { ToggleGroup } from "radix-ui";
 import { LOCALE_COOKIE_MAX_AGE, LOCALE_COOKIE_NAME, routing, type Locale } from "@/src/i18n/routing";
 import { cn } from "@/src/lib/utils";
 import { settingCardClass } from "./settingRowStyles";
+import { focusRing } from "@/src/presentation/design-system";
 
 // Each language is labelled with its own endonym (its name in its own script), the
 // industry-standard convention — a reader can always recognise their language
@@ -64,7 +65,7 @@ export function LocaleSwitcher() {
             value={option}
             className={cn(
               "rounded-pill px-3 py-1.5 text-body-b7 text-muted-foreground transition-colors",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              focusRing,
               "data-[state=on]:bg-surface data-[state=on]:text-foreground data-[state=on]:shadow-sm",
               "disabled:cursor-not-allowed disabled:opacity-50",
             )}

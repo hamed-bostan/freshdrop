@@ -2,8 +2,9 @@
 
 import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
-import { Chip, ChipGroup, Icon } from "@/src/presentation/design-system";
+import { Chip, ChipGroup, focusRing, Icon } from "@/src/presentation/design-system";
 import type { DeliveryLocationKind } from "@/src/domain/entities/DeliveryLocation";
+import { cn } from "@/src/lib/utils";
 
 /** The presets shown as chips; "other" is reached via the add button. */
 const PRESETS: { kind: DeliveryLocationKind; labelKey: "presetHome" | "presetOffice" | "presetGym" }[] = [
@@ -44,7 +45,10 @@ export function AddressLabelChips({ value, onChange, onAddCustom }: AddressLabel
         type="button"
         onClick={onAddCustom}
         aria-label={t("addCustomAria")}
-        className="flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className={cn(
+          "flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground",
+          focusRing,
+        )}
       >
         <Icon icon={Plus} size="sm" />
       </button>

@@ -7,11 +7,12 @@ import { PackageX, RotateCcw } from "lucide-react";
 import type { OrderItem } from "@/src/domain/entities/Order";
 import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
-import { Button, FormMessage, Icon } from "@/src/presentation/design-system";
+import { Button, focusRing, FormMessage, Icon } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { ordersApi } from "./order-api";
+import { cn } from "@/src/lib/utils";
 
 type OrderItemPickControlProps = {
   orderId: string;
@@ -138,7 +139,10 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
                       type="button"
                       disabled={pending || outOfStock}
                       onClick={() => substitute(product.id)}
-                      className="flex w-full items-center gap-3 rounded-input p-1.5 text-start transition-colors hover:bg-surface-sunken disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-input p-1.5 text-start transition-colors hover:bg-surface-sunken disabled:cursor-not-allowed disabled:opacity-50",
+                        focusRing,
+                      )}
                     >
                       <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
                         <Image

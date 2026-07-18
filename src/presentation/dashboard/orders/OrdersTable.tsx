@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { Order } from "@/src/domain/entities/Order";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
-import { cn } from "@/src/lib/utils";
+import { DataGridBody, DataGridHeader, DataTable } from "@/src/presentation/design-system";
 import { OrderRow, ORDERS_ROW_GRID } from "./OrderRow";
 
 type OrdersTableProps = {
@@ -20,32 +20,23 @@ export async function OrdersTable({ orders, customersById }: OrdersTableProps) {
   const t = await getTranslations("dashOrders");
 
   return (
-    <div className="overflow-hidden rounded-card-lg border border-border">
-      <div className="overflow-x-auto">
-        <div className="min-w-[60rem]">
-          <div
-            className={cn(
-              ORDERS_ROW_GRID,
-              "bg-surface-sunken px-4 py-3 text-body-b8 text-muted-foreground",
-            )}
-          >
-            <span>{t("colCustomer")}</span>
-            <span>{t("colOrder")}</span>
-            <span>{t("colStatus")}</span>
-            <span>{t("colPlaced")}</span>
-            <span>{t("colAddress")}</span>
-            <span className="text-end">{t("colTotal")}</span>
-            <span aria-hidden className="w-4" />
-          </div>
-          <div className="divide-y divide-border">
-            {orders.map((order) => (
-              // Every order's userId is present in the summaries (they're derived
-              // from the same order history); OrderRow falls back to the raw id.
-              <OrderRow key={order.id} order={order} customer={customersById.get(order.userId)} />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+    <DataTable minWidthClassName="min-w-[60rem]">
+      <DataGridHeader template={ORDERS_ROW_GRID}>
+        <span>{t("colCustomer")}</span>
+        <span>{t("colOrder")}</span>
+        <span>{t("colStatus")}</span>
+        <span>{t("colPlaced")}</span>
+        <span>{t("colAddress")}</span>
+        <span className="text-end">{t("colTotal")}</span>
+        <span aria-hidden className="w-4" />
+      </DataGridHeader>
+      <DataGridBody>
+        {orders.map((order) => (
+          // Every order's userId is present in the summaries (they're derived
+          // from the same order history); OrderRow falls back to the raw id.
+          <OrderRow key={order.id} order={order} customer={customersById.get(order.userId)} />
+        ))}
+      </DataGridBody>
+    </DataTable>
   );
 }

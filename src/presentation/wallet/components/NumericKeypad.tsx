@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Delete } from "lucide-react";
-import { Icon } from "@/src/presentation/design-system";
+import { focusRing, Icon } from "@/src/presentation/design-system";
 
 const KEYS: { digit: string; letters?: string }[] = [
   { digit: "1" },
@@ -18,7 +18,7 @@ const KEYS: { digit: string; letters?: string }[] = [
 
 const keyClass =
   "flex h-14 flex-col items-center justify-center rounded-card-xl bg-background shadow-sm transition-colors " +
-  "active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  `active:bg-muted ${focusRing}`;
 
 interface NumericKeypadProps {
   onDigit: (digit: string) => void;

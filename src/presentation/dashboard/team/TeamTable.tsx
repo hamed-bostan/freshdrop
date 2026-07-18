@@ -1,7 +1,14 @@
 import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
-import { Badge, Button, Icon } from "@/src/presentation/design-system";
-import { cn } from "@/src/lib/utils";
+import {
+  Badge,
+  Button,
+  DataGridBody,
+  DataGridHeader,
+  DataGridRow,
+  DataTable,
+  Icon,
+} from "@/src/presentation/design-system";
 import type { TeamMember } from "@/src/contracts/team-response-schema";
 import { RevokeAdminButton } from "./RevokeAdminButton";
 import { TransferOwnershipButton } from "./TransferOwnershipButton";
@@ -37,86 +44,77 @@ export function TeamTable({ members }: TeamTableProps) {
   const hasOwner = members.some((member) => member.role === "owner");
 
   return (
-    <div className="overflow-hidden rounded-card-lg border border-border">
-      <div className="overflow-x-auto">
-        <div className="min-w-[40rem]">
-          <div
-            className={cn(
-              TEAM_ROW_GRID,
-              "bg-surface-sunken px-4 py-3 text-body-b8 text-muted-foreground",
-            )}
-          >
-            <span>{t("colMember")}</span>
-            <span>{t("colPhone")}</span>
-            <span>{t("colAccess")}</span>
-            <span className="sr-only">{t("colActions")}</span>
-          </div>
-          <div className="divide-y divide-border">
-            {members.map((member) => (
-              <div key={member.id} className={cn(TEAM_ROW_GRID, "bg-background px-4 py-3")}>
-                {/* "(you)" belongs on the name, not in the Access column — it isn't
-                    an access level, and putting it there made the column look like
-                    it held two different kinds of thing. */}
-                <span className="min-w-0 truncate text-body-b7 text-foreground">
-                  {member.name}
-                  {member.isSelf && (
-                    <span className="ms-1 text-muted-foreground">{t("youSuffix")}</span>
-                  )}
-                </span>
-                <span dir="ltr" className="truncate text-body-b6 text-muted-foreground">
-                  {member.phone}
-                </span>
-                {/* The badge is the role and nothing else. Where the grant is stored
-                    is metadata about the row, so it sits underneath as a note —
-                    rendering "Server config" as a peer of "Admin" implied they were
-                    two different access levels, which they never were. */}
-                <span className="flex flex-col items-start gap-1">
-                  {member.role === "owner" ? (
-                    <Badge variant="warning">{t("badgeOwner")}</Badge>
-                  ) : (
-                    <Badge variant="success">{t("badgeAdmin")}</Badge>
-                  )}
-                  {member.breakGlass && (
-                    <span className="text-body-b10 text-muted-foreground">{t("managedInEnv")}</span>
-                  )}
-                </span>
-                <span className="flex justify-end gap-1">
-                  {member.transferable && (
-                    <TransferOwnershipButton
-                      id={member.id}
-                      name={member.name}
-                      intent={
-                        !member.isSelf ? "transfer" : hasOwner ? "takeOver" : "claim"
-                      }
-                    />
-                  )}
-                  {member.revokeBlocked === null ? (
-                    <RevokeAdminButton id={member.id} name={member.name} />
-                  ) : (
-                    // Not rendered for your own row — nobody looks for a button to
-                    // remove themselves. For the others the button stays, disabled,
-                    // carrying the reason: a silently missing control just reads as
-                    // a bug.
-                    member.revokeBlocked !== "self" && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        iconOnly
-                        disabled
-                        aria-label={t(`revokeBlocked.${member.revokeBlocked}`)}
-                        title={t(`revokeBlocked.${member.revokeBlocked}`)}
-                      >
-                        <Icon icon={Trash2} size="sm" />
-                      </Button>
-                    )
-                  )}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+    <DataTable minWidthClassName="min-w-[40rem]">
+      <DataGridHeader template={TEAM_ROW_GRID}>
+        <span>{t("colMember")}</span>
+        <span>{t("colPhone")}</span>
+        <span>{t("colAccess")}</span>
+        <span className="sr-only">{t("colActions")}</span>
+      </DataGridHeader>
+      <DataGridBody>
+        {members.map((member) => (
+          <DataGridRow key={member.id} template={TEAM_ROW_GRID}>
+            {/* "(you)" belongs on the name, not in the Access column — it isn't
+                an access level, and putting it there made the column look like
+                it held two different kinds of thing. */}
+            <span className="min-w-0 truncate text-body-b7 text-foreground">
+              {member.name}
+              {member.isSelf && (
+                <span className="ms-1 text-muted-foreground">{t("youSuffix")}</span>
+              )}
+            </span>
+            <span dir="ltr" className="truncate text-body-b6 text-muted-foreground">
+              {member.phone}
+            </span>
+            {/* The badge is the role and nothing else. Where the grant is stored
+                is metadata about the row, so it sits underneath as a note —
+                rendering "Server config" as a peer of "Admin" implied they were
+                two different access levels, which they never were. */}
+            <span className="flex flex-col items-start gap-1">
+              {member.role === "owner" ? (
+                <Badge variant="warning">{t("badgeOwner")}</Badge>
+              ) : (
+                <Badge variant="success">{t("badgeAdmin")}</Badge>
+              )}
+              {member.breakGlass && (
+                <span className="text-body-b10 text-muted-foreground">{t("managedInEnv")}</span>
+              )}
+            </span>
+            <span className="flex justify-end gap-1">
+              {member.transferable && (
+                <TransferOwnershipButton
+                  id={member.id}
+                  name={member.name}
+                  intent={
+                    !member.isSelf ? "transfer" : hasOwner ? "takeOver" : "claim"
+                  }
+                />
+              )}
+              {member.revokeBlocked === null ? (
+                <RevokeAdminButton id={member.id} name={member.name} />
+              ) : (
+                // Not rendered for your own row — nobody looks for a button to
+                // remove themselves. For the others the button stays, disabled,
+                // carrying the reason: a silently missing control just reads as
+                // a bug.
+                member.revokeBlocked !== "self" && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    iconOnly
+                    disabled
+                    aria-label={t(`revokeBlocked.${member.revokeBlocked}`)}
+                    title={t(`revokeBlocked.${member.revokeBlocked}`)}
+                  >
+                    <Icon icon={Trash2} size="sm" />
+                  </Button>
+                )
+              )}
+            </span>
+          </DataGridRow>
+        ))}
+      </DataGridBody>
+    </DataTable>
   );
 }

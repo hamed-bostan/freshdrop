@@ -4,7 +4,7 @@ import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid } from "@/src/domain/entities/Order";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
-import { Icon } from "@/src/presentation/design-system";
+import { focusRing, Icon } from "@/src/presentation/design-system";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDate } from "@/src/lib/formatOrderDate";
@@ -40,7 +40,8 @@ export function OrderRow({ order, customer }: OrderRowProps) {
       className={cn(
         ORDERS_ROW_GRID,
         "bg-background px-4 py-3 transition-colors hover:bg-surface-sunken/50",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+        focusRing,
+        "focus-visible:ring-inset",
       )}
     >
       <span className="min-w-0">

@@ -2,7 +2,17 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Pencil } from "lucide-react";
 import type { Category } from "@/src/domain/entities/Category";
-import { Button, Icon } from "@/src/presentation/design-system";
+import {
+  Button,
+  DataTable,
+  Icon,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/src/presentation/design-system";
 import { Link } from "@/src/i18n/navigation";
 import { DeleteCategoryButton } from "./DeleteCategoryButton";
 
@@ -15,27 +25,27 @@ export async function CategoriesTable({ categories }: CategoriesTableProps) {
   const t = await getTranslations("dashCategories");
 
   return (
-    <div className="overflow-hidden rounded-card-lg border border-border">
-      <table className="w-full text-start">
-        <thead className="bg-surface-sunken text-body-b8 text-muted-foreground">
+    <DataTable>
+      <Table>
+        <TableHeader>
           <tr>
-            <th scope="col" className="px-4 py-3">{t("colIcon")}</th>
-            <th scope="col" className="px-4 py-3">{t("colName")}</th>
-            <th scope="col" className="px-4 py-3">{t("colSlug")}</th>
-            <th scope="col" className="px-4 py-3 text-end">{t("colActions")}</th>
+            <TableHead>{t("colIcon")}</TableHead>
+            <TableHead>{t("colName")}</TableHead>
+            <TableHead>{t("colSlug")}</TableHead>
+            <TableHead className="text-end">{t("colActions")}</TableHead>
           </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
+        </TableHeader>
+        <TableBody>
           {categories.map((category) => (
-            <tr key={category.id} className="bg-background transition-colors hover:bg-surface-sunken/50">
-              <td className="px-4 py-3">
+            <TableRow key={category.id}>
+              <TableCell>
                 <div className="flex size-10 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
                   <Image src={category.iconUrl} alt="" width={32} height={32} className="object-contain" />
                 </div>
-              </td>
-              <td className="px-4 py-3 text-body-b7 text-foreground">{category.name}</td>
-              <td className="px-4 py-3 text-body-b6 text-muted-foreground">{category.slug}</td>
-              <td className="px-4 py-3">
+              </TableCell>
+              <TableCell className="text-body-b7 text-foreground">{category.name}</TableCell>
+              <TableCell className="text-body-b6 text-muted-foreground">{category.slug}</TableCell>
+              <TableCell>
                 <div className="flex items-center justify-end gap-2">
                   <Button asChild variant="outline" size="sm">
                     <Link href={`/dashboard/categories/${category.id}/edit`}>
@@ -45,11 +55,11 @@ export async function CategoriesTable({ categories }: CategoriesTableProps) {
                   </Button>
                   <DeleteCategoryButton id={category.id} name={category.name} />
                 </div>
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </TableBody>
+      </Table>
+    </DataTable>
   );
 }

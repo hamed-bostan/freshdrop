@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { User, ImagePlus, Images, Camera, Trash2, type LucideIcon } from "lucide-react";
-import { FormMessage, Icon, Sheet, SheetClose, SheetContent, SheetTrigger, Spinner } from "@/src/presentation/design-system";
+import { focusRing, FormMessage, Icon, Sheet, SheetClose, SheetContent, SheetTrigger, Spinner } from "@/src/presentation/design-system";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { cn } from "@/src/lib/utils";
 import { profilesApi } from "../profile-api";
@@ -28,7 +28,7 @@ function PhotoAction({ icon, label, destructive, disabled, onClick }: PhotoActio
         disabled={disabled}
         className={cn(
           "flex w-full items-center gap-2 rounded-card-md p-4 transition-colors",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          focusRing,
           "disabled:cursor-not-allowed disabled:opacity-50",
           destructive ? "text-destructive" : "text-foreground",
         )}
@@ -107,7 +107,10 @@ export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploader
               type="button"
               aria-label={t("changePhoto")}
               disabled={uploading}
-              className="absolute bottom-0 end-0 flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors active:bg-primary-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+              className={cn(
+                "absolute bottom-0 end-0 flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors active:bg-primary-pressed disabled:opacity-50",
+                focusRing,
+              )}
             >
               <Icon icon={ImagePlus} size="xs" />
             </button>

@@ -3,6 +3,7 @@ export * from "./components/form";
 export * from "./components/Accordion";
 export * from "./components/Button";
 export * from "./components/Badge";
+export * from "./components/DataTable";
 export * from "./components/Icon";
 export * from "./components/Spinner";
 export * from "./components/Skeleton";

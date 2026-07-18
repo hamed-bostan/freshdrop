@@ -5,7 +5,17 @@ import type { Locale } from "@/src/i18n/routing";
 import type { Review, ReviewStatus } from "@/src/domain/entities/Review";
 import type { Product } from "@/src/domain/entities/Product";
 import { formatNumber } from "@/src/lib/formatNumber";
-import { Badge, Icon } from "@/src/presentation/design-system";
+import {
+  Badge,
+  DataTable,
+  Icon,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/src/presentation/design-system";
 import { Link } from "@/src/i18n/navigation";
 import { ReviewStatusSelect } from "./ReviewStatusSelect";
 
@@ -78,25 +88,25 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
   const locale = useLocale();
 
   return (
-    <div className="overflow-x-auto rounded-card-lg border border-border">
-      <table className="w-full min-w-[48rem] border-collapse text-start">
-        <thead className="bg-surface-sunken text-body-b8 text-muted-foreground">
+    <DataTable minWidthClassName="min-w-[48rem]">
+      <Table className="border-collapse">
+        <TableHeader>
           <tr>
-            <th scope="col" className="px-4 py-3">{t("colAuthor")}</th>
-            <th scope="col" className="px-4 py-3">{t("colProduct")}</th>
-            <th scope="col" className="px-4 py-3">{t("colRating")}</th>
-            <th scope="col" className="px-4 py-3">{t("colReview")}</th>
-            <th scope="col" className="px-4 py-3">{t("colStatus")}</th>
-            <th scope="col" className="px-4 py-3 text-end">{t("colAction")}</th>
+            <TableHead>{t("colAuthor")}</TableHead>
+            <TableHead>{t("colProduct")}</TableHead>
+            <TableHead>{t("colRating")}</TableHead>
+            <TableHead>{t("colReview")}</TableHead>
+            <TableHead>{t("colStatus")}</TableHead>
+            <TableHead className="text-end">{t("colAction")}</TableHead>
           </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
+        </TableHeader>
+        <TableBody>
           {reviews.map((review) => {
             const badge = STATUS_BADGE[review.status];
             const product = productsById.get(review.productId);
             return (
-              <tr key={review.id} className="bg-background align-top transition-colors hover:bg-surface-sunken/50">
-                <td className="px-4 py-4">
+              <TableRow key={review.id} className="align-top">
+                <TableCell className="py-4">
                   <div className="flex items-center gap-3">
                     {review.authorAvatarUrl ? (
                       <Image
@@ -124,8 +134,8 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
                       </time>
                     </div>
                   </div>
-                </td>
-                <td className="px-4 py-4">
+                </TableCell>
+                <TableCell className="py-4">
                   {product ? (
                     <Link
                       href={`/dashboard/products/${product.id}/edit`}
@@ -147,14 +157,14 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
                   ) : (
                     <span className="text-body-b8 text-muted-foreground">{t("unknownProduct")}</span>
                   )}
-                </td>
-                <td className="px-4 py-4">
+                </TableCell>
+                <TableCell className="py-4">
                   <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-surface-sunken px-2 py-0.5">
                     <Icon icon={Star} size="xs" className="fill-rating text-rating" />
                     <span className="text-body-b8 text-foreground">{formatNumber(review.rating, locale, 1)}</span>
                   </span>
-                </td>
-                <td className="px-4 py-4">
+                </TableCell>
+                <TableCell className="py-4">
                   {review.comment ? (
                     <p className="line-clamp-3 max-w-sm text-body-b6 text-muted-foreground">
                       {review.comment}
@@ -162,18 +172,18 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
                   ) : (
                     <span className="text-body-b8 italic text-muted-foreground/70">{t("noComment")}</span>
                   )}
-                </td>
-                <td className="px-4 py-4">
+                </TableCell>
+                <TableCell className="py-4">
                   <Badge variant={badge.variant}>{t(badge.labelKey)}</Badge>
-                </td>
-                <td className="px-4 py-4">
+                </TableCell>
+                <TableCell className="py-4">
                   <ReviewStatusSelect id={review.id} status={review.status} />
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             );
           })}
-        </tbody>
-      </table>
-    </div>
+        </TableBody>
+      </Table>
+    </DataTable>
   );
 }
