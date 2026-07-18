@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Session } from "next-auth";
 import { auth } from "@/auth";
+import { isDashboardRole } from "@/src/domain/entities/User";
 import { userRepository } from "@/src/infrastructure/container";
 
 /**
@@ -51,7 +52,47 @@ export async function isAdmin(session: Session | null): Promise<boolean> {
   if (isBreakGlassAdmin(userId)) return true;
 
   const user = await userRepository.getById(userId);
-  return user?.role === "admin";
+  return user ? isDashboardRole(user.role) : false;
+}
+
+/**
+ * True when the session may manage the team — the `owner` role, or a break-glass
+ * id from the environment.
+ *
+ * Break-glass counts here on purpose: it's what bootstraps the first owner. A
+ * fresh deployment has no owner in the database, so without this nobody could
+ * ever appoint one and team management would deadlock on its own rule. It's also
+ * the recovery path if the owner's account is ever lost.
+ */
+export async function isOwner(session: Session | null): Promise<boolean> {
+  const userId = session?.user?.id;
+  if (!userId) return false;
+  if (isBreakGlassAdmin(userId)) return true;
+
+  const user = await userRepository.getById(userId);
+  return user?.role === "owner";
+}
+
+/**
+ * Non-redirecting owner guard for the team route handlers. Returns the session
+ * for an owner, or `null` otherwise — the caller answers 401. Mirrors
+ * `getAdminSession`.
+ */
+export async function getOwnerSession(): Promise<Session | null> {
+  const session = await auth();
+  return (await isOwner(session)) ? session : null;
+}
+
+/**
+ * Server-side guard for the team page. An admin who isn't the owner is sent back
+ * to the dashboard root rather than shown a 401 from the API — they legitimately
+ * belong in the dashboard, just not on this page, so a redirect reads better than
+ * an error boundary.
+ */
+export async function requireOwner(): Promise<Session> {
+  const session = await requireAdmin();
+  if (!(await isOwner(session))) redirect("/dashboard");
+  return session;
 }
 
 /**

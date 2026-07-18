@@ -15,10 +15,14 @@ export const teamMemberResponseSchema = z.object({
   name: z.string(),
   phone: z.string(),
   avatarUrl: z.string().nullable(),
+  /** Dashboard role — `owner` manages the team, `admin` runs the store. */
+  role: z.enum(["owner", "admin"]),
   /** True when this member is the admin currently viewing the page. */
   isSelf: z.boolean(),
   /** True when access comes from the env allowlist and can't be revoked in the UI. */
   breakGlass: z.boolean(),
+  /** True when this member could be made owner (i.e. isn't already, and isn't you). */
+  transferable: z.boolean(),
   /**
    * Why Remove is unavailable for this row, or `null` when it is available.
    * Computed server-side, because every input to that decision is server-side:
@@ -31,7 +35,7 @@ export const teamMemberResponseSchema = z.object({
    * absence instead of silently dropping the button, which left an admin with no
    * way to find out why they couldn't remove someone.
    */
-  revokeBlocked: z.enum(["self", "breakGlass", "lastAdmin"]).nullable(),
+  revokeBlocked: z.enum(["self", "breakGlass", "owner"]).nullable(),
 });
 
 export const teamMemberListResponseSchema = z.array(teamMemberResponseSchema);

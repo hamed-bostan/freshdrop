@@ -1,4 +1,4 @@
-import { apiDelete, apiPost } from "@/src/lib/api/client";
+import { apiDelete, apiPost, apiPut } from "@/src/lib/api/client";
 import { teamMemberResponseSchema, type TeamMember } from "./team-response-schema";
 import type { GrantAdminInput } from "./team-schema";
 
@@ -16,5 +16,14 @@ export const teamApi = {
 
   revoke(id: string): Promise<void> {
     return apiDelete(`/admin/team/${id}`);
+  },
+
+  /**
+   * Hand ownership to this member. The caller steps down to admin, so the page
+   * they're on becomes read-only to them right after — the refresh that follows
+   * is what surfaces that.
+   */
+  transferOwnership(id: string): Promise<void> {
+    return apiPut(`/admin/team/${id}/owner`, undefined);
   },
 };

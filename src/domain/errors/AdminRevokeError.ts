@@ -6,10 +6,10 @@
  * "that didn't work".
  */
 export type AdminRevokeReason =
-  /** The caller tried to remove their own admin role. */
+  /** The caller tried to remove their own access (or hand ownership to themselves). */
   | "self"
-  /** The caller tried to remove the only remaining admin, locking everyone out. */
-  | "lastAdmin";
+  /** The caller tried to remove the owner, who must transfer ownership first. */
+  | "owner";
 
 export class AdminRevokeError extends Error {
   constructor(

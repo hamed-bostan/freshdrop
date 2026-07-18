@@ -29,8 +29,17 @@ const SECTIONS = [
   { href: "/dashboard/orders", labelKey: "navOrders", icon: ClipboardList },
   { href: "/dashboard/reviews", labelKey: "navReviews", icon: Star },
   { href: "/dashboard/customers", labelKey: "navCustomers", icon: Users },
+] as const satisfies readonly { href: string; labelKey: string; icon: LucideIcon }[];
+
+/** Sections only the owner can reach — appended when the viewer is one. */
+const OWNER_SECTIONS = [
   { href: "/dashboard/team", labelKey: "navTeam", icon: ShieldCheck },
 ] as const satisfies readonly { href: string; labelKey: string; icon: LucideIcon }[];
+
+type DashboardSidebarProps = {
+  /** Whether the viewer owns the store, deciding if the Team section is offered. */
+  isOwner: boolean;
+};
 
 /**
  * Fixed left navigation rail for the admin dashboard: brand at the top, the
@@ -38,9 +47,12 @@ const SECTIONS = [
  * escape hatch pinned to the bottom. Client component — the active state is
  * derived from the current path.
  */
-export function DashboardSidebar() {
+export function DashboardSidebar({ isOwner }: DashboardSidebarProps) {
   const t = useTranslations("dashboard");
   const pathname = usePathname();
+  // Navigation only — the page and its endpoints re-check independently. Hiding
+  // the link keeps an admin from walking into a redirect, it doesn't secure it.
+  const sections = isOwner ? [...SECTIONS, ...OWNER_SECTIONS] : SECTIONS;
 
   return (
     <aside className="sticky top-0 flex h-dvh w-64 shrink-0 flex-col border-e border-border bg-background">
@@ -55,7 +67,7 @@ export function DashboardSidebar() {
       </Link>
 
       <nav className="flex flex-1 flex-col gap-1 px-3 py-2">
-        {SECTIONS.map((section) => {
+        {sections.map((section) => {
           // The overview root matches only its exact path; every other section
           // owns its subtree (e.g. `/dashboard/products/123/edit`).
           const active =

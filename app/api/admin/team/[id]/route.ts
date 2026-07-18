@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { RevokeAdmin } from "@/src/domain/use-cases/team/RevokeAdmin";
 import { userRepository } from "@/src/infrastructure/container";
-import { getAdminSession, isBreakGlassAdmin } from "@/src/lib/require-admin";
+import { getOwnerSession, isBreakGlassAdmin } from "@/src/lib/require-admin";
 import { errorResponse, errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 
 // Revocation must take effect immediately — never statically cached.
@@ -10,15 +10,15 @@ export const dynamic = "force-dynamic";
 type RouteContext = { params: Promise<{ id: string }> };
 
 /**
- * DELETE /api/admin/team/:id — withdraw a user's admin access. Admin only.
+ * DELETE /api/admin/team/:id — withdraw a user's dashboard access. Owner only.
  *
  * The account survives; only the role is taken away. The use-case refuses to
- * remove you or the last admin; break-glass access is refused here instead,
- * because it lives in the environment rather than the database — clearing the
- * role would report success while the person still walked straight back in.
+ * remove you or the owner; break-glass access is refused here instead, because it
+ * lives in the environment rather than the database — clearing the role would
+ * report success while the person still walked straight back in.
  */
 export async function DELETE(_request: Request, { params }: RouteContext): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getOwnerSession();
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;

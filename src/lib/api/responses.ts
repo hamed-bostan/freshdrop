@@ -82,7 +82,7 @@ export function errorResponseFromException(error: unknown, context: string): Nex
   if (error instanceof AdminRevokeError) {
     return errorResponse(409, {
       message: error.message,
-      code: error.reason === "self" ? "REVOKE_SELF" : "REVOKE_LAST_ADMIN",
+      code: error.reason === "self" ? "REVOKE_SELF" : "REVOKE_OWNER",
     });
   }
 

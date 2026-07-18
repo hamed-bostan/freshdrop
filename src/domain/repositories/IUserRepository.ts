@@ -21,8 +21,8 @@ export type IUserRepository = {
   getById(id: string): Promise<User | null>;
   create(input: NewUser): Promise<User>;
   update(id: string, input: ProfileUpdate): Promise<User>;
-  /** Every user holding `role`, oldest first — the admin team is small enough to read whole. */
-  listByRole(role: UserRole): Promise<User[]>;
+  /** Every user holding one of `roles`, oldest first — the team is small enough to read whole. */
+  listByRoles(roles: readonly UserRole[]): Promise<User[]>;
   /**
    * Set a user's access level, creating the row when the person hasn't signed in
    * yet — an admin can be granted access before their first sign-in, and the row

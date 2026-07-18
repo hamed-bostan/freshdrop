@@ -1,8 +1,8 @@
-import type { User } from "../../entities/User";
+import { DASHBOARD_ROLES, type User } from "../../entities/User";
 import type { IUserRepository } from "../../repositories/IUserRepository";
 
 /**
- * Everyone who can reach the dashboard: users holding the `admin` role, plus any
+ * Everyone who can reach the dashboard: the owner and every admin, plus any
  * break-glass ids the caller passes in.
  *
  * Break-glass access is configured in the environment (see `require-admin.ts`),
@@ -11,12 +11,12 @@ import type { IUserRepository } from "../../repositories/IUserRepository";
  * *everyone*, including an account that holds no role in the database; hiding
  * those would make the page quietly lie.
  */
-export class ListAdmins {
+export class ListTeam {
   constructor(private readonly userRepo: IUserRepository) {}
 
   async execute(breakGlassIds: readonly string[] = []): Promise<User[]> {
-    const admins = await this.userRepo.listByRole("admin");
-    const seen = new Set(admins.map((admin) => admin.id));
+    const members = await this.userRepo.listByRoles(DASHBOARD_ROLES);
+    const seen = new Set(members.map((member) => member.id));
 
     // A break-glass id may have no user row at all (env set before that person
     // ever signed in). Those simply have nothing to list, so they're skipped
@@ -25,6 +25,6 @@ export class ListAdmins {
       breakGlassIds.filter((id) => !seen.has(id)).map((id) => this.userRepo.getById(id)),
     );
 
-    return [...admins, ...extras.filter((user): user is User => user !== null)];
+    return [...members, ...extras.filter((user): user is User => user !== null)];
   }
 }

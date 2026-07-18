@@ -23,7 +23,7 @@ type ApiErrorKey =
   | "slotUnavailable"
   | "addressGone"
   | "revokeSelf"
-  | "revokeLastAdmin"
+  | "revokeOwner"
   | "revokeBreakGlass"
   | "timeout"
   | "network"
@@ -40,7 +40,7 @@ const CODE_KEYS: Readonly<Record<string, ApiErrorKey>> = {
   SLOT_UNAVAILABLE: "slotUnavailable",
   ADDRESS_GONE: "addressGone",
   REVOKE_SELF: "revokeSelf",
-  REVOKE_LAST_ADMIN: "revokeLastAdmin",
+  REVOKE_OWNER: "revokeOwner",
   REVOKE_BREAK_GLASS: "revokeBreakGlass",
   INTERNAL: "server",
   EBADRESPONSE: "server",

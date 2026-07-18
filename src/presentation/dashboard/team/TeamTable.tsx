@@ -4,6 +4,7 @@ import { Badge, Button, Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
 import type { TeamMember } from "./team-response-schema";
 import { RevokeAdminButton } from "./RevokeAdminButton";
+import { TransferOwnershipButton } from "./TransferOwnershipButton";
 
 type TeamTableProps = {
   /** Everyone who can reach the dashboard, in the order the API returned them. */
@@ -60,17 +61,28 @@ export function TeamTable({ members }: TeamTableProps) {
                 <span dir="ltr" className="truncate text-body-b6 text-muted-foreground">
                   {member.phone}
                 </span>
-                {/* Every row here is a full admin — break-glass and database grants
-                    carry identical permissions. So the badge always reads "Admin"
-                    and the *source* is a note beneath it: showing "Server config" as
-                    if it were a peer of "Admin" implied two access levels. */}
+                {/* The badge is the role and nothing else. Where the grant is stored
+                    is metadata about the row, so it sits underneath as a note —
+                    rendering "Server config" as a peer of "Admin" implied they were
+                    two different access levels, which they never were. */}
                 <span className="flex flex-col items-start gap-1">
-                  <Badge variant="success">{t("badgeAdmin")}</Badge>
+                  {member.role === "owner" ? (
+                    <Badge variant="warning">{t("badgeOwner")}</Badge>
+                  ) : (
+                    <Badge variant="success">{t("badgeAdmin")}</Badge>
+                  )}
                   {member.breakGlass && (
                     <span className="text-body-b10 text-muted-foreground">{t("managedInEnv")}</span>
                   )}
                 </span>
-                <span className="flex justify-end">
+                <span className="flex justify-end gap-1">
+                  {member.transferable && (
+                    <TransferOwnershipButton
+                      id={member.id}
+                      name={member.name}
+                      isSelf={member.isSelf}
+                    />
+                  )}
                   {member.revokeBlocked === null ? (
                     <RevokeAdminButton id={member.id} name={member.name} />
                   ) : (

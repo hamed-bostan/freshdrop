@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { User } from "@/src/domain/entities/User";
 import { GrantAdmin } from "@/src/domain/use-cases/team/GrantAdmin";
-import { ListAdmins } from "@/src/domain/use-cases/team/ListAdmins";
+import { ListTeam } from "@/src/domain/use-cases/team/ListTeam";
 import { adminInviteNotifier, userRepository } from "@/src/infrastructure/container";
-import { breakGlassAdminIds, getAdminSession, isBreakGlassAdmin } from "@/src/lib/require-admin";
+import { breakGlassAdminIds, getOwnerSession, isBreakGlassAdmin } from "@/src/lib/require-admin";
 import { getAppUrl } from "@/src/lib/appUrl";
 import { grantAdminSchema } from "@/src/presentation/dashboard/team/team-schema";
 import type { TeamMember } from "@/src/presentation/dashboard/team/team-response-schema";
@@ -15,31 +15,30 @@ import {
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
 
-// Who holds admin access is read per request — never statically cached.
+// Who holds dashboard access is read per request — never statically cached.
 export const dynamic = "force-dynamic";
 
 /**
- * Project the admin list onto the team rows, adding the facts only the API can
- * know. `revokeBlocked` mirrors exactly what `RevokeAdmin` (plus the break-glass
- * check in the `[id]` route) will refuse, so the UI never offers a Remove that the
- * server would reject — the count it depends on is of *database* admins, which is
- * what the last-admin rule actually protects, not of rendered rows.
+ * Project the team onto its rows, adding the facts only the API can know.
+ *
+ * `revokeBlocked` mirrors exactly what `RevokeAdmin` (plus the break-glass check
+ * in the `[id]` route) will refuse, so the UI never offers a Remove the server
+ * would reject. `transferable` likewise marks who could take ownership: anyone on
+ * the team who isn't already the owner and isn't you.
  */
-function toTeamMembers(admins: User[], viewerId: string): TeamMember[] {
-  const dbAdminCount = admins.filter((admin) => admin.role === "admin").length;
-
-  return admins.map((user) => {
+function toTeamMembers(members: User[], viewerId: string): TeamMember[] {
+  return members.map((user) => {
     const breakGlass = isBreakGlassAdmin(user.id);
     const isSelf = user.id === viewerId;
 
     // Ordered to match the order the server actually applies the checks, so the
-    // reason shown is the one that would come back from a real attempt.
+    // reason shown is the one a real attempt would come back with.
     const revokeBlocked = isSelf
       ? ("self" as const)
-      : breakGlass
-        ? ("breakGlass" as const)
-        : dbAdminCount <= 1
-          ? ("lastAdmin" as const)
+      : user.role === "owner"
+        ? ("owner" as const)
+        : breakGlass
+          ? ("breakGlass" as const)
           : null;
 
     return {
@@ -47,36 +46,46 @@ function toTeamMembers(admins: User[], viewerId: string): TeamMember[] {
       name: user.name,
       phone: user.phone,
       avatarUrl: user.avatarUrl,
+      role: user.role === "owner" ? ("owner" as const) : ("admin" as const),
       isSelf,
       breakGlass,
       revokeBlocked,
+      // Anyone who isn't already the owner can be made one. That includes *your*
+      // row when you're a break-glass admin and the owner seat is vacant — the
+      // bootstrap claim. When you are the owner your row is `owner`, so the same
+      // condition excludes it without a special case.
+      transferable: user.role !== "owner",
     };
   });
 }
 
 /**
- * GET /api/admin/team — everyone who can reach the dashboard. Admin only.
+ * GET /api/admin/team — everyone who can reach the dashboard. Owner only.
+ *
+ * Team management is owner-only throughout: an admin runs the store but doesn't
+ * decide who else can. That keeps admin power non-symmetric, so no admin can
+ * demote their peers.
  */
 export async function GET(): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getOwnerSession();
   if (!session) return unauthorizedResponse();
 
   try {
-    const admins = await new ListAdmins(userRepository).execute(breakGlassAdminIds());
-    return NextResponse.json(toTeamMembers(admins, session.user.id));
+    const members = await new ListTeam(userRepository).execute(breakGlassAdminIds());
+    return NextResponse.json(toTeamMembers(members, session.user.id));
   } catch (error) {
     return errorResponseFromException(error, "GET /api/admin/team failed");
   }
 }
 
 /**
- * POST /api/admin/team — grant admin access to a phone number. Admin only.
+ * POST /api/admin/team — grant admin access to a phone number. Owner only.
  *
  * Thin controller: authenticate → validate (same Zod schema the form uses) →
  * delegate to the use-case → map domain errors to HTTP status codes.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getOwnerSession();
   if (!session) return unauthorizedResponse();
 
   const body = await parseJsonBody(request);
@@ -99,10 +108,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       parsed.data,
       signInUrl,
     );
-    // Re-list so `revocable` is computed against the post-grant admin count rather
-    // than guessed from the single row we just wrote.
-    const admins = await new ListAdmins(userRepository).execute(breakGlassAdminIds());
-    const member = toTeamMembers(admins, session.user.id).find((row) => row.id === granted.id);
+    const [member] = toTeamMembers([granted], session.user.id);
     return NextResponse.json(member, { status: 201 });
   } catch (error) {
     return errorResponseFromException(error, "POST /api/admin/team failed");

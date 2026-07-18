@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { requireAdmin } from "@/src/lib/require-admin";
+import { isOwner, requireAdmin } from "@/src/lib/require-admin";
 import { DashboardSidebar } from "@/src/presentation/dashboard/DashboardSidebar";
 
 /**
@@ -9,11 +9,11 @@ import { DashboardSidebar } from "@/src/presentation/dashboard/DashboardSidebar"
  * the width — the storefront's mobile `max-w-md` lives in `(main)`, not here.
  */
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  await requireAdmin();
+  const session = await requireAdmin();
 
   return (
     <div className="flex min-h-dvh bg-background">
-      <DashboardSidebar />
+      <DashboardSidebar isOwner={await isOwner(session)} />
       <main className="min-w-0 flex-1 px-8 py-8">{children}</main>
     </div>
   );
