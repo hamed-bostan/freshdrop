@@ -810,8 +810,13 @@
     "colAccess": "Access",
     "colActions": "Actions",
     "badgeAdmin": "Admin",
-    "badgeYou": "You",
-    "badgeBreakGlass": "Server config",
+    "youSuffix": "(you)",
+    "managedInEnv": "Set in server config",
+    "revokeBlocked": {
+      "breakGlass": "Set in server config — remove them from ADMIN_USER_IDS instead.",
+      "lastAdmin": "Can't remove the last admin — add another one first.",
+      "self": "You can't remove your own access."
+    },
     "revokeAria": "Remove admin access for {name}",
     "revokeTitle": "Remove admin access?",
     "revokeMessage": "{name} will lose access to the dashboard. Their account and order history stay untouched.",

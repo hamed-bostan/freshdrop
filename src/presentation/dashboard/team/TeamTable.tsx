@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
-import { Badge } from "@/src/presentation/design-system";
+import { Trash2 } from "lucide-react";
+import { Badge, Button, Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
 import type { TeamMember } from "./team-response-schema";
 import { RevokeAdminButton } from "./RevokeAdminButton";
@@ -20,11 +21,11 @@ const TEAM_ROW_GRID = "grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto_auto] 
  * header and rows align on {@link TEAM_ROW_GRID}; scrolls horizontally on narrow
  * viewports rather than crushing the columns.
  *
- * A row's Remove button is omitted whenever the server would refuse the call
- * anyway — your own row, a break-glass admin, or the last remaining admin. That
- * decision is made server-side and arrives as `revocable`: re-deriving it here
- * meant two copies of one rule, and they disagreed as soon as a break-glass admin
- * was in the list. Each case still carries a badge explaining what it is.
+ * Removal availability is decided server-side and arrives as `revokeBlocked`:
+ * re-deriving it here meant two copies of one rule, and they disagreed as soon as
+ * a break-glass admin was in the list. A blocked row keeps a disabled button
+ * carrying the reason, so "why can't I remove this person?" is answerable from
+ * the table rather than by reading the source.
  */
 export function TeamTable({ members }: TeamTableProps) {
   const t = useTranslations("dashTeam");
@@ -47,23 +48,50 @@ export function TeamTable({ members }: TeamTableProps) {
           <div className="divide-y divide-border">
             {members.map((member) => (
               <div key={member.id} className={cn(TEAM_ROW_GRID, "bg-background px-4 py-3")}>
-                <span className="min-w-0 truncate text-body-b7 text-foreground">{member.name}</span>
+                {/* "(you)" belongs on the name, not in the Access column — it isn't
+                    an access level, and putting it there made the column look like
+                    it held two different kinds of thing. */}
+                <span className="min-w-0 truncate text-body-b7 text-foreground">
+                  {member.name}
+                  {member.isSelf && (
+                    <span className="ms-1 text-muted-foreground">{t("youSuffix")}</span>
+                  )}
+                </span>
                 <span dir="ltr" className="truncate text-body-b6 text-muted-foreground">
                   {member.phone}
                 </span>
-                {/* Where the access comes from and whose row this is are independent
-                    facts, so they get their own badges — collapsing them into one
-                    slot hid "You" from anyone who was also break-glass. */}
-                <span className="flex items-center gap-2">
-                  {member.breakGlass ? (
-                    <Badge variant="warning">{t("badgeBreakGlass")}</Badge>
-                  ) : (
-                    <Badge variant="success">{t("badgeAdmin")}</Badge>
+                {/* Every row here is a full admin — break-glass and database grants
+                    carry identical permissions. So the badge always reads "Admin"
+                    and the *source* is a note beneath it: showing "Server config" as
+                    if it were a peer of "Admin" implied two access levels. */}
+                <span className="flex flex-col items-start gap-1">
+                  <Badge variant="success">{t("badgeAdmin")}</Badge>
+                  {member.breakGlass && (
+                    <span className="text-body-b10 text-muted-foreground">{t("managedInEnv")}</span>
                   )}
-                  {member.isSelf && <Badge variant="neutral">{t("badgeYou")}</Badge>}
                 </span>
                 <span className="flex justify-end">
-                  {member.revocable && <RevokeAdminButton id={member.id} name={member.name} />}
+                  {member.revokeBlocked === null ? (
+                    <RevokeAdminButton id={member.id} name={member.name} />
+                  ) : (
+                    // Not rendered for your own row — nobody looks for a button to
+                    // remove themselves. For the others the button stays, disabled,
+                    // carrying the reason: a silently missing control just reads as
+                    // a bug.
+                    member.revokeBlocked !== "self" && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        iconOnly
+                        disabled
+                        aria-label={t(`revokeBlocked.${member.revokeBlocked}`)}
+                        title={t(`revokeBlocked.${member.revokeBlocked}`)}
+                      >
+                        <Icon icon={Trash2} size="sm" />
+                      </Button>
+                    )
+                  )}
                 </span>
               </div>
             ))}

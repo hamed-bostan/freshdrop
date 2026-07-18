@@ -20,13 +20,18 @@ export const teamMemberResponseSchema = z.object({
   /** True when access comes from the env allowlist and can't be revoked in the UI. */
   breakGlass: z.boolean(),
   /**
-   * Whether Remove should be offered for this row. Computed server-side, because
-   * every input to that decision is server-side: who you are, what's in the env
-   * allowlist, and how many database admins remain. The client re-deriving it
-   * meant two versions of one rule that disagreed — a break-glass admin inflated
-   * the client's count, so it offered a Remove the server then refused.
+   * Why Remove is unavailable for this row, or `null` when it is available.
+   * Computed server-side, because every input to that decision is server-side:
+   * who you are, what's in the env allowlist, and how many database admins
+   * remain. The client re-deriving it meant two versions of one rule that
+   * disagreed — a break-glass admin inflated the client's count, so it offered a
+   * Remove the server then refused.
+   *
+   * Carrying the *reason* rather than a bare boolean lets the table explain the
+   * absence instead of silently dropping the button, which left an admin with no
+   * way to find out why they couldn't remove someone.
    */
-  revocable: z.boolean(),
+  revokeBlocked: z.enum(["self", "breakGlass", "lastAdmin"]).nullable(),
 });
 
 export const teamMemberListResponseSchema = z.array(teamMemberResponseSchema);

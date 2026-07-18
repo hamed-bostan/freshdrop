@@ -19,10 +19,10 @@ import {
 export const dynamic = "force-dynamic";
 
 /**
- * Project the admin list onto the team rows, adding the flags only the API can
- * know. `revocable` mirrors exactly what `RevokeAdmin` (plus the break-glass
- * check in the `[id]` route) will allow, so the UI never offers a Remove that the
- * server would refuse — the count it depends on is of *database* admins, which is
+ * Project the admin list onto the team rows, adding the facts only the API can
+ * know. `revokeBlocked` mirrors exactly what `RevokeAdmin` (plus the break-glass
+ * check in the `[id]` route) will refuse, so the UI never offers a Remove that the
+ * server would reject — the count it depends on is of *database* admins, which is
  * what the last-admin rule actually protects, not of rendered rows.
  */
 function toTeamMembers(admins: User[], viewerId: string): TeamMember[] {
@@ -31,6 +31,17 @@ function toTeamMembers(admins: User[], viewerId: string): TeamMember[] {
   return admins.map((user) => {
     const breakGlass = isBreakGlassAdmin(user.id);
     const isSelf = user.id === viewerId;
+
+    // Ordered to match the order the server actually applies the checks, so the
+    // reason shown is the one that would come back from a real attempt.
+    const revokeBlocked = isSelf
+      ? ("self" as const)
+      : breakGlass
+        ? ("breakGlass" as const)
+        : dbAdminCount <= 1
+          ? ("lastAdmin" as const)
+          : null;
+
     return {
       id: user.id,
       name: user.name,
@@ -38,7 +49,7 @@ function toTeamMembers(admins: User[], viewerId: string): TeamMember[] {
       avatarUrl: user.avatarUrl,
       isSelf,
       breakGlass,
-      revocable: !isSelf && !breakGlass && user.role === "admin" && dbAdminCount > 1,
+      revokeBlocked,
     };
   });
 }
