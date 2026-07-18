@@ -5,8 +5,7 @@ import { useTranslations } from "next-intl";
 import type { Category } from "@/src/domain/entities/Category";
 import type { ProductFilters } from "@/src/domain/entities/ProductFilters";
 import { DIETARY_TAGS, PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
-import { Button, Input, Sheet, SheetContent } from "@/src/presentation/design-system";
-import { FilterChip } from "./FilterChip";
+import { Button, Input, Sheet, SheetContent, ToggleChip } from "@/src/presentation/design-system";
 
 interface ProductFilterSheetProps {
   open: boolean;
@@ -111,14 +110,15 @@ export function ProductFilterSheet({
             <legend className="mb-3 text-body-b4 text-foreground">{t("categoryLegend")}</legend>
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
-                <FilterChip
+                <ToggleChip
                   key={category.id}
-                  label={category.name}
-                  selected={categoryId === category.id}
-                  onToggle={() =>
+                  pressed={categoryId === category.id}
+                  onPressedChange={() =>
                     setCategoryId((current) => (current === category.id ? undefined : category.id))
                   }
-                />
+                >
+                  {category.name}
+                </ToggleChip>
               ))}
             </div>
           </fieldset>
@@ -127,12 +127,9 @@ export function ProductFilterSheet({
             <legend className="mb-3 text-body-b4 text-foreground">{t("dietaryLegend")}</legend>
             <div className="flex flex-wrap gap-2">
               {DIETARY_TAGS.map((tag) => (
-                <FilterChip
-                  key={tag}
-                  label={tDietary(tag)}
-                  selected={dietary.includes(tag)}
-                  onToggle={() => toggleIn(setDietary, tag)}
-                />
+                <ToggleChip key={tag} pressed={dietary.includes(tag)} onPressedChange={() => toggleIn(setDietary, tag)}>
+                  {tDietary(tag)}
+                </ToggleChip>
               ))}
             </div>
           </fieldset>
@@ -141,12 +138,9 @@ export function ProductFilterSheet({
             <legend className="mb-3 text-body-b4 text-foreground">{t("brandLegend")}</legend>
             <div className="flex flex-wrap gap-2">
               {PRODUCT_BRANDS.map((brand) => (
-                <FilterChip
-                  key={brand}
-                  label={brand}
-                  selected={brands.includes(brand)}
-                  onToggle={() => toggleIn(setBrands, brand)}
-                />
+                <ToggleChip key={brand} pressed={brands.includes(brand)} onPressedChange={() => toggleIn(setBrands, brand)}>
+                  {brand}
+                </ToggleChip>
               ))}
             </div>
           </fieldset>

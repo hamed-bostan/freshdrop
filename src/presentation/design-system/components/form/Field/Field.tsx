@@ -3,13 +3,13 @@
 import * as React from "react";
 import { cn } from "@/src/lib/utils";
 
-export interface FieldProps {
+export type FieldProps = {
   id?: string;
   description?: React.ReactNode;
   error?: React.ReactNode;
   className?: string;
   children: (args: { id: string; ariaDescribedBy?: string; ariaInvalid?: boolean }) => React.ReactNode;
-}
+};
 
 export const Field = ({ id, description, error, className, children }: FieldProps) => {
   const generatedId = React.useId();

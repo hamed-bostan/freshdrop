@@ -8,6 +8,7 @@ import { DEFAULT_PRODUCT_SORT, hasProductSearchCriteria } from "@/src/domain/ent
 import { buildProductFilterParams } from "@/src/lib/api/product-search-params";
 import { cn } from "@/src/lib/utils";
 import { useRouter } from "@/src/i18n/navigation";
+import { Select } from "@/src/presentation/design-system";
 import { SearchBar } from "@/src/presentation/components/SearchBar";
 import { ProductFilterSheet } from "./ProductFilterSheet";
 
@@ -18,10 +19,6 @@ const SORT_OPTIONS: { value: ProductSort; labelKey: "sortName" | "sortPriceAsc" 
   { value: "price-desc", labelKey: "sortPriceDesc" },
   { value: "rating", labelKey: "sortRating" },
 ];
-
-/** Native-select styling matching the dashboard's field family (no DS Select yet). */
-const SORT_SELECT_CLASSES =
-  "h-9 rounded-input border border-border bg-input px-3 text-body-b8 text-input-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50";
 
 interface SearchExperienceProps {
   /** The active search term, prefilled into the field. */
@@ -104,8 +101,9 @@ export function SearchExperience({ query, filters, categories, children }: Searc
 
             <label className="flex items-center gap-2 text-body-b8 text-muted-foreground">
               {t("sortLabel")}
-              <select
-                className={SORT_SELECT_CLASSES}
+              <Select
+                size="sm"
+                className="w-auto"
                 aria-label={t("sortAria")}
                 value={optimisticFilters.sort ?? DEFAULT_PRODUCT_SORT}
                 onChange={(event) => changeSort(event.target.value as ProductSort)}
@@ -115,7 +113,7 @@ export function SearchExperience({ query, filters, categories, children }: Searc
                     {t(option.labelKey)}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
           </div>
         )}

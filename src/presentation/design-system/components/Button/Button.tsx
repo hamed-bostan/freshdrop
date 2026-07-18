@@ -1,11 +1,15 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Loader2 } from "lucide-react";
 
 import { cn } from "@/src/lib/utils";
+import { focusRing } from "../shared/focusRing";
 
 const buttonVariants = cva(
   [
+    // No `gap` here on purpose: call sites space their own leading icons with
+    // `me-*`, and a base gap would stack on top of that.
     "flex items-center justify-center",
     "px-4",
     "rounded-button",
@@ -13,20 +17,19 @@ const buttonVariants = cva(
     "transition-colors",
     "duration-200",
     "ease-out",
-    "focus-visible:outline-none",
-    "focus-visible:ring",
-    "focus-visible:ring-ring",
+    focusRing,
+    // Also suppresses the hover styles below while disabled.
     "disabled:pointer-events-none",
   ],
   {
     variants: {
       variant: {
         primary:
-          "bg-primary text-primary-foreground active:bg-primary-pressed disabled:bg-disabled disabled:text-disabled-foreground",
+          "bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-pressed disabled:bg-disabled disabled:text-disabled-foreground",
         outline:
-          "border border-primary text-primary bg-transparent active:bg-accent active:text-primary-pressed active:border-primary-pressed disabled:border-disabled-border disabled:text-disabled-foreground",
-        ghost: "px-0 bg-transparent text-foreground disabled:text-disabled-foreground",
-        link: "px-0 bg-transparent text-primary disabled:text-disabled-foreground",
+          "border border-primary text-primary bg-transparent hover:bg-accent active:bg-accent active:text-primary-pressed active:border-primary-pressed disabled:border-disabled-border disabled:text-disabled-foreground",
+        ghost: "px-0 bg-transparent text-foreground hover:text-primary disabled:text-disabled-foreground",
+        link: "px-0 bg-transparent text-primary hover:text-primary-hover hover:underline underline-offset-4 disabled:text-disabled-foreground disabled:no-underline",
       },
 
       size: {
@@ -58,28 +61,53 @@ const buttonVariants = cva(
   },
 );
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-}
+type ButtonBaseProps = React.ButtonHTMLAttributes<HTMLButtonElement> & VariantProps<typeof buttonVariants>;
+
+/**
+ * `asChild` and `loading` are mutually exclusive: `Slot` merges props onto the
+ * single child it is given, so there is nowhere to put a spinner alongside it.
+ * Encoded in the type rather than checked at runtime, so the combination simply
+ * doesn't compile.
+ */
+export type ButtonProps = ButtonBaseProps &
+  (
+    | { asChild: true; loading?: never }
+    | {
+        asChild?: false;
+        /** Shows a spinner and disables the button while an action is in flight. */
+        loading?: boolean;
+      }
+  );
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, iconOnly, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
+    // In this branch the union narrows `loading` to `never`, so there is nothing
+    // to strip before handing the props to Slot.
+    if (asChild) {
+      return <Slot ref={ref} className={cn(buttonVariants({ variant, size, iconOnly }), className)} {...props} />;
+    }
+
+    const { loading = false, children, disabled, ...buttonProps } = props;
 
     return (
-      <Comp
-        className={cn(
-          buttonVariants({
-            variant,
-            size,
-            iconOnly,
-          }),
-          className,
-        )}
+      <button
         ref={ref}
-        {...props}
-      />
+        className={cn(buttonVariants({ variant, size, iconOnly }), className)}
+        // A loading button must not be re-submittable, so it disables itself.
+        disabled={disabled || loading}
+        aria-busy={loading || undefined}
+        {...buttonProps}
+      >
+        {loading && (
+          <Loader2
+            aria-hidden
+            className={cn("size-4 animate-spin", !iconOnly && React.Children.count(children) > 0 && "me-2")}
+          />
+        )}
+        {/* An icon-only button is a fixed square: the spinner takes the icon's
+            place rather than being crammed in beside it. */}
+        {!(loading && iconOnly) && children}
+      </button>
     );
   },
 );

@@ -22,14 +22,17 @@ export interface IconProps extends Omit<LucideProps, "size">, VariantProps<typeo
   label?: string;
 }
 
-export const Icon = ({ icon: LucideIcon, size, className, label, ...props }: IconProps) => (
-  <LucideIcon
-    className={cn(iconVariants({ size }), className)}
-    aria-hidden={label ? undefined : true}
-    aria-label={label}
-    role={label ? "img" : undefined}
-    {...props}
-  />
+export const Icon = React.forwardRef<SVGSVGElement, IconProps>(
+  ({ icon: LucideIcon, size, className, label, ...props }, ref) => (
+    <LucideIcon
+      ref={ref}
+      className={cn(iconVariants({ size }), className)}
+      aria-hidden={label ? undefined : true}
+      aria-label={label}
+      role={label ? "img" : undefined}
+      {...props}
+    />
+  ),
 );
 
 Icon.displayName = "Icon";

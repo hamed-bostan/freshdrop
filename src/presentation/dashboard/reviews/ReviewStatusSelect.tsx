@@ -6,6 +6,7 @@ import type { ReviewStatus } from "@/src/domain/entities/Review";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { cn } from "@/src/lib/utils";
+import { Select } from "@/src/presentation/design-system";
 import { reviewsApi } from "./review-api";
 
 /**
@@ -19,10 +20,6 @@ const DECISIONS: { value: ModerationDecision; labelKey: "statusApproved" | "stat
   { value: "approved", labelKey: "statusApproved" },
   { value: "rejected", labelKey: "statusRejected" },
 ];
-
-/** Native-select styling matching the DS field family (same as ProductForm). */
-const SELECT_CLASSES =
-  "h-9 rounded-input border border-border bg-input px-2.5 text-body-b7 text-input-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
 
 type ReviewStatusSelectProps = {
   id: string;
@@ -61,8 +58,9 @@ export function ReviewStatusSelect({ id, status }: ReviewStatusSelectProps) {
 
   return (
     <div className="flex flex-col items-end gap-1">
-      <select
-        className={cn(SELECT_CLASSES, status === "pending" && "text-muted-foreground")}
+      <Select
+        size="sm"
+        className={cn("w-auto", status === "pending" && "text-muted-foreground")}
         value={status === "pending" ? "" : status}
         onChange={handleChange}
         disabled={pending}
@@ -78,7 +76,7 @@ export function ReviewStatusSelect({ id, status }: ReviewStatusSelectProps) {
             {t(option.labelKey)}
           </option>
         ))}
-      </select>
+      </Select>
       {error && (
         <p role="alert" className="max-w-48 text-end text-body-b10 text-destructive">
           {error}

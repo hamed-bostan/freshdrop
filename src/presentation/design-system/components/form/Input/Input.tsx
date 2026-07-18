@@ -4,9 +4,10 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/src/lib/utils";
 import { baseFieldStyles } from "../shared/baseFieldStyles";
+import { focusRing } from "../../shared/focusRing";
 
 const inputVariants = cva(
-  "px-5 focus-visible:ring-2 focus-visible:ring-ring",
+  ["px-5", focusRing],
   {
     variants: {
       hasLeftElement: {

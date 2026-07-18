@@ -19,7 +19,10 @@ export const colors = {
   primary: {
     DEFAULT: primary[500],
     foreground: neutral[0],
-    pressed: primary[600],
+    // Rest → hover → pressed is a three-step ladder, so a pointer user gets
+    // feedback on hover that still visibly deepens on press.
+    hover: primary[600],
+    pressed: primary[700],
   },
 
   disabled: {

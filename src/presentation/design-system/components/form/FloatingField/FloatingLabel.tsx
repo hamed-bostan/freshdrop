@@ -1,13 +1,13 @@
 import { cn } from "@/src/lib/utils";
 import { RequiredMark } from "../shared/RequiredMark";
 
-interface FloatingLabelProps {
+type FloatingLabelProps = {
   htmlFor: string;
   label: string;
   required?: boolean;
   /** Horizontal offset that aligns the label with the input's text inset. */
   offset: string;
-}
+};
 
 /**
  * Floating label rendered as the sibling *after* the input so it can react to the

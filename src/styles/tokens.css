@@ -44,7 +44,8 @@
   --color-popover-foreground: #1E1E1E;
   --color-primary: #11A94D;
   --color-primary-foreground: #FFFFFF;
-  --color-primary-pressed: #0E893E;
+  --color-primary-hover: #0E893E;
+  --color-primary-pressed: #0A682F;
   --color-disabled: #EFEFEF;
   --color-disabled-foreground: #C7C7C7;
   --color-disabled-border: #C7C7C7;

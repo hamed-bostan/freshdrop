@@ -4,12 +4,12 @@ import { Input, type InputProps } from "../Input";
 import { RequiredMark } from "../shared/RequiredMark";
 
 /** The a11y wiring a field injects into its control (spread onto the control). */
-export interface FieldControlProps {
+export type FieldControlProps = {
   id: string;
   "aria-describedby"?: string;
   "aria-invalid"?: boolean;
   required?: boolean;
-}
+};
 
 export interface TextFieldProps extends Omit<InputProps, "children"> {
   /** Static label rendered above the control. */

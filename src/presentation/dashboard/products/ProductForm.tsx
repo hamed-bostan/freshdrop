@@ -12,7 +12,9 @@ import {
   Button,
   Field,
   Input,
+  Select,
   Switch,
+  ToggleChip,
   Tabs,
   TabsContent,
   TabsList,
@@ -24,7 +26,6 @@ import { Link, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { formErrorMessage } from "@/src/lib/formErrorMessage";
-import { cn } from "@/src/lib/utils";
 import { productFormSchema, type ProductFormInput } from "@/src/contracts/product-schema";
 import { productsApi } from "./product-api";
 import { ProductImageUpload } from "./ProductImageUpload";
@@ -45,10 +46,6 @@ const FORM_FIELDS = [
   "brand",
   "dietary",
 ] as const satisfies readonly (keyof ProductFormInput)[];
-
-/** Native-select styling that matches the DS field family (no DS Select yet). */
-const SELECT_CLASSES =
-  "h-10 w-full rounded-input border border-border bg-input px-3 text-body-b6 text-input-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive disabled:cursor-not-allowed disabled:opacity-50";
 
 type ProductFormProps =
   | { mode: "create"; categories: Category[] }
@@ -232,9 +229,8 @@ export function ProductForm(props: ProductFormProps) {
               {t("categoryLabel")}
               <span aria-hidden className="text-destructive"> *</span>
             </label>
-            <select
+            <Select
               id={id}
-              className={SELECT_CLASSES}
               aria-invalid={ariaInvalid}
               aria-describedby={ariaDescribedBy}
               {...register("categoryId")}
@@ -249,7 +245,7 @@ export function ProductForm(props: ProductFormProps) {
                   {category.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </>
         )}
       </Field>
@@ -321,10 +317,9 @@ export function ProductForm(props: ProductFormProps) {
             {/* Brands are Latin proper nouns, never translated, so the control reads LTR:
                 under RTL the trailing punctuation in a name like "Pantry Co." jumps to
                 the front (".Pantry Co"). */}
-            <select
+            <Select
               id={id}
               dir="ltr"
-              className={SELECT_CLASSES}
               aria-invalid={ariaInvalid}
               aria-describedby={ariaDescribedBy}
               {...register("brand")}
@@ -337,7 +332,7 @@ export function ProductForm(props: ProductFormProps) {
                   {brand}
                 </option>
               ))}
-            </select>
+            </Select>
           </>
         )}
       </Field>
@@ -355,30 +350,19 @@ export function ProductForm(props: ProductFormProps) {
               {DIETARY_TAGS.map((tag) => {
                 const checked = field.value?.includes(tag) ?? false;
                 return (
-                  <label
+                  <ToggleChip
                     key={tag}
-                    className={cn(
-                      "flex h-10 cursor-pointer items-center rounded-full border px-4 text-button-btn4 transition-colors",
-                      "focus-within:ring-2 focus-within:ring-ring",
-                      checked
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border text-muted-foreground",
-                    )}
+                    pressed={checked}
+                    onPressedChange={(pressed) =>
+                      field.onChange(
+                        pressed
+                          ? [...(field.value ?? []), tag]
+                          : (field.value ?? []).filter((item: string) => item !== tag),
+                      )
+                    }
                   >
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={checked}
-                      onChange={(event) =>
-                        field.onChange(
-                          event.target.checked
-                            ? [...(field.value ?? []), tag]
-                            : (field.value ?? []).filter((item: string) => item !== tag),
-                        )
-                      }
-                    />
                     {tDietary(tag)}
-                  </label>
+                  </ToggleChip>
                 );
               })}
             </div>

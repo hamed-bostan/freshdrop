@@ -28,6 +28,9 @@ export const baseFieldStyles = cva(
         filled: "border border-transparent bg-input-filled",
       },
       size: {
+        // Compact density, for controls sitting inside dashboard table rows and
+        // toolbars rather than a standalone form.
+        sm: "h-9 text-body-b7",
         md: "h-10 text-body-b6",
         lg: "h-12 text-body-b2",
       },

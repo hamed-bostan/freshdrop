@@ -2,7 +2,9 @@
 
 import { useTranslations } from "next-intl";
 import { Star } from "lucide-react";
+import { RadioGroup as RadioGroupPrimitive } from "radix-ui";
 import { cn } from "@/src/lib/utils";
+import { focusRing } from "../shared/focusRing";
 
 /** Amber used for stars across the app (the `rating` design token). */
 const STAR_COLOR_CLASS = "text-rating";
@@ -13,7 +15,7 @@ const starSizes = {
   lg: "size-10",
 } as const;
 
-export interface RatingStarsProps {
+export type RatingStarsProps = {
   /** Current rating, 0–`max`. */
   value: number;
   /** Total number of stars. */
@@ -25,11 +27,15 @@ export interface RatingStarsProps {
   /** Accessible name for the interactive group (e.g. "Your rating"). */
   label?: string;
   className?: string;
-}
+};
 
 /**
  * A row of `max` stars. Read-only by default; pass `onChange` to turn it into an
- * interactive rating picker (rendered as a radio group for keyboard + a11y).
+ * interactive rating picker.
+ *
+ * The interactive form is a real Radix RadioGroup, not hand-rolled `role="radio"`
+ * buttons: the ARIA radio pattern requires the group to be a *single* tab stop
+ * with arrow keys moving the selection, which Radix's roving tabindex provides.
  */
 export function RatingStars({ value, max = 5, onChange, size = "md", label, className }: RatingStarsProps) {
   const t = useTranslations("ds");
@@ -55,20 +61,23 @@ export function RatingStars({ value, max = 5, onChange, size = "md", label, clas
   }
 
   return (
-    <div className={cn("flex items-center gap-2", className)} role="radiogroup" aria-label={groupLabel}>
+    <RadioGroupPrimitive.Root
+      className={cn("flex items-center gap-2", className)}
+      aria-label={groupLabel}
+      // Radix speaks strings; the public API stays numeric.
+      value={String(value)}
+      onValueChange={(next) => onChange(Number(next))}
+    >
       {stars.map((starValue) => (
-        <button
+        <RadioGroupPrimitive.Item
           key={starValue}
-          type="button"
-          role="radio"
-          aria-checked={starValue === value}
+          value={String(starValue)}
           aria-label={t("ratingStar", { count: starValue })}
-          onClick={() => onChange(starValue)}
-          className="rounded-full transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-90"
+          className={cn("cursor-pointer rounded-full transition-transform active:scale-90", focusRing)}
         >
           {star(starValue <= value)}
-        </button>
+        </RadioGroupPrimitive.Item>
       ))}
-    </div>
+    </RadioGroupPrimitive.Root>
   );
 }

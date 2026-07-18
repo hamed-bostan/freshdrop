@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/src/lib/utils";
 import { baseFieldStyles } from "../shared/baseFieldStyles";
 
-interface OTPInputProps {
+type OTPInputProps = {
   length?: number;
   /** Controlled value. Omit for uncontrolled — the component tracks its own digits. */
   value?: string;
@@ -20,7 +20,7 @@ interface OTPInputProps {
   "aria-describedby"?: string;
   /** Marks the field invalid: applied to every cell and drives the error styling. */
   "aria-invalid"?: boolean;
-}
+};
 
 /** Pads/truncates a value into fixed-length cells, preserving empty positions. */
 const toCells = (value: string | undefined, length: number) =>
