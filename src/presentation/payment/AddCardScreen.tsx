@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { CreditCard, User, Lock } from "lucide-react";
-import { Button, Icon, Input, PasswordInput, TextField } from "@/src/presentation/design-system";
+import { Button, FormMessage, Icon, Input, PasswordInput, TextField } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { usePathname, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
@@ -126,9 +126,7 @@ export default function AddCardScreen() {
       </TextField>
 
       {error && (
-        <p role="alert" className="text-body-b10 text-destructive">
-          {error}
-        </p>
+        <FormMessage>{error}</FormMessage>
       )}
 
       <Button type="submit" size="lg" className="mt-auto w-full" disabled={pending}>

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/src/presentation/design-system";
+import { Button, FormMessage } from "@/src/presentation/design-system";
 import { ConfirmDialog } from "@/src/presentation/components/ConfirmDialog";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
@@ -53,9 +53,7 @@ export function OrderReturnControl({ orderId }: OrderReturnControlProps) {
         </Button>
       </div>
       {error && (
-        <p role="alert" className="max-w-48 text-end text-body-b10 text-destructive">
-          {error}
-        </p>
+        <FormMessage className="max-w-48 text-end">{error}</FormMessage>
       )}
 
       {confirmingApprove && (

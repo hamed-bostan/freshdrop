@@ -11,16 +11,18 @@ import { DIETARY_TAGS, PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilte
 import {
   Button,
   Field,
+  FormMessage,
   Input,
+  RequiredMark,
   Select,
   Switch,
-  ToggleChip,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-  TextField,
   Textarea,
+  TextField,
+  ToggleChip,
 } from "@/src/presentation/design-system";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
@@ -227,7 +229,7 @@ export function ProductForm(props: ProductFormProps) {
           <>
             <label htmlFor={id} className="text-body-b7 text-input-foreground">
               {t("categoryLabel")}
-              <span aria-hidden className="text-destructive"> *</span>
+              <RequiredMark />
             </label>
             <Select
               id={id}
@@ -289,7 +291,7 @@ export function ProductForm(props: ProductFormProps) {
           <>
             <label htmlFor={id} className="text-body-b7 text-input-foreground">
               {t("imageLabel")}
-              <span aria-hidden className="text-destructive"> *</span>
+              <RequiredMark />
             </label>
             <ProductImageUpload
               id={id}
@@ -392,9 +394,7 @@ export function ProductForm(props: ProductFormProps) {
       />
 
       {errors.root?.message && (
-        <p role="alert" className="text-body-b8 text-destructive">
-          {errors.root.message}
-        </p>
+        <FormMessage size="md">{errors.root.message}</FormMessage>
       )}
 
       <div className="flex gap-3 pt-2">

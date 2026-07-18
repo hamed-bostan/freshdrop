@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import type { Order } from "@/src/domain/entities/Order";
 import { isCancellable, isReturnable } from "@/src/domain/entities/Order";
-import { Button } from "@/src/presentation/design-system";
+import { Button, FormMessage } from "@/src/presentation/design-system";
 import { ConfirmDialog } from "@/src/presentation/components/ConfirmDialog";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { useCart } from "@/src/presentation/cart/CartProvider";
@@ -176,9 +176,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
         {actions}
       </div>
       {error && (
-        <p role="alert" className="text-body-b10 text-destructive">
-          {error}
-        </p>
+        <FormMessage>{error}</FormMessage>
       )}
 
       {confirm && (

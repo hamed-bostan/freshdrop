@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { Phone } from "lucide-react";
-import { Button, Icon, TextField } from "@/src/presentation/design-system";
+import { Button, FormMessage, Icon, TextField } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { requestOtp } from "./actions";
 
@@ -55,9 +55,7 @@ export default function LoginScreen({ callbackUrl = "/" }: { callbackUrl?: strin
           />
 
           {error && (
-            <p role="alert" className="text-body-b10 text-destructive">
-              {error}
-            </p>
+            <FormMessage>{error}</FormMessage>
           )}
         </div>
 

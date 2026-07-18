@@ -6,7 +6,7 @@ import type { ReviewStatus } from "@/src/domain/entities/Review";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { cn } from "@/src/lib/utils";
-import { Select } from "@/src/presentation/design-system";
+import { FormMessage, Select } from "@/src/presentation/design-system";
 import { reviewsApi } from "./review-api";
 
 /**
@@ -78,9 +78,7 @@ export function ReviewStatusSelect({ id, status }: ReviewStatusSelectProps) {
         ))}
       </Select>
       {error && (
-        <p role="alert" className="max-w-48 text-end text-body-b10 text-destructive">
-          {error}
-        </p>
+        <FormMessage className="max-w-48 text-end">{error}</FormMessage>
       )}
     </div>
   );

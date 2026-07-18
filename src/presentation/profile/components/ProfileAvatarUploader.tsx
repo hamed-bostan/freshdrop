@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { User, ImagePlus, Images, Camera, Trash2, type LucideIcon } from "lucide-react";
-import { Icon, Sheet, SheetTrigger, SheetContent, SheetClose, Spinner } from "@/src/presentation/design-system";
+import { FormMessage, Icon, Sheet, SheetClose, SheetContent, SheetTrigger, Spinner } from "@/src/presentation/design-system";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { cn } from "@/src/lib/utils";
 import { profilesApi } from "../profile-api";
@@ -148,7 +148,7 @@ export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploader
         </SheetContent>
       </Sheet>
 
-      {error ? <p className="text-body-b10 text-destructive">{error}</p> : null}
+      {error ? <FormMessage>{error}</FormMessage> : null}
     </div>
   );
 }

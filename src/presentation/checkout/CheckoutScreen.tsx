@@ -10,7 +10,7 @@ import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
 import type { SavedCard } from "@/src/domain/entities/Wallet";
-import { Button } from "@/src/presentation/design-system";
+import { Button, FormMessage } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { DeliveryLocationPickerSheet } from "@/src/presentation/delivery-location/DeliveryLocationPickerSheet";
 import { DeliveryLocationSummary } from "@/src/presentation/delivery-location/components/DeliveryLocationSummary";
@@ -271,9 +271,7 @@ export default function CheckoutScreen({
       />
 
       {error && (
-        <p role="alert" className="text-center text-body-b8 text-destructive">
-          {error}
-        </p>
+        <FormMessage size="md" className="text-center">{error}</FormMessage>
       )}
 
       <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full">

@@ -3,7 +3,7 @@
 import * as React from "react";
 import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
-import { Button, Input, Skeleton, TextField, Textarea } from "@/src/presentation/design-system";
+import { Button, FormMessage, Input, Skeleton, Textarea, TextField } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import type { GeoPoint } from "@/src/domain/entities/Place";
 import type { DeliveryLocation, DeliveryLocationKind } from "@/src/domain/entities/DeliveryLocation";
@@ -238,9 +238,7 @@ export default function LocationDetailScreen({
       </div>
 
       {error && (
-        <p role="alert" className="text-center text-body-b8 text-destructive">
-          {error}
-        </p>
+        <FormMessage size="md" className="text-center">{error}</FormMessage>
       )}
 
       <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full">

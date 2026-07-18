@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { ImagePlus } from "lucide-react";
-import { Button, Icon } from "@/src/presentation/design-system";
+import { Button, FormMessage, Icon } from "@/src/presentation/design-system";
 import { imagesApi } from "@/src/presentation/images/image-api";
 
 interface IconUploadProps {
@@ -78,9 +78,9 @@ export function IconUpload({ value, onChange, id, ...aria }: IconUploadProps) {
           {uploading ? t("uploading") : value ? t("replaceImage") : t("uploadImage")}
         </Button>
         {error ? (
-          <p className="text-body-b10 text-destructive">{error}</p>
+          <FormMessage>{error}</FormMessage>
         ) : (
-          <p className="text-body-b10 text-muted-foreground">{t("uploadHint")}</p>
+          <FormMessage tone="hint">{t("uploadHint")}</FormMessage>
         )}
       </div>
     </div>

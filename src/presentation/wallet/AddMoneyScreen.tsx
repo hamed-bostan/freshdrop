@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { Button } from "@/src/presentation/design-system";
+import { Button, FormMessage } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { usePathname, useRouter } from "@/src/i18n/navigation";
 import { formatMoney } from "@/src/lib/formatMoney";
@@ -82,9 +82,7 @@ export default function AddMoneyScreen() {
             </Button>
           </div>
           {error && (
-            <p role="alert" className="text-body-b10 text-destructive">
-              {error}
-            </p>
+            <FormMessage>{error}</FormMessage>
           )}
         </div>
       </div>

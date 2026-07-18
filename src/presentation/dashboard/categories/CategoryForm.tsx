@@ -6,7 +6,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@/src/domain/entities/Category";
 import type { CategoryTranslationInput } from "@/src/domain/repositories/ICategoryRepository";
-import { Button, Field, Input, Tabs, TabsContent, TabsList, TabsTrigger, TextField } from "@/src/presentation/design-system";
+import { Button, Field, FormMessage, Input, RequiredMark, Tabs, TabsContent, TabsList, TabsTrigger, TextField } from "@/src/presentation/design-system";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
@@ -148,7 +148,7 @@ export function CategoryForm(props: CategoryFormProps) {
           <>
             <label htmlFor={id} className="text-body-b7 text-input-foreground">
               {t("iconLabel")}
-              <span aria-hidden className="text-destructive"> *</span>
+              <RequiredMark />
             </label>
             <IconUpload
               id={id}
@@ -164,9 +164,7 @@ export function CategoryForm(props: CategoryFormProps) {
       <input type="hidden" {...register("iconUrl")} />
 
       {errors.root?.message && (
-        <p role="alert" className="text-body-b8 text-destructive">
-          {errors.root.message}
-        </p>
+        <FormMessage size="md">{errors.root.message}</FormMessage>
       )}
 
       <div className="flex gap-3 pt-2">

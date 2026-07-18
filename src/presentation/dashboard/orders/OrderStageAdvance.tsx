@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
-import { Button } from "@/src/presentation/design-system";
+import { Button, FormMessage } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { STAGE_LABEL_KEYS } from "./orderStages";
@@ -46,9 +46,7 @@ export function OrderStageAdvance({ orderId, next }: OrderStageAdvanceProps) {
         {pending ? t("advancePending") : t("advanceTo", { stage: t(STAGE_LABEL_KEYS[next]) })}
       </Button>
       {error && (
-        <p role="alert" className="text-body-b10 text-destructive">
-          {error}
-        </p>
+        <FormMessage>{error}</FormMessage>
       )}
     </div>
   );

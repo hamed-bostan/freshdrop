@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, TextField } from "@/src/presentation/design-system";
+import { Button, FormMessage, Input, TextField } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
@@ -122,9 +122,7 @@ export function GrantAdminForm() {
       </div>
 
       {errors.root?.message && (
-        <p role="alert" className="text-body-b6 text-destructive">
-          {errors.root.message}
-        </p>
+        <FormMessage size="md">{errors.root.message}</FormMessage>
       )}
     </form>
   );

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/src/lib/utils";
+import { FormMessage } from "../FormMessage";
 
 export type FieldProps = {
   id?: string;
@@ -25,16 +26,12 @@ export const Field = ({ id, description, error, className, children }: FieldProp
       {children({ id: fieldId, ariaDescribedBy, ariaInvalid: Boolean(error) })}
 
       {description && (
-        <p id={descriptionId} className="text-body-b10 text-muted-foreground">
+        <FormMessage id={descriptionId} tone="hint">
           {description}
-        </p>
+        </FormMessage>
       )}
 
-      {error && (
-        <p id={errorId} role="alert" className="text-body-b10 text-destructive">
-          {error}
-        </p>
-      )}
+      {error && <FormMessage id={errorId}>{error}</FormMessage>}
     </div>
   );
 };

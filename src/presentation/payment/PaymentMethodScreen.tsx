@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/src/presentation/design-system";
+import { Button, FormMessage } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import type { PaymentMethod, PaymentMethodGroup } from "@/src/domain/entities/PaymentMethod";
 import type { SavedCard } from "@/src/domain/entities/Wallet";
@@ -106,9 +106,7 @@ export default function PaymentMethodScreen({ methods, cards, selectedId }: Paym
       </fieldset>
 
       {error && (
-        <p role="alert" className="text-center text-body-b8 text-destructive">
-          {error}
-        </p>
+        <FormMessage size="md" className="text-center">{error}</FormMessage>
       )}
 
       <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full rounded-button-lg">
