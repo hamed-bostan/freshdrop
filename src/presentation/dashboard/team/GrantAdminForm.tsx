@@ -8,7 +8,7 @@ import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { formErrorMessage } from "@/src/lib/formErrorMessage";
-import { grantAdminSchema, type GrantAdminInput } from "./team-schema";
+import { grantAdminSchema, type GrantAdminInput } from "@/src/contracts/team-schema";
 import { teamApi } from "./team-api";
 
 /**

@@ -7,7 +7,7 @@ import {
   orderNotifier,
 } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
-import { orderSubstitutionSchema } from "@/src/presentation/dashboard/orders/order-substitution-schema";
+import { orderSubstitutionSchema } from "@/src/contracts/order-substitution-schema";
 import {
   errorResponse,
   errorResponseFromException,

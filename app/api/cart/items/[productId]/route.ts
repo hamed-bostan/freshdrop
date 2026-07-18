@@ -3,7 +3,7 @@ import { UpdateCartItemQuantity } from "@/src/domain/use-cases/cart/UpdateCartIt
 import { RemoveFromCart } from "@/src/domain/use-cases/cart/RemoveFromCart";
 import { cartRepository, productRepository } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
-import { updateCartItemSchema } from "@/src/presentation/cart/cart-schema";
+import { updateCartItemSchema } from "@/src/contracts/cart-schema";
 import {
   errorResponse,
   errorResponseFromException,

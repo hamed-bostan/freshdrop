@@ -1,8 +1,11 @@
 import { z } from "zod";
 
 /**
- * The shape the team endpoints promise to return, validated at the typed-service
- * boundary (see `parseApiResponse`).
+ * The shape the team endpoints promise to return — the one place both halves of
+ * the BFF bind to. `app/api/admin/team` builds its rows as `TeamMember[]`, and the
+ * typed services validate the body back against it (see `parseApiResponse`), so a
+ * drift on either side is a compile or parse failure rather than a silent mismatch.
+ * A shared contract, hence `contracts/` and not either consumer's folder.
  *
  * A team member is a `User` narrowed to what the page shows, plus two flags the
  * API computes from context the database doesn't hold: whether this row is the

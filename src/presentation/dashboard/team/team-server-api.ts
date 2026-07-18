@@ -1,5 +1,5 @@
 import { serverApiGet } from "@/src/lib/api/server-client";
-import { teamMemberListResponseSchema, type TeamMember } from "./team-response-schema";
+import { teamMemberListResponseSchema, type TeamMember } from "@/src/contracts/team-response-schema";
 import {
   roleChangeListResponseSchema,
   type RoleChangeEntry,

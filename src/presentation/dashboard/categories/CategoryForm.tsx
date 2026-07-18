@@ -12,7 +12,7 @@ import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { formErrorMessage } from "@/src/lib/formErrorMessage";
 import { slugify } from "@/src/lib/slugify";
-import { categoryFormSchema, type CategoryFormInput } from "./category-schema";
+import { categoryFormSchema, type CategoryFormInput } from "@/src/contracts/category-schema";
 import { categoriesApi } from "./category-api";
 import { IconUpload } from "./IconUpload";
 

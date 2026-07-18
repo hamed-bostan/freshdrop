@@ -7,7 +7,7 @@ import { getUserSession } from "@/src/lib/require-auth";
 import {
   deliveryLocationSchema,
   DELIVERY_LOCATION_LABELS,
-} from "@/src/presentation/delivery-location/delivery-location-schema";
+} from "@/src/contracts/delivery-location-schema";
 import {
   errorResponse,
   errorResponseFromException,

@@ -4,7 +4,7 @@ import { ResolveOrderReturn } from "@/src/domain/use-cases/orders/ResolveOrderRe
 import { orderRepository, productRepository, walletRepository, orderNotifier } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import { getUserSession } from "@/src/lib/require-auth";
-import { orderReturnDecisionSchema } from "@/src/presentation/dashboard/orders/order-return-schema";
+import { orderReturnDecisionSchema } from "@/src/contracts/order-return-schema";
 import {
   errorResponse,
   errorResponseFromException,

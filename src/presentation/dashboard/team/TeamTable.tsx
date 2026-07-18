@@ -2,7 +2,7 @@ import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import { Badge, Button, Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
-import type { TeamMember } from "./team-response-schema";
+import type { TeamMember } from "@/src/contracts/team-response-schema";
 import { RevokeAdminButton } from "./RevokeAdminButton";
 import { TransferOwnershipButton } from "./TransferOwnershipButton";
 

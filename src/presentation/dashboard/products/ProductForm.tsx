@@ -25,7 +25,7 @@ import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { formErrorMessage } from "@/src/lib/formErrorMessage";
 import { cn } from "@/src/lib/utils";
-import { productFormSchema, type ProductFormInput } from "./product-schema";
+import { productFormSchema, type ProductFormInput } from "@/src/contracts/product-schema";
 import { productsApi } from "./product-api";
 import { ProductImageUpload } from "./ProductImageUpload";
 

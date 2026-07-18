@@ -5,7 +5,7 @@ import { DeleteProduct } from "@/src/domain/use-cases/products/DeleteProduct";
 import { productRepository, stockAlertRepository, stockAlertNotifier } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
-import { productFormSchema } from "@/src/presentation/dashboard/products/product-schema";
+import { productFormSchema } from "@/src/contracts/product-schema";
 import {
   errorResponse,
   errorResponseFromException,

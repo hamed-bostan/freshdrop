@@ -5,7 +5,7 @@ import { DeleteCategory } from "@/src/domain/use-cases/categories/DeleteCategory
 import { categoryRepository, imageStorageRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
-import { categoryFormSchema } from "@/src/presentation/dashboard/categories/category-schema";
+import { categoryFormSchema } from "@/src/contracts/category-schema";
 import {
   errorResponse,
   errorResponseFromException,

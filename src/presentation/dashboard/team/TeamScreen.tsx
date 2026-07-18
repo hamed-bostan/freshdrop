@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import type { TeamMember } from "./team-response-schema";
+import type { TeamMember } from "@/src/contracts/team-response-schema";
 import type { RoleChangeEntry } from "./team-history-response-schema";
 import { GrantAdminForm } from "./GrantAdminForm";
 import { TeamTable } from "./TeamTable";

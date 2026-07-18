@@ -1,7 +1,7 @@
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
 import { apiDelete, apiPost, apiPut } from "@/src/lib/api/client";
 import { deliveryLocationResponseSchema } from "./delivery-location-response-schema";
-import type { DeliveryLocationInput } from "./delivery-location-schema";
+import type { DeliveryLocationInput } from "@/src/contracts/delivery-location-schema";
 
 /**
  * Typed client for the delivery-address REST *mutations*. UI components call these

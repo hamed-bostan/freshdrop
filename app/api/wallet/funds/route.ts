@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { AddFunds } from "@/src/domain/use-cases/wallet/AddFunds";
 import { walletRepository } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
-import { addFundsSchema } from "@/src/presentation/wallet/wallet-schema";
+import { addFundsSchema } from "@/src/contracts/wallet-schema";
 import {
   errorResponse,
   errorResponseFromException,

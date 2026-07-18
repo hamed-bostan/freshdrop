@@ -3,7 +3,7 @@ import { AddCard } from "@/src/domain/use-cases/wallet/AddCard";
 import { ListWalletCards } from "@/src/domain/use-cases/wallet/ListWalletCards";
 import { walletRepository } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
-import { addCardSchema } from "@/src/presentation/wallet/wallet-schema";
+import { addCardSchema } from "@/src/contracts/wallet-schema";
 import {
   errorResponse,
   errorResponseFromException,

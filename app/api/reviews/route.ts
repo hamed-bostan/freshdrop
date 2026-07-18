@@ -3,7 +3,7 @@ import { GetProductReviews } from "@/src/domain/use-cases/reviews/GetProductRevi
 import { SubmitReview } from "@/src/domain/use-cases/reviews/SubmitReview";
 import { reviewRepository } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
-import { reviewSubmissionSchema } from "@/src/presentation/product/components/review-schema";
+import { reviewSubmissionSchema } from "@/src/contracts/review-schema";
 import {
   errorResponse,
   errorResponseFromException,

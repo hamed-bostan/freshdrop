@@ -8,7 +8,7 @@ import { CreateProduct } from "@/src/domain/use-cases/products/CreateProduct";
 import { hasProductSearchCriteria } from "@/src/domain/entities/ProductFilters";
 import { productRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
-import { productFormSchema } from "@/src/presentation/dashboard/products/product-schema";
+import { productFormSchema } from "@/src/contracts/product-schema";
 import { parseProductFilters } from "@/src/lib/api/product-search-params";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
 import {

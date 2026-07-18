@@ -2,7 +2,7 @@ import { apiPut } from "@/src/lib/api/client";
 import { AVATAR_IMAGE_FOLDER } from "@/src/lib/imageFolders";
 import { imagesApi } from "@/src/presentation/images/image-api";
 import { userResponseSchema, type UserProfile } from "./profile-response-schema";
-import type { ProfileUpdateValues } from "./profile-schema";
+import type { ProfileUpdateValues } from "@/src/contracts/profile-schema";
 
 /**
  * Typed client for the profile REST endpoint. UI components call these instead of

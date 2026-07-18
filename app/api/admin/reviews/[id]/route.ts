@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { ModerateReview } from "@/src/domain/use-cases/reviews/ModerateReview";
 import { reviewRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
-import { reviewModerationSchema } from "@/src/presentation/dashboard/reviews/review-moderation-schema";
+import { reviewModerationSchema } from "@/src/contracts/review-moderation-schema";
 import {
   errorResponse,
   errorResponseFromException,

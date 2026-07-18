@@ -1,7 +1,7 @@
 import type { Category } from "@/src/domain/entities/Category";
 import { apiDelete, apiPost, apiPut } from "@/src/lib/api/client";
 import { categoryResponseSchema } from "@/src/presentation/category/category-response-schema";
-import type { CategoryFormInput } from "./category-schema";
+import type { CategoryFormInput } from "@/src/contracts/category-schema";
 
 /**
  * Typed client for the category REST *mutations*. UI components call these instead

@@ -3,7 +3,7 @@ import { GetOrCreateUser } from "@/src/domain/use-cases/profile/GetOrCreateUser"
 import { UpdateProfile } from "@/src/domain/use-cases/profile/UpdateProfile";
 import { userRepository, imageStorageRepository } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
-import { profileUpdateSchema } from "@/src/presentation/profile/profile-schema";
+import { profileUpdateSchema } from "@/src/contracts/profile-schema";
 import {
   errorResponse,
   errorResponseFromException,

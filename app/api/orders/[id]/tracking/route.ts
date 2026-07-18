@@ -4,7 +4,7 @@ import { SetOrderTrackingStage } from "@/src/domain/use-cases/orders/SetOrderTra
 import { orderRepository, orderTrackingRepository, orderNotifier } from "@/src/infrastructure/container";
 import { getAdminSession, isAdmin } from "@/src/lib/require-admin";
 import { getUserSession } from "@/src/lib/require-auth";
-import { orderTrackingStageSchema } from "@/src/presentation/dashboard/orders/order-tracking-schema";
+import { orderTrackingStageSchema } from "@/src/contracts/order-tracking-schema";
 import {
   errorResponse,
   errorResponseFromException,

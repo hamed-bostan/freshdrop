@@ -1,7 +1,7 @@
 import type { Order } from "@/src/domain/entities/Order";
 import { apiPost } from "@/src/lib/api/client";
 import { orderResponseSchema } from "@/src/presentation/orders/order-response-schema";
-import type { PlaceOrderInput } from "./checkout-schema";
+import type { PlaceOrderInput } from "@/src/contracts/checkout-schema";
 
 /**
  * Typed client for placing an order. The checkout screen calls this instead of

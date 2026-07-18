@@ -5,9 +5,9 @@ import { apiGet, apiPost, apiPut } from "@/src/lib/api/client";
 import { orderResponseSchema } from "@/src/presentation/orders/order-response-schema";
 import { orderTrackingResponseSchema } from "@/src/presentation/orders/order-tracking-response-schema";
 import { productListResponseSchema } from "@/src/presentation/product/product-response-schema";
-import type { OrderTrackingStageInput } from "./order-tracking-schema";
-import type { OrderReturnDecisionInput } from "./order-return-schema";
-import type { OrderSubstitutionInput } from "./order-substitution-schema";
+import type { OrderTrackingStageInput } from "@/src/contracts/order-tracking-schema";
+import type { OrderReturnDecisionInput } from "@/src/contracts/order-return-schema";
+import type { OrderSubstitutionInput } from "@/src/contracts/order-substitution-schema";
 
 /**
  * Typed client for the order REST *mutations*. UI components call these instead of

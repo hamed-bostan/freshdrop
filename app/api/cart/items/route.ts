@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { AddToCart } from "@/src/domain/use-cases/cart/AddToCart";
 import { cartRepository, productRepository } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
-import { addToCartSchema } from "@/src/presentation/cart/cart-schema";
+import { addToCartSchema } from "@/src/contracts/cart-schema";
 import {
   errorResponse,
   errorResponseFromException,

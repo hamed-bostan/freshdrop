@@ -15,7 +15,7 @@ import {
 } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
-import { placeOrderSchema } from "@/src/presentation/checkout/checkout-schema";
+import { placeOrderSchema } from "@/src/contracts/checkout-schema";
 import {
   errorResponse,
   errorResponseFromException,
