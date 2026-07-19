@@ -1,5 +1,6 @@
 import type { IUnitOfWork, TransactionalRepositories } from "@/src/domain/repositories/IUnitOfWork";
 import { prisma } from "@/src/infrastructure/prisma/client";
+import { PrismaDeliverySlotRepository } from "./PrismaDeliverySlotRepository";
 import { PrismaOrderRepository } from "./PrismaOrderRepository";
 import { PrismaProductRepository } from "./PrismaProductRepository";
 import { PrismaWalletRepository } from "./PrismaWalletRepository";
@@ -29,6 +30,7 @@ export class PrismaUnitOfWork implements IUnitOfWork {
         orders: new PrismaOrderRepository(tx),
         products: new PrismaProductRepository(tx),
         wallets: new PrismaWalletRepository(tx),
+        slots: new PrismaDeliverySlotRepository(tx),
       } satisfies TransactionalRepositories),
     );
   }

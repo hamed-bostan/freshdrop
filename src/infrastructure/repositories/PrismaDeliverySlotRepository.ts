@@ -9,6 +9,7 @@ import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError
 import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { prisma } from "@/src/infrastructure/prisma/client";
+import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transaction";
 import { recordAudit } from "./writeActivityEntry";
 
 /**
@@ -16,14 +17,21 @@ import { recordAudit } from "./writeActivityEntry";
  * Server-side only — bound through the container, never imported by client code.
  */
 export class PrismaDeliverySlotRepository implements IDeliverySlotRepository {
+  /**
+   * The root client normally, a transaction client when a unit of work handed this
+   * repository out — which is what lets checkout claim a slot in the same
+   * transaction that decrements stock and writes the order.
+   */
+  constructor(private readonly db: PrismaDb = prisma) {}
+
   async listWindows(): Promise<DeliveryWindow[]> {
-    const rows = await prisma.deliveryWindow.findMany({ orderBy: { position: "asc" } });
+    const rows = await this.db.deliveryWindow.findMany({ orderBy: { position: "asc" } });
     return rows.map(toDeliveryWindow);
   }
 
   async getBookedCounts(dates: string[]): Promise<Record<string, number>> {
     if (dates.length === 0) return {};
-    const rows = await prisma.deliverySlotBooking.findMany({
+    const rows = await this.db.deliverySlotBooking.findMany({
       where: { date: { in: dates } },
       select: { date: true, windowId: true, booked: true },
     });
@@ -35,7 +43,7 @@ export class PrismaDeliverySlotRepository implements IDeliverySlotRepository {
   }
 
   async claim(date: string, windowId: string, capacity: number): Promise<boolean> {
-    return prisma.$transaction(async (tx) => {
+    return inTransaction(this.db, async (tx) => {
       // Ensure the ledger row exists (idempotent) so the guarded increment below
       // has a row to hit; a fresh row starts at booked = 0.
       await tx.deliverySlotBooking.upsert({
@@ -62,14 +70,14 @@ export class PrismaDeliverySlotRepository implements IDeliverySlotRepository {
     // negative and hand out capacity that was never there. A row that's already
     // at 0 (or absent) simply matches nothing, which makes the release safe to
     // repeat.
-    await prisma.deliverySlotBooking.updateMany({
+    await this.db.deliverySlotBooking.updateMany({
       where: { date, windowId, booked: { gt: 0 } },
       data: { booked: { decrement: 1 } },
     });
   }
 
   async getWindow(id: string): Promise<DeliveryWindow | null> {
-    const row = await prisma.deliveryWindow.findUnique({ where: { id } });
+    const row = await this.db.deliveryWindow.findUnique({ where: { id } });
     return row ? toDeliveryWindow(row) : null;
   }
 
@@ -78,7 +86,7 @@ export class PrismaDeliverySlotRepository implements IDeliverySlotRepository {
     audit?: AuditHook<DeliveryWindow>,
   ): Promise<DeliveryWindow> {
     try {
-      const row = await prisma.$transaction(async (tx) => {
+      const row = await inTransaction(this.db, async (tx) => {
         const created = await tx.deliveryWindow.create({ data: window });
         await recordAudit(tx, toDeliveryWindow(created), audit);
         return created;
@@ -95,7 +103,7 @@ export class PrismaDeliverySlotRepository implements IDeliverySlotRepository {
     audit?: AuditHook<DeliveryWindow>,
   ): Promise<DeliveryWindow> {
     try {
-      const row = await prisma.$transaction(async (tx) => {
+      const row = await inTransaction(this.db, async (tx) => {
         const updated = await tx.deliveryWindow.update({ where: { id }, data: input });
         await recordAudit(tx, toDeliveryWindow(updated), audit);
         return updated;
@@ -115,7 +123,7 @@ export class PrismaDeliverySlotRepository implements IDeliverySlotRepository {
       // if any of them are still upcoming.
       // Interactive rather than a batch array, so the audit entry can join the
       // same transaction — it is the only record the window ever existed.
-      await prisma.$transaction(async (tx) => {
+      await inTransaction(this.db, async (tx) => {
         await tx.deliverySlotBooking.deleteMany({ where: { windowId: id } });
         await tx.deliveryWindow.delete({ where: { id } });
         await recordAudit(tx, undefined, audit);
@@ -128,7 +136,7 @@ export class PrismaDeliverySlotRepository implements IDeliverySlotRepository {
   async countBookingsFrom(windowId: string, fromDate: string): Promise<number> {
     // `date` is a `YYYY-MM-DD` string, which orders lexicographically exactly as it
     // orders chronologically — so a string `gte` *is* a date comparison here.
-    const result = await prisma.deliverySlotBooking.aggregate({
+    const result = await this.db.deliverySlotBooking.aggregate({
       where: { windowId, date: { gte: fromDate } },
       _sum: { booked: true },
     });

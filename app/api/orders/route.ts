@@ -6,6 +6,7 @@ import { GetDeliveryLocations } from "@/src/domain/use-cases/delivery-locations/
 import { FindPromoCode } from "@/src/domain/use-cases/promo-codes/FindPromoCode";
 import {
   orderRepository,
+  unitOfWork,
   cartRepository,
   productRepository,
   deliveryLocationRepository,
@@ -103,9 +104,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       : undefined;
 
     const order = await new CreateOrder(
-      orderRepository,
+      unitOfWork,
       cartRepository,
-      productRepository,
       deliverySlotRepository,
       orderNotifier,
       promoCodeRepository,
