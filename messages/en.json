@@ -1089,7 +1089,9 @@
       "review": "Reviews",
       "promoCode": "Promo codes",
       "user": "Team access",
-      "unknown": "Other"
+      "unknown": "Other",
+      "category": "Categories",
+      "deliveryWindow": "Delivery windows"
     },
     "action": {
       "product": {
@@ -1111,7 +1113,17 @@
         "updated": "{actor} edited promo code {entity}",
         "activeChanged": "{actor} switched promo code {entity} on or off"
       },
-      "unknown": "{actor} changed {entity}"
+      "unknown": "{actor} changed {entity}",
+      "category": {
+        "created": "{actor} created category {entity}",
+        "updated": "{actor} edited category {entity}",
+        "deleted": "{actor} deleted category {entity}"
+      },
+      "deliveryWindow": {
+        "created": "{actor} created delivery window {entity}",
+        "updated": "{actor} edited delivery window {entity}",
+        "deleted": "{actor} deleted delivery window {entity}"
+      }
     },
     "role": {
       "granted": "{actor} gave {user} admin access",
@@ -1149,7 +1161,25 @@
       "decision": "Decision",
       "refunded": "Refunded",
       "item": "Item",
-      "role": "Role"
+      "role": "Role",
+      "slug": "Slug",
+      "iconUrl": "Icon",
+      "label": "Label",
+      "hours": "Hours",
+      "capacity": "Capacity",
+      "position": "Position"
+    },
+    "filterField": "Filter by what changed",
+    "allFields": "Any change",
+    "fieldOption": {
+      "price": "Price changes",
+      "stockQuantity": "Stock changes",
+      "discountPercent": "Discount changes",
+      "active": "On/off switches",
+      "status": "Status changes",
+      "stage": "Delivery stage changes",
+      "capacity": "Capacity changes",
+      "role": "Access changes"
     }
   }
 }

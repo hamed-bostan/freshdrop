@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { changedFields } from "@/src/domain/entities/ActivityEntry";
 import type { User, UserRole } from "@/src/domain/entities/User";
 import { PLACEHOLDER_USER_NAME, toUserRole } from "@/src/domain/entities/User";
 import type {
@@ -91,6 +92,9 @@ export class PrismaUserRepository implements IUserRepository {
             entityLabel: entry.entityLabel ?? null,
             // Valid input JSON already; the cast only satisfies Prisma's Json type.
             changes: entry.changes as unknown as Prisma.InputJsonValue,
+            // Derived from the same diff, exactly as `PrismaActivityLog.record`
+            // does — this is the other writer of the table, and it has to agree.
+            changedFields: changedFields(entry.changes),
           })),
         });
       }

@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { GetDeliveryWindows } from "@/src/domain/use-cases/delivery-slots/GetDeliveryWindows";
 import { CreateDeliveryWindow } from "@/src/domain/use-cases/delivery-slots/CreateDeliveryWindow";
-import { deliverySlotRepository } from "@/src/infrastructure/container";
+import { activityLog, deliverySlotRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import {
   errorResponse,
@@ -29,7 +29,8 @@ export const dynamic = "force-dynamic";
  * definition an operator edits; that is the schedule it produces.
  */
 export async function GET(): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  const session = await getAdminSession();
+  if (!session) return unauthorizedResponse();
 
   try {
     const windows = await new GetDeliveryWindows(deliverySlotRepository).execute();
@@ -46,7 +47,8 @@ export async function GET(): Promise<NextResponse> {
  * delegate to the use-case → map domain errors to HTTP status codes.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  const session = await getAdminSession();
+  if (!session) return unauthorizedResponse();
 
   const body = await parseJsonBody(request);
   if (!body.ok) return errorResponse(400, { message: "Expected a JSON body.", code: "BAD_REQUEST" });
@@ -61,7 +63,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const created = await new CreateDeliveryWindow(deliverySlotRepository).execute(parsed.data);
+    const created = await new CreateDeliveryWindow(deliverySlotRepository, activityLog).execute(parsed.data, { id: session.user.id, name: session.user.name ?? session.user.id });
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
     return errorResponseFromException(error, "POST /api/admin/delivery-windows failed");

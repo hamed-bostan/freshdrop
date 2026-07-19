@@ -1,17 +1,23 @@
+import type { ActivityActor } from "../../entities/ActivityEntry";
+import { diffFields } from "../../entities/ActivityEntry";
 import type { Category } from "../../entities/Category";
+import type { IActivityLog } from "../../repositories/IActivityLog";
 import type { ICategoryRepository, NewCategory } from "../../repositories/ICategoryRepository";
 import type { IImageStorageRepository } from "../../repositories/IImageStorageRepository";
 import { UniqueConstraintError } from "../../errors/UniqueConstraintError";
 import { ValidationError } from "../../errors/ValidationError";
 import { NotFoundError } from "../../errors/NotFoundError";
+import { categorySnapshot } from "./categoryActivity";
+import { recordActivity } from "../activity/recordActivity";
 
 export class UpdateCategory {
   constructor(
     private readonly categoryRepo: ICategoryRepository,
     private readonly imageStorage: IImageStorageRepository,
+    private readonly activityLog: IActivityLog,
   ) {}
 
-  async execute(id: string, input: NewCategory): Promise<Category> {
+  async execute(id: string, input: NewCategory, actor: ActivityActor): Promise<Category> {
     if (!id) throw new ValidationError("id", "Missing category id.");
     const name = input.name.trim();
     const slug = input.slug.trim();
@@ -36,7 +42,21 @@ export class UpdateCategory {
       translations: input.translations,
     });
 
-    // Reclaim the previous icon when it's been swapped out (best-effort).
+    const changes = diffFields(categorySnapshot(previous), categorySnapshot(updated));
+    if (changes.length > 0) {
+      await recordActivity(this.activityLog, {
+        actorId: actor.id,
+        actorName: actor.name,
+        action: "category.updated",
+        entityType: "category",
+        entityId: updated.id,
+        entityLabel: updated.name,
+        changes,
+      });
+    }
+
+    // Reclaim the previous icon when it's been swapped out (best-effort). After
+    // the log, so the entry still records the old URL even if reclaiming throws.
     if (previous.iconUrl !== updated.iconUrl) {
       await this.imageStorage.removeByUrl(previous.iconUrl);
     }

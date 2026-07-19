@@ -2,7 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { GetCategoryById } from "@/src/domain/use-cases/categories/GetCategoryById";
 import { UpdateCategory } from "@/src/domain/use-cases/categories/UpdateCategory";
 import { DeleteCategory } from "@/src/domain/use-cases/categories/DeleteCategory";
-import { categoryRepository, imageStorageRepository } from "@/src/infrastructure/container";
+import {
+  activityLog,
+  categoryRepository,
+  imageStorageRepository,
+} from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
 import { categoryFormSchema } from "@/src/contracts/category-schema";
@@ -38,7 +42,8 @@ export async function GET(request: NextRequest, { params }: RouteContext): Promi
  * PUT /api/categories/:id — update a category. Admin only.
  */
 export async function PUT(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  const session = await getAdminSession();
+  if (!session) return unauthorizedResponse();
 
   const { id } = await params;
   const body = await parseJsonBody(request);
@@ -54,7 +59,11 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
   }
 
   try {
-    const updated = await new UpdateCategory(categoryRepository, imageStorageRepository).execute(id, parsed.data);
+    const updated = await new UpdateCategory(categoryRepository, imageStorageRepository, activityLog).execute(
+      id,
+      parsed.data,
+      { id: session.user.id, name: session.user.name ?? session.user.id },
+    );
     return NextResponse.json(updated);
   } catch (error) {
     return errorResponseFromException(error, `PUT /api/categories/${id} failed`);
@@ -65,11 +74,15 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
  * DELETE /api/categories/:id — delete a category. Admin only. 204 on success.
  */
 export async function DELETE(_request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  const session = await getAdminSession();
+  if (!session) return unauthorizedResponse();
 
   const { id } = await params;
   try {
-    await new DeleteCategory(categoryRepository, imageStorageRepository).execute(id);
+    await new DeleteCategory(categoryRepository, imageStorageRepository, activityLog).execute(
+      id,
+      { id: session.user.id, name: session.user.name ?? session.user.id },
+    );
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     return errorResponseFromException(error, `DELETE /api/categories/${id} failed`);

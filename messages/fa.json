@@ -1089,7 +1089,9 @@
       "review": "نظرها",
       "promoCode": "کدهای تخفیف",
       "user": "دسترسی تیم",
-      "unknown": "سایر"
+      "unknown": "سایر",
+      "category": "دسته‌بندی‌ها",
+      "deliveryWindow": "بازه‌های ارسال"
     },
     "action": {
       "product": {
@@ -1111,7 +1113,17 @@
         "updated": "{actor} کد تخفیف {entity} را ویرایش کرد",
         "activeChanged": "{actor} کد تخفیف {entity} را روشن یا خاموش کرد"
       },
-      "unknown": "{actor} مورد {entity} را تغییر داد"
+      "unknown": "{actor} مورد {entity} را تغییر داد",
+      "category": {
+        "created": "{actor} دسته‌بندی {entity} را ساخت",
+        "updated": "{actor} دسته‌بندی {entity} را ویرایش کرد",
+        "deleted": "{actor} دسته‌بندی {entity} را حذف کرد"
+      },
+      "deliveryWindow": {
+        "created": "{actor} بازه ارسال {entity} را ساخت",
+        "updated": "{actor} بازه ارسال {entity} را ویرایش کرد",
+        "deleted": "{actor} بازه ارسال {entity} را حذف کرد"
+      }
     },
     "role": {
       "granted": "{actor} به {user} دسترسی مدیریت داد",
@@ -1149,7 +1161,25 @@
       "decision": "تصمیم",
       "refunded": "بازپرداخت",
       "item": "قلم",
-      "role": "نقش"
+      "role": "نقش",
+      "slug": "اسلاگ",
+      "iconUrl": "آیکون",
+      "label": "عنوان",
+      "hours": "ساعت‌ها",
+      "capacity": "ظرفیت",
+      "position": "ترتیب"
+    },
+    "filterField": "فیلتر بر اساس نوع تغییر",
+    "allFields": "همه تغییرها",
+    "fieldOption": {
+      "price": "تغییر قیمت",
+      "stockQuantity": "تغییر موجودی",
+      "discountPercent": "تغییر درصد تخفیف",
+      "active": "روشن/خاموش کردن",
+      "status": "تغییر وضعیت",
+      "stage": "تغییر مرحله ارسال",
+      "capacity": "تغییر ظرفیت",
+      "role": "تغییر دسترسی"
     }
   }
 }

@@ -27,7 +27,11 @@ export default async function DashboardActivityPage({ searchParams }: DashboardA
     <ActivityScreen
       entries={entries}
       actors={actors}
-      isFiltered={params.get("actorId") != null || params.get("entityType") != null}
+      isFiltered={
+        params.get("actorId") != null ||
+        params.get("entityType") != null ||
+        params.get("field") != null
+      }
     />
   );
 }

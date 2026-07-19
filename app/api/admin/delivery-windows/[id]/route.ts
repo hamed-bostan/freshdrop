@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { GetDeliveryWindowById } from "@/src/domain/use-cases/delivery-slots/GetDeliveryWindowById";
 import { UpdateDeliveryWindow } from "@/src/domain/use-cases/delivery-slots/UpdateDeliveryWindow";
 import { DeleteDeliveryWindow } from "@/src/domain/use-cases/delivery-slots/DeleteDeliveryWindow";
-import { deliverySlotRepository } from "@/src/infrastructure/container";
+import { activityLog, deliverySlotRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import {
   errorResponse,
@@ -20,7 +20,8 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 /** GET /api/admin/delivery-windows/:id — one window, to prefill the edit form. Admin only. */
 export async function GET(_request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  const session = await getAdminSession();
+  if (!session) return unauthorizedResponse();
 
   const { id } = await params;
   try {
@@ -38,7 +39,8 @@ export async function GET(_request: NextRequest, { params }: RouteContext): Prom
  * order that booked this window reference, and it's immutable after creation.
  */
 export async function PUT(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  const session = await getAdminSession();
+  if (!session) return unauthorizedResponse();
 
   const { id } = await params;
   const body = await parseJsonBody(request);
@@ -54,7 +56,11 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
   }
 
   try {
-    const updated = await new UpdateDeliveryWindow(deliverySlotRepository).execute(id, parsed.data);
+    const updated = await new UpdateDeliveryWindow(deliverySlotRepository, activityLog).execute(
+      id,
+      parsed.data,
+      { id: session.user.id, name: session.user.name ?? session.user.id },
+    );
     return NextResponse.json(updated);
   } catch (error) {
     return errorResponseFromException(error, `PUT /api/admin/delivery-windows/${id} failed`);
@@ -66,11 +72,12 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
  * success; 409 while orders are still booked into it (see `DeleteDeliveryWindow`).
  */
 export async function DELETE(_request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  const session = await getAdminSession();
+  if (!session) return unauthorizedResponse();
 
   const { id } = await params;
   try {
-    await new DeleteDeliveryWindow(deliverySlotRepository).execute(id);
+    await new DeleteDeliveryWindow(deliverySlotRepository, activityLog).execute(id, { id: session.user.id, name: session.user.name ?? session.user.id });
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     return errorResponseFromException(error, `DELETE /api/admin/delivery-windows/${id} failed`);

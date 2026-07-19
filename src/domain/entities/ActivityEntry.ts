@@ -22,7 +22,15 @@
  * What kind of thing an entry is about — and the entity filter's vocabulary,
  * which is why this list holds only the types someone would filter *by*.
  */
-export const ACTIVITY_ENTITY_TYPES = ["product", "order", "review", "promoCode", "user"] as const;
+export const ACTIVITY_ENTITY_TYPES = [
+  "product",
+  "category",
+  "order",
+  "review",
+  "promoCode",
+  "deliveryWindow",
+  "user",
+] as const;
 
 /**
  * A recognised entity type, or `unknown` for a stored value this build doesn't
@@ -55,6 +63,9 @@ export const ACTIVITY_ACTIONS = [
   "product.updated",
   "product.deleted",
   "product.stockAdjusted",
+  "category.created",
+  "category.updated",
+  "category.deleted",
   "order.stageChanged",
   "order.returnResolved",
   "order.itemSubstituted",
@@ -62,6 +73,9 @@ export const ACTIVITY_ACTIONS = [
   "promoCode.created",
   "promoCode.updated",
   "promoCode.activeChanged",
+  "deliveryWindow.created",
+  "deliveryWindow.updated",
+  "deliveryWindow.deleted",
   "user.roleChanged",
 ] as const;
 
@@ -151,6 +165,18 @@ export type ActivityFilters = {
   entityId?: string;
   action?: ActivityAction;
   /**
+   * Narrow to entries whose diff touched this field — "every price change",
+   * "every time capacity moved".
+   *
+   * This is why a product save is one `product.updated` entry rather than one
+   * event per field: the event stays a faithful record of a single operation (the
+   * shape every audit trail worth copying uses), and the question "what changed
+   * about the price" is answered by querying the diff instead of by fragmenting
+   * the log. Backed by `changedFields` + a GIN index, so it's an index scan rather
+   * than a scan of every JSON blob.
+   */
+  field?: string;
+  /**
    * Which entity types the *viewer* is allowed to see, as opposed to which ones
    * they asked for. Absent means no restriction.
    *
@@ -231,3 +257,36 @@ export function diffFields(
 export function singleChange(field: string, before: unknown, after: unknown): ActivityChange[] {
   return [{ field, before: activityValue(before), after: activityValue(after) }];
 }
+
+/**
+ * The field names in a diff, for the indexed `changed_fields` column.
+ *
+ * Denormalized from `changes` rather than queried out of it: Postgres can index a
+ * `text[]` with GIN and answer "entries where `price` moved" as an index scan,
+ * where the equivalent question asked of the JSON means examining every row's
+ * blob. The duplication is contained — the store derives this on write, so the two
+ * can't be set independently and drift.
+ */
+export function changedFields(changes: readonly ActivityChange[]): string[] {
+  return [...new Set(changes.map((change) => change.field))];
+}
+
+/**
+ * The fields the activity page offers as a filter, grouped for the dropdown.
+ *
+ * A curated subset of everything the log records, not all of it: the filter exists
+ * to answer the handful of questions someone actually arrives with — who has been
+ * changing prices, stock, discounts, capacity, access — and a dropdown listing all
+ * thirty diffable fields answers none of them faster. Anything omitted is still
+ * recorded, still visible on the entry, and still reachable via `?field=`.
+ */
+export const FILTERABLE_ACTIVITY_FIELDS = [
+  "price",
+  "stockQuantity",
+  "discountPercent",
+  "active",
+  "status",
+  "stage",
+  "capacity",
+  "role",
+] as const;

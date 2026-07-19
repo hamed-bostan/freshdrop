@@ -1,7 +1,12 @@
+import type { ActivityActor } from "../../entities/ActivityEntry";
+import { activityValue } from "../../entities/ActivityEntry";
 import type { DeliveryWindow } from "../../entities/DeliveryWindow";
+import type { IActivityLog } from "../../repositories/IActivityLog";
 import type { IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
 import { UniqueConstraintError } from "../../errors/UniqueConstraintError";
 import { assertValidDeliveryWindow, assertValidWindowId } from "./deliveryWindowRules";
+import { deliveryWindowSnapshot } from "./deliveryWindowActivity";
+import { recordActivity } from "../activity/recordActivity";
 
 /**
  * Add a delivery window to the catalog. It becomes bookable across the whole
@@ -9,9 +14,12 @@ import { assertValidDeliveryWindow, assertValidWindowId } from "./deliveryWindow
  * this catalog, so nothing has to be regenerated for existing days.
  */
 export class CreateDeliveryWindow {
-  constructor(private readonly slotRepo: IDeliverySlotRepository) {}
+  constructor(
+    private readonly slotRepo: IDeliverySlotRepository,
+    private readonly activityLog: IActivityLog,
+  ) {}
 
-  async execute(input: DeliveryWindow): Promise<DeliveryWindow> {
+  async execute(input: DeliveryWindow, actor: ActivityActor): Promise<DeliveryWindow> {
     const id = input.id.trim().toLowerCase();
     assertValidWindowId(id);
 
@@ -25,6 +33,20 @@ export class CreateDeliveryWindow {
     const existing = await this.slotRepo.getWindow(id);
     if (existing) throw new UniqueConstraintError(["id"]);
 
-    return this.slotRepo.createWindow(window);
+    const created = await this.slotRepo.createWindow(window);
+
+    await recordActivity(this.activityLog, {
+      actorId: actor.id,
+      actorName: actor.name,
+      action: "deliveryWindow.created",
+      entityType: "deliveryWindow",
+      entityId: created.id,
+      entityLabel: created.label,
+      changes: Object.entries(deliveryWindowSnapshot(created))
+        .map(([field, value]) => ({ field, before: null, after: activityValue(value) }))
+        .filter((change) => change.after !== null),
+    });
+
+    return created;
   }
 }

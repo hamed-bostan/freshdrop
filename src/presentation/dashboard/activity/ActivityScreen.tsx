@@ -1,5 +1,8 @@
 import { getTranslations } from "next-intl/server";
-import { ACTIVITY_ENTITY_TYPES } from "@/src/domain/entities/ActivityEntry";
+import {
+  ACTIVITY_ENTITY_TYPES,
+  FILTERABLE_ACTIVITY_FIELDS,
+} from "@/src/domain/entities/ActivityEntry";
 import type { Page } from "@/src/domain/entities/Pagination";
 import { ListFilterSelect, ListPager, ListToolbar } from "@/src/presentation/dashboard/list";
 import { ActivityList } from "./ActivityList";
@@ -25,7 +28,8 @@ type ActivityScreenProps = {
  *
  * There is no search box. The log's text is a rendering of actions and ids, not
  * prose, so a free-text search over it would mostly match on fragments of uuids;
- * the two filters that matter — who, and what kind of thing — are exact.
+ * the three filters that matter — who, what kind of thing, and which value moved
+ * — are exact.
  */
 export async function ActivityScreen({ entries, actors, isFiltered }: ActivityScreenProps) {
   const t = await getTranslations("dashActivity");
@@ -57,6 +61,21 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
                 ...ACTIVITY_ENTITY_TYPES.map((type) => ({
                   value: type,
                   label: t(`entity.${type}`),
+                })),
+              ]}
+            />
+            {/* Filters on the *diff*, not the action — which is what lets a save
+                stay one entry while "show me every price change" is still a
+                question with an answer. Backed by the GIN index on
+                `changed_fields`, so it's a real query rather than a scan. */}
+            <ListFilterSelect
+              paramName="field"
+              label={t("filterField")}
+              options={[
+                { value: "", label: t("allFields") },
+                ...FILTERABLE_ACTIVITY_FIELDS.map((field) => ({
+                  value: field,
+                  label: t(`fieldOption.${field}`),
                 })),
               ]}
             />

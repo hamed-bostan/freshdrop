@@ -99,9 +99,14 @@ model ActivityEntry {
   // How the entity read at the time: a product name, a promo code, a person.
   entityLabel String?  @map("entity_label")
   // The fields that moved, as `[{ field, before, after }]` with string values.
-  // Json rather than a child table: the diff is always read with its entry and
-  // never queried across entries, so a join would buy nothing and cost a table.
+  // Json rather than a child table: the diff is read whole with its entry, so a
+  // join would buy nothing and cost a table. Filtering by field goes through
+  // `changedFields` below instead.
   changes     Json
+  // Just the field names from `changes`, denormalized so "every price change" is
+  // an index scan rather than a scan of every JSON blob. Derived by the store on
+  // write, never set independently — see `changedFields()`.
+  changedFields String[] @map("changed_fields")
   createdAt   DateTime @default(now()) @map("created_at")
 
   // The unfiltered log, newest first.
@@ -110,6 +115,8 @@ model ActivityEntry {
   @@index([entityType, entityId, createdAt])
   // The actor filter, and the "what did this person do" question behind it.
   @@index([actorId, createdAt])
+  // The field filter ("show me every price change"). GIN, declared in the
+  // migration — Prisma's schema DSL can't express an index type.
   @@map("activity_log")
 }
 

@@ -9,6 +9,7 @@ import type {
 } from "@/src/domain/entities/ActivityEntry";
 import {
   DEFAULT_ACTIVITY_DIRECTION,
+  changedFields,
   toActivityAction,
   toActivityEntityType,
 } from "@/src/domain/entities/ActivityEntry";
@@ -37,6 +38,9 @@ export class PrismaActivityLog implements IActivityLog {
         // Structurally a `[{ field, before, after }]` array of strings/nulls, which
         // is valid input JSON; the cast is only to satisfy Prisma's Json input type.
         changes: entry.changes as unknown as Prisma.InputJsonValue,
+        // Derived here rather than taken from the caller, so the indexed column and
+        // the diff it indexes are written from one source and can't disagree.
+        changedFields: changedFields(entry.changes),
       },
     });
   }
@@ -109,6 +113,8 @@ function toWhere(filters: ActivityFilters): Prisma.ActivityEntryWhereInput {
   if (filters.entityType) and.push({ entityType: filters.entityType });
   if (filters.entityId) and.push({ entityId: filters.entityId });
   if (filters.action) and.push({ action: filters.action });
+  // Array containment, served by the GIN index on the column.
+  if (filters.field) and.push({ changedFields: { has: filters.field } });
   // Anded alongside the chosen filters rather than replacing them, so a viewer's
   // permission narrows their query and can never widen it.
   if (filters.visibleEntityTypes) {
