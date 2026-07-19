@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import {
   CalendarClock,
   ClipboardList,
+  History,
   LayoutDashboard,
   Leaf,
   Package,
@@ -33,9 +34,18 @@ const SECTIONS = [
   { href: "/dashboard/customers", labelKey: "navCustomers", icon: Users },
   { href: "/dashboard/promo-codes", labelKey: "navPromoCodes", icon: PercentCircle },
   { href: "/dashboard/delivery-slots", labelKey: "navDeliverySlots", icon: CalendarClock },
+  // Last, and after the things it records: it's a place you go to answer a
+  // question about the other sections, not somewhere work starts.
+  { href: "/dashboard/activity", labelKey: "navActivity", icon: History },
 ] as const satisfies readonly { href: string; labelKey: string; icon: LucideIcon }[];
 
-/** Sections only the owner can reach — appended when the viewer is one. */
+/**
+ * Sections only the owner can reach — appended when the viewer is one.
+ *
+ * Activity is *not* here: the audit trail is admin-visible, with only its
+ * team-access entries reserved to the owner (see `activity-visibility`), so an
+ * ordinary admin gets a real page rather than a redirect.
+ */
 const OWNER_SECTIONS = [
   { href: "/dashboard/team", labelKey: "navTeam", icon: ShieldCheck },
 ] as const satisfies readonly { href: string; labelKey: string; icon: LucideIcon }[];

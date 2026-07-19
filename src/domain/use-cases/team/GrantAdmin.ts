@@ -3,6 +3,7 @@ import { isPlausiblePhone, normalizePhone } from "../../entities/Phone";
 import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { ITeamNotifier } from "../../repositories/ITeamNotifier";
 import { ValidationError } from "../../errors/ValidationError";
+import { roleChangeEntry } from "./roleChangeEntry";
 
 /** Who to promote, and where to tell them about it. */
 export type GrantAdminCommand = {
@@ -61,16 +62,14 @@ export class GrantAdmin {
       entries: alreadyAdmin
         ? []
         : [
-            {
-              userId: id,
+            roleChangeEntry({
               // The row may not exist yet, in which case it's about to be created
               // under the placeholder — the same name the entry should carry.
-              userName: existing?.name ?? PLACEHOLDER_USER_NAME,
-              actorId,
-              actorName: actor?.name ?? actorId,
+              user: { id, name: existing?.name ?? PLACEHOLDER_USER_NAME },
+              actor: { id: actorId, name: actor?.name ?? actorId },
               fromRole: existing?.role ?? "customer",
               toRole: "admin",
-            },
+            }),
           ],
     });
 

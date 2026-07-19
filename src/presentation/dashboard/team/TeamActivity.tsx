@@ -3,20 +3,26 @@ import { roleChangeKind } from "@/src/domain/entities/RoleChange";
 import type { Locale } from "@/src/i18n/routing";
 import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
 import { DataTable } from "@/src/presentation/design-system";
-import type { RoleChangeEntry } from "./team-history-response-schema";
+import type { ActivityEntryWire } from "@/src/presentation/dashboard/activity/activity-response-schema";
 
 type TeamActivityProps = {
-  /** Recent access changes, newest first. */
-  changes: RoleChangeEntry[];
+  /** Recent `user.roleChanged` entries from the activity log, newest first. */
+  changes: ActivityEntryWire[];
 };
 
 /**
  * The audit trail for dashboard access: who changed whose role, and when.
  *
- * Read-only and append-only — there is deliberately nothing here to edit or
- * clear, since a record an admin can quietly tidy up isn't one. Names come from
- * the entry rather than from the current team, so history stays truthful about
- * people who have since been renamed or removed.
+ * The entries now come from the one activity log rather than a role-only table,
+ * but this panel stays: the team page should answer "who has held access" without
+ * sending someone to a general log and asking them to filter it. It renders the
+ * role-change slice with the role vocabulary ("gave admin access", "took
+ * ownership"), which the generic list can't assume.
+ *
+ * Read-only and append-only — there is deliberately nothing here to edit or clear,
+ * since a record an admin can quietly tidy up isn't one. Names come from the entry
+ * rather than from the current team, so history stays truthful about people who
+ * have since been renamed or removed.
  */
 export function TeamActivity({ changes }: TeamActivityProps) {
   const t = useTranslations("dashTeam");
@@ -44,16 +50,25 @@ export function TeamActivity({ changes }: TeamActivityProps) {
                 className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 bg-background px-4 py-3"
               >
                 <span className="text-body-b6 text-foreground">
-                  {t(`activity.${roleChangeKind(change)}`, {
-                    user: change.userName,
-                    actor: change.actorName,
-                  })}
+                  {t(
+                    `activity.${roleChangeKind({
+                      userId: change.entityId,
+                      actorId: change.actorId,
+                      changes: change.changes,
+                    })}`,
+                    {
+                      // The entry snapshots the name; the id is the fallback for a
+                      // row written before labels existed.
+                      user: change.entityLabel ?? change.entityId,
+                      actor: change.actorName,
+                    },
+                  )}
                   {/* The name alone doesn't identify anyone until they've completed
                       their profile — everyone granted access before their first
                       sign-in carries the same placeholder. The id is their phone,
                       which does identify them. */}
                   <span dir="ltr" className="ms-2 text-body-b10 text-muted-foreground">
-                    {change.userId}
+                    {change.entityId}
                   </span>
                 </span>
                 <time dateTime={change.at} className="text-body-b10 text-muted-foreground">

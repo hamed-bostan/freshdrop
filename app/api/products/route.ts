@@ -7,7 +7,7 @@ import { GetSpecialOffers } from "@/src/domain/use-cases/products/GetSpecialOffe
 import { SearchProducts } from "@/src/domain/use-cases/products/SearchProducts";
 import { CreateProduct } from "@/src/domain/use-cases/products/CreateProduct";
 import { hasProductSearchCriteria } from "@/src/domain/entities/ProductFilters";
-import { productRepository } from "@/src/infrastructure/container";
+import { activityLog, productRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import { productFormSchema } from "@/src/contracts/product-schema";
 import { parseProductFilters } from "@/src/lib/api/product-search-params";
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     // The actor opens the product's stock ledger when it's created with units
     // already on hand.
-    const created = await new CreateProduct(productRepository).execute(parsed.data, {
+    const created = await new CreateProduct(productRepository, activityLog).execute(parsed.data, {
       id: session.user.id,
       name: session.user.name ?? session.user.id,
     });

@@ -562,7 +562,8 @@
     "errorBody": "We couldn't load this page. Please try again.",
     "tryAgain": "Try again",
     "navPromoCodes": "Promo codes",
-    "navDeliverySlots": "Delivery slots"
+    "navDeliverySlots": "Delivery slots",
+    "navActivity": "Activity"
   },
   "dashHome": {
     "heading": "Dashboard",
@@ -940,7 +941,8 @@
       "revoked": "{actor} removed {user}'s access",
       "ownershipTransferred": "{actor} made {user} the owner",
       "ownershipClaimed": "{user} took ownership",
-      "steppedDown": "{user} stopped being the owner"
+      "steppedDown": "{user} stopped being the owner",
+      "unknown": "{actor} changed {user}'s access"
     },
     "transferErrorTitle": "Couldn't transfer ownership",
     "transferError": "Couldn't transfer ownership. Please try again.",
@@ -1067,5 +1069,87 @@
     "notFoundTitle": "Delivery window not found",
     "notFoundBody": "It may have already been deleted.",
     "backToDeliverySlots": "Back to delivery slots"
+  },
+  "dashActivity": {
+    "heading": "Activity",
+    "summary": "Every change made from the dashboard, newest first. Kept permanently.",
+    "empty": "No activity yet",
+    "emptyBody": "Changes made from the dashboard will appear here.",
+    "filterActor": "Filter by who made the change",
+    "filterEntity": "Filter by what was changed",
+    "allActors": "Anyone",
+    "allEntities": "Anything",
+    "open": "Open",
+    "panelHeading": "Activity",
+    "panelDescription": "Every change made to this from the dashboard.",
+    "panelEmpty": "No changes recorded yet.",
+    "entity": {
+      "product": "Products",
+      "order": "Orders",
+      "review": "Reviews",
+      "promoCode": "Promo codes",
+      "user": "Team access",
+      "unknown": "Other"
+    },
+    "action": {
+      "product": {
+        "created": "{actor} created {entity}",
+        "updated": "{actor} edited {entity}",
+        "deleted": "{actor} deleted {entity}",
+        "stockAdjusted": "{actor} adjusted stock for {entity}"
+      },
+      "order": {
+        "stageChanged": "{actor} changed the delivery stage of order {entity}",
+        "returnResolved": "{actor} resolved the return on order {entity}",
+        "itemSubstituted": "{actor} resolved an out-of-stock item on order {entity}"
+      },
+      "review": {
+        "moderated": "{actor} moderated {entity}'s review"
+      },
+      "promoCode": {
+        "created": "{actor} created promo code {entity}",
+        "updated": "{actor} edited promo code {entity}",
+        "activeChanged": "{actor} switched promo code {entity} on or off"
+      },
+      "unknown": "{actor} changed {entity}"
+    },
+    "role": {
+      "granted": "{actor} gave {user} admin access",
+      "revoked": "{actor} removed {user}'s access",
+      "ownershipTransferred": "{actor} made {user} the owner",
+      "ownershipClaimed": "{user} took ownership",
+      "steppedDown": "{user} stopped being the owner",
+      "unknown": "{actor} changed {user}'s access"
+    },
+    "field": {
+      "name": "Name",
+      "price": "Price",
+      "originalPrice": "Original price",
+      "stockQuantity": "Stock",
+      "categoryId": "Category",
+      "isFeatured": "Featured",
+      "badge": "Badge",
+      "unit": "Unit",
+      "brand": "Brand",
+      "imageUrl": "Image",
+      "description": "Description",
+      "nutrition": "Nutrition",
+      "origin": "Origin",
+      "dietary": "Dietary tags",
+      "reason": "Reason",
+      "note": "Note",
+      "code": "Code",
+      "title": "Title",
+      "discountPercent": "Discount",
+      "active": "Active",
+      "startsAt": "Starts",
+      "endsAt": "Ends",
+      "stage": "Stage",
+      "status": "Status",
+      "decision": "Decision",
+      "refunded": "Refunded",
+      "item": "Item",
+      "role": "Role"
+    }
   }
 }

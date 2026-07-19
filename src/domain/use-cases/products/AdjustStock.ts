@@ -1,6 +1,8 @@
+import { activityValue } from "../../entities/ActivityEntry";
 import type { Product } from "../../entities/Product";
 import type { AdminStockMovementReason } from "../../entities/StockMovement";
 import { isAdminStockMovementReason } from "../../entities/StockMovement";
+import type { IActivityLog } from "../../repositories/IActivityLog";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 import type { IStockAlertRepository } from "../../repositories/IStockAlertRepository";
 import type { IStockAlertNotifier } from "../../repositories/IStockAlertNotifier";
@@ -8,6 +10,7 @@ import type { IUserRepository } from "../../repositories/IUserRepository";
 import { ValidationError } from "../../errors/ValidationError";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { FulfillStockAlerts } from "./FulfillStockAlerts";
+import { recordActivity } from "../activity/recordActivity";
 
 export type AdjustStockInput = {
   productId: string;
@@ -42,6 +45,7 @@ export class AdjustStock {
     private readonly users: IUserRepository,
     private readonly stockAlerts: IStockAlertRepository,
     private readonly notifier: IStockAlertNotifier,
+    private readonly activityLog: IActivityLog,
   ) {}
 
   async execute({ productId, delta, reason, note, actorId }: AdjustStockInput): Promise<Product> {
@@ -63,10 +67,36 @@ export class AdjustStock {
     if (!existing) throw new NotFoundError("product", productId);
 
     const actor = await this.users.getById(actorId);
+    const actorName = actor?.name ?? UNKNOWN_ACTOR_NAME;
     const adjusted = await this.productRepo.adjustStock(productId, delta, {
       reason,
       note,
-      actor: { id: actorId, name: actor?.name ?? UNKNOWN_ACTOR_NAME },
+      actor: { id: actorId, name: actorName },
+    });
+
+    // Recorded here *as well as* in the stock ledger, which is not duplication for
+    // its own sake: the ledger is the running account of one product's quantity,
+    // read to reconcile a level; this is the cross-entity trail read to answer
+    // "what did this person change on Tuesday". Neither answers the other's
+    // question, and the alternative — making the activity page join a ledger keyed
+    // by product — would leave stock the one admin action you can't see alongside
+    // the rest. The reason and note ride along so the entry stands alone.
+    await recordActivity(this.activityLog, {
+      actorId,
+      actorName,
+      action: "product.stockAdjusted",
+      entityType: "product",
+      entityId: adjusted.id,
+      entityLabel: adjusted.name,
+      changes: [
+        {
+          field: "stockQuantity",
+          before: activityValue(existing.stockQuantity),
+          after: activityValue(adjusted.stockQuantity),
+        },
+        { field: "reason", before: null, after: activityValue(reason) },
+        ...(note ? [{ field: "note", before: null, after: activityValue(note) }] : []),
+      ],
     });
 
     // Crossing back above zero fulfils any back-in-stock alerts — the same rule

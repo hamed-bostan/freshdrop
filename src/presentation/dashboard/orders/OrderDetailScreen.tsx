@@ -15,11 +15,15 @@ import { OrderDeliveryTracker } from "./OrderDeliveryTracker";
 import { OrderStageAdvance } from "./OrderStageAdvance";
 import { OrderReturnControl } from "./OrderReturnControl";
 import { OrderItemPickControl } from "./OrderItemPickControl";
+import { ActivityPanel } from "@/src/presentation/dashboard/activity/ActivityPanel";
+import type { ActivityEntryWire } from "@/src/presentation/dashboard/activity/activity-response-schema";
 
 type OrderDetailScreenProps = {
   order: Order;
   /** The customer who placed the order, when a matching summary exists. */
   customer: CustomerOrderSummary | undefined;
+  /** This order's recent admin activity, newest first. */
+  activity: ActivityEntryWire[];
 };
 
 /**
@@ -29,7 +33,7 @@ type OrderDetailScreenProps = {
  * items (with pick controls while the order is being picked) totalled at the foot, and
  * a customer/address card. Stage/return/pick writes re-run this render via `router.refresh()`.
  */
-export async function OrderDetailScreen({ order, customer }: OrderDetailScreenProps) {
+export async function OrderDetailScreen({ order, customer, activity }: OrderDetailScreenProps) {
   const t = await getTranslations("dashOrders");
   const locale = await getLocale();
 
@@ -147,6 +151,10 @@ export async function OrderDetailScreen({ order, customer }: OrderDetailScreenPr
               <span className="text-body-b5 text-foreground">{formatMoney(orderNetPaid(order), locale)}</span>
             </div>
           </section>
+
+          {/* Under the order itself: above is what the order is now, this is every
+              hand that has been on it — stage overrides, substitutions, returns. */}
+          <ActivityPanel entries={activity} />
         </div>
 
         {/* Right column: who placed the order and where it's going. */}

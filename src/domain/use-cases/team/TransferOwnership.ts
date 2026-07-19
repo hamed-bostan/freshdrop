@@ -3,6 +3,7 @@ import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { ITeamNotifier } from "../../repositories/ITeamNotifier";
 import { AdminRevokeError } from "../../errors/AdminRevokeError";
 import { NotFoundError } from "../../errors/NotFoundError";
+import { roleChangeEntry } from "./roleChangeEntry";
 
 /**
  * Hand ownership of the store to another team member.
@@ -70,23 +71,21 @@ export class TransferOwnership {
         ...(target.role === "owner"
           ? []
           : [
-              {
-                userId: target.id,
-                userName: target.name,
-                actorId,
-                actorName,
+              roleChangeEntry({
+                user: target,
+                actor: { id: actorId, name: actorName },
                 fromRole: target.role,
-                toRole: "owner" as const,
-              },
+                toRole: "owner",
+              }),
             ]),
-        ...outgoing.map((former) => ({
-          userId: former.id,
-          userName: former.name,
-          actorId,
-          actorName,
-          fromRole: "owner" as const,
-          toRole: "admin" as const,
-        })),
+        ...outgoing.map((former) =>
+          roleChangeEntry({
+            user: former,
+            actor: { id: actorId, name: actorName },
+            fromRole: "owner",
+            toRole: "admin",
+          }),
+        ),
       ],
     });
 

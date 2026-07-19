@@ -12,6 +12,12 @@ export type IReviewRepository = {
   /** Approved reviews for a product, newest first — the public storefront list. */
   getByProduct(productId: string): Promise<Review[]>;
   /**
+   * One review in any status, or `null`. Admin-side: it's what `ModerateReview`
+   * reads to record the status a review was in *before* it moderated it, which
+   * `updateStatus` can't answer since it resolves the row as written.
+   */
+  getById(id: string): Promise<Review | null>;
+  /**
    * One page of the moderation queue, plus the total matching the filters and the
    * per-status counts the tabs display (see {@link ReviewPage}).
    */

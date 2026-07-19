@@ -81,7 +81,18 @@ export class PrismaUserRepository implements IUserRepository {
       }
 
       if (batch.entries.length > 0) {
-        await tx.roleChange.createMany({ data: batch.entries });
+        await tx.activityEntry.createMany({
+          data: batch.entries.map((entry) => ({
+            actorId: entry.actorId,
+            actorName: entry.actorName,
+            action: entry.action,
+            entityType: entry.entityType,
+            entityId: entry.entityId,
+            entityLabel: entry.entityLabel ?? null,
+            // Valid input JSON already; the cast only satisfies Prisma's Json type.
+            changes: entry.changes as unknown as Prisma.InputJsonValue,
+          })),
+        });
       }
 
       return written;

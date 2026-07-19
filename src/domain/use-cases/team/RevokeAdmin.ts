@@ -2,6 +2,7 @@ import { isDashboardRole, type User } from "../../entities/User";
 import type { IUserRepository } from "../../repositories/IUserRepository";
 import { AdminRevokeError } from "../../errors/AdminRevokeError";
 import { NotFoundError } from "../../errors/NotFoundError";
+import { roleChangeEntry } from "./roleChangeEntry";
 
 /**
  * Demote a team member back to a regular customer. The account itself is
@@ -43,14 +44,12 @@ export class RevokeAdmin {
     const [demoted] = await this.userRepo.applyRoleChanges({
       assignments: [{ id: target.id, phone: target.phone, role: "customer" }],
       entries: [
-        {
-          userId: target.id,
-          userName: target.name,
-          actorId,
-          actorName: actor?.name ?? actorId,
+        roleChangeEntry({
+          user: target,
+          actor: { id: actorId, name: actor?.name ?? actorId },
           fromRole: target.role,
           toRole: "customer",
-        },
+        }),
       ],
     });
 

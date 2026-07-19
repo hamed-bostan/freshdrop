@@ -1,11 +1,15 @@
+import type { ActivityActor } from "../../entities/ActivityEntry";
+import { activityValue } from "../../entities/ActivityEntry";
 import type { ItemSubstitution, Order } from "../../entities/Order";
 import { isFullyRefunded, isPicking, refundForLineValue } from "../../entities/Order";
+import type { IActivityLog } from "../../repositories/IActivityLog";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 import type { IWalletRepository } from "../../repositories/IWalletRepository";
 import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
+import { recordActivity } from "../activity/recordActivity";
 
 /**
  * A picker's resolution of an out-of-stock line:
@@ -23,6 +27,8 @@ export type ResolveItemSubstitutionInput = {
   /** The out-of-stock line (by product id). */
   productId: string;
   resolution: ItemSubstitutionResolution;
+  /** The picker making the call, for the activity log. */
+  actor: ActivityActor;
 };
 
 /**
@@ -53,9 +59,15 @@ export class ResolveItemSubstitution {
     private readonly productRepo: IProductRepository,
     private readonly walletRepo: IWalletRepository,
     private readonly notifier: IOrderNotifier,
+    private readonly activityLog: IActivityLog,
   ) {}
 
-  async execute({ orderId, productId, resolution }: ResolveItemSubstitutionInput): Promise<Order> {
+  async execute({
+    orderId,
+    productId,
+    resolution,
+    actor,
+  }: ResolveItemSubstitutionInput): Promise<Order> {
     const order = await this.orderRepo.getById(orderId);
     if (!order) throw new NotFoundError("order", orderId);
 
@@ -70,17 +82,59 @@ export class ResolveItemSubstitution {
     }
 
     if (resolution.action === "refund") {
-      return this.refund(order, productId, item.name, item.price * item.quantity);
+      return this.refund(order, productId, item.name, item.price * item.quantity, actor);
     }
 
-    return this.substitute(order, item, resolution.replacementProductId);
+    return this.substitute(order, item, resolution.replacementProductId, actor);
+  }
+
+  /**
+   * One entry per resolved line.
+   *
+   * The line — not the order — is the subject, so `item` names which one. It's
+   * still filed under the order, because that's what someone opens when a customer
+   * asks why they were sent something else: an entity type of "order line" would
+   * scatter a single order's picking decisions across ids nobody holds.
+   *
+   * Written *after* the guarded resolve in both paths, so a pick that lost the race
+   * doesn't record a decision it never made.
+   */
+  private async record(
+    actor: ActivityActor,
+    order: Order,
+    item: string,
+    outcome: string,
+    refunded: number,
+  ): Promise<void> {
+    await recordActivity(this.activityLog, {
+      actorId: actor.id,
+      actorName: actor.name,
+      action: "order.itemSubstituted",
+      entityType: "order",
+      entityId: order.id,
+      entityLabel: order.id,
+      changes: [
+        // The line went from what the customer ordered to what they're getting —
+        // a replacement's name, or nothing at all when it was refunded out.
+        { field: "item", before: item, after: outcome },
+        ...(refunded > 0
+          ? [{ field: "refunded", before: null, after: activityValue(refunded) }]
+          : []),
+      ],
+    });
   }
 
   /**
    * Drop the line and credit the customer the amount they effectively paid for it
    * — `grossLineValue` net of its pro-rata share of the order discount.
    */
-  private async refund(order: Order, productId: string, itemName: string, grossLineValue: number): Promise<Order> {
+  private async refund(
+    order: Order,
+    productId: string,
+    itemName: string,
+    grossLineValue: number,
+    actor: ActivityActor,
+  ): Promise<Order> {
     const amount = refundForLineValue(order, grossLineValue);
     const resolved: ItemSubstitution = { status: "refunded", refundAmount: amount };
     const updated = await this.orderRepo.resolveItemSubstitution(order.id, productId, resolved);
@@ -90,6 +144,8 @@ export class ResolveItemSubstitution {
     if (amount > 0) {
       await this.walletRepo.addFunds(order.userId, amount, { kind: "refundOutOfStock", item: itemName });
     }
+
+    await this.record(actor, updated, itemName, "refunded", amount);
 
     // If this refund resolved the order's last remaining line, there's nothing
     // left to deliver — cancel the order and refund the delivery fee too, rather
@@ -136,6 +192,7 @@ export class ResolveItemSubstitution {
     order: Order,
     item: Order["items"][number],
     replacementProductId: string,
+    actor: ActivityActor,
   ): Promise<Order> {
     if (item.substitutionPreference !== "substitute") {
       throw new ValidationError("productId", "The customer didn't approve substituting this item.");
@@ -181,6 +238,8 @@ export class ResolveItemSubstitution {
     if (saving > 0) {
       await this.walletRepo.addFunds(order.userId, saving, { kind: "substitutionSaving", item: item.name });
     }
+
+    await this.record(actor, updated, item.name, replacement.name, saving);
 
     await this.notifier.itemSubstituted(updated, item.name, replacement.name);
     return updated;

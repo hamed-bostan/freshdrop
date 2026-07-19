@@ -71,7 +71,10 @@ import { customerOrderSummaryResponseSchema } from "./dashboard/customers/custom
 import { adminPromoCodeResponseSchema } from "./dashboard/promo-codes/promo-code-admin-response-schema";
 import { deliveryWindowResponseSchema } from "./dashboard/delivery-slots/delivery-window-response-schema";
 import { productTranslationResponseSchema } from "./dashboard/products/product-translation-response-schema";
-import { roleChangeResponseSchema, type RoleChangeWire } from "./dashboard/team/team-history-response-schema";
+import {
+  activityEntryResponseSchema,
+  type ActivityEntryWire,
+} from "./dashboard/activity/activity-response-schema";
 import { deliveryLocationResponseSchema } from "./delivery-location/delivery-location-response-schema";
 import { orderResponseSchema, reorderResultResponseSchema } from "./orders/order-response-schema";
 import { orderTrackingResponseSchema } from "./orders/order-tracking-response-schema";
@@ -100,7 +103,9 @@ export type _CustomerOrderSummary = Expect<
 export type _ProductTranslation = Expect<
   Equal<z.infer<typeof productTranslationResponseSchema>, ProductTranslationInput>
 >;
-export type _RoleChange = Expect<Equal<z.infer<typeof roleChangeResponseSchema>, RoleChangeWire>>;
+export type _ActivityEntry = Expect<
+  Equal<z.infer<typeof activityEntryResponseSchema>, ActivityEntryWire>
+>;
 export type _DeliveryLocation = Expect<Equal<z.infer<typeof deliveryLocationResponseSchema>, DeliveryLocation>>;
 export type _Order = Expect<Equal<z.infer<typeof orderResponseSchema>, Order>>;
 export type _ReorderItemsResult = Expect<Equal<z.infer<typeof reorderResultResponseSchema>, ReorderItemsResult>>;

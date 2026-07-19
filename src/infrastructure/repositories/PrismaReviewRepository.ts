@@ -94,6 +94,11 @@ export class PrismaReviewRepository implements IReviewRepository {
     return toReview(row);
   }
 
+  async getById(id: string): Promise<Review | null> {
+    const row = await prisma.review.findUnique({ where: { id } });
+    return row ? toReview(row) : null;
+  }
+
   async updateStatus(id: string, status: ReviewStatus): Promise<Review> {
     // Moderation: flip the status and recompute the product's rating in one
     // transaction so the derived rating/ratingCount can never drift from what's

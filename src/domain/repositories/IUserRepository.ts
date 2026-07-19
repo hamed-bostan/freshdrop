@@ -1,5 +1,5 @@
+import type { NewActivityEntry } from "../entities/ActivityEntry";
 import type { User, UserRole } from "../entities/User";
-import type { NewRoleChange } from "./IRoleChangeLog";
 
 /** One user's new access level, as part of a {@link RoleChangeBatch}. */
 export type RoleAssignment = {
@@ -23,10 +23,15 @@ export type RoleAssignment = {
  * applied separately, a failure between them leaves two. The audit entries ride
  * along for the same reason: a record that can be lost independently of the
  * change it describes isn't a record.
+ *
+ * The entries are ordinary `activity_log` rows (`user.roleChanged`), the same log
+ * every other admin change lands in — role changes just keep a stronger guarantee
+ * than the rest, because here the log and the change share a transaction. See
+ * `IActivityLog` for why the others can't.
  */
 export type RoleChangeBatch = {
   assignments: RoleAssignment[];
-  entries: NewRoleChange[];
+  entries: NewActivityEntry[];
 };
 
 /** A user about to be created — the id is the caller's stable identifier (phone digits). */

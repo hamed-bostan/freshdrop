@@ -1,7 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { GetOrderTracking } from "@/src/domain/use-cases/orders/GetOrderTracking";
 import { SetOrderTrackingStage } from "@/src/domain/use-cases/orders/SetOrderTrackingStage";
-import { orderRepository, orderTrackingRepository, orderNotifier } from "@/src/infrastructure/container";
+import {
+  activityLog,
+  orderRepository,
+  orderTrackingRepository,
+  orderNotifier,
+} from "@/src/infrastructure/container";
 import { getAdminSession, isAdmin } from "@/src/lib/require-admin";
 import { getUserSession } from "@/src/lib/require-auth";
 import { orderTrackingStageSchema } from "@/src/contracts/order-tracking-schema";
@@ -66,7 +71,11 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
   }
 
   try {
-    await new SetOrderTrackingStage(orderRepository, orderNotifier).execute(id, parsed.data.stage);
+    await new SetOrderTrackingStage(orderRepository, orderNotifier, activityLog).execute(
+      id,
+      parsed.data.stage,
+      { id: session.user.id, name: session.user.name ?? session.user.id },
+    );
     const tracking = await new GetOrderTracking(orderTrackingRepository).execute(id, {
       userId: session.user.id,
       isAdmin: true,

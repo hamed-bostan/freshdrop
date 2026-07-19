@@ -562,7 +562,8 @@
     "errorBody": "بارگذاری این صفحه ممکن نشد. لطفاً دوباره تلاش کنید.",
     "tryAgain": "تلاش مجدد",
     "navPromoCodes": "کدهای تخفیف",
-    "navDeliverySlots": "بازه‌های ارسال"
+    "navDeliverySlots": "بازه‌های ارسال",
+    "navActivity": "فعالیت‌ها"
   },
   "dashHome": {
     "heading": "داشبورد",
@@ -940,7 +941,8 @@
       "revoked": "{actor} دسترسی {user} را حذف کرد",
       "ownershipTransferred": "{actor}، {user} را مالک کرد",
       "ownershipClaimed": "{user} مالکیت را به‌دست گرفت",
-      "steppedDown": "{user} دیگر مالک نیست"
+      "steppedDown": "{user} دیگر مالک نیست",
+      "unknown": "{actor} دسترسی {user} را تغییر داد"
     },
     "transferErrorTitle": "واگذاری مالکیت انجام نشد",
     "transferError": "واگذاری مالکیت انجام نشد. دوباره تلاش کنید.",
@@ -1067,5 +1069,87 @@
     "notFoundTitle": "بازه ارسال یافت نشد",
     "notFoundBody": "ممکن است قبلاً حذف شده باشد.",
     "backToDeliverySlots": "بازگشت به بازه‌های ارسال"
+  },
+  "dashActivity": {
+    "heading": "فعالیت‌ها",
+    "summary": "هر تغییری که از داشبورد انجام شده، از جدیدترین. برای همیشه نگه داشته می‌شود.",
+    "empty": "هنوز فعالیتی نیست",
+    "emptyBody": "تغییرهایی که از داشبورد انجام شود اینجا می‌آید.",
+    "filterActor": "فیلتر بر اساس انجام‌دهنده",
+    "filterEntity": "فیلتر بر اساس نوع تغییر",
+    "allActors": "همه",
+    "allEntities": "همه موارد",
+    "open": "باز کردن",
+    "panelHeading": "فعالیت‌ها",
+    "panelDescription": "هر تغییری که از داشبورد روی این مورد انجام شده.",
+    "panelEmpty": "هنوز تغییری ثبت نشده.",
+    "entity": {
+      "product": "محصولات",
+      "order": "سفارش‌ها",
+      "review": "نظرها",
+      "promoCode": "کدهای تخفیف",
+      "user": "دسترسی تیم",
+      "unknown": "سایر"
+    },
+    "action": {
+      "product": {
+        "created": "{actor} محصول {entity} را ساخت",
+        "updated": "{actor} محصول {entity} را ویرایش کرد",
+        "deleted": "{actor} محصول {entity} را حذف کرد",
+        "stockAdjusted": "{actor} موجودی {entity} را تغییر داد"
+      },
+      "order": {
+        "stageChanged": "{actor} مرحله ارسال سفارش {entity} را تغییر داد",
+        "returnResolved": "{actor} درخواست مرجوعی سفارش {entity} را بررسی کرد",
+        "itemSubstituted": "{actor} یک قلم ناموجود سفارش {entity} را تعیین تکلیف کرد"
+      },
+      "review": {
+        "moderated": "{actor} نظر {entity} را بررسی کرد"
+      },
+      "promoCode": {
+        "created": "{actor} کد تخفیف {entity} را ساخت",
+        "updated": "{actor} کد تخفیف {entity} را ویرایش کرد",
+        "activeChanged": "{actor} کد تخفیف {entity} را روشن یا خاموش کرد"
+      },
+      "unknown": "{actor} مورد {entity} را تغییر داد"
+    },
+    "role": {
+      "granted": "{actor} به {user} دسترسی مدیریت داد",
+      "revoked": "{actor} دسترسی {user} را گرفت",
+      "ownershipTransferred": "{actor}، {user} را مالک کرد",
+      "ownershipClaimed": "{user} مالکیت را به دست گرفت",
+      "steppedDown": "{user} دیگر مالک نیست",
+      "unknown": "{actor} دسترسی {user} را تغییر داد"
+    },
+    "field": {
+      "name": "نام",
+      "price": "قیمت",
+      "originalPrice": "قیمت اصلی",
+      "stockQuantity": "موجودی",
+      "categoryId": "دسته‌بندی",
+      "isFeatured": "ویژه",
+      "badge": "برچسب",
+      "unit": "واحد",
+      "brand": "برند",
+      "imageUrl": "تصویر",
+      "description": "توضیحات",
+      "nutrition": "ارزش غذایی",
+      "origin": "خاستگاه",
+      "dietary": "برچسب‌های رژیمی",
+      "reason": "دلیل",
+      "note": "یادداشت",
+      "code": "کد",
+      "title": "عنوان",
+      "discountPercent": "درصد تخفیف",
+      "active": "فعال",
+      "startsAt": "شروع",
+      "endsAt": "پایان",
+      "stage": "مرحله",
+      "status": "وضعیت",
+      "decision": "تصمیم",
+      "refunded": "بازپرداخت",
+      "item": "قلم",
+      "role": "نقش"
+    }
   }
 }

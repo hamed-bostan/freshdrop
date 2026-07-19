@@ -72,33 +72,45 @@ model User {
   @@map("users")
 }
 
-// An append-only record of who changed whose dashboard access, and when. Never
-// updated or deleted: notifications tell the affected people at the time, this
-// answers "who has held ownership this year" afterwards — and it is the only
-// thing that does, since a notice with no email address on file simply never
-// arrives.
+// An append-only record of every admin-visible change: who did what to which
+// thing, and what the value was before. Never updated or deleted.
+//
+// This is the generalisation of what used to be `role_changes`, which covered
+// dashboard-access grants and nothing else. Those entries live on here as
+// `user.roleChanged` rows (the migration backfilled them), so there is one log to
+// query rather than one per feature.
 //
 // Names are snapshotted rather than joined, the same faithful-historical-record
 // treatment orders give product names: the entry must still read correctly after
-// someone is renamed, and must survive a user row being removed entirely.
-// `userId`/`actorId` are plain references (not DB foreign keys), matching the
-// loose coupling used throughout.
-model RoleChange {
-  id         String   @id @default(uuid())
-  // Whose access changed.
-  userId     String   @map("user_id")
-  userName   String   @map("user_name")
-  // Who changed it. Snapshotted the same way; an actor may later be removed.
-  actorId    String   @map("actor_id")
-  actorName  String   @map("actor_name")
-  // Roles as plain strings matching the domain union (enum-free schema).
-  fromRole   String   @map("from_role")
-  toRole     String   @map("to_role")
-  createdAt  DateTime @default(now()) @map("created_at")
+// a product or a person is renamed, and must survive the row being removed
+// entirely. `actorId`/`entityId` are plain references (not DB foreign keys),
+// matching the loose coupling used throughout — and necessarily so, since an
+// entry outlives the thing it describes (`product.deleted` is the clearest case).
+model ActivityEntry {
+  id          String   @id @default(uuid())
+  // Who made the change, and their name at the time.
+  actorId     String   @map("actor_id")
+  actorName   String   @map("actor_name")
+  // Action and entity type as plain strings matching the domain unions
+  // (enum-free schema) — the adapter narrows them on read.
+  action      String
+  entityType  String   @map("entity_type")
+  entityId    String   @map("entity_id")
+  // How the entity read at the time: a product name, a promo code, a person.
+  entityLabel String?  @map("entity_label")
+  // The fields that moved, as `[{ field, before, after }]` with string values.
+  // Json rather than a child table: the diff is always read with its entry and
+  // never queried across entries, so a join would buy nothing and cost a table.
+  changes     Json
+  createdAt   DateTime @default(now()) @map("created_at")
 
-  // The listing reads newest-first across the whole table.
+  // The unfiltered log, newest first.
   @@index([createdAt])
-  @@map("role_changes")
+  // One entity's own history — the panels on the order and product screens.
+  @@index([entityType, entityId, createdAt])
+  // The actor filter, and the "what did this person do" question behind it.
+  @@index([actorId, createdAt])
+  @@map("activity_log")
 }
 
 // An order is a faithful historical record: each line snapshots the product's

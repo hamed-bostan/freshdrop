@@ -1,10 +1,14 @@
+import type { ActivityActor } from "../../entities/ActivityEntry";
+import { activityValue, singleChange } from "../../entities/ActivityEntry";
 import type { Order } from "../../entities/Order";
+import type { IActivityLog } from "../../repositories/IActivityLog";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 import type { IWalletRepository } from "../../repositories/IWalletRepository";
 import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
+import { recordActivity } from "../activity/recordActivity";
 
 /** An admin's ruling on a pending return request. */
 export type ReturnDecision = "approve" | "reject";
@@ -25,9 +29,10 @@ export class ResolveOrderReturn {
     private readonly productRepo: IProductRepository,
     private readonly walletRepo: IWalletRepository,
     private readonly notifier: IOrderNotifier,
+    private readonly activityLog: IActivityLog,
   ) {}
 
-  async execute(orderId: string, decision: ReturnDecision): Promise<Order> {
+  async execute(orderId: string, decision: ReturnDecision, actor: ActivityActor): Promise<Order> {
     const order = await this.orderRepo.getById(orderId);
     if (!order) throw new NotFoundError("order", orderId);
 
@@ -41,6 +46,11 @@ export class ResolveOrderReturn {
         to: { status: "completed" },
       });
       if (!rejected) throw new ValidationError("order", "This order has no pending return request.");
+
+      // Recorded *after* the guarded transition, here and below, so only the call
+      // that actually resolved the return writes an entry. Logging before it would
+      // give a lost race an entry for a decision it never made.
+      await this.record(actor, rejected, "reject", order.status);
       return rejected;
     }
 
@@ -60,10 +70,43 @@ export class ResolveOrderReturn {
     );
     await this.walletRepo.addFunds(refunded.userId, refunded.total, { kind: "refundReturnedOrder" });
 
+    await this.record(actor, refunded, "approve", order.status);
+
     // Tell the customer their return was approved and refunded. Best-effort: the
     // refund has already committed, so the notifier swallows any delivery failure.
     await this.notifier.returnApproved(refunded);
 
     return refunded;
+  }
+
+  /**
+   * One entry for the ruling. The decision rides alongside the status move because
+   * the two aren't the same fact: `reject` and a stage rewind both land an order
+   * back on `completed`, and only the decision says which happened. An approval
+   * moves money, so the refunded amount is on the entry too — it's the number
+   * anyone auditing this will want, and the order's total can be edited by later
+   * substitutions.
+   */
+  private async record(
+    actor: ActivityActor,
+    order: Order,
+    decision: ReturnDecision,
+    fromStatus: Order["status"],
+  ): Promise<void> {
+    await recordActivity(this.activityLog, {
+      actorId: actor.id,
+      actorName: actor.name,
+      action: "order.returnResolved",
+      entityType: "order",
+      entityId: order.id,
+      entityLabel: order.id,
+      changes: [
+        ...singleChange("status", fromStatus, order.status),
+        { field: "decision", before: null, after: decision },
+        ...(decision === "approve"
+          ? [{ field: "refunded", before: null, after: activityValue(order.total) }]
+          : []),
+      ],
+    });
   }
 }

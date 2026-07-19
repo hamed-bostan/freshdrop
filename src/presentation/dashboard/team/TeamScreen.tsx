@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
 import type { TeamMember } from "@/src/contracts/team-response-schema";
-import type { RoleChangeEntry } from "./team-history-response-schema";
+import type { ActivityEntryWire } from "@/src/presentation/dashboard/activity/activity-response-schema";
 import { GrantAdminForm } from "./GrantAdminForm";
 import { TeamTable } from "./TeamTable";
 import { TeamActivity } from "./TeamActivity";
@@ -8,8 +8,8 @@ import { TeamActivity } from "./TeamActivity";
 type TeamScreenProps = {
   /** Everyone who can reach the dashboard, fetched over the BFF during server render. */
   members: TeamMember[];
-  /** Recent access changes, newest first. */
-  changes: RoleChangeEntry[];
+  /** Recent access changes from the activity log, newest first. */
+  changes: ActivityEntryWire[];
 };
 
 /**

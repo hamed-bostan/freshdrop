@@ -1,20 +1,25 @@
+import type { ActivityActor } from "../../entities/ActivityEntry";
+import { activityValue } from "../../entities/ActivityEntry";
 import type { Product } from "../../entities/Product";
-import type {
-  IProductRepository,
-  NewProduct,
-  StockMovementActor,
-} from "../../repositories/IProductRepository";
+import type { IProductRepository, NewProduct } from "../../repositories/IProductRepository";
+import type { IActivityLog } from "../../repositories/IActivityLog";
 import { ValidationError } from "../../errors/ValidationError";
+import { recordActivity } from "../activity/recordActivity";
 
 export class CreateProduct {
-  constructor(private readonly productRepo: IProductRepository) {}
+  constructor(
+    private readonly productRepo: IProductRepository,
+    private readonly activityLog: IActivityLog,
+  ) {}
 
   /**
-   * `actor` is the admin creating the product. Passed through so a product born
-   * with units on hand opens its ledger with an entry saying who put them there,
-   * rather than a history that starts mid-air at a level nobody accounted for.
+   * `actor` is the admin creating the product. Required, not optional: it's both
+   * what opens the product's stock ledger with an entry saying who put the initial
+   * units there, and what the activity log records. An optional actor would make
+   * an unattributed product one forgotten argument away, which is the failure mode
+   * the log exists to rule out.
    */
-  async execute(input: NewProduct, actor?: StockMovementActor): Promise<Product> {
+  async execute(input: NewProduct, actor: ActivityActor): Promise<Product> {
     // Last-resort domain guard behind the route's schema validation, so a direct
     // caller (seed script, importer) still can't bypass the invariants.
     const name = input.name.trim();
@@ -29,6 +34,25 @@ export class CreateProduct {
       throw new ValidationError("stockQuantity", "Stock must be a whole number of 0 or more.");
     }
 
-    return this.productRepo.create({ ...input, name }, actor);
+    const created = await this.productRepo.create({ ...input, name }, actor);
+
+    // A creation has no "before", so the diff records the values it started at
+    // rather than an empty list — otherwise the entry says a product appeared and
+    // nothing about what it was. Only the fields worth answering "what was this
+    // set to?" about; the whole form would bury them.
+    await recordActivity(this.activityLog, {
+      actorId: actor.id,
+      actorName: actor.name,
+      action: "product.created",
+      entityType: "product",
+      entityId: created.id,
+      entityLabel: created.name,
+      changes: [
+        { field: "price", before: null, after: activityValue(created.price) },
+        { field: "stockQuantity", before: null, after: activityValue(created.stockQuantity) },
+      ],
+    });
+
+    return created;
   }
 }

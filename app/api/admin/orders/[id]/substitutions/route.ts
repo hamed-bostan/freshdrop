@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { ResolveItemSubstitution } from "@/src/domain/use-cases/orders/ResolveItemSubstitution";
 import {
+  activityLog,
   orderRepository,
   productRepository,
   walletRepository,
@@ -30,7 +31,8 @@ type RouteContext = { params: Promise<{ id: string }> };
  * substitution to 400, and a replacement that's also out of stock to 409.
  */
 export async function POST(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  const session = await getAdminSession();
+  if (!session) return unauthorizedResponse();
 
   const { id } = await params;
   const body = await parseJsonBody(request);
@@ -56,7 +58,14 @@ export async function POST(request: NextRequest, { params }: RouteContext): Prom
       productRepository,
       walletRepository,
       orderNotifier,
-    ).execute({ orderId: id, productId: parsed.data.productId, resolution });
+      activityLog,
+    ).execute({
+      orderId: id,
+      productId: parsed.data.productId,
+      resolution,
+      // The picker comes from the session, never from the body.
+      actor: { id: session.user.id, name: session.user.name ?? session.user.id },
+    });
     return NextResponse.json(order);
   } catch (error) {
     return errorResponseFromException(error, `POST /api/admin/orders/${id}/substitutions failed`);
