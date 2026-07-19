@@ -13,9 +13,11 @@ import type {
   StockMovementActor,
   StockMovementContext,
 } from "@/src/domain/repositories/IProductRepository";
+import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { InsufficientStockError, type StockShortfall } from "@/src/domain/errors/InsufficientStockError";
 import { prisma } from "@/src/infrastructure/prisma/client";
+import { recordAudit } from "./writeActivityEntry";
 
 /** How many related products the detail screen's "Similar To This Item" rail shows. */
 const SIMILAR_LIMIT = 6;
@@ -140,7 +142,7 @@ export class PrismaProductRepository implements IProductRepository {
     return localizeProducts([...sameCategory, ...others].slice(0, SIMILAR_LIMIT).map(toProduct), locale);
   }
 
-  async create(input: NewProduct, actor?: StockMovementActor): Promise<Product> {
+  async create(input: NewProduct, actor?: StockMovementActor, audit?: AuditHook<Product>): Promise<Product> {
     // `translations` isn't a `products` column — persist it into the side table.
     const { translations, ...data } = input;
     try {
@@ -157,6 +159,9 @@ export class PrismaProductRepository implements IProductRepository {
             }),
           });
         }
+        // Inside the transaction, so the audit entry and the product it records
+        // commit together — see `recordAudit`.
+        await recordAudit(tx, toProduct(created), audit);
         return created;
       });
       await replaceProductTranslations(row.id, translations);
@@ -166,7 +171,7 @@ export class PrismaProductRepository implements IProductRepository {
     }
   }
 
-  async update(id: string, input: NewProduct, actor?: StockMovementActor): Promise<Product> {
+  async update(id: string, input: NewProduct, actor?: StockMovementActor, audit?: AuditHook<Product>): Promise<Product> {
     const { translations, ...data } = input;
     try {
       // The edit form can move stock like any other field, so the update and the
@@ -183,6 +188,7 @@ export class PrismaProductRepository implements IProductRepository {
             data: movementRow(id, delta, updated.stockQuantity, { reason: "correction", actor }),
           });
         }
+        await recordAudit(tx, toProduct(updated), audit);
         return updated;
       });
       await replaceProductTranslations(row.id, translations);
@@ -192,7 +198,12 @@ export class PrismaProductRepository implements IProductRepository {
     }
   }
 
-  async adjustStock(productId: string, delta: number, context: StockMovementContext): Promise<Product> {
+  async adjustStock(
+    productId: string,
+    delta: number,
+    context: StockMovementContext,
+    audit?: AuditHook<Product>,
+  ): Promise<Product> {
     if (delta === 0) {
       // Nothing moved, so there is nothing to record. Reading the row back keeps
       // the return contract ("the product as it now stands") without writing an
@@ -238,7 +249,9 @@ export class PrismaProductRepository implements IProductRepository {
       await tx.stockMovement.create({
         data: movementRow(productId, delta, updated.stockQuantity, context),
       });
-      return toProduct(updated);
+      const product = toProduct(updated);
+      await recordAudit(tx, product, audit);
+      return product;
     });
   }
 
@@ -257,9 +270,15 @@ export class PrismaProductRepository implements IProductRepository {
     }));
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, audit?: AuditHook<void>): Promise<void> {
     try {
-      await prisma.product.delete({ where: { id } });
+      // Transactional even though it is a single delete: the audit entry is the
+      // only record the product ever existed, so it must not be able to go missing
+      // while the row it describes is removed.
+      await prisma.$transaction(async (tx) => {
+        await tx.product.delete({ where: { id } });
+        await recordAudit(tx, undefined, audit);
+      });
     } catch (error) {
       throw toDomainError(error);
     }

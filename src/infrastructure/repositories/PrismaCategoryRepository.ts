@@ -7,7 +7,9 @@ import type {
 } from "@/src/domain/repositories/ICategoryRepository";
 import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
+import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import { prisma } from "@/src/infrastructure/prisma/client";
+import { recordAudit } from "./writeActivityEntry";
 
 /**
  * Categories backed by PostgreSQL via Prisma. Server-side only (it opens a DB
@@ -31,11 +33,15 @@ export class PrismaCategoryRepository implements ICategoryRepository {
     return (await localizeCategories([toCategory(row)], locale))[0];
   }
 
-  async create(input: NewCategory): Promise<Category> {
+  async create(input: NewCategory, audit?: AuditHook<Category>): Promise<Category> {
     // `translations` isn't a `categories` column — persist it into the side table.
     const { translations, ...data } = input;
     try {
-      const row = await prisma.category.create({ data });
+      const row = await prisma.$transaction(async (tx) => {
+        const created = await tx.category.create({ data });
+        await recordAudit(tx, toCategory(created), audit);
+        return created;
+      });
       await replaceCategoryTranslations(row.id, translations);
       return toCategory(row);
     } catch (error) {
@@ -43,10 +49,14 @@ export class PrismaCategoryRepository implements ICategoryRepository {
     }
   }
 
-  async update(id: string, input: NewCategory): Promise<Category> {
+  async update(id: string, input: NewCategory, audit?: AuditHook<Category>): Promise<Category> {
     const { translations, ...data } = input;
     try {
-      const row = await prisma.category.update({ where: { id }, data });
+      const row = await prisma.$transaction(async (tx) => {
+        const updated = await tx.category.update({ where: { id }, data });
+        await recordAudit(tx, toCategory(updated), audit);
+        return updated;
+      });
       await replaceCategoryTranslations(row.id, translations);
       return toCategory(row);
     } catch (error) {
@@ -62,9 +72,13 @@ export class PrismaCategoryRepository implements ICategoryRepository {
     return rows.map((row) => ({ locale: row.locale, name: row.name }));
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, audit?: AuditHook<void>): Promise<void> {
     try {
-      await prisma.category.delete({ where: { id } });
+      // Transactional: the entry is the only surviving record of the category.
+      await prisma.$transaction(async (tx) => {
+        await tx.category.delete({ where: { id } });
+        await recordAudit(tx, undefined, audit);
+      });
     } catch (error) {
       throw toDomainError(error);
     }

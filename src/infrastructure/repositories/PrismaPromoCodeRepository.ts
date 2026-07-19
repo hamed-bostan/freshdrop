@@ -9,7 +9,9 @@ import { createPage, toSkipTake, type Page, type PageRequest } from "@/src/domai
 import type { IPromoCodeRepository, NewPromoCode } from "@/src/domain/repositories/IPromoCodeRepository";
 import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
+import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import { prisma } from "@/src/infrastructure/prisma/client";
+import { recordAudit } from "./writeActivityEntry";
 
 /**
  * Promo codes backed by PostgreSQL via Prisma. Server-side only (it opens a DB
@@ -58,27 +60,45 @@ export class PrismaPromoCodeRepository implements IPromoCodeRepository {
     return row ? toAdminPromoCode(row) : null;
   }
 
-  async create(input: NewPromoCode): Promise<AdminPromoCode> {
+  async create(input: NewPromoCode, audit?: AuditHook<AdminPromoCode>): Promise<AdminPromoCode> {
     try {
-      const row = await prisma.promoCode.create({ data: toRowData(input) });
+      // Transactional so the campaign and the record of who authored it commit
+      // together — see `recordAudit`.
+      const row = await prisma.$transaction(async (tx) => {
+        const created = await tx.promoCode.create({ data: toRowData(input) });
+        await recordAudit(tx, toAdminPromoCode(created), audit);
+        return created;
+      });
       return toAdminPromoCode(row);
     } catch (error) {
       throw toDomainError(error);
     }
   }
 
-  async update(id: string, input: NewPromoCode): Promise<AdminPromoCode> {
+  async update(id: string, input: NewPromoCode, audit?: AuditHook<AdminPromoCode>): Promise<AdminPromoCode> {
     try {
-      const row = await prisma.promoCode.update({ where: { id }, data: toRowData(input) });
+      const row = await prisma.$transaction(async (tx) => {
+        const updated = await tx.promoCode.update({ where: { id }, data: toRowData(input) });
+        await recordAudit(tx, toAdminPromoCode(updated), audit);
+        return updated;
+      });
       return toAdminPromoCode(row);
     } catch (error) {
       throw toDomainError(error);
     }
   }
 
-  async setActive(id: string, active: boolean): Promise<AdminPromoCode> {
+  async setActive(
+    id: string,
+    active: boolean,
+    audit?: AuditHook<AdminPromoCode>,
+  ): Promise<AdminPromoCode> {
     try {
-      const row = await prisma.promoCode.update({ where: { id }, data: { active } });
+      const row = await prisma.$transaction(async (tx) => {
+        const updated = await tx.promoCode.update({ where: { id }, data: { active } });
+        await recordAudit(tx, toAdminPromoCode(updated), audit);
+        return updated;
+      });
       return toAdminPromoCode(row);
     } catch (error) {
       throw toDomainError(error);

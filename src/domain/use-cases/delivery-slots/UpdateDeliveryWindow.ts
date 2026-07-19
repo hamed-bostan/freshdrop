@@ -1,13 +1,11 @@
 import type { ActivityActor } from "../../entities/ActivityEntry";
 import { diffFields } from "../../entities/ActivityEntry";
 import type { DeliveryWindow } from "../../entities/DeliveryWindow";
-import type { IActivityLog } from "../../repositories/IActivityLog";
 import type { DeliveryWindowInput, IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
 import { assertValidDeliveryWindow } from "./deliveryWindowRules";
 import { deliveryWindowSnapshot } from "./deliveryWindowActivity";
-import { recordActivity } from "../activity/recordActivity";
 
 /**
  * Edit a delivery window's hours, capacity or display order. The id is not
@@ -23,7 +21,6 @@ import { recordActivity } from "../activity/recordActivity";
 export class UpdateDeliveryWindow {
   constructor(
     private readonly slotRepo: IDeliverySlotRepository,
-    private readonly activityLog: IActivityLog,
   ) {}
 
   async execute(
@@ -39,25 +36,22 @@ export class UpdateDeliveryWindow {
     const existing = await this.slotRepo.getWindow(id);
     if (!existing) throw new NotFoundError("delivery window", id);
 
-    const updated = await this.slotRepo.updateWindow(id, window);
-
     // Capacity cuts are the reason this is recorded: the use-case allows dropping
     // capacity below what's already booked, which is correct but invisible — the
     // affected days simply start reading as full. The entry is what connects that
     // to a person and a previous number.
-    const changes = diffFields(deliveryWindowSnapshot(existing), deliveryWindowSnapshot(updated));
-    if (changes.length > 0) {
-      await recordActivity(this.activityLog, {
+    return this.slotRepo.updateWindow(id, window, (saved) => {
+      const changes = diffFields(deliveryWindowSnapshot(existing), deliveryWindowSnapshot(saved));
+      if (changes.length === 0) return null;
+      return {
         actorId: actor.id,
         actorName: actor.name,
         action: "deliveryWindow.updated",
         entityType: "deliveryWindow",
-        entityId: updated.id,
-        entityLabel: updated.label,
+        entityId: saved.id,
+        entityLabel: saved.label,
         changes,
-      });
-    }
-
-    return updated;
+      };
+    });
   }
 }

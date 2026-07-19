@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { ResolveItemSubstitution } from "@/src/domain/use-cases/orders/ResolveItemSubstitution";
 import {
-  activityLog,
   orderRepository,
   productRepository,
   walletRepository,
@@ -58,7 +57,6 @@ export async function POST(request: NextRequest, { params }: RouteContext): Prom
       productRepository,
       walletRepository,
       orderNotifier,
-      activityLog,
     ).execute({
       orderId: id,
       productId: parsed.data.productId,

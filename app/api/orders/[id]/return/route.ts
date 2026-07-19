@@ -2,7 +2,6 @@ import { NextResponse, type NextRequest } from "next/server";
 import { RequestOrderReturn } from "@/src/domain/use-cases/orders/RequestOrderReturn";
 import { ResolveOrderReturn } from "@/src/domain/use-cases/orders/ResolveOrderReturn";
 import {
-  activityLog,
   orderRepository,
   productRepository,
   walletRepository,
@@ -79,7 +78,6 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
       productRepository,
       walletRepository,
       orderNotifier,
-      activityLog,
     ).execute(id, parsed.data.decision, {
       id: session.user.id,
       name: session.user.name ?? session.user.id,

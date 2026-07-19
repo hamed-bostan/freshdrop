@@ -17,8 +17,10 @@ import type {
   OrderStatusTransition,
   OrderTrackingUpdate,
 } from "@/src/domain/repositories/IOrderRepository";
+import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { prisma } from "@/src/infrastructure/prisma/client";
+import { recordAudit } from "./writeActivityEntry";
 
 /** Items are always read in their authored order so the order card's thumbnails stay stable. */
 const ITEMS_INCLUDE = { items: { orderBy: { position: "asc" } } } as const;
@@ -114,12 +116,20 @@ export class PrismaOrderRepository implements IOrderRepository {
     return toOrder(row);
   }
 
-  async setTrackingStage(orderId: string, update: OrderTrackingUpdate): Promise<Order> {
+  async setTrackingStage(
+    orderId: string,
+    update: OrderTrackingUpdate,
+    audit?: AuditHook<Order>,
+  ): Promise<Order> {
     try {
-      const row = await prisma.order.update({
-        where: { id: orderId },
-        data: { stage: update.stage, status: update.status },
-        include: ITEMS_INCLUDE,
+      const row = await prisma.$transaction(async (tx) => {
+        const updated = await tx.order.update({
+          where: { id: orderId },
+          data: { stage: update.stage, status: update.status },
+          include: ITEMS_INCLUDE,
+        });
+        await recordAudit(tx, toOrder(updated), audit);
+        return updated;
       });
       return toOrder(row);
     } catch (error) {
@@ -127,51 +137,78 @@ export class PrismaOrderRepository implements IOrderRepository {
     }
   }
 
-  async transitionStatus(orderId: string, transition: OrderStatusTransition): Promise<Order | null> {
+  async transitionStatus(
+    orderId: string,
+    transition: OrderStatusTransition,
+    audit?: AuditHook<Order>,
+  ): Promise<Order | null> {
     const { from, to } = transition;
 
-    // The `from` precondition is folded into the WHERE clause, so the match and
-    // the write are one atomic statement — `count` is 1 only when this call is
-    // the one that actually moved the order out of the expected state.
-    const result = await prisma.order.updateMany({
-      where: {
-        id: orderId,
-        status: from.status,
-        ...(from.stage !== undefined ? { stage: from.stage } : {}),
-      },
-      data: {
-        status: to.status,
-        ...(to.phase !== undefined ? { phase: to.phase } : {}),
-        // `null` clears the stage; `undefined` leaves it untouched.
-        ...(to.stage !== undefined ? { stage: to.stage } : {}),
-      },
-    });
+    return prisma.$transaction(async (tx) => {
+      // The `from` precondition is folded into the WHERE clause, so the match and
+      // the write are one atomic statement — `count` is 1 only when this call is
+      // the one that actually moved the order out of the expected state.
+      const result = await tx.order.updateMany({
+        where: {
+          id: orderId,
+          status: from.status,
+          ...(from.stage !== undefined ? { stage: from.stage } : {}),
+        },
+        data: {
+          status: to.status,
+          ...(to.phase !== undefined ? { phase: to.phase } : {}),
+          // `null` clears the stage; `undefined` leaves it untouched.
+          ...(to.stage !== undefined ? { stage: to.stage } : {}),
+        },
+      });
 
-    if (result.count === 0) return null;
-    return this.getById(orderId);
+      // Lost the guard, so this call changed nothing — and must not claim in the
+      // log to have made a decision another call actually made.
+      if (result.count === 0) return null;
+
+      // Read through `tx`, not `this.getById`: the update above is uncommitted, so
+      // a read on another connection would return the pre-transition order.
+      const row = await tx.order.findUnique({ where: { id: orderId }, include: ITEMS_INCLUDE });
+      if (!row) return null;
+
+      const order = toOrder(row);
+      await recordAudit(tx, order, audit);
+      return order;
+    });
   }
 
   async resolveItemSubstitution(
     orderId: string,
     productId: string,
     resolution: ItemSubstitution,
+    audit?: AuditHook<Order>,
   ): Promise<Order | null> {
-    // The "still unresolved" precondition (`substitutionStatus: null`) is folded
-    // into the WHERE clause, so the guard and the write are one atomic statement —
-    // `count` is 1 only for the call that actually resolved the line.
-    const result = await prisma.orderItem.updateMany({
-      where: { orderId, productId, substitutionStatus: null },
-      data: {
-        substitutionStatus: resolution.status,
-        substitutionRefundAmount: resolution.refundAmount,
-        replacementProductId: resolution.replacement?.productId ?? null,
-        replacementName: resolution.replacement?.name ?? null,
-        replacementImageUrl: resolution.replacement?.imageUrl ?? null,
-      },
-    });
+    return prisma.$transaction(async (tx) => {
+      // The "still unresolved" precondition (`substitutionStatus: null`) is folded
+      // into the WHERE clause, so the guard and the write are one atomic statement
+      // — `count` is 1 only for the call that actually resolved the line.
+      const result = await tx.orderItem.updateMany({
+        where: { orderId, productId, substitutionStatus: null },
+        data: {
+          substitutionStatus: resolution.status,
+          substitutionRefundAmount: resolution.refundAmount,
+          replacementProductId: resolution.replacement?.productId ?? null,
+          replacementName: resolution.replacement?.name ?? null,
+          replacementImageUrl: resolution.replacement?.imageUrl ?? null,
+        },
+      });
 
-    if (result.count === 0) return null;
-    return this.getById(orderId);
+      // Lost the race — another pick already resolved this line. No entry, for the
+      // same reason as above.
+      if (result.count === 0) return null;
+
+      const row = await tx.order.findUnique({ where: { id: orderId }, include: ITEMS_INCLUDE });
+      if (!row) return null;
+
+      const order = toOrder(row);
+      await recordAudit(tx, order, audit);
+      return order;
+    });
   }
 }
 

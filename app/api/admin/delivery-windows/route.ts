@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { GetDeliveryWindows } from "@/src/domain/use-cases/delivery-slots/GetDeliveryWindows";
 import { CreateDeliveryWindow } from "@/src/domain/use-cases/delivery-slots/CreateDeliveryWindow";
-import { activityLog, deliverySlotRepository } from "@/src/infrastructure/container";
+import { deliverySlotRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import {
   errorResponse,
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const created = await new CreateDeliveryWindow(deliverySlotRepository, activityLog).execute(parsed.data, { id: session.user.id, name: session.user.name ?? session.user.id });
+    const created = await new CreateDeliveryWindow(deliverySlotRepository).execute(parsed.data, { id: session.user.id, name: session.user.name ?? session.user.id });
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
     return errorResponseFromException(error, "POST /api/admin/delivery-windows failed");

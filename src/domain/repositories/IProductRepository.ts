@@ -2,6 +2,7 @@ import type { Product } from "../entities/Product";
 import type { AdminProductFilters, AdminProductSort } from "../entities/AdminProductFilters";
 import type { Page, PageRequest } from "../entities/Pagination";
 import type { ProductFilters } from "../entities/ProductFilters";
+import type { AuditHook } from "./AuditHook";
 import type { StockMovementReason } from "../entities/StockMovement";
 
 /**
@@ -105,15 +106,16 @@ export type IProductRepository = {
    * so, instead of a level that appears from nowhere. Omitted for a product
    * created empty (there's no movement to record).
    */
-  create(input: NewProduct, actor?: StockMovementActor): Promise<Product>;
+  create(input: NewProduct, actor?: StockMovementActor, audit?: AuditHook<Product>): Promise<Product>;
   /**
    * `actor` is who to attribute a stock change to. The full edit form can move
    * stock like any other field, so when `stockQuantity` differs from the stored
    * value the repository records a `correction` for the difference in the same
    * transaction — the edit form is not a back door around the ledger.
    */
-  update(id: string, input: NewProduct, actor?: StockMovementActor): Promise<Product>;
-  delete(id: string): Promise<void>;
+  update(id: string, input: NewProduct, actor?: StockMovementActor, audit?: AuditHook<Product>): Promise<Product>;
+  /** `audit` records the deletion inside the same transaction — the entry is the only record the product ever existed. */
+  delete(id: string, audit?: AuditHook<void>): Promise<void>;
 
   /**
    * Apply a signed `delta` to one product's on-hand stock and record why, as one
@@ -126,7 +128,12 @@ export type IProductRepository = {
    * can't leave the catalog in a state the schema's CHECK constraint would have
    * rejected anyway. `NotFoundError` when the product is gone.
    */
-  adjustStock(productId: string, delta: number, context: StockMovementContext): Promise<Product>;
+  adjustStock(
+    productId: string,
+    delta: number,
+    context: StockMovementContext,
+    audit?: AuditHook<Product>,
+  ): Promise<Product>;
   /** The stored per-locale translations for a product (for the admin edit form); empty when none. */
   getTranslations(productId: string): Promise<ProductTranslationInput[]>;
 

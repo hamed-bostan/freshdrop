@@ -1,5 +1,6 @@
 import type { AdminPromoCode, AdminPromoCodeFilters, AdminPromoCodeSort, PromoCode } from "../entities/PromoCode";
 import type { Page, PageRequest } from "../entities/Pagination";
+import type { AuditHook } from "./AuditHook";
 
 /**
  * A promo code before it exists — the database assigns the id, the timestamps and
@@ -33,10 +34,10 @@ export type IPromoCodeRepository = {
    * code, and reusing it would silently resurrect it for anyone holding the old one.
    */
   getByCode(code: string): Promise<AdminPromoCode | null>;
-  create(input: NewPromoCode): Promise<AdminPromoCode>;
-  update(id: string, input: NewPromoCode): Promise<AdminPromoCode>;
+  create(input: NewPromoCode, audit?: AuditHook<AdminPromoCode>): Promise<AdminPromoCode>;
+  update(id: string, input: NewPromoCode, audit?: AuditHook<AdminPromoCode>): Promise<AdminPromoCode>;
   /** Flip the on/off switch — the reversible stand-in for deleting a code. */
-  setActive(id: string, active: boolean): Promise<AdminPromoCode>;
+  setActive(id: string, active: boolean, audit?: AuditHook<AdminPromoCode>): Promise<AdminPromoCode>;
 
   /**
    * Count one redemption against a code. Best-effort by contract: it runs after an

@@ -2,7 +2,6 @@ import { NextResponse, type NextRequest } from "next/server";
 import { GetOrderTracking } from "@/src/domain/use-cases/orders/GetOrderTracking";
 import { SetOrderTrackingStage } from "@/src/domain/use-cases/orders/SetOrderTrackingStage";
 import {
-  activityLog,
   orderRepository,
   orderTrackingRepository,
   orderNotifier,
@@ -71,7 +70,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
   }
 
   try {
-    await new SetOrderTrackingStage(orderRepository, orderNotifier, activityLog).execute(
+    await new SetOrderTrackingStage(orderRepository, orderNotifier).execute(
       id,
       parsed.data.stage,
       { id: session.user.id, name: session.user.name ?? session.user.id },

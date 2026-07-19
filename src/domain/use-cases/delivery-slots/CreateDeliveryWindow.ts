@@ -1,12 +1,10 @@
 import type { ActivityActor } from "../../entities/ActivityEntry";
 import { activityValue } from "../../entities/ActivityEntry";
 import type { DeliveryWindow } from "../../entities/DeliveryWindow";
-import type { IActivityLog } from "../../repositories/IActivityLog";
 import type { IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
 import { UniqueConstraintError } from "../../errors/UniqueConstraintError";
 import { assertValidDeliveryWindow, assertValidWindowId } from "./deliveryWindowRules";
 import { deliveryWindowSnapshot } from "./deliveryWindowActivity";
-import { recordActivity } from "../activity/recordActivity";
 
 /**
  * Add a delivery window to the catalog. It becomes bookable across the whole
@@ -16,7 +14,6 @@ import { recordActivity } from "../activity/recordActivity";
 export class CreateDeliveryWindow {
   constructor(
     private readonly slotRepo: IDeliverySlotRepository,
-    private readonly activityLog: IActivityLog,
   ) {}
 
   async execute(input: DeliveryWindow, actor: ActivityActor): Promise<DeliveryWindow> {
@@ -33,9 +30,7 @@ export class CreateDeliveryWindow {
     const existing = await this.slotRepo.getWindow(id);
     if (existing) throw new UniqueConstraintError(["id"]);
 
-    const created = await this.slotRepo.createWindow(window);
-
-    await recordActivity(this.activityLog, {
+    return this.slotRepo.createWindow(window, (created) => ({
       actorId: actor.id,
       actorName: actor.name,
       action: "deliveryWindow.created",
@@ -45,8 +40,6 @@ export class CreateDeliveryWindow {
       changes: Object.entries(deliveryWindowSnapshot(created))
         .map(([field, value]) => ({ field, before: null, after: activityValue(value) }))
         .filter((change) => change.after !== null),
-    });
-
-    return created;
+    }));
   }
 }

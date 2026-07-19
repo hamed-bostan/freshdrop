@@ -1,11 +1,9 @@
 import type { ActivityActor } from "../../entities/ActivityEntry";
 import { activityValue } from "../../entities/ActivityEntry";
-import type { IActivityLog } from "../../repositories/IActivityLog";
 import type { IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ResourceInUseError } from "../../errors/ResourceInUseError";
 import { deliveryWindowSnapshot } from "./deliveryWindowActivity";
-import { recordActivity } from "../activity/recordActivity";
 
 /**
  * Remove a delivery window from the catalog — refused while orders are still
@@ -24,7 +22,6 @@ import { recordActivity } from "../activity/recordActivity";
 export class DeleteDeliveryWindow {
   constructor(
     private readonly slotRepo: IDeliverySlotRepository,
-    private readonly activityLog: IActivityLog,
   ) {}
 
   async execute(id: string, actor: ActivityActor, now: Date = new Date()): Promise<void> {
@@ -42,12 +39,11 @@ export class DeleteDeliveryWindow {
       );
     }
 
-    await this.slotRepo.deleteWindow(id);
-
     // The window is gone, so the log is the only remaining record of its hours and
-    // capacity — worth having, since orders still reference the slug it owned.
+    // capacity — worth having, since orders still reference the slug it owned. The
+    // entry commits with the delete, and with the ledger rows it takes with it.
     const snapshot = deliveryWindowSnapshot(existing);
-    await recordActivity(this.activityLog, {
+    await this.slotRepo.deleteWindow(id, () => ({
       actorId: actor.id,
       actorName: actor.name,
       action: "deliveryWindow.deleted",
@@ -57,6 +53,6 @@ export class DeleteDeliveryWindow {
       changes: Object.entries(snapshot)
         .map(([field, value]) => ({ field, before: activityValue(value), after: null }))
         .filter((change) => change.before !== null),
-    });
+    }));
   }
 }

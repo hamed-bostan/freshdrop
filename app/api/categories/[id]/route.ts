@@ -3,7 +3,6 @@ import { GetCategoryById } from "@/src/domain/use-cases/categories/GetCategoryBy
 import { UpdateCategory } from "@/src/domain/use-cases/categories/UpdateCategory";
 import { DeleteCategory } from "@/src/domain/use-cases/categories/DeleteCategory";
 import {
-  activityLog,
   categoryRepository,
   imageStorageRepository,
 } from "@/src/infrastructure/container";
@@ -59,7 +58,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
   }
 
   try {
-    const updated = await new UpdateCategory(categoryRepository, imageStorageRepository, activityLog).execute(
+    const updated = await new UpdateCategory(categoryRepository, imageStorageRepository).execute(
       id,
       parsed.data,
       { id: session.user.id, name: session.user.name ?? session.user.id },
@@ -79,7 +78,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext): P
 
   const { id } = await params;
   try {
-    await new DeleteCategory(categoryRepository, imageStorageRepository, activityLog).execute(
+    await new DeleteCategory(categoryRepository, imageStorageRepository).execute(
       id,
       { id: session.user.id, name: session.user.name ?? session.user.id },
     );

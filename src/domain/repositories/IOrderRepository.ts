@@ -2,6 +2,7 @@ import type { AdminOrderFilters, AdminOrderSort } from "../entities/AdminOrderFi
 import type { ItemSubstitution, Order, OrderPhase, OrderStatus } from "../entities/Order";
 import type { TrackingMilestone } from "../entities/OrderTracking";
 import type { Page, PageRequest } from "../entities/Pagination";
+import type { AuditHook } from "./AuditHook";
 
 /** The fields a delivery-stage transition writes (computed by the use-case, persisted by the repo). */
 export type OrderTrackingUpdate = {
@@ -66,7 +67,7 @@ export type IOrderRepository = {
    * Apply a delivery-stage transition to an order, returning the updated order.
    * Throws `NotFoundError` when no order matches `orderId`.
    */
-  setTrackingStage(orderId: string, update: OrderTrackingUpdate): Promise<Order>;
+  setTrackingStage(orderId: string, update: OrderTrackingUpdate, audit?: AuditHook<Order>): Promise<Order>;
 
   /**
    * Atomically apply a guarded lifecycle transition (see {@link OrderStatusTransition}).
@@ -75,7 +76,11 @@ export type IOrderRepository = {
    * that also moves money/stock only does so when it observes a real transition,
    * making cancel/return idempotent under double-submit and safe under races.
    */
-  transitionStatus(orderId: string, transition: OrderStatusTransition): Promise<Order | null>;
+  transitionStatus(
+    orderId: string,
+    transition: OrderStatusTransition,
+    audit?: AuditHook<Order>,
+  ): Promise<Order | null>;
 
   /**
    * Record a picker's resolution of an out-of-stock line, guarded so it only
@@ -90,5 +95,6 @@ export type IOrderRepository = {
     orderId: string,
     productId: string,
     resolution: ItemSubstitution,
+    audit?: AuditHook<Order>,
   ): Promise<Order | null>;
 }

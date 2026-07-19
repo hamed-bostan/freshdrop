@@ -5,11 +5,9 @@ import type {
   ActivityEntry,
   ActivityFilters,
   ActivitySort,
-  NewActivityEntry,
 } from "@/src/domain/entities/ActivityEntry";
 import {
   DEFAULT_ACTIVITY_DIRECTION,
-  changedFields,
   toActivityAction,
   toActivityEntityType,
 } from "@/src/domain/entities/ActivityEntry";
@@ -22,29 +20,12 @@ import { prisma } from "@/src/infrastructure/prisma/client";
  * The activity log backed by PostgreSQL via Prisma. Server-side only (it opens a
  * DB connection), bound through the container — never imported by client code.
  *
- * Append and read only. There is no update and no delete here, and none in the
- * migration either: the table has no code path that can rewrite an entry.
+ * Read only. Entries are written by the repositories that make the changes they
+ * describe, inside the same transaction (see `recordAudit`), so this class has no
+ * `record` and there is no second way into the table. No update and no delete
+ * anywhere, here or in the migration.
  */
 export class PrismaActivityLog implements IActivityLog {
-  async record(entry: NewActivityEntry): Promise<void> {
-    await prisma.activityEntry.create({
-      data: {
-        actorId: entry.actorId,
-        actorName: entry.actorName,
-        action: entry.action,
-        entityType: entry.entityType,
-        entityId: entry.entityId,
-        entityLabel: entry.entityLabel ?? null,
-        // Structurally a `[{ field, before, after }]` array of strings/nulls, which
-        // is valid input JSON; the cast is only to satisfy Prisma's Json input type.
-        changes: entry.changes as unknown as Prisma.InputJsonValue,
-        // Derived here rather than taken from the caller, so the indexed column and
-        // the diff it indexes are written from one source and can't disagree.
-        changedFields: changedFields(entry.changes),
-      },
-    });
-  }
-
   async list(
     filters: ActivityFilters,
     page: PageRequest<ActivitySort>,

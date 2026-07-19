@@ -3,7 +3,6 @@ import { GetProductById } from "@/src/domain/use-cases/products/GetProductById";
 import { UpdateProduct } from "@/src/domain/use-cases/products/UpdateProduct";
 import { DeleteProduct } from "@/src/domain/use-cases/products/DeleteProduct";
 import {
-  activityLog,
   productRepository,
   stockAlertRepository,
   stockAlertNotifier,
@@ -65,7 +64,6 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
       productRepository,
       stockAlertRepository,
       stockAlertNotifier,
-      activityLog,
     ).execute(id, parsed.data, {
       id: session.user.id,
       name: session.user.name ?? session.user.id,
@@ -87,7 +85,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext): P
   try {
     // The actor comes from the session, never from the request — this is the one
     // change whose activity entry is the only surviving record of the product.
-    await new DeleteProduct(productRepository, activityLog).execute(id, {
+    await new DeleteProduct(productRepository).execute(id, {
       id: session.user.id,
       name: session.user.name ?? session.user.id,
     });

@@ -2,12 +2,10 @@ import type { ActivityActor } from "../../entities/ActivityEntry";
 import { diffFields } from "../../entities/ActivityEntry";
 import type { Order, OrderStatus } from "../../entities/Order";
 import type { TrackingMilestone } from "../../entities/OrderTracking";
-import type { IActivityLog } from "../../repositories/IActivityLog";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
-import { recordActivity } from "../activity/recordActivity";
 
 /**
  * Advance (or rewind) an order's delivery milestone — the write behind the admin
@@ -29,7 +27,6 @@ export class SetOrderTrackingStage {
   constructor(
     private readonly orderRepo: IOrderRepository,
     private readonly notifier: IOrderNotifier,
-    private readonly activityLog: IActivityLog,
   ) {}
 
   async execute(orderId: string, stage: TrackingMilestone, actor: ActivityActor): Promise<Order> {
@@ -41,34 +38,34 @@ export class SetOrderTrackingStage {
     }
 
     const status: OrderStatus = stage === "arrived" ? "completed" : "processing";
-    const updated = await this.orderRepo.setTrackingStage(orderId, { stage, status });
+    // Recorded inside the transaction that moves the stage, on the same "real
+    // transition" test the notification uses and for a related reason: marking an
+    // order delivered is a claim about the physical world that the customer is told
+    // about and can dispute. The log answers "who marked this delivered, and when"
+    // — including the case that matters most, an order rewound out of a stage it
+    // had already reached.
+    const updated = await this.orderRepo.setTrackingStage(orderId, { stage, status }, (saved) => {
+      const changes = diffFields(
+        { stage: order.stage, status: order.status },
+        { stage: saved.stage, status: saved.status },
+      );
+      if (changes.length === 0) return null;
+      return {
+        actorId: actor.id,
+        actorName: actor.name,
+        action: "order.stageChanged",
+        entityType: "order",
+        entityId: saved.id,
+        entityLabel: saved.id,
+        changes,
+      };
+    });
 
     // Notify only on a real transition into the milestone — not on an idempotent
     // re-save of the stage the order is already at.
     if (order.stage !== stage) {
       if (stage === "shipped") await this.notifier.orderOutForDelivery(updated);
       else if (stage === "arrived") await this.notifier.orderDelivered(updated);
-    }
-
-    // Recorded on the same "real transition" test as the notification, and for a
-    // related reason: marking an order delivered is a claim about the physical
-    // world that the customer is told about and can dispute. The log is what
-    // answers "who marked this delivered, and when" — including the case that
-    // matters most, an order rewound out of a stage it had already reached.
-    const changes = diffFields(
-      { stage: order.stage, status: order.status },
-      { stage: updated.stage, status: updated.status },
-    );
-    if (changes.length > 0) {
-      await recordActivity(this.activityLog, {
-        actorId: actor.id,
-        actorName: actor.name,
-        action: "order.stageChanged",
-        entityType: "order",
-        entityId: updated.id,
-        entityLabel: updated.id,
-        changes,
-      });
     }
 
     return updated;

@@ -1,4 +1,5 @@
 import type { DeliveryWindow } from "../entities/DeliveryWindow";
+import type { AuditHook } from "./AuditHook";
 
 /** Key for a per-(date, window) booking count: `${date}#${windowId}`. */
 export function bookedCountKey(date: string, windowId: string): string {
@@ -51,9 +52,14 @@ export type IDeliverySlotRepository = {
   /** One window by its slug, for the admin edit form; `null` when it's gone. */
   getWindow(id: string): Promise<DeliveryWindow | null>;
   /** Add a window to the catalog. The id is the operator-authored slug. */
-  createWindow(window: DeliveryWindow): Promise<DeliveryWindow>;
-  updateWindow(id: string, input: DeliveryWindowInput): Promise<DeliveryWindow>;
-  deleteWindow(id: string): Promise<void>;
+  createWindow(window: DeliveryWindow, audit?: AuditHook<DeliveryWindow>): Promise<DeliveryWindow>;
+  updateWindow(
+    id: string,
+    input: DeliveryWindowInput,
+    audit?: AuditHook<DeliveryWindow>,
+  ): Promise<DeliveryWindow>;
+  /** `audit` records the removal inside the same transaction — the entry outlives the row. */
+  deleteWindow(id: string, audit?: AuditHook<void>): Promise<void>;
 
   /**
    * How many orders are booked into this window on `fromDate` or later — the guard

@@ -10,7 +10,9 @@ import { createPage, toSkipTake, type PageRequest } from "@/src/domain/entities/
 import type { Review, ReviewStatus } from "@/src/domain/entities/Review";
 import type { IReviewRepository, NewReview } from "@/src/domain/repositories/IReviewRepository";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
+import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import { prisma } from "@/src/infrastructure/prisma/client";
+import { recordAudit } from "./writeActivityEntry";
 
 /**
  * Product reviews backed by PostgreSQL via Prisma. Server-side only (it opens a DB
@@ -99,7 +101,7 @@ export class PrismaReviewRepository implements IReviewRepository {
     return row ? toReview(row) : null;
   }
 
-  async updateStatus(id: string, status: ReviewStatus): Promise<Review> {
+  async updateStatus(id: string, status: ReviewStatus, audit?: AuditHook<Review>): Promise<Review> {
     // Moderation: flip the status and recompute the product's rating in one
     // transaction so the derived rating/ratingCount can never drift from what's
     // approved (same single-source-of-truth pattern as `create`).
@@ -107,6 +109,7 @@ export class PrismaReviewRepository implements IReviewRepository {
       const row = await prisma.$transaction(async (tx) => {
         const updated = await tx.review.update({ where: { id }, data: { status } });
         await recomputeProductRating(tx, updated.productId);
+        await recordAudit(tx, toReview(updated), audit);
         return updated;
       });
       return toReview(row);

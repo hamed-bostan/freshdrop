@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { GetDeliveryWindowById } from "@/src/domain/use-cases/delivery-slots/GetDeliveryWindowById";
 import { UpdateDeliveryWindow } from "@/src/domain/use-cases/delivery-slots/UpdateDeliveryWindow";
 import { DeleteDeliveryWindow } from "@/src/domain/use-cases/delivery-slots/DeleteDeliveryWindow";
-import { activityLog, deliverySlotRepository } from "@/src/infrastructure/container";
+import { deliverySlotRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import {
   errorResponse,
@@ -56,7 +56,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
   }
 
   try {
-    const updated = await new UpdateDeliveryWindow(deliverySlotRepository, activityLog).execute(
+    const updated = await new UpdateDeliveryWindow(deliverySlotRepository).execute(
       id,
       parsed.data,
       { id: session.user.id, name: session.user.name ?? session.user.id },
@@ -77,7 +77,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext): P
 
   const { id } = await params;
   try {
-    await new DeleteDeliveryWindow(deliverySlotRepository, activityLog).execute(id, { id: session.user.id, name: session.user.name ?? session.user.id });
+    await new DeleteDeliveryWindow(deliverySlotRepository).execute(id, { id: session.user.id, name: session.user.name ?? session.user.id });
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     return errorResponseFromException(error, `DELETE /api/admin/delivery-windows/${id} failed`);

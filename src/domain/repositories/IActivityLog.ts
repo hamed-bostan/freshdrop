@@ -3,47 +3,45 @@ import type {
   ActivityEntry,
   ActivityFilters,
   ActivitySort,
-  NewActivityEntry,
 } from "../entities/ActivityEntry";
 import type { Page, PageRequest } from "../entities/Pagination";
 
 /**
- * The append-only activity log: read *and* write.
+ * Read access to the append-only activity log.
  *
- * Deliberately unlike `IStockMovementLog` (and the role-change log this replaced),
- * which are read-only ports whose entries the repositories write inside the
- * transaction that makes the change. Those cover one table each, so a repository
- * method could own both sides of the write. This log spans every entity, and what it
- * records isn't a column — it's *why* a use-case ran and who asked for it, which
- * the repository below it can't see.
+ * Read-only, for the same reason `IStockMovementLog` is: entries are written by
+ * the repository methods that make the changes they describe, inside the same
+ * transaction. A `record` here would offer a second, non-atomic way to write the
+ * same table — which is exactly the gap that arrangement closes. A log whose
+ * entries can drift from the changes they explain is worse than none, because it
+ * reads as authoritative without being so.
  *
- * So the writes live one layer up, in the use-cases. That is the placement that
- * makes the log hard to bypass: a route handler is a thin controller that only
- * calls use-cases, so there is no path from an HTTP request to a change that
- * doesn't pass the code that records it. Logging from the handlers instead would
- * mean every new endpoint — and every internal caller, seed script or job — is one
- * forgotten line away from a silent change.
+ * The writes are split across two layers, deliberately, and the split is the whole
+ * design:
  *
- * The cost of that placement, stated plainly: an entry is written *after* the
- * change it describes commits, not inside its transaction. A crash in the window
- * between leaves a change with no entry. That is a real (small) gap, and it's the
- * price of covering every entity rather than the handful whose repositories could
- * be taught to log. Role changes keep their stronger guarantee — they still go
- * through `applyRoleChanges`, which writes the entry in the same transaction as
- * the role (see `RoleChangeBatch`) — because there the log and the change share a
- * database and nothing was gained by weakening it.
+ *  - **Use-cases decide what to record.** Each audited use-case builds a
+ *    `NewActivityEntry` and hands it down as an {@link AuditHook}. That placement
+ *    is what makes the log hard to bypass: a route handler is a thin controller
+ *    that only calls use-cases, so there is no path from an HTTP request to an
+ *    audited change that doesn't pass the code that records it. Logging from the
+ *    handlers instead would leave every new endpoint — and every internal caller,
+ *    seed script or job — one forgotten line away from a silent change.
+ *
+ *  - **Repositories decide when it hits the database.** They invoke the hook
+ *    inside the transaction they already open for the mutation, so the entry and
+ *    the change commit together or neither does. The use-case can't do this
+ *    itself: it doesn't know where the transaction boundary is, and an entry
+ *    written after the call returned would be one crash away from missing.
+ *
+ * `IUserRepository.applyRoleChanges` is the same arrangement in its original form
+ * — role changes have always ridden in the transaction that moves the role. This
+ * generalises it to every audited entity rather than leaving it as the one place
+ * that got it right.
  *
  * There is no update and no delete, here or anywhere below. A record an admin can
  * quietly tidy up isn't one.
  */
 export type IActivityLog = {
-  /**
-   * Append one entry. Callers treat this as best-effort: the change it describes
-   * has already committed, so throwing here would report a completed operation as
-   * failed and invite the operator to repeat it. `recordActivity` wraps this.
-   */
-  record(entry: NewActivityEntry): Promise<void>;
-
   /** One page of the log, newest first, narrowed by `filters`. */
   list(filters: ActivityFilters, page: PageRequest<ActivitySort>): Promise<Page<ActivityEntry>>;
 

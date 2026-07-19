@@ -1,15 +1,13 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
+import type { ActivityActor, NewActivityEntry } from "../../entities/ActivityEntry";
 import { activityValue } from "../../entities/ActivityEntry";
 import type { ItemSubstitution, Order } from "../../entities/Order";
 import { isFullyRefunded, isPicking, refundForLineValue } from "../../entities/Order";
-import type { IActivityLog } from "../../repositories/IActivityLog";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 import type { IWalletRepository } from "../../repositories/IWalletRepository";
 import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
-import { recordActivity } from "../activity/recordActivity";
 
 /**
  * A picker's resolution of an out-of-stock line:
@@ -59,7 +57,6 @@ export class ResolveItemSubstitution {
     private readonly productRepo: IProductRepository,
     private readonly walletRepo: IWalletRepository,
     private readonly notifier: IOrderNotifier,
-    private readonly activityLog: IActivityLog,
   ) {}
 
   async execute({
@@ -99,14 +96,14 @@ export class ResolveItemSubstitution {
    * Written *after* the guarded resolve in both paths, so a pick that lost the race
    * doesn't record a decision it never made.
    */
-  private async record(
+  private entry(
     actor: ActivityActor,
     order: Order,
     item: string,
     outcome: string,
     refunded: number,
-  ): Promise<void> {
-    await recordActivity(this.activityLog, {
+  ): NewActivityEntry {
+    return {
       actorId: actor.id,
       actorName: actor.name,
       action: "order.itemSubstituted",
@@ -121,7 +118,7 @@ export class ResolveItemSubstitution {
           ? [{ field: "refunded", before: null, after: activityValue(refunded) }]
           : []),
       ],
-    });
+    };
   }
 
   /**
@@ -137,15 +134,20 @@ export class ResolveItemSubstitution {
   ): Promise<Order> {
     const amount = refundForLineValue(order, grossLineValue);
     const resolved: ItemSubstitution = { status: "refunded", refundAmount: amount };
-    const updated = await this.orderRepo.resolveItemSubstitution(order.id, productId, resolved);
+    // The entry rides inside the guarded write, so only the pick that actually
+    // resolved the line records having done so.
+    const updated = await this.orderRepo.resolveItemSubstitution(
+      order.id,
+      productId,
+      resolved,
+      (saved) => this.entry(actor, saved, itemName, "refunded", amount),
+    );
     // Lost the race — another pick already resolved this line. Don't refund again.
     if (!updated) throw new ValidationError("productId", "This item has already been resolved.");
 
     if (amount > 0) {
       await this.walletRepo.addFunds(order.userId, amount, { kind: "refundOutOfStock", item: itemName });
     }
-
-    await this.record(actor, updated, itemName, "refunded", amount);
 
     // If this refund resolved the order's last remaining line, there's nothing
     // left to deliver — cancel the order and refund the delivery fee too, rather
@@ -222,7 +224,12 @@ export class ResolveItemSubstitution {
       replacement: { productId: replacement.id, name: replacement.name, imageUrl: replacement.imageUrl },
       refundAmount: saving,
     };
-    const updated = await this.orderRepo.resolveItemSubstitution(order.id, item.productId, resolved);
+    const updated = await this.orderRepo.resolveItemSubstitution(
+      order.id,
+      item.productId,
+      resolved,
+      (saved) => this.entry(actor, saved, item.name, replacement.name, saving),
+    );
     if (!updated) {
       // Lost the race after claiming the replacement's stock — return it so the
       // unclaimed swap doesn't leak a unit (the same self-healing seam CreateOrder
@@ -238,8 +245,6 @@ export class ResolveItemSubstitution {
     if (saving > 0) {
       await this.walletRepo.addFunds(order.userId, saving, { kind: "substitutionSaving", item: item.name });
     }
-
-    await this.record(actor, updated, item.name, replacement.name, saving);
 
     await this.notifier.itemSubstituted(updated, item.name, replacement.name);
     return updated;

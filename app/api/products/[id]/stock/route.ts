@@ -2,7 +2,6 @@ import { NextResponse, type NextRequest } from "next/server";
 import { AdjustStock } from "@/src/domain/use-cases/products/AdjustStock";
 import { GetStockMovements } from "@/src/domain/use-cases/products/GetStockMovements";
 import {
-  activityLog,
   productRepository,
   stockAlertNotifier,
   stockAlertRepository,
@@ -82,7 +81,6 @@ export async function PATCH(request: NextRequest, { params }: RouteContext): Pro
       userRepository,
       stockAlertRepository,
       stockAlertNotifier,
-      activityLog,
     ).execute({
       productId: id,
       ...parsed.data,

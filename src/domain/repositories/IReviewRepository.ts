@@ -1,6 +1,7 @@
 import type { AdminReviewFilters, AdminReviewSort, ReviewPage } from "../entities/AdminReviewFilters";
 import type { PageRequest } from "../entities/Pagination";
 import type { Review, ReviewStatus } from "../entities/Review";
+import type { AuditHook } from "./AuditHook";
 
 /**
  * A new review to persist. The id, timestamp and moderation status are assigned by
@@ -27,5 +28,5 @@ export type IReviewRepository = {
    * Set a review's moderation status and recompute the product's rating (only
    * approved reviews count). Throws `NotFoundError` when the id doesn't match.
    */
-  updateStatus(id: string, status: ReviewStatus): Promise<Review>;
+  updateStatus(id: string, status: ReviewStatus, audit?: AuditHook<Review>): Promise<Review>;
 }

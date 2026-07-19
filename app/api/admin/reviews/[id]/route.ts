@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { ModerateReview } from "@/src/domain/use-cases/reviews/ModerateReview";
-import { activityLog, reviewRepository } from "@/src/infrastructure/container";
+import { reviewRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import { reviewModerationSchema } from "@/src/contracts/review-moderation-schema";
 import {
@@ -45,7 +45,7 @@ export async function PATCH(
   try {
     // The moderator comes from the session, never from the body — otherwise the
     // log would record whoever the client claimed to be.
-    const review = await new ModerateReview(reviewRepository, activityLog).execute(
+    const review = await new ModerateReview(reviewRepository).execute(
       id,
       parsed.data.status,
       { id: session.user.id, name: session.user.name ?? session.user.id },

@@ -2,14 +2,11 @@ import type { ActivityActor } from "../../entities/ActivityEntry";
 import { activityValue } from "../../entities/ActivityEntry";
 import type { Product } from "../../entities/Product";
 import type { IProductRepository, NewProduct } from "../../repositories/IProductRepository";
-import type { IActivityLog } from "../../repositories/IActivityLog";
 import { ValidationError } from "../../errors/ValidationError";
-import { recordActivity } from "../activity/recordActivity";
 
 export class CreateProduct {
   constructor(
     private readonly productRepo: IProductRepository,
-    private readonly activityLog: IActivityLog,
   ) {}
 
   /**
@@ -34,25 +31,25 @@ export class CreateProduct {
       throw new ValidationError("stockQuantity", "Stock must be a whole number of 0 or more.");
     }
 
-    const created = await this.productRepo.create({ ...input, name }, actor);
-
-    // A creation has no "before", so the diff records the values it started at
-    // rather than an empty list — otherwise the entry says a product appeared and
-    // nothing about what it was. Only the fields worth answering "what was this
-    // set to?" about; the whole form would bury them.
-    await recordActivity(this.activityLog, {
+    // The entry is built here and written by the repository *inside* the
+    // transaction that creates the product, so a product can't exist without the
+    // record of who created it. The hook is a function of the persisted row
+    // because the id it needs doesn't exist until the insert has run.
+    return this.productRepo.create({ ...input, name }, actor, (created) => ({
       actorId: actor.id,
       actorName: actor.name,
       action: "product.created",
       entityType: "product",
       entityId: created.id,
       entityLabel: created.name,
+      // A creation has no "before", so the diff records the values it started at
+      // rather than an empty list — otherwise the entry says a product appeared
+      // and nothing about what it was. Only the fields worth answering "what was
+      // this set to?" about; the whole form would bury them.
       changes: [
         { field: "price", before: null, after: activityValue(created.price) },
         { field: "stockQuantity", before: null, after: activityValue(created.stockQuantity) },
       ],
-    });
-
-    return created;
+    }));
   }
 }

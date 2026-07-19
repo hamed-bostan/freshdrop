@@ -1,14 +1,12 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
+import type { ActivityActor, NewActivityEntry } from "../../entities/ActivityEntry";
 import { activityValue, singleChange } from "../../entities/ActivityEntry";
 import type { Order } from "../../entities/Order";
-import type { IActivityLog } from "../../repositories/IActivityLog";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 import type { IWalletRepository } from "../../repositories/IWalletRepository";
 import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
-import { recordActivity } from "../activity/recordActivity";
 
 /** An admin's ruling on a pending return request. */
 export type ReturnDecision = "approve" | "reject";
@@ -29,7 +27,6 @@ export class ResolveOrderReturn {
     private readonly productRepo: IProductRepository,
     private readonly walletRepo: IWalletRepository,
     private readonly notifier: IOrderNotifier,
-    private readonly activityLog: IActivityLog,
   ) {}
 
   async execute(orderId: string, decision: ReturnDecision, actor: ActivityActor): Promise<Order> {
@@ -41,23 +38,23 @@ export class ResolveOrderReturn {
     }
 
     if (decision === "reject") {
-      const rejected = await this.orderRepo.transitionStatus(orderId, {
-        from: { status: "return_requested" },
-        to: { status: "completed" },
-      });
+      // The entry rides *inside* the guarded transition, here and below, so only
+      // the call that actually resolved the return writes one — a lost race
+      // changes nothing and records nothing (see `transitionStatus`).
+      const rejected = await this.orderRepo.transitionStatus(
+        orderId,
+        { from: { status: "return_requested" }, to: { status: "completed" } },
+        (resolved) => this.entry(actor, resolved, "reject", order.status),
+      );
       if (!rejected) throw new ValidationError("order", "This order has no pending return request.");
-
-      // Recorded *after* the guarded transition, here and below, so only the call
-      // that actually resolved the return writes an entry. Logging before it would
-      // give a lost race an entry for a decision it never made.
-      await this.record(actor, rejected, "reject", order.status);
       return rejected;
     }
 
-    const refunded = await this.orderRepo.transitionStatus(orderId, {
-      from: { status: "return_requested" },
-      to: { status: "refunded", phase: "previous" },
-    });
+    const refunded = await this.orderRepo.transitionStatus(
+      orderId,
+      { from: { status: "return_requested" }, to: { status: "refunded", phase: "previous" } },
+      (resolved) => this.entry(actor, resolved, "approve", order.status),
+    );
     // Lost the race — another admin already resolved it. Don't refund again.
     if (!refunded) throw new ValidationError("order", "This order has no pending return request.");
 
@@ -69,8 +66,6 @@ export class ResolveOrderReturn {
       { reason: "restock", orderId: refunded.id },
     );
     await this.walletRepo.addFunds(refunded.userId, refunded.total, { kind: "refundReturnedOrder" });
-
-    await this.record(actor, refunded, "approve", order.status);
 
     // Tell the customer their return was approved and refunded. Best-effort: the
     // refund has already committed, so the notifier swallows any delivery failure.
@@ -87,13 +82,13 @@ export class ResolveOrderReturn {
    * anyone auditing this will want, and the order's total can be edited by later
    * substitutions.
    */
-  private async record(
+  private entry(
     actor: ActivityActor,
     order: Order,
     decision: ReturnDecision,
     fromStatus: Order["status"],
-  ): Promise<void> {
-    await recordActivity(this.activityLog, {
+  ): NewActivityEntry {
+    return {
       actorId: actor.id,
       actorName: actor.name,
       action: "order.returnResolved",
@@ -107,6 +102,6 @@ export class ResolveOrderReturn {
           ? [{ field: "refunded", before: null, after: activityValue(order.total) }]
           : []),
       ],
-    });
+    };
   }
 }

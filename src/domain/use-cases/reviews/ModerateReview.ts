@@ -1,10 +1,8 @@
 import type { ActivityActor } from "../../entities/ActivityEntry";
 import { singleChange } from "../../entities/ActivityEntry";
 import type { Review, ReviewStatus } from "../../entities/Review";
-import type { IActivityLog } from "../../repositories/IActivityLog";
 import type { IReviewRepository } from "../../repositories/IReviewRepository";
 import { NotFoundError } from "../../errors/NotFoundError";
-import { recordActivity } from "../activity/recordActivity";
 
 /**
  * Set a review's moderation status (admin). Approving a review reveals it on the
@@ -20,7 +18,6 @@ import { recordActivity } from "../activity/recordActivity";
 export class ModerateReview {
   constructor(
     private readonly reviewRepo: IReviewRepository,
-    private readonly activityLog: IActivityLog,
   ) {}
 
   async execute(id: string, status: ReviewStatus, actor: ActivityActor): Promise<Review> {
@@ -31,23 +28,24 @@ export class ModerateReview {
     const existing = await this.reviewRepo.getById(id);
     if (!existing) throw new NotFoundError("review", id);
 
-    const moderated = await this.reviewRepo.updateStatus(id, status);
-
-    if (existing.status !== status) {
-      await recordActivity(this.activityLog, {
-        actorId: actor.id,
-        actorName: actor.name,
-        action: "review.moderated",
-        entityType: "review",
-        entityId: moderated.id,
-        // The author, not the comment: the log is scanned, and a paragraph of
-        // review text would push every other column off the screen. The entry
-        // carries the id for anyone who wants to go and read it.
-        entityLabel: moderated.authorName,
-        changes: singleChange("status", existing.status, status),
-      });
-    }
-
-    return moderated;
+    // The entry commits with the status flip and the rating recompute it triggers,
+    // so a moderated review always carries the record of who moderated it.
+    // Re-applying the status a review already has records nothing.
+    return this.reviewRepo.updateStatus(id, status, (moderated) =>
+      existing.status === status
+        ? null
+        : {
+            actorId: actor.id,
+            actorName: actor.name,
+            action: "review.moderated",
+            entityType: "review",
+            entityId: moderated.id,
+            // The author, not the comment: the log is scanned, and a paragraph of
+            // review text would push every other column off the screen. The entry
+            // carries the id for anyone who wants to go and read it.
+            entityLabel: moderated.authorName,
+            changes: singleChange("status", existing.status, status),
+          },
+    );
   }
 }

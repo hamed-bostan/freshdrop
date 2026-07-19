@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { GetPromoCodeById } from "@/src/domain/use-cases/promo-codes/GetPromoCodeById";
 import { UpdatePromoCode } from "@/src/domain/use-cases/promo-codes/UpdatePromoCode";
 import { SetPromoCodeActive } from "@/src/domain/use-cases/promo-codes/SetPromoCodeActive";
-import { activityLog, promoCodeRepository } from "@/src/infrastructure/container";
+import { promoCodeRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import {
   errorResponse,
@@ -55,7 +55,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
   }
 
   try {
-    const updated = await new UpdatePromoCode(promoCodeRepository, activityLog).execute(id, parsed.data, {
+    const updated = await new UpdatePromoCode(promoCodeRepository).execute(id, parsed.data, {
       id: session.user.id,
       name: session.user.name ?? session.user.id,
     });
@@ -90,7 +90,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext): Pro
   }
 
   try {
-    const updated = await new SetPromoCodeActive(promoCodeRepository, activityLog).execute(
+    const updated = await new SetPromoCodeActive(promoCodeRepository).execute(
       id,
       parsed.data.active,
       { id: session.user.id, name: session.user.name ?? session.user.id },

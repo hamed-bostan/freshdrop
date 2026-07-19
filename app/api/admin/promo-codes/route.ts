@@ -6,7 +6,7 @@ import {
 } from "@/src/domain/entities/PromoCode";
 import { ListPromoCodes } from "@/src/domain/use-cases/promo-codes/ListPromoCodes";
 import { CreatePromoCode } from "@/src/domain/use-cases/promo-codes/CreatePromoCode";
-import { activityLog, promoCodeRepository } from "@/src/infrastructure/container";
+import { promoCodeRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import { parseAdminPromoCodeFilters } from "@/src/lib/api/admin-promo-code-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const created = await new CreatePromoCode(promoCodeRepository, activityLog).execute(parsed.data, {
+    const created = await new CreatePromoCode(promoCodeRepository).execute(parsed.data, {
       id: session.user.id,
       name: session.user.name ?? session.user.id,
     });

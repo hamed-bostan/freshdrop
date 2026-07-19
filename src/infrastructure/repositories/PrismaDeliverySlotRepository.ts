@@ -6,8 +6,10 @@ import {
   type IDeliverySlotRepository,
 } from "@/src/domain/repositories/IDeliverySlotRepository";
 import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError";
+import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { prisma } from "@/src/infrastructure/prisma/client";
+import { recordAudit } from "./writeActivityEntry";
 
 /**
  * Delivery windows + their booking ledger, backed by PostgreSQL via Prisma.
@@ -71,35 +73,53 @@ export class PrismaDeliverySlotRepository implements IDeliverySlotRepository {
     return row ? toDeliveryWindow(row) : null;
   }
 
-  async createWindow(window: DeliveryWindow): Promise<DeliveryWindow> {
+  async createWindow(
+    window: DeliveryWindow,
+    audit?: AuditHook<DeliveryWindow>,
+  ): Promise<DeliveryWindow> {
     try {
-      const row = await prisma.deliveryWindow.create({ data: window });
+      const row = await prisma.$transaction(async (tx) => {
+        const created = await tx.deliveryWindow.create({ data: window });
+        await recordAudit(tx, toDeliveryWindow(created), audit);
+        return created;
+      });
       return toDeliveryWindow(row);
     } catch (error) {
       throw toDomainError(error);
     }
   }
 
-  async updateWindow(id: string, input: DeliveryWindowInput): Promise<DeliveryWindow> {
+  async updateWindow(
+    id: string,
+    input: DeliveryWindowInput,
+    audit?: AuditHook<DeliveryWindow>,
+  ): Promise<DeliveryWindow> {
     try {
-      const row = await prisma.deliveryWindow.update({ where: { id }, data: input });
+      const row = await prisma.$transaction(async (tx) => {
+        const updated = await tx.deliveryWindow.update({ where: { id }, data: input });
+        await recordAudit(tx, toDeliveryWindow(updated), audit);
+        return updated;
+      });
       return toDeliveryWindow(row);
     } catch (error) {
       throw toDomainError(error);
     }
   }
 
-  async deleteWindow(id: string): Promise<void> {
+  async deleteWindow(id: string, audit?: AuditHook<void>): Promise<void> {
     try {
       // The ledger rows are keyed by (date, windowId) with no foreign key — the
       // schema's loose coupling — so they'd outlive the window. They go with it:
       // each one counts bookings against a window that no longer exists, and
       // nothing will read them again. The use-case has already refused the delete
       // if any of them are still upcoming.
-      await prisma.$transaction([
-        prisma.deliverySlotBooking.deleteMany({ where: { windowId: id } }),
-        prisma.deliveryWindow.delete({ where: { id } }),
-      ]);
+      // Interactive rather than a batch array, so the audit entry can join the
+      // same transaction — it is the only record the window ever existed.
+      await prisma.$transaction(async (tx) => {
+        await tx.deliverySlotBooking.deleteMany({ where: { windowId: id } });
+        await tx.deliveryWindow.delete({ where: { id } });
+        await recordAudit(tx, undefined, audit);
+      });
     } catch (error) {
       throw toDomainError(error);
     }

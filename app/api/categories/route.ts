@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { GetCategories } from "@/src/domain/use-cases/categories/GetCategories";
 import { GetCategoryBySlug } from "@/src/domain/use-cases/categories/GetCategoryBySlug";
 import { CreateCategory } from "@/src/domain/use-cases/categories/CreateCategory";
-import { activityLog, categoryRepository } from "@/src/infrastructure/container";
+import { categoryRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
 import { categoryFormSchema } from "@/src/contracts/category-schema";
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const created = await new CreateCategory(categoryRepository, activityLog).execute(parsed.data, { id: session.user.id, name: session.user.name ?? session.user.id });
+    const created = await new CreateCategory(categoryRepository).execute(parsed.data, { id: session.user.id, name: session.user.name ?? session.user.id });
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
     return errorResponseFromException(error, "POST /api/categories failed");
