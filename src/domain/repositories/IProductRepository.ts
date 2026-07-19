@@ -2,6 +2,7 @@ import type { Product } from "../entities/Product";
 import type { AdminProductFilters, AdminProductSort } from "../entities/AdminProductFilters";
 import type { Page, PageRequest } from "../entities/Pagination";
 import type { ProductFilters } from "../entities/ProductFilters";
+import type { StockMovementReason } from "../entities/StockMovement";
 
 /**
  * One locale's content overrides for a product — the admin-authored translation.
@@ -34,6 +35,34 @@ export type StockAdjustment = {
   productId: string;
   name: string;
   quantity: number;
+};
+
+/**
+ * Who made a stock change. Snapshotted into the ledger entry rather than looked up
+ * on read, so history survives the account being renamed or removed.
+ */
+export type StockMovementActor = {
+  id: string;
+  name: string;
+};
+
+/**
+ * Everything a ledger entry needs beyond the quantity itself. Passed to each
+ * method that moves stock, which writes the entry in the same transaction as the
+ * change — so there's no way to move stock without saying why.
+ *
+ * Attribution is either an operator (`actor`) or an order (`orderId`); see
+ * {@link StockMovement}. Both being absent is what an unattributable change would
+ * look like, and no caller has one.
+ */
+export type StockMovementContext = {
+  reason: StockMovementReason;
+  /** Free-text detail an operator typed alongside the reason. */
+  note?: string;
+  /** The admin behind a manual adjustment. */
+  actor?: StockMovementActor;
+  /** The order behind a sale, cancellation, return or substitution. */
+  orderId?: string;
 };
 
 export type IProductRepository = {
@@ -70,9 +99,34 @@ export type IProductRepository = {
   ): Promise<Page<Product>>;
   /** Products related to `productId` (same category first), excluding itself. */
   getSimilar(productId: string, locale?: string): Promise<Product[]>;
-  create(input: NewProduct): Promise<Product>;
-  update(id: string, input: NewProduct): Promise<Product>;
+  /**
+   * `actor` is who to credit the opening stock to in the ledger — a product
+   * created with units already on hand starts its history with an entry saying
+   * so, instead of a level that appears from nowhere. Omitted for a product
+   * created empty (there's no movement to record).
+   */
+  create(input: NewProduct, actor?: StockMovementActor): Promise<Product>;
+  /**
+   * `actor` is who to attribute a stock change to. The full edit form can move
+   * stock like any other field, so when `stockQuantity` differs from the stored
+   * value the repository records a `correction` for the difference in the same
+   * transaction — the edit form is not a back door around the ledger.
+   */
+  update(id: string, input: NewProduct, actor?: StockMovementActor): Promise<Product>;
   delete(id: string): Promise<void>;
+
+  /**
+   * Apply a signed `delta` to one product's on-hand stock and record why, as one
+   * atomic operation. The narrow counterpart to {@link update}: adjusting stock
+   * from the catalog list must not require sending — or re-validating — an entire
+   * product the operator isn't touching.
+   *
+   * Refuses to drive stock below zero: a removal larger than what's on hand
+   * throws `InsufficientStockError` and changes nothing, so a stray extra digit
+   * can't leave the catalog in a state the schema's CHECK constraint would have
+   * rejected anyway. `NotFoundError` when the product is gone.
+   */
+  adjustStock(productId: string, delta: number, context: StockMovementContext): Promise<Product>;
   /** The stored per-locale translations for a product (for the admin edit form); empty when none. */
   getTranslations(productId: string): Promise<ProductTranslationInput[]>;
 
@@ -82,14 +136,18 @@ export type IProductRepository = {
    * decremented and `InsufficientStockError` is thrown. This is the overselling
    * guard at checkout — the check and the decrement happen as one operation so
    * concurrent orders can't both pass a stale read and drive stock negative.
+   *
+   * `context` names the order the units left for; its ledger entries land in the
+   * same transaction, so an oversell rollback takes them with it.
    */
-  decrementStock(lines: readonly StockAdjustment[]): Promise<void>;
+  decrementStock(lines: readonly StockAdjustment[], context: StockMovementContext): Promise<void>;
 
   /**
    * Return stock to the shelf — the inverse of {@link decrementStock}, used when
    * an order is cancelled or a return is approved. Adds each line's units back to
    * on-hand stock; lines whose product no longer exists are skipped (nothing to
-   * credit), so restocking never fails on a since-deleted product.
+   * credit), so restocking never fails on a since-deleted product — and a skipped
+   * line writes no ledger entry, since no stock moved.
    */
-  incrementStock(lines: readonly StockAdjustment[]): Promise<void>;
+  incrementStock(lines: readonly StockAdjustment[], context: StockMovementContext): Promise<void>;
 }

@@ -51,8 +51,11 @@ export class CancelOrder {
       throw new ValidationError("order", "This order can no longer be cancelled.");
     }
 
+    // Back on the shelf, attributed to the order that's giving it back — the
+    // ledger reads as "returned by order X", not as stock appearing from nowhere.
     await this.productRepo.incrementStock(
       cancelled.items.map((item) => ({ productId: item.productId, name: item.name, quantity: item.quantity })),
+      { reason: "restock", orderId: cancelled.id },
     );
     await this.walletRepo.addFunds(userId, cancelled.total, { kind: "refundCancelledOrder" });
 

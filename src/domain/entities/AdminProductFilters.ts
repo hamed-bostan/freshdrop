@@ -22,13 +22,21 @@ export const DEFAULT_ADMIN_PRODUCT_SORT: AdminProductSort = "createdAt";
 export const DEFAULT_ADMIN_PRODUCT_DIRECTION = "desc";
 
 /**
- * Stock levels the list can be narrowed to — the same three states the storefront
- * classifies with, reused rather than restated so "low" always means the same
- * thing here as it does in `getStockStatus`. This is what the overview's
- * "needs restocking" tile links into (`?stock=low`).
+ * Stock levels the list can be narrowed to.
+ *
+ * The first three are the storefront's own states, reused rather than restated so
+ * "low" always means the same thing here as it does in `getStockStatus`.
+ *
+ * `needsRestock` is the operator's question rather than the shopper's: *low or
+ * out*, everything not comfortably in stock. It exists because it's what the
+ * overview's "needs restocking" tile counts, and a tile whose number doesn't
+ * match the list it opens is worse than one that doesn't link at all. Expressing
+ * it as a filter value keeps that link a plain `?stock=needsRestock` instead of a
+ * bespoke screen — and it's the view an operator actually wants on a restocking
+ * round, where "out" and "one left" are the same job.
  */
-export const ADMIN_STOCK_FILTERS = ["in", "low", "out"] as const;
-export type AdminStockFilter = StockStatus["level"];
+export const ADMIN_STOCK_FILTERS = ["needsRestock", "in", "low", "out"] as const;
+export type AdminStockFilter = StockStatus["level"] | "needsRestock";
 
 export type AdminProductFilters = {
   /** Free-text term matched against name and description. */

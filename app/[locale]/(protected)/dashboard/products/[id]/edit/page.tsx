@@ -14,12 +14,20 @@ export const dynamic = "force-dynamic";
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
   const { id } = await params;
-  const [product, categories, translations] = await Promise.all([
+  const [product, categories, translations, stockMovements] = await Promise.all([
     productsServerApi.getById(id),
     categoriesServerApi.list(),
     productsServerApi.getTranslations(id),
+    productsServerApi.listStockMovements(id),
   ]);
   if (!product) notFound();
 
-  return <EditProductScreen product={product} categories={categories} translations={translations} />;
+  return (
+    <EditProductScreen
+      product={product}
+      categories={categories}
+      translations={translations}
+      stockMovements={stockMovements}
+    />
+  );
 }

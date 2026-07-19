@@ -78,6 +78,9 @@ export class PrismaOrderRepository implements IOrderRepository {
   async createOrder(input: NewOrder): Promise<Order> {
     const row = await prisma.order.create({
       data: {
+        // Undefined when the caller didn't mint one, leaving the column's
+        // `@default(uuid())` to assign it.
+        id: input.id,
         userId: input.userId,
         status: input.status,
         phase: input.phase,

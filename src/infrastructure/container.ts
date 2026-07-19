@@ -19,6 +19,7 @@ import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository"
 import type { IImageStorageRepository } from "@/src/domain/repositories/IImageStorageRepository";
 import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
 import type { IRoleChangeLog } from "@/src/domain/repositories/IRoleChangeLog";
+import type { IStockMovementLog } from "@/src/domain/repositories/IStockMovementLog";
 import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
 import type { ITeamNotifier } from "@/src/domain/repositories/ITeamNotifier";
 
@@ -26,6 +27,7 @@ import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepositor
 import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
 import { PrismaUserRepository } from "./repositories/PrismaUserRepository";
 import { PrismaRoleChangeLog } from "./repositories/PrismaRoleChangeLog";
+import { PrismaStockMovementLog } from "./repositories/PrismaStockMovementLog";
 import { MockFavoriteRepository } from "./repositories/mock/MockFavoriteRepository";
 import { PrismaReviewRepository } from "./repositories/PrismaReviewRepository";
 import { PrismaDeliveryLocationRepository } from "./repositories/PrismaDeliveryLocationRepository";
@@ -83,6 +85,10 @@ export const userRepository: IUserRepository = new PrismaUserRepository();
 // start (no logging stub): an audit trail that only existed in stdout would be
 // worse than none, because it would read as one without being queryable.
 export const roleChangeLog: IRoleChangeLog = new PrismaRoleChangeLog();
+// Append-only ledger of every stock movement, real storage for the same reason the
+// role log is: entries are written by `PrismaProductRepository` inside the same
+// transaction as the quantity they explain, which a logging stub could not be.
+export const stockMovementLog: IStockMovementLog = new PrismaStockMovementLog();
 export const favoriteRepository: IFavoriteRepository = new MockFavoriteRepository(productRepository);
 // Reviews are real data now — PostgreSQL via Prisma. The demo reviews live on in
 // the seed migration that backfilled the table; new reviews are written by

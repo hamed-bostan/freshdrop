@@ -6,6 +6,7 @@ import { pageResponseSchema } from "@/src/lib/api/page-response-schema";
 import { serverApiGet } from "@/src/lib/api/server-client";
 import { productListResponseSchema, productResponseSchema } from "@/src/presentation/product/product-response-schema";
 import { productTranslationListResponseSchema } from "./product-translation-response-schema";
+import { stockMovementListResponseSchema, type StockMovementEntry } from "./stock-movement-response-schema";
 
 /** What `GET /api/admin/products` promises: a page of products plus the total behind it. */
 const productPageResponseSchema = pageResponseSchema(productResponseSchema);
@@ -66,5 +67,14 @@ export const productsServerApi = {
   /** The product's stored per-locale translations, to prefill the edit form. */
   getTranslations(id: string): Promise<ProductTranslationInput[]> {
     return serverApiGet(`/products/${id}/translations`, productTranslationListResponseSchema);
+  },
+
+  /**
+   * The product's recent stock movements, newest first — what the edit screen's
+   * history panel shows. Capped by the endpoint rather than paged: it's a panel
+   * beside a form, not a list screen.
+   */
+  listStockMovements(id: string): Promise<StockMovementEntry[]> {
+    return serverApiGet(`/products/${id}/stock`, stockMovementListResponseSchema);
   },
 };

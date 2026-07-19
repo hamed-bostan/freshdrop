@@ -39,6 +39,7 @@ export async function ProductsScreen({ products, categories, filters }: Products
   const isFiltered = filters.query != null || filters.categoryId != null || filters.stock != null;
 
   const stockLabels: Record<(typeof ADMIN_STOCK_FILTERS)[number], string> = {
+    needsRestock: t("filterStockNeedsRestock"),
     in: t("filterStockIn"),
     low: t("filterStockLow"),
     out: t("filterStockOut"),

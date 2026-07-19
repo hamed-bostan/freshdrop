@@ -106,12 +106,17 @@ export async function DashboardOverviewScreen({
           label={t("kpiPendingReviews")}
           hint={t("kpiPendingReviewsHint")}
         />
+        {/* The one KPI that names something to *do*, so it leads to the rows
+            behind it. `?stock=needsRestock` is the management list's own filter
+            vocabulary (see `AdminProductFilters`) and counts exactly what this
+            tile counts — so the number and the list it opens always agree. */}
         <StatCard
           icon={AlertTriangle}
           tone="danger"
           value={formatNumber(lowStockCount, locale)}
           label={t("kpiLowStock")}
           hint={t("kpiLowStockHint", { threshold: LOW_STOCK_THRESHOLD })}
+          href="/dashboard/products?stock=needsRestock"
         />
       </div>
 

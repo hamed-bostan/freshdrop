@@ -220,7 +220,9 @@ export class MockOrderRepository implements IOrderRepository {
   }
 
   async createOrder(input: NewOrder): Promise<Order> {
-    const order: Order = { ...input, id: `FD-${String(this.nextId++).padStart(5, "0")}` };
+    // Honour a caller-minted id (checkout mints one so its stock movements can
+    // name the order); fall back to the mock's own sequence otherwise.
+    const order: Order = { ...input, id: input.id ?? `FD-${String(this.nextId++).padStart(5, "0")}` };
     this.created.push(order);
     return order;
   }

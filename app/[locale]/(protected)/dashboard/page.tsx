@@ -26,11 +26,13 @@ export default async function DashboardPage() {
   // aggregates over the full history (see `GET /api/admin/orders/all`). Pending
   // reviews and low stock arrive as counts from the filtered endpoints instead of
   // being derived from every row.
-  const [orders, reviews, lowStock, outOfStock, customers] = await Promise.all([
+  const [orders, reviews, needsRestock, customers] = await Promise.all([
     ordersServerApi.listAll(),
     reviewsServerApi.listPage(new URLSearchParams(COUNT_ONLY)),
-    productsServerApi.listPage(new URLSearchParams(`${COUNT_ONLY}&stock=low`)),
-    productsServerApi.listPage(new URLSearchParams(`${COUNT_ONLY}&stock=out`)),
+    // One read, not two: `needsRestock` is the list's own name for "low or out",
+    // and it's the filter the tile links into — so the count and the destination
+    // are answered by the same query and can't disagree.
+    productsServerApi.listPage(new URLSearchParams(`${COUNT_ONLY}&stock=needsRestock`)),
     // The panel spotlights the top few spenders, which is the customers list's
     // default ordering — so this is its first page, not the whole ranking.
     customersServerApi.listTop(TOP_CUSTOMERS_COUNT),
@@ -42,7 +44,7 @@ export default async function DashboardPage() {
       pendingReviews={reviews.counts.pending}
       // "Needs restocking" is everything not comfortably in stock; out-of-stock is
       // the more urgent case, not one to leave out of the tile.
-      lowStockCount={lowStock.total + outOfStock.total}
+      lowStockCount={needsRestock.total}
       customers={customers.items}
     />
   );

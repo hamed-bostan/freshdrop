@@ -24,6 +24,7 @@ import { ListSortHeader } from "@/src/presentation/dashboard/list";
 import { Link } from "@/src/i18n/navigation";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { AdjustStockButton } from "./AdjustStockButton";
 import { DeleteProductButton } from "./DeleteProductButton";
 
 type ProductsTableProps = {
@@ -106,6 +107,14 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
               </TableCell>
               <TableCell>
                 <div className="flex items-center justify-end gap-2">
+                  {/* Stock adjust sits first among the actions: it's the one an
+                      operator reaches for repeatedly (a delivery arrives, a crate
+                      is damaged), where editing a product is occasional. */}
+                  <AdjustStockButton
+                    id={product.id}
+                    name={product.name}
+                    stockQuantity={product.stockQuantity}
+                  />
                   <Button asChild variant="outline" size="sm">
                     <Link href={`/dashboard/products/${product.id}/edit`}>
                       <Icon icon={Pencil} size="sm" className="me-1.5" />

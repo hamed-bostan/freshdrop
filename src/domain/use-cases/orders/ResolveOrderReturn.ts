@@ -51,8 +51,12 @@ export class ResolveOrderReturn {
     // Lost the race — another admin already resolved it. Don't refund again.
     if (!refunded) throw new ValidationError("order", "This order has no pending return request.");
 
+    // The returned goods go back on the shelf, attributed to the order they came
+    // back from rather than to the admin who approved the return — the units moved
+    // because of the return, not because someone counted the shelf.
     await this.productRepo.incrementStock(
       refunded.items.map((item) => ({ productId: item.productId, name: item.name, quantity: item.quantity })),
+      { reason: "restock", orderId: refunded.id },
     );
     await this.walletRepo.addFunds(refunded.userId, refunded.total, { kind: "refundReturnedOrder" });
 

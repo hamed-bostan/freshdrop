@@ -1,7 +1,8 @@
 import type { Product } from "@/src/domain/entities/Product";
-import { apiDelete, apiPost, apiPut } from "@/src/lib/api/client";
+import { apiDelete, apiPatch, apiPost, apiPut } from "@/src/lib/api/client";
 import { productResponseSchema } from "@/src/presentation/product/product-response-schema";
 import type { ProductFormInput } from "@/src/contracts/product-schema";
+import type { StockAdjustmentInput } from "@/src/contracts/stock-adjustment-schema";
 
 /**
  * Typed client for the product REST *mutations*. UI components call these instead
@@ -26,5 +27,18 @@ export const productsApi = {
 
   remove(id: string): Promise<void> {
     return apiDelete(`/products/${id}`);
+  },
+
+  /**
+   * Move a product's stock by a signed delta, with a reason. The narrow endpoint,
+   * not `update` — adjusting a level from the catalog list must not send (or
+   * overwrite) the rest of a product the operator isn't touching.
+   *
+   * Takes the form's *input* shape (direction + amount as strings); the contract
+   * schema on the route handler is what turns it into the signed delta the domain
+   * works in. Resolves with the product as it now stands.
+   */
+  adjustStock(id: string, values: StockAdjustmentInput): Promise<Product> {
+    return apiPatch(`/products/${id}/stock`, values, productResponseSchema);
   },
 };

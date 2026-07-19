@@ -149,9 +149,12 @@ export class ResolveItemSubstitution {
 
     // Claim a real unit of the replacement's stock first (atomic — throws
     // InsufficientStockError if it's short, so the picker picks another).
-    await this.productRepo.decrementStock([
-      { productId: replacement.id, name: replacement.name, quantity: item.quantity },
-    ]);
+    await this.productRepo.decrementStock(
+      [{ productId: replacement.id, name: replacement.name, quantity: item.quantity }],
+      // A substitution sells the replacement into an existing order, so it's a
+      // sale like any other — the order it's attributed to is what says which.
+      { reason: "sale", orderId: order.id },
+    );
 
     // Refund the saving when the replacement is cheaper, net of the line's
     // pro-rata discount share; never charge more (a pricier swap clamps to 0, so
@@ -167,9 +170,10 @@ export class ResolveItemSubstitution {
       // Lost the race after claiming the replacement's stock — return it so the
       // unclaimed swap doesn't leak a unit (the same self-healing seam CreateOrder
       // accepts for the slot claim).
-      await this.productRepo.incrementStock([
-        { productId: replacement.id, name: replacement.name, quantity: item.quantity },
-      ]);
+      await this.productRepo.incrementStock(
+        [{ productId: replacement.id, name: replacement.name, quantity: item.quantity }],
+        { reason: "restock", orderId: order.id },
+      );
       throw new ValidationError("productId", "This item has already been resolved.");
     }
 

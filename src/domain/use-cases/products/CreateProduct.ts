@@ -1,11 +1,20 @@
 import type { Product } from "../../entities/Product";
-import type { IProductRepository, NewProduct } from "../../repositories/IProductRepository";
+import type {
+  IProductRepository,
+  NewProduct,
+  StockMovementActor,
+} from "../../repositories/IProductRepository";
 import { ValidationError } from "../../errors/ValidationError";
 
 export class CreateProduct {
   constructor(private readonly productRepo: IProductRepository) {}
 
-  async execute(input: NewProduct): Promise<Product> {
+  /**
+   * `actor` is the admin creating the product. Passed through so a product born
+   * with units on hand opens its ledger with an entry saying who put them there,
+   * rather than a history that starts mid-air at a level nobody accounted for.
+   */
+  async execute(input: NewProduct, actor?: StockMovementActor): Promise<Product> {
     // Last-resort domain guard behind the route's schema validation, so a direct
     // caller (seed script, importer) still can't bypass the invariants.
     const name = input.name.trim();
@@ -20,6 +29,6 @@ export class CreateProduct {
       throw new ValidationError("stockQuantity", "Stock must be a whole number of 0 or more.");
     }
 
-    return this.productRepo.create({ ...input, name });
+    return this.productRepo.create({ ...input, name }, actor);
   }
 }

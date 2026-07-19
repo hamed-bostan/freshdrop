@@ -120,6 +120,12 @@ export class CreateOrder {
         substitutionPreferences?.[product.id] ?? DEFAULT_SUBSTITUTION_PREFERENCE,
     }));
 
+    // The order's id, minted here rather than by the repository, because the
+    // stock claimed below is attributed to this order and the claim has to happen
+    // before the order exists (see below). `crypto` is the platform global, not a
+    // Node import — the domain stays framework-free.
+    const orderId = crypto.randomUUID();
+
     // Claim the stock first (all-or-nothing). If anything is short this throws
     // before the order is created, so we never record an oversold order.
     await this.productRepo.decrementStock(
@@ -128,6 +134,7 @@ export class CreateOrder {
         name: product.name,
         quantity,
       })),
+      { reason: "sale", orderId },
     );
 
     // Then claim one unit of the slot's capacity (atomic guard). A full window is
@@ -138,6 +145,7 @@ export class CreateOrder {
     }
 
     const order = await this.orderRepo.createOrder({
+      id: orderId,
       userId,
       status: "processing",
       phase: "current",

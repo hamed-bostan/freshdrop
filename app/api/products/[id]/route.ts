@@ -36,7 +36,8 @@ export async function GET(request: NextRequest, { params }: RouteContext): Promi
  * PUT /api/products/:id — update a product. Admin only.
  */
 export async function PUT(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  const session = await getAdminSession();
+  if (!session) return unauthorizedResponse();
 
   const { id } = await params;
   const body = await parseJsonBody(request);
@@ -52,9 +53,12 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
   }
 
   try {
+    // The actor is passed so a stock change made through the full form is
+    // recorded in the ledger like any other — the form is not a way around it.
     const updated = await new UpdateProduct(productRepository, stockAlertRepository, stockAlertNotifier).execute(
       id,
       parsed.data,
+      { id: session.user.id, name: session.user.name ?? session.user.id },
     );
     return NextResponse.json(updated);
   } catch (error) {

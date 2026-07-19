@@ -3,6 +3,8 @@ import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
 import type { ProductTranslationInput } from "@/src/domain/repositories/IProductRepository";
 import { ProductForm } from "./ProductForm";
+import { StockMovementHistory } from "./StockMovementHistory";
+import type { StockMovementEntry } from "./stock-movement-response-schema";
 
 /**
  * Edit screen. Presentational: the page fetches the product (and the category
@@ -14,10 +16,13 @@ export async function EditProductScreen({
   product,
   categories,
   translations,
+  stockMovements,
 }: {
   product: Product;
   categories: Category[];
   translations: ProductTranslationInput[];
+  /** The product's recent stock movements, for the history panel under the form. */
+  stockMovements: StockMovementEntry[];
 }) {
   const t = await getTranslations("dashProducts");
 
@@ -28,6 +33,9 @@ export async function EditProductScreen({
         <p className="text-body-b6 text-muted-foreground">{t("editSubtitle", { name: product.name })}</p>
       </div>
       <ProductForm mode="edit" product={product} categories={categories} translations={translations} />
+      {/* The ledger sits under the form, not inside it: the form is what this
+          product *will* be, the history is what its stock has already done. */}
+      <StockMovementHistory movements={stockMovements} />
     </div>
   );
 }

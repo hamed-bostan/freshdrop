@@ -386,7 +386,12 @@ export class MockProductRepository implements IProductRepository {
       if (filters.categoryId && p.categoryId !== filters.categoryId) return false;
       // Classified through the domain helper rather than re-deriving the
       // threshold, so this can't drift from the Prisma repo's bounds.
-      if (filters.stock && getStockStatus(p.stockQuantity).level !== filters.stock) return false;
+      if (filters.stock) {
+        const level = getStockStatus(p.stockQuantity).level;
+        // `needsRestock` is the union of "low" and "out" — see AdminProductFilters.
+        const matches = filters.stock === "needsRestock" ? level !== "in" : level === filters.stock;
+        if (!matches) return false;
+      }
       return true;
     });
 
@@ -439,6 +444,33 @@ export class MockProductRepository implements IProductRepository {
   async delete(id: string): Promise<void> {
     const index = PRODUCTS.findIndex((p) => p.id === id);
     if (index !== -1) PRODUCTS.splice(index, 1);
+  }
+
+  /**
+   * Applies the delta with the same non-negative guard the Prisma repo enforces,
+   * but records nothing: the ledger is a table, and this mock has only the
+   * in-memory catalog array. The write paths here are consistent about that —
+   * `create`/`update` ignore their `actor` for the same reason — so a caller that
+   * relies on movements being readable back is exercising the Prisma repository,
+   * which is what the container binds.
+   */
+  async adjustStock(productId: string, delta: number): Promise<Product> {
+    const product = PRODUCTS.find((p) => p.id === productId);
+    if (!product) throw new NotFoundError("product", productId);
+
+    if (delta < 0 && product.stockQuantity < -delta) {
+      throw new InsufficientStockError([
+        {
+          productId,
+          name: product.name,
+          available: product.stockQuantity,
+          requested: -delta,
+        },
+      ]);
+    }
+
+    product.stockQuantity += delta;
+    return product;
   }
 
   // The mock catalog is single-locale (English only); no stored translations.

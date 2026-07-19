@@ -12,7 +12,17 @@ export type OrderTrackingUpdate = {
 };
 
 /** Everything needed to persist a new order — an `Order` minus its generated id. */
-export type NewOrder = Omit<Order, "id">;
+/**
+ * An order before it exists.
+ *
+ * `id` is normally the store's to assign, and callers leave it out. It's offered
+ * because checkout has to reference the order *before* creating it: stock is
+ * claimed first (so an oversold order is never recorded), and each of those stock
+ * movements is attributed to the order that took the units. Minting the id up
+ * front is what lets that attribution be real rather than backfilled — an
+ * append-only ledger shouldn't need a second write to say what it always meant.
+ */
+export type NewOrder = Omit<Order, "id"> & { id?: string };
 
 /**
  * A guarded lifecycle transition. `from` (status, and optionally stage) is a

@@ -224,6 +224,39 @@ model Product {
   @@map("products")
 }
 
+// Append-only ledger of every change to a product's on-hand quantity: how many
+// units moved, what it left behind, why, and who to attribute it to. Never
+// updated or deleted.
+//
+// Rows are written in the same transaction as the `products.stock_quantity`
+// change they explain (see PrismaProductRepository), so the ledger and the level
+// can't drift. `quantity_after` is stored rather than derived so the history
+// reads without replaying every entry.
+//
+// Attribution is exactly one of `actor_id` (an operator's adjustment, with the
+// name snapshotted the way role_changes and order lines snapshot theirs) or
+// `order_id` (a sale, cancellation, return or substitution). Both are plain
+// references, not foreign keys — the same loose coupling the rest of the schema
+// uses, so a deleted account or order never takes its history with it.
+model StockMovement {
+  id            String   @id @default(uuid())
+  productId     String   @map("product_id")
+  // Signed: positive went onto the shelf, negative came off. Never 0.
+  delta         Int
+  quantityAfter Int      @map("quantity_after")
+  // Reason as a plain string matching the domain union (enum-free schema).
+  reason        String
+  note          String?
+  actorId       String?  @map("actor_id")
+  actorName     String?  @map("actor_name")
+  orderId       String?  @map("order_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // The history panel reads one product's entries newest-first.
+  @@index([productId, createdAt])
+  @@map("stock_movements")
+}
+
 // Localized overrides for a Product's user-facing text. The base `products` row holds
 // the default-locale (English) copy; one row here per non-default locale supplies the
 // translated fields, each nullable so a partial translation falls back field-by-field

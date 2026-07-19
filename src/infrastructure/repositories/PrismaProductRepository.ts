@@ -10,6 +10,8 @@ import type {
   NewProduct,
   ProductTranslationInput,
   StockAdjustment,
+  StockMovementActor,
+  StockMovementContext,
 } from "@/src/domain/repositories/IProductRepository";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { InsufficientStockError, type StockShortfall } from "@/src/domain/errors/InsufficientStockError";
@@ -138,11 +140,25 @@ export class PrismaProductRepository implements IProductRepository {
     return localizeProducts([...sameCategory, ...others].slice(0, SIMILAR_LIMIT).map(toProduct), locale);
   }
 
-  async create(input: NewProduct): Promise<Product> {
+  async create(input: NewProduct, actor?: StockMovementActor): Promise<Product> {
     // `translations` isn't a `products` column — persist it into the side table.
     const { translations, ...data } = input;
     try {
-      const row = await prisma.product.create({ data });
+      // The row and its opening ledger entry commit together: a product that
+      // starts with units on hand should never have a history that begins with a
+      // level nobody put there.
+      const row = await prisma.$transaction(async (tx) => {
+        const created = await tx.product.create({ data });
+        if (created.stockQuantity > 0) {
+          await tx.stockMovement.create({
+            data: movementRow(created.id, created.stockQuantity, created.stockQuantity, {
+              reason: "correction",
+              actor,
+            }),
+          });
+        }
+        return created;
+      });
       await replaceProductTranslations(row.id, translations);
       return toProduct(row);
     } catch (error) {
@@ -150,15 +166,80 @@ export class PrismaProductRepository implements IProductRepository {
     }
   }
 
-  async update(id: string, input: NewProduct): Promise<Product> {
+  async update(id: string, input: NewProduct, actor?: StockMovementActor): Promise<Product> {
     const { translations, ...data } = input;
     try {
-      const row = await prisma.product.update({ where: { id }, data });
+      // The edit form can move stock like any other field, so the update and the
+      // ledger entry explaining the move are one transaction — the form is not a
+      // back door around the ledger. The previous level is read inside it so the
+      // delta is computed against what the write actually replaced.
+      const row = await prisma.$transaction(async (tx) => {
+        const before = await tx.product.findUnique({ where: { id }, select: { stockQuantity: true } });
+        const updated = await tx.product.update({ where: { id }, data });
+
+        const delta = updated.stockQuantity - (before?.stockQuantity ?? 0);
+        if (delta !== 0) {
+          await tx.stockMovement.create({
+            data: movementRow(id, delta, updated.stockQuantity, { reason: "correction", actor }),
+          });
+        }
+        return updated;
+      });
       await replaceProductTranslations(row.id, translations);
       return toProduct(row);
     } catch (error) {
       throw toDomainError(error);
     }
+  }
+
+  async adjustStock(productId: string, delta: number, context: StockMovementContext): Promise<Product> {
+    if (delta === 0) {
+      // Nothing moved, so there is nothing to record. Reading the row back keeps
+      // the return contract ("the product as it now stands") without writing an
+      // entry that would explain nothing.
+      const current = await prisma.product.findUnique({ where: { id: productId } });
+      if (!current) throw new NotFoundError("product", productId);
+      return toProduct(current);
+    }
+
+    return prisma.$transaction(async (tx) => {
+      // A conditional `updateMany` guarded by `stock_quantity >= -delta` for
+      // removals: the guard and the write are one atomic statement, so a removal
+      // racing a checkout can't drive stock negative between the read and the
+      // write. Additions need no guard.
+      const guard: Prisma.ProductWhereInput =
+        delta < 0 ? { id: productId, stockQuantity: { gte: -delta } } : { id: productId };
+
+      const result = await tx.product.updateMany({
+        where: guard,
+        data: { stockQuantity: { increment: delta } },
+      });
+
+      if (result.count === 0) {
+        // Either the product is gone, or the removal is larger than what's on
+        // hand. Read the current level to tell those apart and say how many are
+        // actually there.
+        const current = await tx.product.findUnique({
+          where: { id: productId },
+          select: { stockQuantity: true, name: true },
+        });
+        if (!current) throw new NotFoundError("product", productId);
+        throw new InsufficientStockError([
+          {
+            productId,
+            name: current.name,
+            available: current.stockQuantity,
+            requested: -delta,
+          },
+        ]);
+      }
+
+      const updated = await tx.product.findUniqueOrThrow({ where: { id: productId } });
+      await tx.stockMovement.create({
+        data: movementRow(productId, delta, updated.stockQuantity, context),
+      });
+      return toProduct(updated);
+    });
   }
 
   async getTranslations(productId: string): Promise<ProductTranslationInput[]> {
@@ -184,7 +265,7 @@ export class PrismaProductRepository implements IProductRepository {
     }
   }
 
-  async decrementStock(lines: readonly StockAdjustment[]): Promise<void> {
+  async decrementStock(lines: readonly StockAdjustment[], context: StockMovementContext): Promise<void> {
     if (lines.length === 0) return;
 
     // One interactive transaction so all lines commit together or not at all.
@@ -215,29 +296,75 @@ export class PrismaProductRepository implements IProductRepository {
             available: current?.stockQuantity ?? 0,
             requested: line.quantity,
           });
+          continue;
         }
+
+        // Read the level the decrement left behind, so the ledger entry records
+        // it rather than making the history recompute it. Inside the same
+        // transaction, so it's the value this write produced.
+        const after = await tx.product.findUniqueOrThrow({
+          where: { id: line.productId },
+          select: { stockQuantity: true },
+        });
+        await tx.stockMovement.create({
+          data: movementRow(line.productId, -line.quantity, after.stockQuantity, context),
+        });
       }
 
       if (shortfalls.length > 0) throw new InsufficientStockError(shortfalls);
     });
   }
 
-  async incrementStock(lines: readonly StockAdjustment[]): Promise<void> {
+  async incrementStock(lines: readonly StockAdjustment[], context: StockMovementContext): Promise<void> {
     if (lines.length === 0) return;
 
     // The inverse of `decrementStock`: returning stock always succeeds, so there's
-    // no guard and no shortfall path. One transaction keeps the lines atomic;
-    // `updateMany` silently matches nothing for a since-deleted product (count 0),
-    // so a missing product is skipped rather than erroring.
-    await prisma.$transaction(
-      lines.map((line) =>
-        prisma.product.updateMany({
+    // no guard and no shortfall path. One interactive transaction keeps the lines
+    // and their ledger entries atomic; `updateMany` silently matches nothing for a
+    // since-deleted product (count 0), so a missing product is skipped rather than
+    // erroring — and writes no entry, because no stock moved.
+    await prisma.$transaction(async (tx) => {
+      for (const line of lines) {
+        const result = await tx.product.updateMany({
           where: { id: line.productId },
           data: { stockQuantity: { increment: line.quantity } },
-        }),
-      ),
-    );
+        });
+        if (result.count === 0) continue;
+
+        const after = await tx.product.findUniqueOrThrow({
+          where: { id: line.productId },
+          select: { stockQuantity: true },
+        });
+        await tx.stockMovement.create({
+          data: movementRow(line.productId, line.quantity, after.stockQuantity, context),
+        });
+      }
+    });
   }
+}
+
+/**
+ * Build the ledger row for one movement. Shared by every write path so the
+ * attribution columns are filled the same way each time: an operator's adjustment
+ * carries the actor's id and their name at the time, an order-driven one carries
+ * the order.
+ */
+function movementRow(
+  productId: string,
+  delta: number,
+  quantityAfter: number,
+  context: StockMovementContext,
+): Prisma.StockMovementUncheckedCreateInput {
+  return {
+    productId,
+    delta,
+    quantityAfter,
+    reason: context.reason,
+    note: context.note ?? null,
+    actorId: context.actor?.id ?? null,
+    actorName: context.actor?.name ?? null,
+    orderId: context.orderId ?? null,
+  };
 }
 
 /** Map a sort option to a Prisma `orderBy`; defaults to alphabetical by name. */
@@ -268,6 +395,9 @@ function adminWhere(filters: AdminProductFilters): Prisma.ProductWhereInput {
   if (filters.stock === "out") and.push({ stockQuantity: { lte: 0 } });
   if (filters.stock === "low") and.push({ stockQuantity: { gt: 0, lte: LOW_STOCK_THRESHOLD } });
   if (filters.stock === "in") and.push({ stockQuantity: { gt: LOW_STOCK_THRESHOLD } });
+  // Low *and* out together — the union of the two above, which is exactly what the
+  // overview's "needs restocking" tile counts.
+  if (filters.stock === "needsRestock") and.push({ stockQuantity: { lte: LOW_STOCK_THRESHOLD } });
 
   return and.length ? { AND: and } : {};
 }
