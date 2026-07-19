@@ -21,6 +21,7 @@ type ApiErrorKey =
   | "conflict"
   | "insufficientStock"
   | "slotUnavailable"
+  | "inUse"
   | "addressGone"
   | "revokeSelf"
   | "revokeOwner"
@@ -38,6 +39,7 @@ const CODE_KEYS: Readonly<Record<string, ApiErrorKey>> = {
   UNIQUE_CONSTRAINT: "conflict",
   INSUFFICIENT_STOCK: "insufficientStock",
   SLOT_UNAVAILABLE: "slotUnavailable",
+  IN_USE: "inUse",
   ADDRESS_GONE: "addressGone",
   REVOKE_SELF: "revokeSelf",
   REVOKE_OWNER: "revokeOwner",

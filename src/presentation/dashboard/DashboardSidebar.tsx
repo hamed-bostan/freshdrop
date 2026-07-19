@@ -2,10 +2,12 @@
 
 import { useTranslations } from "next-intl";
 import {
+  CalendarClock,
   ClipboardList,
   LayoutDashboard,
   Leaf,
   Package,
+  PercentCircle,
   ShieldCheck,
   Star,
   Tag,
@@ -29,6 +31,8 @@ const SECTIONS = [
   { href: "/dashboard/orders", labelKey: "navOrders", icon: ClipboardList },
   { href: "/dashboard/reviews", labelKey: "navReviews", icon: Star },
   { href: "/dashboard/customers", labelKey: "navCustomers", icon: Users },
+  { href: "/dashboard/promo-codes", labelKey: "navPromoCodes", icon: PercentCircle },
+  { href: "/dashboard/delivery-slots", labelKey: "navDeliverySlots", icon: CalendarClock },
 ] as const satisfies readonly { href: string; labelKey: string; icon: LucideIcon }[];
 
 /** Sections only the owner can reach — appended when the viewer is one. */

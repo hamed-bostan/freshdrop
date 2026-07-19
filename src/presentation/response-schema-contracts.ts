@@ -46,6 +46,8 @@ type Expect<T extends true> = T;
 
 import type { Cart } from "@/src/domain/entities/Cart";
 import type { Category } from "@/src/domain/entities/Category";
+import type { AdminPromoCode } from "@/src/domain/entities/PromoCode";
+import type { DeliveryWindow } from "@/src/domain/entities/DeliveryWindow";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
@@ -66,6 +68,8 @@ import { categoryResponseSchema } from "./category/category-response-schema";
 import { deliverySlotDayResponseSchema } from "./checkout/delivery-slot-response-schema";
 import { categoryTranslationResponseSchema } from "./dashboard/categories/category-translation-response-schema";
 import { customerOrderSummaryResponseSchema } from "./dashboard/customers/customer-response-schema";
+import { adminPromoCodeResponseSchema } from "./dashboard/promo-codes/promo-code-admin-response-schema";
+import { deliveryWindowResponseSchema } from "./dashboard/delivery-slots/delivery-window-response-schema";
 import { productTranslationResponseSchema } from "./dashboard/products/product-translation-response-schema";
 import { roleChangeResponseSchema, type RoleChangeWire } from "./dashboard/team/team-history-response-schema";
 import { deliveryLocationResponseSchema } from "./delivery-location/delivery-location-response-schema";
@@ -80,6 +84,12 @@ import { savedCardResponseSchema, walletResponseSchema } from "./wallet/wallet-r
 export type _Cart = Expect<Equal<z.infer<typeof cartResponseSchema>, Cart>>;
 export type _PromoCode = Expect<Equal<z.infer<typeof promoCodeResponseSchema>, PromoCode>>;
 export type _Category = Expect<Equal<z.infer<typeof categoryResponseSchema>, Category>>;
+// The admin promo-code shape is a superset of the public one, and the gap is the
+// point: the campaign window, the switch and the redemption counter belong to the
+// operator's response, never the shopper's. Both are asserted, so a field added to
+// the entity has to be placed deliberately on one side or the other.
+export type _AdminPromoCode = Expect<Equal<z.infer<typeof adminPromoCodeResponseSchema>, AdminPromoCode>>;
+export type _DeliveryWindow = Expect<Equal<z.infer<typeof deliveryWindowResponseSchema>, DeliveryWindow>>;
 export type _DeliverySlotDay = Expect<Equal<z.infer<typeof deliverySlotDayResponseSchema>, DeliverySlotDay>>;
 export type _CategoryTranslation = Expect<
   Equal<z.infer<typeof categoryTranslationResponseSchema>, CategoryTranslationInput>

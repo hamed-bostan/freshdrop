@@ -8,6 +8,8 @@ import type { IDeliverySlotRepository } from "../../repositories/IDeliverySlotRe
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
+import type { IPromoCodeRepository } from "../../repositories/IPromoCodeRepository";
+import type { PromoCode } from "../../entities/PromoCode";
 import { SlotUnavailableError } from "../../errors/SlotUnavailableError";
 import { ValidationError } from "../../errors/ValidationError";
 import { SLOT_HORIZON_DAYS } from "../delivery-slots/GetDeliverySlots";
@@ -27,6 +29,14 @@ export type CreateOrderInput = {
   destination?: GeoPoint;
   /** The server-computed cart (items + authoritative totals) being checked out. */
   cart: Cart;
+  /**
+   * The promo code the cart's discount came from, when one was applied. Passed
+   * alongside the cart rather than re-resolved here: the cart's totals were
+   * computed from *this* code, and looking it up again could answer differently
+   * (a campaign that expired in between) — the order would then be counted against
+   * a promo it wasn't priced with, or not counted at all.
+   */
+  promo?: PromoCode;
   /** Delivery calendar date the shopper booked, `YYYY-MM-DD`. */
   deliveryDate: string;
   /** The delivery window the shopper booked (slug). */
@@ -71,6 +81,7 @@ export class CreateOrder {
     private readonly productRepo: IProductRepository,
     private readonly slotRepo: IDeliverySlotRepository,
     private readonly notifier: IOrderNotifier,
+    private readonly promoRepo: IPromoCodeRepository,
   ) {}
 
   async execute({
@@ -79,6 +90,7 @@ export class CreateOrder {
     locationLabel,
     destination,
     cart,
+    promo,
     deliveryDate,
     deliveryWindowId,
     substitutionPreferences,
@@ -146,6 +158,18 @@ export class CreateOrder {
 
     // The order now owns the snapshot, so the working cart is emptied.
     await this.cartRepo.clear(userId);
+
+    // Count the redemption so the campaign's usage is visible in the dashboard.
+    // Best-effort, like the notification below: the order is already recorded, and
+    // an under-count on a reporting figure is never worth failing a placed order
+    // for. Deliberately *not* a limit check — nothing here refuses the order.
+    if (promo) {
+      try {
+        await this.promoRepo.recordUsage(promo.id);
+      } catch (error) {
+        console.error("Failed to record promo code usage:", error);
+      }
+    }
 
     // Tell the customer the order is confirmed. Best-effort side effect: the order
     // is already recorded, so the notifier swallows any delivery failure itself.

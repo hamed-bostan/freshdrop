@@ -249,14 +249,26 @@ model ProductTranslation {
 // A redeemable promo code — reference/catalog data (like products/categories),
 // not user data. `discountPercent` is a whole-number percentage taken off the
 // subtotal. `code` is unique and matched case-insensitively at redemption time.
+//
+// The campaign columns decide whether the code is redeemable *right now*:
+// `active` is the operator's on/off switch (codes are deactivated rather than
+// deleted, so past orders keep referring to something that exists), and
+// `startsAt`/`endsAt` bound the campaign — either may be NULL for an open-ended
+// end. `usageCount` is a redemption counter incremented when an order is placed
+// with the code; it counts redemptions from the day the column shipped, so
+// historical orders (which never recorded their promo) aren't in it.
 model PromoCode {
-  id              String   @id @default(uuid())
-  code            String   @unique
+  id              String    @id @default(uuid())
+  code            String    @unique
   title           String
   description     String
-  discountPercent Int      @map("discount_percent")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  discountPercent Int       @map("discount_percent")
+  active          Boolean   @default(true)
+  startsAt        DateTime? @map("starts_at")
+  endsAt          DateTime? @map("ends_at")
+  usageCount      Int       @default(0) @map("usage_count")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   @@map("promo_codes")
 }

@@ -108,6 +108,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       productRepository,
       deliverySlotRepository,
       orderNotifier,
+      promoCodeRepository,
     ).execute({
       userId: session.user.id,
       location: address.address,
@@ -119,6 +120,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           ? { latitude: address.latitude, longitude: address.longitude }
           : undefined,
       cart,
+      // The code the totals above were computed from, so the redemption is counted
+      // against the campaign the shopper actually checked out under.
+      promo: promo ?? undefined,
       deliveryDate: parsed.data.deliveryDate,
       deliveryWindowId: parsed.data.deliveryWindowId,
       substitutionPreferences,

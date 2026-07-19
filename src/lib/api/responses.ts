@@ -5,6 +5,7 @@ import { ValidationError } from "@/src/domain/errors/ValidationError";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { InsufficientStockError } from "@/src/domain/errors/InsufficientStockError";
 import { SlotUnavailableError } from "@/src/domain/errors/SlotUnavailableError";
+import { ResourceInUseError } from "@/src/domain/errors/ResourceInUseError";
 import { AdminRevokeError } from "@/src/domain/errors/AdminRevokeError";
 
 /**
@@ -74,6 +75,13 @@ export function errorResponseFromException(error: unknown, context: string): Nex
   // landed. 409 Conflict — the message names the slot so the shopper can pick another.
   if (error instanceof SlotUnavailableError) {
     return errorResponse(409, { message: error.message, code: "SLOT_UNAVAILABLE" });
+  }
+
+  // Something still depends on the record being removed (e.g. a delivery window
+  // with orders booked into it). Well-formed request, refusing state → 409, and the
+  // message names what's in the way.
+  if (error instanceof ResourceInUseError) {
+    return errorResponse(409, { message: error.message, code: "IN_USE" });
   }
 
   // Removing an admin was refused to keep the dashboard reachable (self-removal,
