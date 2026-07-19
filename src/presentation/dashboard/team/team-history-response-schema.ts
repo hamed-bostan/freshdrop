@@ -7,7 +7,7 @@ import type { RoleChange } from "@/src/domain/entities/RoleChange";
  * here — rather than restating the whole shape — is what lets `satisfies` below
  * catch a field added to or renamed on the entity at compile time.
  */
-type RoleChangeWire = Omit<RoleChange, "at"> & { at: string };
+export type RoleChangeWire = Omit<RoleChange, "at"> & { at: string };
 
 /**
  * The shape the team history endpoint promises to return, validated at the
