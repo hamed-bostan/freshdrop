@@ -274,10 +274,13 @@ export class PrismaProductRepository implements IProductRepository {
     // concurrent orders can't both read the same stock and oversell — the loser's
     // guard fails (0 rows) and we roll the whole order back. Throwing out of the
     // callback aborts the transaction, undoing any decrements already applied.
+    const merged = mergeLines(lines);
+
     await prisma.$transaction(async (tx) => {
       const shortfalls: StockShortfall[] = [];
+      const applied: StockAdjustment[] = [];
 
-      for (const line of lines) {
+      for (const line of merged) {
         const result = await tx.product.updateMany({
           where: { id: line.productId, stockQuantity: { gte: line.quantity } },
           data: { stockQuantity: { decrement: line.quantity } },
@@ -299,19 +302,18 @@ export class PrismaProductRepository implements IProductRepository {
           continue;
         }
 
-        // Read the level the decrement left behind, so the ledger entry records
-        // it rather than making the history recompute it. Inside the same
-        // transaction, so it's the value this write produced.
-        const after = await tx.product.findUniqueOrThrow({
-          where: { id: line.productId },
-          select: { stockQuantity: true },
-        });
-        await tx.stockMovement.create({
-          data: movementRow(line.productId, -line.quantity, after.stockQuantity, context),
-        });
+        applied.push(line);
       }
 
+      // Before the ledger write, so a short order does no work it's about to
+      // roll back — and so the failure path costs exactly what it did before.
       if (shortfalls.length > 0) throw new InsufficientStockError(shortfalls);
+
+      await recordMovements(
+        tx,
+        applied.map((line) => ({ productId: line.productId, delta: -line.quantity })),
+        context,
+      );
     });
   }
 
@@ -323,24 +325,85 @@ export class PrismaProductRepository implements IProductRepository {
     // and their ledger entries atomic; `updateMany` silently matches nothing for a
     // since-deleted product (count 0), so a missing product is skipped rather than
     // erroring — and writes no entry, because no stock moved.
+    const merged = mergeLines(lines);
+
     await prisma.$transaction(async (tx) => {
-      for (const line of lines) {
+      const applied: StockAdjustment[] = [];
+
+      for (const line of merged) {
         const result = await tx.product.updateMany({
           where: { id: line.productId },
           data: { stockQuantity: { increment: line.quantity } },
         });
-        if (result.count === 0) continue;
-
-        const after = await tx.product.findUniqueOrThrow({
-          where: { id: line.productId },
-          select: { stockQuantity: true },
-        });
-        await tx.stockMovement.create({
-          data: movementRow(line.productId, line.quantity, after.stockQuantity, context),
-        });
+        if (result.count > 0) applied.push(line);
       }
+
+      await recordMovements(
+        tx,
+        applied.map((line) => ({ productId: line.productId, delta: line.quantity })),
+        context,
+      );
     });
   }
+}
+
+/**
+ * Collapse lines to one per product, ordered by product id.
+ *
+ * Two jobs, both about what happens under concurrency. Ordering makes every
+ * caller take row locks in the same sequence, so two orders sharing products
+ * can't each hold what the other is waiting for — the classic deadlock, which
+ * only shows up under the load you least want it to. Merging makes a repeated
+ * product one lock and one ledger entry instead of two of each; "this order took
+ * 5" is also the truthful entry, where two rows of 2 and 3 invite the reader to
+ * wonder what happened in between.
+ */
+function mergeLines(lines: readonly StockAdjustment[]): StockAdjustment[] {
+  const byProduct = new Map<string, StockAdjustment>();
+  for (const line of lines) {
+    const existing = byProduct.get(line.productId);
+    if (existing) existing.quantity += line.quantity;
+    else byProduct.set(line.productId, { ...line });
+  }
+  return [...byProduct.values()].sort((a, b) => a.productId.localeCompare(b.productId));
+}
+
+/** A product's signed change, once its row has already been updated. */
+type AppliedMovement = { productId: string; delta: number };
+
+/**
+ * Write the ledger entries for a batch of movements: one read for the levels
+ * they left behind, one insert for the rows.
+ *
+ * Batched rather than a read-and-insert per line because this runs inside the
+ * checkout transaction, holding a row lock on every product in the cart. Two
+ * round-trips per line would scale the time those locks are held with the size of
+ * the cart, turning a busy shop's large orders into the ones most likely to
+ * collide — so the ledger's cost stays flat instead.
+ */
+async function recordMovements(
+  tx: Prisma.TransactionClient,
+  movements: readonly AppliedMovement[],
+  context: StockMovementContext,
+): Promise<void> {
+  if (movements.length === 0) return;
+
+  const rows = await tx.product.findMany({
+    where: { id: { in: movements.map((movement) => movement.productId) } },
+    select: { id: true, stockQuantity: true },
+  });
+  const quantityAfter = new Map(rows.map((row) => [row.id, row.stockQuantity]));
+
+  await tx.stockMovement.createMany({
+    data: movements.flatMap((movement) => {
+      // A product that vanished between its update and this read has no level to
+      // record. It can't happen inside the transaction that just locked the row,
+      // but the map lookup has to be total either way.
+      const after = quantityAfter.get(movement.productId);
+      if (after === undefined) return [];
+      return [movementRow(movement.productId, movement.delta, after, context)];
+    }),
+  });
 }
 
 /**
