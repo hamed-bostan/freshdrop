@@ -4,7 +4,7 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { Collapsible } from "radix-ui";
 import { ChevronDown } from "lucide-react";
-import { Icon, stillWhenReduced } from "@/src/presentation/design-system";
+import { focusRing, Icon, stillWhenReduced } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
 
 interface OrderLocationRowProps {
@@ -41,7 +41,12 @@ export function OrderLocationRow({ location, label }: OrderLocationRowProps) {
     >
       <dt className="text-muted-foreground">{t("locationLabel")}</dt>
       <dd className="flex min-w-0 flex-col items-end gap-1 text-end text-foreground">
-        <Collapsible.Trigger className="inline-flex items-center gap-0.5 rounded text-label-l1 text-primary transition-colors focus-visible:outline-none focus-visible:ring focus-visible:ring-ring">
+        <Collapsible.Trigger
+          className={cn(
+            "inline-flex items-center gap-0.5 rounded text-label-l1 text-primary transition-colors",
+            focusRing,
+          )}
+        >
           {collapsedLabel(location, label)}
           <Icon
             icon={ChevronDown}

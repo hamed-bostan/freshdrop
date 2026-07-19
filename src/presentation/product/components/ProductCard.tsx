@@ -1,6 +1,6 @@
 import { useLocale, useTranslations } from "next-intl";
 import { Star } from "lucide-react";
-import { Icon } from "@/src/presentation/design-system";
+import { focusRing, Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber, formatRating } from "@/src/lib/formatNumber";
@@ -94,7 +94,8 @@ export function ProductCard({
       <Link
         href={`/product/${product.id}`}
         className={cn(
-          "block px-2 mb-1 rounded-sm text-body-b13 text-foreground transition-colors after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:ring focus-visible:ring-ring",
+          "block px-2 mb-1 rounded-sm text-body-b13 text-foreground transition-colors after:absolute after:inset-0 after:content-['']",
+          focusRing,
           !outOfStock && "hover:text-primary"
         )}
       >

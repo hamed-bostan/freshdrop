@@ -8,7 +8,7 @@ import { DEFAULT_PRODUCT_SORT, hasProductSearchCriteria } from "@/src/domain/ent
 import { buildProductFilterParams } from "@/src/lib/api/product-search-params";
 import { cn } from "@/src/lib/utils";
 import { useRouter } from "@/src/i18n/navigation";
-import { Select } from "@/src/presentation/design-system";
+import { focusRing, Select } from "@/src/presentation/design-system";
 import { SearchBar } from "@/src/presentation/components/SearchBar";
 import { ProductFilterSheet } from "./ProductFilterSheet";
 
@@ -91,7 +91,7 @@ export function SearchExperience({ query, filters, categories, children }: Searc
               <button
                 type="button"
                 onClick={clearFilters}
-                className="rounded-sm text-body-b8 text-primary focus-visible:outline-none focus-visible:ring focus-visible:ring-ring"
+                className={cn("rounded-sm text-body-b8 text-primary", focusRing)}
               >
                 {t("clearFilters", { count: activeCount })}
               </button>
