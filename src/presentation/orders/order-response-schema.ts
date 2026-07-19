@@ -46,6 +46,16 @@ export const orderResponseSchema = z.object({
   placedAt: z.string(),
   location: z.string(),
   locationLabel: z.string().optional(),
+  // The address coordinate snapshotted at checkout. Absent from legacy orders and
+  // from addresses saved without one. Range-checked (WGS 84) rather than merely
+  // typed, mirroring the domain's `isValidGeoPoint` — a bad coordinate doesn't
+  // throw downstream, it just puts a map marker in the sea.
+  destination: z
+    .object({
+      latitude: z.number().min(-90).max(90),
+      longitude: z.number().min(-180).max(180),
+    })
+    .optional(),
   items: z.array(orderItemResponseSchema),
   subtotal: z.number(),
   shipping: z.number(),
