@@ -3,7 +3,7 @@ import { ResolveItemSubstitution } from "@/src/domain/use-cases/orders/ResolveIt
 import {
   orderRepository,
   productRepository,
-  walletRepository,
+  unitOfWork,
   orderNotifier,
 } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest, { params }: RouteContext): Prom
     const order = await new ResolveItemSubstitution(
       orderRepository,
       productRepository,
-      walletRepository,
+      unitOfWork,
       orderNotifier,
     ).execute({
       orderId: id,

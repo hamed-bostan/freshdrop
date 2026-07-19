@@ -1,8 +1,7 @@
 import type { Order } from "../../entities/Order";
 import { isCancellable } from "../../entities/Order";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
-import type { IProductRepository } from "../../repositories/IProductRepository";
-import type { IWalletRepository } from "../../repositories/IWalletRepository";
+import type { IUnitOfWork } from "../../repositories/IUnitOfWork";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
 
@@ -24,12 +23,16 @@ export type CancelOrderInput = {
  * side effects — stock returned to the shelf and the total refunded to the
  * wallet — so a double-submit or a race with a stage advance can't refund twice
  * or cancel an already-shipped order.
+ *
+ * All three writes are one transaction. The guard alone made the *decision*
+ * exactly-once; it said nothing about the two writes that follow it, so a failure
+ * after the transition left an order cancelled with its stock or its refund
+ * missing — a state no retry repairs, because the guard now refuses the retry.
  */
 export class CancelOrder {
   constructor(
     private readonly orderRepo: IOrderRepository,
-    private readonly productRepo: IProductRepository,
-    private readonly walletRepo: IWalletRepository,
+    private readonly uow: IUnitOfWork,
   ) {}
 
   async execute({ userId, orderId }: CancelOrderInput): Promise<Order> {
@@ -41,24 +44,27 @@ export class CancelOrder {
       throw new ValidationError("order", "This order can no longer be cancelled.");
     }
 
-    const cancelled = await this.orderRepo.transitionStatus(orderId, {
-      from: { status: "processing", stage: "confirmed" },
-      to: { status: "cancelled", phase: "previous", stage: null },
+    return this.uow.run(async ({ orders, products, wallets }) => {
+      const cancelled = await orders.transitionStatus(orderId, {
+        from: { status: "processing", stage: "confirmed" },
+        to: { status: "cancelled", phase: "previous", stage: null },
+      });
+      // The guard didn't match: the order advanced (shipped/cancelled) between our
+      // read and the write. Throwing rolls the transaction back, so bailing here
+      // needs no undo — nothing has been written.
+      if (!cancelled) {
+        throw new ValidationError("order", "This order can no longer be cancelled.");
+      }
+
+      // Back on the shelf, attributed to the order that's giving it back — the
+      // ledger reads as "returned by order X", not as stock appearing from nowhere.
+      await products.incrementStock(
+        cancelled.items.map((item) => ({ productId: item.productId, name: item.name, quantity: item.quantity })),
+        { reason: "restock", orderId: cancelled.id },
+      );
+      await wallets.addFunds(userId, cancelled.total, { kind: "refundCancelledOrder" });
+
+      return cancelled;
     });
-    // The guard didn't match: the order advanced (shipped/cancelled) between our
-    // read and the write. Bail without touching stock or the wallet.
-    if (!cancelled) {
-      throw new ValidationError("order", "This order can no longer be cancelled.");
-    }
-
-    // Back on the shelf, attributed to the order that's giving it back — the
-    // ledger reads as "returned by order X", not as stock appearing from nowhere.
-    await this.productRepo.incrementStock(
-      cancelled.items.map((item) => ({ productId: item.productId, name: item.name, quantity: item.quantity })),
-      { reason: "restock", orderId: cancelled.id },
-    );
-    await this.walletRepo.addFunds(userId, cancelled.total, { kind: "refundCancelledOrder" });
-
-    return cancelled;
   }
 }

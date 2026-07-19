@@ -19,6 +19,7 @@ import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository"
 import type { IImageStorageRepository } from "@/src/domain/repositories/IImageStorageRepository";
 import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
 import type { IActivityLog } from "@/src/domain/repositories/IActivityLog";
+import type { IUnitOfWork } from "@/src/domain/repositories/IUnitOfWork";
 import type { IStockMovementLog } from "@/src/domain/repositories/IStockMovementLog";
 import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
 import type { ITeamNotifier } from "@/src/domain/repositories/ITeamNotifier";
@@ -27,6 +28,7 @@ import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepositor
 import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
 import { PrismaUserRepository } from "./repositories/PrismaUserRepository";
 import { PrismaActivityLog } from "./repositories/PrismaActivityLog";
+import { PrismaUnitOfWork } from "./repositories/PrismaUnitOfWork";
 import { PrismaStockMovementLog } from "./repositories/PrismaStockMovementLog";
 import { MockFavoriteRepository } from "./repositories/mock/MockFavoriteRepository";
 import { PrismaReviewRepository } from "./repositories/PrismaReviewRepository";
@@ -86,10 +88,18 @@ export const userRepository: IUserRepository = new PrismaUserRepository();
 // start (no logging stub): an audit trail that only existed in stdout would be
 // worse than none, because it would read as one without being queryable.
 //
-// Unlike the read-only logs below it, this one is written to by the *use-cases*
-// rather than by the repositories, which is what makes it unbypassable from the
-// API: route handlers only call use-cases. See `IActivityLog`.
+// Read-only here: entries are written by the repositories that make the changes
+// they describe, inside the same transaction, from a `NewActivityEntry` the
+// use-case built. That split is what makes the log both unbypassable from the API
+// (route handlers only call use-cases) and impossible to lose (the entry commits
+// with its change). See `IActivityLog` and `AuditHook`.
 export const activityLog: IActivityLog = new PrismaActivityLog();
+// Runs several repositories' writes as one transaction, for the operations that
+// move an order, its stock and the customer's money together — cancellation,
+// returns, and out-of-stock resolutions. Each of those was three transactions
+// with two gaps in which the store could end up owing a refund it had no record
+// of. See `IUnitOfWork`.
+export const unitOfWork: IUnitOfWork = new PrismaUnitOfWork();
 // Append-only ledger of every stock movement, real storage for the same reason the
 // role log is: entries are written by `PrismaProductRepository` inside the same
 // transaction as the quantity they explain, which a logging stub could not be.

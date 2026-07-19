@@ -4,7 +4,7 @@ import type { ItemSubstitution, Order } from "../../entities/Order";
 import { isFullyRefunded, isPicking, refundForLineValue } from "../../entities/Order";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
-import type { IWalletRepository } from "../../repositories/IWalletRepository";
+import type { IUnitOfWork, TransactionalRepositories } from "../../repositories/IUnitOfWork";
 import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
@@ -55,7 +55,7 @@ export class ResolveItemSubstitution {
   constructor(
     private readonly orderRepo: IOrderRepository,
     private readonly productRepo: IProductRepository,
-    private readonly walletRepo: IWalletRepository,
+    private readonly uow: IUnitOfWork,
     private readonly notifier: IOrderNotifier,
   ) {}
 
@@ -134,27 +134,39 @@ export class ResolveItemSubstitution {
   ): Promise<Order> {
     const amount = refundForLineValue(order, grossLineValue);
     const resolved: ItemSubstitution = { status: "refunded", refundAmount: amount };
-    // The entry rides inside the guarded write, so only the pick that actually
-    // resolved the line records having done so.
-    const updated = await this.orderRepo.resolveItemSubstitution(
-      order.id,
-      productId,
-      resolved,
-      (saved) => this.entry(actor, saved, itemName, "refunded", amount),
-    );
-    // Lost the race — another pick already resolved this line. Don't refund again.
-    if (!updated) throw new ValidationError("productId", "This item has already been resolved.");
 
-    if (amount > 0) {
-      await this.walletRepo.addFunds(order.userId, amount, { kind: "refundOutOfStock", item: itemName });
-    }
+    // The line resolution, its refund, and the cancellation-plus-delivery-refund
+    // that a last remaining line triggers are one transaction. Split apart, a
+    // failure between them drops a line from the order without paying for it.
+    const { updated, cancelled } = await this.uow.run(async ({ orders, wallets }) => {
+      // The entry rides inside the guarded write, so only the pick that actually
+      // resolved the line records having done so.
+      const saved = await orders.resolveItemSubstitution(order.id, productId, resolved, (line) =>
+        this.entry(actor, line, itemName, "refunded", amount),
+      );
+      // Lost the race — another pick already resolved this line. Throwing rolls
+      // back, so nothing was refunded twice.
+      if (!saved) throw new ValidationError("productId", "This item has already been resolved.");
 
-    // If this refund resolved the order's last remaining line, there's nothing
-    // left to deliver — cancel the order and refund the delivery fee too, rather
-    // than charging for an empty delivery. The cancellation notice supersedes the
-    // per-item one (the customer hears the order was cancelled and fully refunded).
-    if (isFullyRefunded(updated)) {
-      return this.cancelEmptied(updated);
+      if (amount > 0) {
+        await wallets.addFunds(order.userId, amount, { kind: "refundOutOfStock", item: itemName });
+      }
+
+      // If this refund resolved the order's last remaining line, there's nothing
+      // left to deliver — cancel the order and refund the delivery fee too, rather
+      // than charging for an empty delivery.
+      if (isFullyRefunded(saved)) {
+        return { updated: saved, cancelled: await this.cancelEmptied(orders, wallets, saved) };
+      }
+      return { updated: saved, cancelled: null };
+    });
+
+    // Notifications go after the commit, never inside it — they can't be rolled
+    // back. The cancellation notice supersedes the per-item one: the customer
+    // hears the order was cancelled and fully refunded, not that one line changed.
+    if (cancelled) {
+      await this.notifier.orderCancelledOutOfStock(cancelled);
+      return cancelled;
     }
 
     await this.notifier.itemRefunded(updated, itemName);
@@ -172,20 +184,28 @@ export class ResolveItemSubstitution {
    * how {@link CancelOrder} credits and transitions. Unlike cancellation, though,
    * the refunded lines are deliberately NOT restocked: they were physically out of
    * stock, so re-incrementing would create phantom inventory.
+   *
+   * Takes the caller's transaction-scoped repositories rather than the instance's,
+   * so this joins the refund it was triggered by instead of committing separately.
+   * Resolves `null` when the guard didn't match — a concurrent pick already
+   * cancelled or advanced the order. That is *not* an error: the line refund this
+   * ran inside still stands and must still commit, so it returns rather than
+   * throwing and rolling the whole thing back.
    */
-  private async cancelEmptied(order: Order): Promise<Order> {
-    const cancelled = await this.orderRepo.transitionStatus(order.id, {
+  private async cancelEmptied(
+    orders: TransactionalRepositories["orders"],
+    wallets: TransactionalRepositories["wallets"],
+    order: Order,
+  ): Promise<Order | null> {
+    const cancelled = await orders.transitionStatus(order.id, {
       from: { status: "processing", stage: "confirmed" },
       to: { status: "cancelled", phase: "previous", stage: null },
     });
-    // Lost the race — a concurrent pick already cancelled/advanced the order. The
-    // line refund still stands; just don't refund shipping or notify twice.
-    if (!cancelled) return order;
+    if (!cancelled) return null;
 
     if (cancelled.shipping > 0) {
-      await this.walletRepo.addFunds(order.userId, cancelled.shipping, { kind: "refundCancelledOrderDelivery" });
+      await wallets.addFunds(order.userId, cancelled.shipping, { kind: "refundCancelledOrderDelivery" });
     }
-    await this.notifier.orderCancelledOutOfStock(cancelled);
     return cancelled;
   }
 
@@ -206,15 +226,6 @@ export class ResolveItemSubstitution {
     const replacement = await this.productRepo.getById(replacementProductId);
     if (!replacement) throw new NotFoundError("product", replacementProductId);
 
-    // Claim a real unit of the replacement's stock first (atomic — throws
-    // InsufficientStockError if it's short, so the picker picks another).
-    await this.productRepo.decrementStock(
-      [{ productId: replacement.id, name: replacement.name, quantity: item.quantity }],
-      // A substitution sells the replacement into an existing order, so it's a
-      // sale like any other — the order it's attributed to is what says which.
-      { reason: "sale", orderId: order.id },
-    );
-
     // Refund the saving when the replacement is cheaper, net of the line's
     // pro-rata discount share; never charge more (a pricier swap clamps to 0, so
     // the store absorbs it and the customer is only charged what they pre-approved).
@@ -224,27 +235,33 @@ export class ResolveItemSubstitution {
       replacement: { productId: replacement.id, name: replacement.name, imageUrl: replacement.imageUrl },
       refundAmount: saving,
     };
-    const updated = await this.orderRepo.resolveItemSubstitution(
-      order.id,
-      item.productId,
-      resolved,
-      (saved) => this.entry(actor, saved, item.name, replacement.name, saving),
-    );
-    if (!updated) {
-      // Lost the race after claiming the replacement's stock — return it so the
-      // unclaimed swap doesn't leak a unit (the same self-healing seam CreateOrder
-      // accepts for the slot claim).
-      await this.productRepo.incrementStock(
-        [{ productId: replacement.id, name: replacement.name, quantity: item.quantity }],
-        { reason: "restock", orderId: order.id },
-      );
-      throw new ValidationError("productId", "This item has already been resolved.");
-    }
 
-    // Only the wallet moves — the order total is left as charged.
-    if (saving > 0) {
-      await this.walletRepo.addFunds(order.userId, saving, { kind: "substitutionSaving", item: item.name });
-    }
+    const updated = await this.uow.run(async ({ orders, products, wallets }) => {
+      // Claim a real unit of the replacement's stock first (atomic — throws
+      // InsufficientStockError if it's short, so the picker picks another).
+      await products.decrementStock(
+        [{ productId: replacement.id, name: replacement.name, quantity: item.quantity }],
+        // A substitution sells the replacement into an existing order, so it's a
+        // sale like any other — the order it's attributed to is what says which.
+        { reason: "sale", orderId: order.id },
+      );
+
+      const saved = await orders.resolveItemSubstitution(order.id, item.productId, resolved, (line) =>
+        this.entry(actor, line, item.name, replacement.name, saving),
+      );
+      // Lost the race after claiming the replacement's stock. This used to need a
+      // compensating `incrementStock` to avoid leaking the unit; inside the
+      // transaction the rollback *is* the compensation, and unlike a manual one it
+      // cannot itself fail and leave the leak behind.
+      if (!saved) throw new ValidationError("productId", "This item has already been resolved.");
+
+      // Only the wallet moves — the order total is left as charged.
+      if (saving > 0) {
+        await wallets.addFunds(order.userId, saving, { kind: "substitutionSaving", item: item.name });
+      }
+
+      return saved;
+    });
 
     await this.notifier.itemSubstituted(updated, item.name, replacement.name);
     return updated;

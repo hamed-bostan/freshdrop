@@ -20,6 +20,7 @@ import type {
 import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { prisma } from "@/src/infrastructure/prisma/client";
+import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transaction";
 import { recordAudit } from "./writeActivityEntry";
 
 /** Items are always read in their authored order so the order card's thumbnails stay stable. */
@@ -30,8 +31,14 @@ const ITEMS_INCLUDE = { items: { orderBy: { position: "asc" } } } as const;
  * connection), bound through the container — never imported by client code.
  */
 export class PrismaOrderRepository implements IOrderRepository {
+  /**
+   * The root client normally, a transaction client when a unit of work handed this
+   * repository out — see `PrismaUnitOfWork`.
+   */
+  constructor(private readonly db: PrismaDb = prisma) {}
+
   async getOrders(userId: string): Promise<Order[]> {
-    const rows = await prisma.order.findMany({
+    const rows = await this.db.order.findMany({
       where: { userId },
       orderBy: { placedAt: "desc" },
       include: ITEMS_INCLUDE,
@@ -40,7 +47,7 @@ export class PrismaOrderRepository implements IOrderRepository {
   }
 
   async getAllOrders(): Promise<Order[]> {
-    const rows = await prisma.order.findMany({
+    const rows = await this.db.order.findMany({
       orderBy: { placedAt: "desc" },
       include: ITEMS_INCLUDE,
     });
@@ -61,16 +68,18 @@ export class PrismaOrderRepository implements IOrderRepository {
     // One transaction so the rows and the count come from the same snapshot —
     // an order placed between two separate reads would leave the pager offering
     // a page that isn't there.
-    const [rows, total] = await prisma.$transaction([
-      prisma.order.findMany({ where, orderBy, skip, take, include: ITEMS_INCLUDE }),
-      prisma.order.count({ where }),
-    ]);
+    const [rows, total] = await inTransaction(this.db, (tx) =>
+      Promise.all([
+        tx.order.findMany({ where, orderBy, skip, take, include: ITEMS_INCLUDE }),
+        tx.order.count({ where }),
+      ]),
+    );
 
     return createPage(rows.map(toOrder), total, page);
   }
 
   async getById(orderId: string): Promise<Order | null> {
-    const row = await prisma.order.findUnique({
+    const row = await this.db.order.findUnique({
       where: { id: orderId },
       include: ITEMS_INCLUDE,
     });
@@ -78,7 +87,7 @@ export class PrismaOrderRepository implements IOrderRepository {
   }
 
   async createOrder(input: NewOrder): Promise<Order> {
-    const row = await prisma.order.create({
+    const row = await this.db.order.create({
       data: {
         // Undefined when the caller didn't mint one, leaving the column's
         // `@default(uuid())` to assign it.
@@ -122,7 +131,7 @@ export class PrismaOrderRepository implements IOrderRepository {
     audit?: AuditHook<Order>,
   ): Promise<Order> {
     try {
-      const row = await prisma.$transaction(async (tx) => {
+      const row = await inTransaction(this.db, async (tx) => {
         const updated = await tx.order.update({
           where: { id: orderId },
           data: { stage: update.stage, status: update.status },
@@ -144,7 +153,7 @@ export class PrismaOrderRepository implements IOrderRepository {
   ): Promise<Order | null> {
     const { from, to } = transition;
 
-    return prisma.$transaction(async (tx) => {
+    return inTransaction(this.db, async (tx) => {
       // The `from` precondition is folded into the WHERE clause, so the match and
       // the write are one atomic statement — `count` is 1 only when this call is
       // the one that actually moved the order out of the expected state.
@@ -183,7 +192,7 @@ export class PrismaOrderRepository implements IOrderRepository {
     resolution: ItemSubstitution,
     audit?: AuditHook<Order>,
   ): Promise<Order | null> {
-    return prisma.$transaction(async (tx) => {
+    return inTransaction(this.db, async (tx) => {
       // The "still unresolved" precondition (`substitutionStatus: null`) is folded
       // into the WHERE clause, so the guard and the write are one atomic statement
       // — `count` is 1 only for the call that actually resolved the line.

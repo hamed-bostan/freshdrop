@@ -17,6 +17,7 @@ import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { InsufficientStockError, type StockShortfall } from "@/src/domain/errors/InsufficientStockError";
 import { prisma } from "@/src/infrastructure/prisma/client";
+import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transaction";
 import { recordAudit } from "./writeActivityEntry";
 
 /** How many related products the detail screen's "Similar To This Item" rail shows. */
@@ -27,13 +28,21 @@ const SIMILAR_LIMIT = 6;
  * connection), bound through the container — never imported by client code.
  */
 export class PrismaProductRepository implements IProductRepository {
+  /**
+   * `db` is the root client for ordinary calls and a transaction client when this
+   * repository was handed out by a unit of work — see `PrismaUnitOfWork`. Every
+   * statement goes through it so a call made inside a wider transaction joins that
+   * transaction instead of opening a second connection outside it.
+   */
+  constructor(private readonly db: PrismaDb = prisma) {}
+
   async getAll(locale?: string): Promise<Product[]> {
-    const rows = await prisma.product.findMany({ orderBy: { createdAt: "asc" } });
+    const rows = await this.db.product.findMany({ orderBy: { createdAt: "asc" } });
     return localizeProducts(rows.map(toProduct), locale);
   }
 
   async getById(id: string, locale?: string): Promise<Product | null> {
-    const row = await prisma.product.findUnique({ where: { id } });
+    const row = await this.db.product.findUnique({ where: { id } });
     if (!row) return null;
     return (await localizeProducts([toProduct(row)], locale))[0];
   }
@@ -42,18 +51,18 @@ export class PrismaProductRepository implements IProductRepository {
     // An empty id list would otherwise become `IN ()` — a query for nothing that
     // still costs a round trip.
     if (ids.length === 0) return [];
-    const rows = await prisma.product.findMany({ where: { id: { in: [...ids] } } });
+    const rows = await this.db.product.findMany({ where: { id: { in: [...ids] } } });
     return localizeProducts(rows.map(toProduct), locale);
   }
 
   async getFeatured(locale?: string): Promise<Product[]> {
-    const rows = await prisma.product.findMany({ where: { isFeatured: true }, orderBy: { createdAt: "asc" } });
+    const rows = await this.db.product.findMany({ where: { isFeatured: true }, orderBy: { createdAt: "asc" } });
     return localizeProducts(rows.map(toProduct), locale);
   }
 
   async getSpecialOffers(locale?: string): Promise<Product[]> {
     // "Special offers" are products carrying a badge — mirrors the mock's rule.
-    const rows = await prisma.product.findMany({ where: { badge: { not: null } }, orderBy: { createdAt: "asc" } });
+    const rows = await this.db.product.findMany({ where: { badge: { not: null } }, orderBy: { createdAt: "asc" } });
     return localizeProducts(rows.map(toProduct), locale);
   }
 
@@ -74,7 +83,7 @@ export class PrismaProductRepository implements IProductRepository {
       // matching product ids first, then widen the OR by id. Canonical (English)
       // matching stays too — a query in either language works.
       if (locale) {
-        const matches = await prisma.productTranslation.findMany({
+        const matches = await this.db.productTranslation.findMany({
           where: {
             locale,
             OR: [
@@ -94,7 +103,7 @@ export class PrismaProductRepository implements IProductRepository {
     if (filters.dietary?.length) and.push({ dietary: { hasSome: filters.dietary } });
     if (filters.brands?.length) and.push({ brand: { in: filters.brands } });
 
-    const rows = await prisma.product.findMany({
+    const rows = await this.db.product.findMany({
       where: and.length ? { AND: and } : {},
       orderBy: orderByFor(filters.sort),
     });
@@ -113,26 +122,28 @@ export class PrismaProductRepository implements IProductRepository {
     // One transaction so the rows and the count are read from the same snapshot.
     // Read separately, a concurrent create between them yields a total that
     // doesn't match the page — a pager that offers an empty last page.
-    const [rows, total] = await prisma.$transaction([
-      prisma.product.findMany({ where, orderBy: adminOrderBy(page), skip, take }),
-      prisma.product.count({ where }),
-    ]);
+    const [rows, total] = await inTransaction(this.db, (tx) =>
+      Promise.all([
+        tx.product.findMany({ where, orderBy: adminOrderBy(page), skip, take }),
+        tx.product.count({ where }),
+      ]),
+    );
 
     return createPage(await localizeProducts(rows.map(toProduct), locale), total, page);
   }
 
   async getSimilar(productId: string, locale?: string): Promise<Product[]> {
-    const product = await prisma.product.findUnique({ where: { id: productId } });
+    const product = await this.db.product.findUnique({ where: { id: productId } });
     if (!product) return [];
 
     // Same-category siblings first, then top up with other products so the rail
     // always has something to show.
     const [sameCategory, others] = await Promise.all([
-      prisma.product.findMany({
+      this.db.product.findMany({
         where: { categoryId: product.categoryId, id: { not: productId } },
         orderBy: { createdAt: "asc" },
       }),
-      prisma.product.findMany({
+      this.db.product.findMany({
         where: { categoryId: { not: product.categoryId } },
         orderBy: { createdAt: "asc" },
         take: SIMILAR_LIMIT,
@@ -149,7 +160,7 @@ export class PrismaProductRepository implements IProductRepository {
       // The row and its opening ledger entry commit together: a product that
       // starts with units on hand should never have a history that begins with a
       // level nobody put there.
-      const row = await prisma.$transaction(async (tx) => {
+      const row = await inTransaction(this.db, async (tx) => {
         const created = await tx.product.create({ data });
         if (created.stockQuantity > 0) {
           await tx.stockMovement.create({
@@ -164,7 +175,7 @@ export class PrismaProductRepository implements IProductRepository {
         await recordAudit(tx, toProduct(created), audit);
         return created;
       });
-      await replaceProductTranslations(row.id, translations);
+      await replaceProductTranslations(this.db, row.id, translations);
       return toProduct(row);
     } catch (error) {
       throw toDomainError(error);
@@ -178,7 +189,7 @@ export class PrismaProductRepository implements IProductRepository {
       // ledger entry explaining the move are one transaction — the form is not a
       // back door around the ledger. The previous level is read inside it so the
       // delta is computed against what the write actually replaced.
-      const row = await prisma.$transaction(async (tx) => {
+      const row = await inTransaction(this.db, async (tx) => {
         const before = await tx.product.findUnique({ where: { id }, select: { stockQuantity: true } });
         const updated = await tx.product.update({ where: { id }, data });
 
@@ -191,7 +202,7 @@ export class PrismaProductRepository implements IProductRepository {
         await recordAudit(tx, toProduct(updated), audit);
         return updated;
       });
-      await replaceProductTranslations(row.id, translations);
+      await replaceProductTranslations(this.db, row.id, translations);
       return toProduct(row);
     } catch (error) {
       throw toDomainError(error);
@@ -208,12 +219,12 @@ export class PrismaProductRepository implements IProductRepository {
       // Nothing moved, so there is nothing to record. Reading the row back keeps
       // the return contract ("the product as it now stands") without writing an
       // entry that would explain nothing.
-      const current = await prisma.product.findUnique({ where: { id: productId } });
+      const current = await this.db.product.findUnique({ where: { id: productId } });
       if (!current) throw new NotFoundError("product", productId);
       return toProduct(current);
     }
 
-    return prisma.$transaction(async (tx) => {
+    return inTransaction(this.db, async (tx) => {
       // A conditional `updateMany` guarded by `stock_quantity >= -delta` for
       // removals: the guard and the write are one atomic statement, so a removal
       // racing a checkout can't drive stock negative between the read and the
@@ -256,7 +267,7 @@ export class PrismaProductRepository implements IProductRepository {
   }
 
   async getTranslations(productId: string): Promise<ProductTranslationInput[]> {
-    const rows = await prisma.productTranslation.findMany({
+    const rows = await this.db.productTranslation.findMany({
       where: { productId },
       orderBy: { locale: "asc" },
     });
@@ -275,7 +286,7 @@ export class PrismaProductRepository implements IProductRepository {
       // Transactional even though it is a single delete: the audit entry is the
       // only record the product ever existed, so it must not be able to go missing
       // while the row it describes is removed.
-      await prisma.$transaction(async (tx) => {
+      await inTransaction(this.db, async (tx) => {
         await tx.product.delete({ where: { id } });
         await recordAudit(tx, undefined, audit);
       });
@@ -295,7 +306,7 @@ export class PrismaProductRepository implements IProductRepository {
     // callback aborts the transaction, undoing any decrements already applied.
     const merged = mergeLines(lines);
 
-    await prisma.$transaction(async (tx) => {
+    await inTransaction(this.db, async (tx) => {
       const shortfalls: StockShortfall[] = [];
       const applied: StockAdjustment[] = [];
 
@@ -346,7 +357,7 @@ export class PrismaProductRepository implements IProductRepository {
     // erroring — and writes no entry, because no stock moved.
     const merged = mergeLines(lines);
 
-    await prisma.$transaction(async (tx) => {
+    await inTransaction(this.db, async (tx) => {
       const applied: StockAdjustment[] = [];
 
       for (const line of merged) {
@@ -573,6 +584,7 @@ function toProduct(row: ProductRow): Product {
  * the set — locales absent from it are deleted (so `[]` clears all), the rest upserted.
  */
 async function replaceProductTranslations(
+  db: PrismaDb,
   productId: string,
   translations?: ProductTranslationInput[],
 ): Promise<void> {
@@ -584,24 +596,28 @@ async function replaceProductTranslations(
   if (locales.length > 0) where.locale = { notIn: locales };
 
   // One atomic batch — the delete and the upserts land together or not at all, so a
-  // failure mid-way can't leave the translation set half-replaced.
-  await prisma.$transaction([
-    prisma.productTranslation.deleteMany({ where }),
-    ...translations.map((t) => {
-      const fields = {
-        name: t.name,
-        unit: t.unit ?? null,
-        description: t.description ?? null,
-        nutrition: t.nutrition ?? null,
-        origin: t.origin ?? null,
-      };
-      return prisma.productTranslation.upsert({
-        where: { productId_locale: { productId, locale: t.locale } },
-        create: { productId, locale: t.locale, ...fields },
-        update: fields,
-      });
-    }),
-  ]);
+  // failure mid-way can't leave the translation set half-replaced. Joins the
+  // caller's transaction when there is one, so a product's translations commit
+  // with the product rather than after it.
+  await inTransaction(db, async (tx) => {
+    await tx.productTranslation.deleteMany({ where });
+    await Promise.all(
+      translations.map((t) => {
+        const fields = {
+          name: t.name,
+          unit: t.unit ?? null,
+          description: t.description ?? null,
+          nutrition: t.nutrition ?? null,
+          origin: t.origin ?? null,
+        };
+        return tx.productTranslation.upsert({
+          where: { productId_locale: { productId, locale: t.locale } },
+          create: { productId, locale: t.locale, ...fields },
+          update: fields,
+        });
+      }),
+    );
+  });
 }
 
 /**
@@ -613,6 +629,9 @@ async function replaceProductTranslations(
 async function localizeProducts(products: Product[], locale?: string): Promise<Product[]> {
   if (!locale || products.length === 0) return products;
 
+  // Reads the singleton rather than a caller's transaction on purpose: this is a
+  // pure read used to decorate rows for display, never part of a write, and every
+  // caller has already fetched the rows it localizes.
   const translations = await prisma.productTranslation.findMany({
     where: { locale, productId: { in: products.map((p) => p.id) } },
   });
