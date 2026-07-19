@@ -2,7 +2,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { MessageSquareText, Phone } from "lucide-react";
 import type { DeliveryRider } from "@/src/domain/entities/OrderTracking";
-import { Button, Icon } from "@/src/presentation/design-system";
+import { Avatar, Button, Icon } from "@/src/presentation/design-system";
 
 interface RiderCardProps {
   rider: DeliveryRider;
@@ -15,13 +15,9 @@ export function RiderCard({ rider }: RiderCardProps) {
   return (
     <div className="flex items-center justify-between gap-4 rounded-card-xl bg-surface p-2">
       <div className="flex min-w-0 items-center gap-4">
-        <Image
-          src={rider.avatarUrl}
-          alt={rider.name}
-          width={56}
-          height={56}
-          className="size-14 shrink-0 rounded-full object-cover"
-        />
+        <Avatar tone="surface" name={rider.name} className="size-14">
+          <Image src={rider.avatarUrl} alt="" width={56} height={56} className="size-full object-cover" />
+        </Avatar>
         <div className="flex min-w-0 flex-col gap-2">
           <p className="truncate text-body-b7 text-foreground">{rider.name}</p>
           <p className="truncate text-body-b10 text-muted-foreground">{t("riderRole")}</p>

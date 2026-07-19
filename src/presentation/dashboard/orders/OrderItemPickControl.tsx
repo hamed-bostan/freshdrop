@@ -7,7 +7,7 @@ import { PackageX, RotateCcw } from "lucide-react";
 import type { OrderItem } from "@/src/domain/entities/Order";
 import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
-import { Button, focusRing, FormMessage, Icon } from "@/src/presentation/design-system";
+import { Button, focusRing, FormMessage, Icon, Thumbnail } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { formatMoney } from "@/src/lib/formatMoney";
@@ -144,7 +144,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
                         focusRing,
                       )}
                     >
-                      <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
+                      <Thumbnail as="span" className="size-9">
                         <Image
                           src={product.imageUrl}
                           alt=""
@@ -152,7 +152,7 @@ export function OrderItemPickControl({ orderId, item }: OrderItemPickControlProp
                           height={36}
                           className="size-full object-contain"
                         />
-                      </span>
+                      </Thumbnail>
                       <span className="min-w-0 flex-1 truncate text-body-b7 text-foreground">
                         {product.name}
                       </span>

@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { User, ImagePlus, Images, Camera, Trash2, type LucideIcon } from "lucide-react";
-import { focusRing, FormMessage, Icon, Sheet, SheetClose, SheetContent, SheetTrigger, Spinner } from "@/src/presentation/design-system";
+import { Avatar, focusRing, FormMessage, Icon, Sheet, SheetClose, SheetContent, SheetTrigger, Spinner } from "@/src/presentation/design-system";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { cn } from "@/src/lib/utils";
 import { profilesApi } from "../profile-api";
@@ -92,15 +92,17 @@ export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploader
 
       <Sheet>
         <div className="relative">
-          <div className="flex size-24 items-center justify-center overflow-hidden rounded-full bg-surface">
+          <Avatar
+            tone="surface"
+            className="size-24"
+            fallback={<Icon icon={User} className="size-12 text-icon-muted" />}
+          >
             {uploading ? (
               <Spinner size="xl" className="text-icon-muted" />
-            ) : value ? (
-              <Image src={value} alt={t("avatarAlt")} width={96} height={96} className="size-full object-cover" />
             ) : (
-              <Icon icon={User} className="size-12 text-icon-muted" />
+              value && <Image src={value} alt={t("avatarAlt")} width={96} height={96} className="size-full object-cover" />
             )}
-          </div>
+          </Avatar>
 
           <SheetTrigger asChild>
             <button
@@ -119,13 +121,13 @@ export function ProfileAvatarUploader({ value, onChange }: ProfileAvatarUploader
 
         <SheetContent title={t("changePhotoTitle")} hideTitle>
           <div className="flex flex-col items-center gap-3">
-            <div className="flex size-20 items-center justify-center overflow-hidden rounded-full bg-surface">
-              {value ? (
-                <Image src={value} alt={t("avatarAlt")} width={80} height={80} className="size-full object-cover" />
-              ) : (
-                <Icon icon={User} className="size-10 text-icon-muted" />
-              )}
-            </div>
+            <Avatar
+              tone="surface"
+              className="size-20"
+              fallback={<Icon icon={User} className="size-10 text-icon-muted" />}
+            >
+              {value && <Image src={value} alt={t("avatarAlt")} width={80} height={80} className="size-full object-cover" />}
+            </Avatar>
             <p className="text-center text-body-b6 text-foreground">
               {t.rich("photoNotice", { br: () => <br /> })}
             </p>

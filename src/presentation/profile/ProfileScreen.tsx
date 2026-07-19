@@ -2,7 +2,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { User } from "lucide-react";
 import type { UserProfile } from "./profile-response-schema";
-import { Icon } from "@/src/presentation/design-system";
+import { Avatar, Icon } from "@/src/presentation/design-system";
 import { ProfileMenuItem } from "./components/ProfileMenuItem";
 
 type ProfileMenuLabelKey =
@@ -45,8 +45,12 @@ export default async function ProfileScreen({ user }: ProfileScreenProps) {
       </header>
 
       <div className="flex flex-col items-center gap-3">
-        <div className="flex size-24 items-center justify-center overflow-hidden rounded-full bg-surface">
-          {user.avatarUrl ? (
+        <Avatar
+          tone="surface"
+          className="size-24"
+          fallback={<Icon icon={User} className="size-12 text-icon-muted" />}
+        >
+          {user.avatarUrl && (
             <Image
               src={user.avatarUrl}
               alt={t("photoAlt", { name: user.name })}
@@ -54,10 +58,8 @@ export default async function ProfileScreen({ user }: ProfileScreenProps) {
               height={96}
               className="size-full object-cover"
             />
-          ) : (
-            <Icon icon={User} className="size-12 text-icon-muted" />
           )}
-        </div>
+        </Avatar>
 
         <div className="flex flex-col items-center gap-0.5">
           <p className="text-heading-h5 text-foreground">{user.name}</p>

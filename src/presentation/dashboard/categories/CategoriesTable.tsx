@@ -12,6 +12,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  Thumbnail,
 } from "@/src/presentation/design-system";
 import { Link } from "@/src/i18n/navigation";
 import { DeleteCategoryButton } from "./DeleteCategoryButton";
@@ -39,9 +40,9 @@ export async function CategoriesTable({ categories }: CategoriesTableProps) {
           {categories.map((category) => (
             <TableRow key={category.id}>
               <TableCell>
-                <div className="flex size-10 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
+                <Thumbnail className="size-10">
                   <Image src={category.iconUrl} alt="" width={32} height={32} className="object-contain" />
-                </div>
+                </Thumbnail>
               </TableCell>
               <TableCell className="text-body-b7 text-foreground">{category.name}</TableCell>
               <TableCell className="text-body-b6 text-muted-foreground">{category.slug}</TableCell>

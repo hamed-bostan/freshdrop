@@ -6,6 +6,7 @@ import type { Review, ReviewStatus } from "@/src/domain/entities/Review";
 import type { Product } from "@/src/domain/entities/Product";
 import { formatNumber } from "@/src/lib/formatNumber";
 import {
+  Avatar,
   Badge,
   DataTable,
   Icon,
@@ -15,6 +16,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  Thumbnail,
 } from "@/src/presentation/design-system";
 import { Link } from "@/src/i18n/navigation";
 import { ReviewStatusSelect } from "./ReviewStatusSelect";
@@ -65,17 +67,6 @@ function formatReviewDate(iso: string, locale: Locale): string {
   return `${f.date.format(date)}, ${f.time.format(date)}`;
 }
 
-/** Two leading initials, e.g. "Leonardo DiCaprio" → "LD". */
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
-
 const STATUS_BADGE: Record<ReviewStatus, { variant: "success" | "warning" | "destructive"; labelKey: "statusPending" | "statusApproved" | "statusRejected" }> = {
   pending: { variant: "warning", labelKey: "statusPending" },
   approved: { variant: "success", labelKey: "statusApproved" },
@@ -108,22 +99,17 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
               <TableRow key={review.id} className="align-top">
                 <TableCell className="py-4">
                   <div className="flex items-center gap-3">
-                    {review.authorAvatarUrl ? (
-                      <Image
-                        src={review.authorAvatarUrl}
-                        alt=""
-                        width={36}
-                        height={36}
-                        className="size-9 shrink-0 rounded-full object-cover"
-                      />
-                    ) : (
-                      <span
-                        aria-hidden
-                        className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-body-b9 text-accent-foreground"
-                      >
-                        {getInitials(review.authorName)}
-                      </span>
-                    )}
+                    <Avatar name={review.authorName} className="size-9">
+                      {review.authorAvatarUrl && (
+                        <Image
+                          src={review.authorAvatarUrl}
+                          alt=""
+                          width={36}
+                          height={36}
+                          className="size-full object-cover"
+                        />
+                      )}
+                    </Avatar>
                     <div className="flex min-w-0 flex-col">
                       <span className="truncate text-body-b7 text-foreground">{review.authorName}</span>
                       <time
@@ -141,7 +127,7 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
                       href={`/dashboard/products/${product.id}/edit`}
                       className="group flex items-center gap-3"
                     >
-                      <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
+                      <Thumbnail as="span" className="size-9">
                         <Image
                           src={product.imageUrl}
                           alt=""
@@ -149,7 +135,7 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
                           height={36}
                           className="size-full object-cover"
                         />
-                      </span>
+                      </Thumbnail>
                       <span className="line-clamp-2 max-w-[12rem] text-body-b7 text-foreground underline-offset-2 group-hover:underline">
                         {product.name}
                       </span>

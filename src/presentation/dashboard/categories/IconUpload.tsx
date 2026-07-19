@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { ImagePlus } from "lucide-react";
-import { Button, FormMessage, Icon } from "@/src/presentation/design-system";
+import { Button, FormMessage, Icon, Thumbnail } from "@/src/presentation/design-system";
 import { imagesApi } from "@/src/presentation/images/image-api";
 
 interface IconUploadProps {
@@ -50,13 +50,13 @@ export function IconUpload({ value, onChange, id, ...aria }: IconUploadProps) {
 
   return (
     <div className="flex items-center gap-4">
-      <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-card-lg bg-surface-sunken">
+      <Thumbnail radius="lg" className="size-20">
         {value ? (
           <Image src={value} alt={t("iconPreviewAlt")} width={64} height={64} className="object-contain" />
         ) : (
           <Icon icon={ImagePlus} size="md" className="text-icon-muted" />
         )}
-      </div>
+      </Thumbnail>
 
       <div className="flex flex-col items-start gap-1.5">
         <input

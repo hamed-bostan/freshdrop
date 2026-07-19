@@ -14,6 +14,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  Thumbnail,
 } from "@/src/presentation/design-system";
 import { Link } from "@/src/i18n/navigation";
 import { formatMoney } from "@/src/lib/formatMoney";
@@ -50,9 +51,9 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
             return (
             <TableRow key={product.id}>
               <TableCell>
-                <div className="flex size-10 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
+                <Thumbnail className="size-10">
                   <Image src={product.imageUrl} alt="" width={40} height={40} className="size-full object-cover" />
-                </div>
+                </Thumbnail>
               </TableCell>
               <TableCell>
                 <span className="text-body-b7 text-foreground">{product.name}</span>

@@ -2,7 +2,7 @@ import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowLeftRight, RotateCcw } from "lucide-react";
 import type { Order, OrderItem } from "@/src/domain/entities/Order";
-import { Icon } from "@/src/presentation/design-system";
+import { Icon, Thumbnail } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDate, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { formatDeliveryWindow } from "@/src/lib/formatDeliveryWindow";
@@ -82,12 +82,9 @@ export function OrderCard({ order }: OrderCardProps) {
       <div className="flex items-center justify-between gap-2">
         <ul className="flex items-center gap-1">
           {visibleItems.map((item) => (
-            <li
-              key={item.productId}
-              className="flex size-13 shrink-0 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken"
-            >
+            <Thumbnail as="li" key={item.productId} className="size-13">
               <Image src={item.imageUrl} alt={item.name} width={40} height={40} className="object-contain" />
-            </li>
+            </Thumbnail>
           ))}
           {extraCount > 0 && (
             <li className="text-label-l1 text-foreground">+{extraCount}</li>

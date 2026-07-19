@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import type { CartItem } from "@/src/domain/entities/Cart";
 import type { SubstitutionPreference } from "@/src/domain/entities/Order";
-import { Switch } from "@/src/presentation/design-system";
+import { Switch, Thumbnail } from "@/src/presentation/design-system";
 
 type SubstitutionPreferenceListProps = {
   items: CartItem[];
@@ -32,7 +32,7 @@ export function SubstitutionPreferenceList({ items, value, onChange }: Substitut
 
         return (
           <li key={item.product.id} className="flex items-center gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
+            <Thumbnail as="span" className="size-10">
               <Image
                 src={item.product.imageUrl}
                 alt=""
@@ -40,7 +40,7 @@ export function SubstitutionPreferenceList({ items, value, onChange }: Substitut
                 height={40}
                 className="size-full object-contain"
               />
-            </span>
+            </Thumbnail>
             <div className="min-w-0 flex-1">
               <p className="truncate text-body-b6 text-foreground">{item.product.name}</p>
               <label htmlFor={switchId} className="text-body-b8 text-muted-foreground">

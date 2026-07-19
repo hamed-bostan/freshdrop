@@ -5,7 +5,7 @@ import type { Order } from "@/src/domain/entities/Order";
 import { isPicking, orderNetPaid } from "@/src/domain/entities/Order";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
-import { Icon } from "@/src/presentation/design-system";
+import { Icon, Thumbnail } from "@/src/presentation/design-system";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
@@ -94,7 +94,7 @@ export async function OrderDetailScreen({ order, customer }: OrderDetailScreenPr
                 return (
                   <li key={item.productId} className="flex flex-col gap-2">
                     <div className="flex items-center gap-3">
-                      <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
+                      <Thumbnail as="span" className="size-11">
                         <Image
                           src={item.imageUrl}
                           alt=""
@@ -102,7 +102,7 @@ export async function OrderDetailScreen({ order, customer }: OrderDetailScreenPr
                           height={44}
                           className={`size-full object-contain ${isRefunded ? "opacity-40" : ""}`}
                         />
-                      </span>
+                      </Thumbnail>
                       <span
                         className={`min-w-0 flex-1 truncate text-body-b7 ${
                           isRefunded ? "text-muted-foreground line-through" : "text-foreground"
