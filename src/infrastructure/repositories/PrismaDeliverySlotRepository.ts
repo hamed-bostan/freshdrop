@@ -53,6 +53,19 @@ export class PrismaDeliverySlotRepository implements IDeliverySlotRepository {
     });
   }
 
+  async release(date: string, windowId: string): Promise<void> {
+    // Guarded by `booked > 0` in the WHERE clause, the mirror of the `booked <
+    // capacity` guard on the claim: the check and the decrement are one atomic
+    // statement, so a release racing another placement can't drive the ledger
+    // negative and hand out capacity that was never there. A row that's already
+    // at 0 (or absent) simply matches nothing, which makes the release safe to
+    // repeat.
+    await prisma.deliverySlotBooking.updateMany({
+      where: { date, windowId, booked: { gt: 0 } },
+      data: { booked: { decrement: 1 } },
+    });
+  }
+
   async getWindow(id: string): Promise<DeliveryWindow | null> {
     const row = await prisma.deliveryWindow.findUnique({ where: { id } });
     return row ? toDeliveryWindow(row) : null;

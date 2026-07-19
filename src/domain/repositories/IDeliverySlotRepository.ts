@@ -33,6 +33,21 @@ export type IDeliverySlotRepository = {
    */
   claim(date: string, windowId: string, capacity: number): Promise<boolean>;
 
+  /**
+   * Give back one unit of capacity claimed by {@link claim} — the compensating
+   * action when the checkout that took it doesn't go on to produce an order.
+   *
+   * A slot claim and the order that justifies it can't be written in one
+   * transaction (they're separate aggregates, reached through separate ports), so
+   * the seat has to be released explicitly when the step after it fails.
+   * Otherwise a failed checkout silently shrinks the day's delivery capacity, and
+   * the only way back is a DB console.
+   *
+   * Never drops below zero, so a double release can't manufacture capacity that
+   * was never claimed.
+   */
+  release(date: string, windowId: string): Promise<void>;
+
   /** One window by its slug, for the admin edit form; `null` when it's gone. */
   getWindow(id: string): Promise<DeliveryWindow | null>;
   /** Add a window to the catalog. The id is the operator-authored slug. */

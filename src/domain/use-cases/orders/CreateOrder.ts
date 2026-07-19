@@ -6,7 +6,7 @@ import type { GeoPoint } from "../../entities/Place";
 import type { ICartRepository } from "../../repositories/ICartRepository";
 import type { IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
-import type { IProductRepository } from "../../repositories/IProductRepository";
+import type { IProductRepository, StockAdjustment } from "../../repositories/IProductRepository";
 import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
 import type { IPromoCodeRepository } from "../../repositories/IPromoCodeRepository";
 import type { PromoCode } from "../../entities/PromoCode";
@@ -126,43 +126,66 @@ export class CreateOrder {
     // Node import — the domain stays framework-free.
     const orderId = crypto.randomUUID();
 
-    // Claim the stock first (all-or-nothing). If anything is short this throws
-    // before the order is created, so we never record an oversold order.
-    await this.productRepo.decrementStock(
-      cart.items.map(({ product, quantity }) => ({
-        productId: product.id,
-        name: product.name,
-        quantity,
-      })),
-      { reason: "sale", orderId },
-    );
+    const stockLines = cart.items.map(({ product, quantity }) => ({
+      productId: product.id,
+      name: product.name,
+      quantity,
+    }));
 
-    // Then claim one unit of the slot's capacity (atomic guard). A full window is
-    // refused here, so the slot is never overbooked.
+    // Checkout claims two scarce resources — units of stock and a seat in a
+    // delivery window — and then records the order that justifies holding them.
+    // The three live in separate aggregates behind separate ports, so they can't
+    // be written in one database transaction.
+    //
+    // What makes that safe is that every claim is undoable and every failure
+    // undoes the claims already made (below). The alternative — leaving them
+    // held — means a checkout that fails halfway silently removes stock from the
+    // catalog and capacity from the day, with no order anywhere to explain
+    // either, and no way back except a database console.
+    await this.productRepo.decrementStock(stockLines, { reason: "sale", orderId });
+
+    // One unit of the slot's capacity (atomic guard). A full window is refused
+    // here, so the slot is never overbooked.
     const claimed = await this.slotRepo.claim(deliveryDate, window.id, window.capacity);
     if (!claimed) {
+      // The window filled up while we were claiming stock. Put the units back
+      // before reporting it, or the shopper's retry — and everyone else's cart —
+      // is short by an order that was never placed.
+      await this.releaseStock(stockLines, orderId);
       throw new SlotUnavailableError(`${slotLabel(deliveryDate, window)} is fully booked.`);
     }
 
-    const order = await this.orderRepo.createOrder({
-      id: orderId,
-      userId,
-      status: "processing",
-      phase: "current",
-      stage: "confirmed",
-      placedAt: new Date().toISOString(),
-      location,
-      locationLabel,
-      destination,
-      subtotal: cart.subtotal,
-      shipping: cart.shipping,
-      discount: cart.discount,
-      total: cart.total,
-      deliveryDate,
-      deliveryWindowId: window.id,
-      deliveryWindow: slotLabel(deliveryDate, window),
-      items,
-    });
+    let order: Order;
+    try {
+      order = await this.orderRepo.createOrder({
+        id: orderId,
+        userId,
+        status: "processing",
+        phase: "current",
+        stage: "confirmed",
+        placedAt: new Date().toISOString(),
+        location,
+        locationLabel,
+        destination,
+        subtotal: cart.subtotal,
+        shipping: cart.shipping,
+        discount: cart.discount,
+        total: cart.total,
+        deliveryDate,
+        deliveryWindowId: window.id,
+        deliveryWindow: slotLabel(deliveryDate, window),
+        items,
+      });
+    } catch (error) {
+      // The order didn't land, so nothing justifies either claim. Give both back
+      // and let the original failure surface — the shopper sees why checkout
+      // failed, not a compensation detail.
+      await this.slotRepo.release(deliveryDate, window.id).catch((releaseError) => {
+        console.error(`Failed to release slot ${deliveryDate}#${window.id} for order ${orderId}:`, releaseError);
+      });
+      await this.releaseStock(stockLines, orderId);
+      throw error;
+    }
 
     // The order now owns the snapshot, so the working cart is emptied.
     await this.cartRepo.clear(userId);
@@ -184,6 +207,27 @@ export class CreateOrder {
     await this.notifier.orderConfirmed(order);
 
     return order;
+  }
+
+  /**
+   * Put back stock claimed for an order that never landed.
+   *
+   * Recorded as a `restock` against the same order id, so the ledger carries both
+   * halves: the sale that took the units and the release that returned them. A
+   * silent reversal would leave a history showing units leaving for an order
+   * nobody can find — the exact question the ledger exists to answer.
+   *
+   * Never rethrows. It runs on a path that is already failing, and the shopper
+   * needs to hear why checkout failed, not that the cleanup afterwards also did.
+   * A failure here is logged with the order id: the units stay claimed, and the
+   * ledger's unbalanced pair is what makes that findable rather than invisible.
+   */
+  private async releaseStock(lines: readonly StockAdjustment[], orderId: string): Promise<void> {
+    try {
+      await this.productRepo.incrementStock(lines, { reason: "restock", orderId });
+    } catch (error) {
+      console.error(`Failed to release stock claimed for abandoned order ${orderId}:`, error);
+    }
   }
 }
 
