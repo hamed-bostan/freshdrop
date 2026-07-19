@@ -5,6 +5,9 @@ import type {
   OrderPhase,
   OrderStatus,
 } from "@/src/domain/entities/Order";
+import type { AdminOrderFilters, AdminOrderSort } from "@/src/domain/entities/AdminOrderFilters";
+import { DEFAULT_ADMIN_ORDER_DIRECTION } from "@/src/domain/entities/AdminOrderFilters";
+import { paginateArray, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
 import type {
   IOrderRepository,
@@ -137,6 +140,26 @@ export class MockOrderRepository implements IOrderRepository {
 
   async getOrders(userId: string): Promise<Order[]> {
     return (await this.getAllOrders()).filter((order) => order.userId === userId);
+  }
+
+  async listPage(filters: AdminOrderFilters, page: PageRequest<AdminOrderSort>): Promise<Page<Order>> {
+    // Mirrors the Prisma repo's filters: id substring (case-insensitive) and an
+    // exact status, combined with AND; an empty filter matches every order.
+    const needle = filters.query?.toLowerCase() ?? "";
+    const matched = (await this.getAllOrders()).filter((order) => {
+      if (needle && !order.id.toLowerCase().includes(needle)) return false;
+      if (filters.status && order.status !== filters.status) return false;
+      return true;
+    });
+
+    const sign = (page.direction ?? DEFAULT_ADMIN_ORDER_DIRECTION) === "asc" ? 1 : -1;
+    const sorted = [...matched].sort((a, b) =>
+      page.sort === "total"
+        ? sign * (a.total - b.total)
+        : sign * (new Date(a.placedAt).getTime() - new Date(b.placedAt).getTime()),
+    );
+
+    return paginateArray(sorted, page);
   }
 
   async getAllOrders(): Promise<Order[]> {

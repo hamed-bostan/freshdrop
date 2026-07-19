@@ -4,6 +4,10 @@ import type { TrackingMilestone } from "./OrderTracking";
 /**
  * Lifecycle status of an order — drives the status badge on the order card.
  *
+ * Declared as an array with the union derived from it, so the statuses exist at
+ * runtime too: the admin list validates a `?status=` query param against them,
+ * and a union alone can't be checked against a string off the wire.
+ *
  * - `processing` — placed and in flight (awaiting/undergoing delivery).
  * - `completed` — delivered.
  * - `cancelled` — called off by the customer before dispatch; items restocked
@@ -13,12 +17,15 @@ import type { TrackingMilestone } from "./OrderTracking";
  * - `refunded` — a requested return an admin approved; items restocked and the
  *   total refunded to the wallet.
  */
-export type OrderStatus =
-  | "completed"
-  | "processing"
-  | "cancelled"
-  | "return_requested"
-  | "refunded";
+export const ORDER_STATUSES = [
+  "completed",
+  "processing",
+  "cancelled",
+  "return_requested",
+  "refunded",
+] as const;
+
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 /**
  * Which tab an order belongs under. Kept separate from `status` because the

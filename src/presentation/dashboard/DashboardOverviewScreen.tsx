@@ -2,9 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { DollarSign, ClipboardList, Star, AlertTriangle } from "lucide-react";
 import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid, orderRecognizedRevenue } from "@/src/domain/entities/Order";
-import type { Review } from "@/src/domain/entities/Review";
-import type { Product } from "@/src/domain/entities/Product";
-import { LOW_STOCK_THRESHOLD, getStockStatus } from "@/src/domain/entities/stock";
+import { LOW_STOCK_THRESHOLD } from "@/src/domain/entities/stock";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
@@ -15,8 +13,19 @@ import { TopCustomersPanel } from "./orders/TopCustomersPanel";
 
 type DashboardOverviewScreenProps = {
   orders: Order[];
-  reviews: Review[];
-  products: Product[];
+  /**
+   * How many reviews await moderation. A count, not the reviews themselves: the
+   * moderation endpoint reports it directly, so the overview no longer reads every
+   * review to derive one number.
+   */
+  pendingReviews: number;
+  /**
+   * How many products aren't comfortably in stock (low *or* out — out-of-stock is
+   * the more urgent case, not one to hide from the tile). Counted by the products
+   * endpoint's stock filter, which classifies through the domain's
+   * `getStockStatus`, so this can't diverge from what the storefront calls "low".
+   */
+  lowStockCount: number;
   /** Per-customer order summaries, ranked by total spend (highest first). */
   customers: CustomerOrderSummary[];
 };
@@ -47,8 +56,8 @@ function ordersInWindow(orders: Order[], now: number = Date.now()): Order[] {
  */
 export async function DashboardOverviewScreen({
   orders,
-  reviews,
-  products,
+  pendingReviews,
+  lowStockCount,
   customers,
 }: DashboardOverviewScreenProps) {
   const t = await getTranslations("dashHome");
@@ -61,13 +70,6 @@ export async function DashboardOverviewScreen({
   const revenue30d = earningOrders.reduce((sum, order) => sum + orderRecognizedRevenue(order), 0);
 
   const inProgress = orders.filter((order) => order.status === "processing").length;
-  const pendingReviews = reviews.filter((review) => review.status === "pending").length;
-  // "Needs restocking" — anything not comfortably in stock. Classified through the
-  // domain's `getStockStatus` (the single source of truth for stock states) rather
-  // than re-deriving the threshold here, so it never diverges from the storefront.
-  // Out-of-stock counts too: it's the more urgent case, not one to hide from the tile.
-  const lowStock = products.filter((product) => getStockStatus(product.stockQuantity).level !== "in").length;
-
   // Latest orders first — the source order isn't guaranteed sorted, so sort by when
   // each was placed and take the leading few.
   const recentOrders = [...orders]
@@ -107,7 +109,7 @@ export async function DashboardOverviewScreen({
         <StatCard
           icon={AlertTriangle}
           tone="danger"
-          value={formatNumber(lowStock, locale)}
+          value={formatNumber(lowStockCount, locale)}
           label={t("kpiLowStock")}
           hint={t("kpiLowStockHint", { threshold: LOW_STOCK_THRESHOLD })}
         />

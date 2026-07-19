@@ -19,4 +19,11 @@ export type CustomerOrderSummary = {
   totalSpent: number;
   /** ISO 8601 timestamp (UTC) of the customer's most recent order. */
   lastOrderAt: string;
+  /**
+   * 1-based position in the *full* spend ranking, assigned before any search or
+   * paging narrows the list — so customer #4 stays #4 on page 2 and in a filtered
+   * result. Carried on the summary rather than derived from the row's index,
+   * which only equals the rank on an unfiltered first page.
+   */
+  rank: number;
 }

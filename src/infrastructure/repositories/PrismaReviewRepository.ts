@@ -1,4 +1,12 @@
 import { Prisma } from "@prisma/client";
+import type {
+  AdminReviewFilters,
+  AdminReviewSort,
+  ReviewPage,
+  ReviewStatusCounts,
+} from "@/src/domain/entities/AdminReviewFilters";
+import { DEFAULT_ADMIN_REVIEW_DIRECTION } from "@/src/domain/entities/AdminReviewFilters";
+import { createPage, toSkipTake, type PageRequest } from "@/src/domain/entities/Pagination";
 import type { Review, ReviewStatus } from "@/src/domain/entities/Review";
 import type { IReviewRepository, NewReview } from "@/src/domain/repositories/IReviewRepository";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
@@ -19,14 +27,51 @@ export class PrismaReviewRepository implements IReviewRepository {
     return rows.map(toReview);
   }
 
-  async listByStatus(status?: ReviewStatus): Promise<Review[]> {
-    // Admin moderation queue: every review across products, newest first, optionally
-    // narrowed to one status.
-    const rows = await prisma.review.findMany({
-      where: status ? { status } : undefined,
-      orderBy: { createdAt: "desc" },
-    });
-    return rows.map(toReview);
+  async listPage(filters: AdminReviewFilters, page: PageRequest<AdminReviewSort>): Promise<ReviewPage> {
+    // The text clause is shared by the page query and the tab counts, so the two
+    // can't drift into searching different columns.
+    const queryClause: Prisma.ReviewWhereInput | null = filters.query
+      ? {
+          OR: [
+            { comment: { contains: filters.query, mode: "insensitive" } },
+            { authorName: { contains: filters.query, mode: "insensitive" } },
+          ],
+        }
+      : null;
+
+    const and: Prisma.ReviewWhereInput[] = [];
+    if (queryClause) and.push(queryClause);
+    if (filters.status) and.push({ status: filters.status });
+    const where: Prisma.ReviewWhereInput = and.length ? { AND: and } : {};
+
+    const direction = page.direction ?? DEFAULT_ADMIN_REVIEW_DIRECTION;
+    const orderBy: Prisma.ReviewOrderByWithRelationInput =
+      page.sort === "rating" ? { rating: direction } : { createdAt: direction };
+
+    const { skip, take } = toSkipTake(page);
+    // The tab counts deliberately ignore `status` (they'd zero out the other tabs)
+    // but do honour the search term, so searching narrows every tab consistently.
+    // One transaction keeps rows, total and counts on the same snapshot.
+    const countWhere: Prisma.ReviewWhereInput = queryClause ?? {};
+    // A count per status rather than one `groupBy`: inside a `$transaction` array
+    // Prisma widens the groupBy argument, and its `_count` payload type degrades
+    // with it. Three counts on an indexed column are cheap and unambiguous.
+    const [rows, total, pending, approved, rejected] = await prisma.$transaction([
+      prisma.review.findMany({ where, orderBy, skip, take }),
+      prisma.review.count({ where }),
+      prisma.review.count({ where: { AND: [countWhere, { status: "pending" }] } }),
+      prisma.review.count({ where: { AND: [countWhere, { status: "approved" }] } }),
+      prisma.review.count({ where: { AND: [countWhere, { status: "rejected" }] } }),
+    ]);
+
+    const counts: ReviewStatusCounts = {
+      pending,
+      approved,
+      rejected,
+      all: pending + approved + rejected,
+    };
+
+    return { ...createPage(rows.map(toReview), total, page), counts };
   }
 
   async create(input: NewReview): Promise<Review> {

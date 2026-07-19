@@ -2,6 +2,10 @@ import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Pencil } from "lucide-react";
 import type { Product } from "@/src/domain/entities/Product";
+import {
+  DEFAULT_ADMIN_PRODUCT_DIRECTION,
+  DEFAULT_ADMIN_PRODUCT_SORT,
+} from "@/src/domain/entities/AdminProductFilters";
 import { getStockStatus } from "@/src/domain/entities/stock";
 import {
   Badge,
@@ -16,16 +20,27 @@ import {
   TableRow,
   Thumbnail,
 } from "@/src/presentation/design-system";
+import { ListSortHeader } from "@/src/presentation/dashboard/list";
 import { Link } from "@/src/i18n/navigation";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { DeleteProductButton } from "./DeleteProductButton";
 
 type ProductsTableProps = {
+  /** The rows of the current page; the screen owns the page/total and the pager. */
   products: Product[];
   /** Category id → display name, for the Category column. */
   categoryNames: Map<string, string>;
 };
+
+/**
+ * The list's own default ordering, passed to every sortable header so an
+ * untouched table leaves `sort`/`dir` out of the URL entirely.
+ */
+const SORT_DEFAULTS = {
+  defaultSort: DEFAULT_ADMIN_PRODUCT_SORT,
+  defaultDirection: DEFAULT_ADMIN_PRODUCT_DIRECTION,
+} as const;
 
 /** Admin list of products with per-row edit + delete actions. */
 export async function ProductsTable({ products, categoryNames }: ProductsTableProps) {
@@ -38,10 +53,20 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
         <TableHeader>
           <tr>
             <TableHead>{t("colImage")}</TableHead>
-            <TableHead>{t("colName")}</TableHead>
+            <ListSortHeader sortKey="name" {...SORT_DEFAULTS}>
+              {t("colName")}
+            </ListSortHeader>
+            {/* Category is a filter, not a sort: ordering by a foreign key would
+                group rows under ids nobody recognises. */}
             <TableHead>{t("colCategory")}</TableHead>
-            <TableHead className="text-end">{t("colPrice")}</TableHead>
-            <TableHead>{t("colStatus")}</TableHead>
+            <ListSortHeader sortKey="price" align="end" initialDirection="desc" {...SORT_DEFAULTS}>
+              {t("colPrice")}
+            </ListSortHeader>
+            {/* Status shows featured + stock badges; only stock is orderable, and
+                ascending first so a click surfaces what needs restocking. */}
+            <ListSortHeader sortKey="stock" initialDirection="asc" {...SORT_DEFAULTS}>
+              {t("colStatus")}
+            </ListSortHeader>
             <TableHead className="text-end">{t("colActions")}</TableHead>
           </tr>
         </TableHeader>

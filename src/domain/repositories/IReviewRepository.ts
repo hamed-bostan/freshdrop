@@ -1,3 +1,5 @@
+import type { AdminReviewFilters, AdminReviewSort, ReviewPage } from "../entities/AdminReviewFilters";
+import type { PageRequest } from "../entities/Pagination";
 import type { Review, ReviewStatus } from "../entities/Review";
 
 /**
@@ -10,10 +12,10 @@ export type IReviewRepository = {
   /** Approved reviews for a product, newest first — the public storefront list. */
   getByProduct(productId: string): Promise<Review[]>;
   /**
-   * Every review across all products for the admin moderation queue, newest first.
-   * Optionally narrowed to a single status (e.g. the `pending` queue).
+   * One page of the moderation queue, plus the total matching the filters and the
+   * per-status counts the tabs display (see {@link ReviewPage}).
    */
-  listByStatus(status?: ReviewStatus): Promise<Review[]>;
+  listPage(filters: AdminReviewFilters, page: PageRequest<AdminReviewSort>): Promise<ReviewPage>;
   create(input: NewReview): Promise<Review>;
   /**
    * Set a review's moderation status and recompute the product's rating (only

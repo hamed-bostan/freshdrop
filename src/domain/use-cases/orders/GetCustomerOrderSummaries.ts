@@ -69,10 +69,16 @@ export class GetCustomerOrderSummaries {
         orderCount: stats.orderCount,
         totalSpent: stats.totalSpent,
         lastOrderAt: stats.lastOrderAt,
+        // Replaced below, once the list is ranked.
+        rank: 0,
       };
     });
 
-    // Rank by total spend, highest first — the "most buying" ordering.
-    return summaries.sort((a, b) => b.totalSpent - a.totalSpent);
+    // Rank by total spend, highest first — the "most buying" ordering — and stamp
+    // each summary with its position here, while the list is still complete. A
+    // rank assigned later couldn't survive a search or a page boundary.
+    return summaries
+      .sort((a, b) => b.totalSpent - a.totalSpent)
+      .map((summary, index) => ({ ...summary, rank: index + 1 }));
   }
 }

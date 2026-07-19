@@ -7,23 +7,43 @@ import { DashboardOverviewScreen } from "@/src/presentation/dashboard/DashboardO
 // The overview KPIs are read from the REST API (BFF) per request — never cached.
 export const dynamic = "force-dynamic";
 
+/**
+ * A page request that asks for a count and nothing else: page 1 at the smallest
+ * size, so the response carries the `total` the tile needs without shipping rows
+ * the overview will throw away.
+ */
+const COUNT_ONLY = "page=1&pageSize=1";
+
+/** How many top spenders the overview's panel shows (it slices to the same number). */
+const TOP_CUSTOMERS_COUNT = 5;
+
 export default async function DashboardPage() {
   // The dashboard layout already gates this tree to admins; the BFF reads forward
   // the admin's session cookie so the admin endpoints authorize the calls. Every
   // metric the overview derives is fetched together in parallel.
-  const [orders, reviews, products, customers] = await Promise.all([
+  //
+  // Only the orders read is a whole-table one, and only because its KPIs are
+  // aggregates over the full history (see `GET /api/admin/orders/all`). Pending
+  // reviews and low stock arrive as counts from the filtered endpoints instead of
+  // being derived from every row.
+  const [orders, reviews, lowStock, outOfStock, customers] = await Promise.all([
     ordersServerApi.listAll(),
-    reviewsServerApi.listAll(),
-    productsServerApi.list(),
-    customersServerApi.listSummaries(),
+    reviewsServerApi.listPage(new URLSearchParams(COUNT_ONLY)),
+    productsServerApi.listPage(new URLSearchParams(`${COUNT_ONLY}&stock=low`)),
+    productsServerApi.listPage(new URLSearchParams(`${COUNT_ONLY}&stock=out`)),
+    // The panel spotlights the top few spenders, which is the customers list's
+    // default ordering — so this is its first page, not the whole ranking.
+    customersServerApi.listTop(TOP_CUSTOMERS_COUNT),
   ]);
 
   return (
     <DashboardOverviewScreen
       orders={orders}
-      reviews={reviews}
-      products={products}
-      customers={customers}
+      pendingReviews={reviews.counts.pending}
+      // "Needs restocking" is everything not comfortably in stock; out-of-stock is
+      // the more urgent case, not one to leave out of the tile.
+      lowStockCount={lowStock.total + outOfStock.total}
+      customers={customers.items}
     />
   );
 }

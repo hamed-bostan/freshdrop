@@ -1,4 +1,6 @@
 import type { Product } from "../entities/Product";
+import type { AdminProductFilters, AdminProductSort } from "../entities/AdminProductFilters";
+import type { Page, PageRequest } from "../entities/Pagination";
 import type { ProductFilters } from "../entities/ProductFilters";
 
 /**
@@ -40,10 +42,32 @@ export type IProductRepository = {
   // locale overlays its translation, falling back field-by-field to the base row.
   getAll(locale?: string): Promise<Product[]>;
   getById(id: string, locale?: string): Promise<Product | null>;
+  /**
+   * Resolve several products at once, for screens that hold a set of product ids
+   * and need to label them (the moderation queue's rows, an order's lines).
+   *
+   * Missing ids are simply absent from the result rather than an error — the
+   * callers are display surfaces, and a review whose product was deleted should
+   * still be moderatable. Ordering isn't promised; callers key by id.
+   */
+  getByIds(ids: readonly string[], locale?: string): Promise<Product[]>;
   getFeatured(locale?: string): Promise<Product[]>;
   getSpecialOffers(locale?: string): Promise<Product[]>;
   /** Catalog search over name/description plus category, price, dietary and brand filters. At least one criterion is always set. */
   search(filters: ProductFilters, locale?: string): Promise<Product[]>;
+  /**
+   * One page of the catalog-management list, plus the total matching the filters.
+   *
+   * Separate from {@link getAll} rather than an optional argument on it: `getAll`
+   * promises the whole catalog and several storefront reads depend on that, while
+   * this one promises a slice and the count it was cut from. An empty filter here
+   * means the whole catalog, paged.
+   */
+  listPage(
+    filters: AdminProductFilters,
+    page: PageRequest<AdminProductSort>,
+    locale?: string,
+  ): Promise<Page<Product>>;
   /** Products related to `productId` (same category first), excluding itself. */
   getSimilar(productId: string, locale?: string): Promise<Product[]>;
   create(input: NewProduct): Promise<Product>;

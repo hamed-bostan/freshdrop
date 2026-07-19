@@ -1,5 +1,7 @@
+import type { AdminOrderFilters, AdminOrderSort } from "../entities/AdminOrderFilters";
 import type { ItemSubstitution, Order, OrderPhase, OrderStatus } from "../entities/Order";
 import type { TrackingMilestone } from "../entities/OrderTracking";
+import type { Page, PageRequest } from "../entities/Pagination";
 
 /** The fields a delivery-stage transition writes (computed by the use-case, persisted by the repo). */
 export type OrderTrackingUpdate = {
@@ -32,8 +34,17 @@ export type IOrderRepository = {
   /** A user's orders, newest first. */
   getOrders(userId: string): Promise<Order[]>;
 
-  /** Every order, newest first — the admin dashboard's cross-user view. */
+  /**
+   * Every order, newest first — the admin dashboard's cross-user view.
+   *
+   * Whole-history read, kept for the overview's KPIs, which aggregate across all
+   * orders. The order *list* uses {@link listPage}; this one is on borrowed time
+   * and should give way to aggregate queries rather than growing more callers.
+   */
   getAllOrders(): Promise<Order[]>;
+
+  /** One page of the admin order list, plus the total matching the filters. */
+  listPage(filters: AdminOrderFilters, page: PageRequest<AdminOrderSort>): Promise<Page<Order>>;
 
   /** A single order by id, or `null` when none matches. */
   getById(orderId: string): Promise<Order | null>;

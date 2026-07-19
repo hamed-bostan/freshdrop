@@ -3,6 +3,10 @@ import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
 import type { ProductFilters, ProductSort } from "@/src/domain/entities/ProductFilters";
 import { PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
+import type { AdminProductFilters, AdminProductSort } from "@/src/domain/entities/AdminProductFilters";
+import { DEFAULT_ADMIN_PRODUCT_DIRECTION } from "@/src/domain/entities/AdminProductFilters";
+import { paginateArray, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
+import { getStockStatus } from "@/src/domain/entities/stock";
 import type {
   IProductRepository,
   NewProduct,
@@ -201,6 +205,33 @@ const CATALOG: Record<string, ProductSeed[]> = {
 
 const CATEGORY_BY_ID = new Map(MOCK_CATEGORIES.map((category) => [category.id, category]));
 
+/**
+ * Mirror the Prisma repo's `adminOrderBy` for the management list.
+ *
+ * `createdAt` has no counterpart on the `Product` entity — it's a DB-only column
+ * — so the catalog's own array order stands in for it: `PRODUCTS` is built once
+ * in insertion order, which is the order the rows would have been created in.
+ * Sorting a copy, since `PRODUCTS` is shared module state.
+ */
+function sortAdminProducts(products: Product[], page: PageRequest<AdminProductSort>): Product[] {
+  const direction = page.direction ?? DEFAULT_ADMIN_PRODUCT_DIRECTION;
+  const sign = direction === "asc" ? 1 : -1;
+  const positions = new Map(PRODUCTS.map((product, index) => [product.id, index]));
+
+  return [...products].sort((a, b) => {
+    switch (page.sort) {
+      case "name":
+        return sign * a.name.localeCompare(b.name);
+      case "price":
+        return sign * (a.price - b.price);
+      case "stock":
+        return sign * (a.stockQuantity - b.stockQuantity);
+      default:
+        return sign * ((positions.get(a.id) ?? 0) - (positions.get(b.id) ?? 0));
+    }
+  });
+}
+
 /** Mirror the Prisma repo's `orderByFor`: map a sort option to a comparator. */
 function comparatorFor(sort: ProductSort | undefined): (a: Product, b: Product) => number {
   switch (sort) {
@@ -300,6 +331,11 @@ export class MockProductRepository implements IProductRepository {
     return PRODUCTS.find((p) => p.id === id) ?? null;
   }
 
+  async getByIds(ids: readonly string[]): Promise<Product[]> {
+    const wanted = new Set(ids);
+    return PRODUCTS.filter((p) => wanted.has(p.id));
+  }
+
   async getFeatured(): Promise<Product[]> {
     return PRODUCTS.filter((p) => p.isFeatured);
   }
@@ -332,6 +368,29 @@ export class MockProductRepository implements IProductRepository {
       }
       return true;
     }).sort(comparatorFor(filters.sort));
+  }
+
+  async listPage(filters: AdminProductFilters, page: PageRequest<AdminProductSort>): Promise<Page<Product>> {
+    // Mirrors `adminWhere`/`adminOrderBy` in the Prisma repo: every supplied
+    // filter must match (AND), an empty filter matches the whole catalog.
+    const needle = filters.query?.toLowerCase() ?? "";
+
+    const matched = PRODUCTS.filter((p) => {
+      if (
+        needle &&
+        !p.name.toLowerCase().includes(needle) &&
+        !(p.description?.toLowerCase().includes(needle) ?? false)
+      ) {
+        return false;
+      }
+      if (filters.categoryId && p.categoryId !== filters.categoryId) return false;
+      // Classified through the domain helper rather than re-deriving the
+      // threshold, so this can't drift from the Prisma repo's bounds.
+      if (filters.stock && getStockStatus(p.stockQuantity).level !== filters.stock) return false;
+      return true;
+    });
+
+    return paginateArray(sortAdminProducts(matched, page), page);
   }
 
   async getSimilar(productId: string): Promise<Product[]> {

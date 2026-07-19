@@ -7,6 +7,9 @@ import type {
   OrderStatus,
   SubstitutionPreference,
 } from "@/src/domain/entities/Order";
+import type { AdminOrderFilters, AdminOrderSort } from "@/src/domain/entities/AdminOrderFilters";
+import { DEFAULT_ADMIN_ORDER_DIRECTION } from "@/src/domain/entities/AdminOrderFilters";
+import { createPage, toSkipTake, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
 import type {
   IOrderRepository,
@@ -40,6 +43,28 @@ export class PrismaOrderRepository implements IOrderRepository {
       include: ITEMS_INCLUDE,
     });
     return rows.map(toOrder);
+  }
+
+  async listPage(filters: AdminOrderFilters, page: PageRequest<AdminOrderSort>): Promise<Page<Order>> {
+    const and: Prisma.OrderWhereInput[] = [];
+    if (filters.query) and.push({ id: { contains: filters.query, mode: "insensitive" } });
+    if (filters.status) and.push({ status: filters.status });
+    const where: Prisma.OrderWhereInput = and.length ? { AND: and } : {};
+
+    const direction = page.direction ?? DEFAULT_ADMIN_ORDER_DIRECTION;
+    const orderBy: Prisma.OrderOrderByWithRelationInput =
+      page.sort === "total" ? { total: direction } : { placedAt: direction };
+
+    const { skip, take } = toSkipTake(page);
+    // One transaction so the rows and the count come from the same snapshot —
+    // an order placed between two separate reads would leave the pager offering
+    // a page that isn't there.
+    const [rows, total] = await prisma.$transaction([
+      prisma.order.findMany({ where, orderBy, skip, take, include: ITEMS_INCLUDE }),
+      prisma.order.count({ where }),
+    ]);
+
+    return createPage(rows.map(toOrder), total, page);
   }
 
   async getById(orderId: string): Promise<Order | null> {

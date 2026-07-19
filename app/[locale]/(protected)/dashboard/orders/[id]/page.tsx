@@ -12,16 +12,16 @@ export default async function DashboardOrderPage({ params }: DashboardOrderPageP
   const { id } = await params;
 
   // The dashboard layout already gates this tree to admins; the BFF forwards the
-  // admin's session cookie so the admin endpoints authorize the calls. The order and
-  // the customer summaries (to label the order with who placed it) are fetched together.
-  const [order, customers] = await Promise.all([
-    ordersServerApi.getById(id),
-    customersServerApi.listSummaries(),
-  ]);
-
+  // admin's session cookie so the admin endpoints authorize the calls.
+  const order = await ordersServerApi.getById(id);
   if (!order) notFound();
 
-  const customer = customers.find((entry) => entry.userId === order.userId);
+  // Only this order's customer, to label the order with who placed it. Sequential
+  // rather than parallel because the id to look up comes from the order — the
+  // previous parallel fetch could only manage that by reading *every* customer
+  // and finding one in the result.
+  const customers = await customersServerApi.listByIds([order.userId]);
+  const customer = customers.items[0];
 
   return <OrderDetailScreen order={order} customer={customer} />;
 }
