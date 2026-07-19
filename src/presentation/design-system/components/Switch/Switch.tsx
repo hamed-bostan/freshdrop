@@ -4,6 +4,7 @@ import * as React from "react";
 import { Switch as SwitchPrimitive } from "radix-ui";
 import { cn } from "@/src/lib/utils";
 import { focusRingOffset } from "../shared/focusRing";
+import { stillWhenReduced } from "../shared/motion";
 
 export type SwitchProps = React.ComponentPropsWithoutRef<typeof SwitchPrimitive.Root>;
 
@@ -28,6 +29,8 @@ export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(({ classN
     <SwitchPrimitive.Thumb
       className={cn(
         "pointer-events-none block size-6 rounded-full bg-background shadow-md transition-transform",
+        // The thumb still moves — that's the state — it just stops sliding there.
+        stillWhenReduced,
         // Physical translate, so mirror the checked offset under RTL — flexbox already
         // parks the unchecked thumb at the right (start) edge, the checked state moves it left.
         "data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0",

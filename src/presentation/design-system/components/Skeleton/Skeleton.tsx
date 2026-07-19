@@ -16,7 +16,14 @@ export type SkeletonProps = React.HTMLAttributes<HTMLDivElement>;
  * `rounded-full`, …).
  */
 export const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(({ className, ...props }, ref) => (
-  <div ref={ref} aria-hidden className={cn("animate-pulse bg-muted-strong", className)} {...props} />
+  <div
+    ref={ref}
+    aria-hidden
+    // The pulse loops for as long as the wait lasts, so it stills under reduced
+    // motion; the block itself stays, and still marks the space as pending.
+    className={cn("animate-pulse motion-reduce:animate-none bg-muted-strong", className)}
+    {...props}
+  />
 ));
 
 Skeleton.displayName = "Skeleton";

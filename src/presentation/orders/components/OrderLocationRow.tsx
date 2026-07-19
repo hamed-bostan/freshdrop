@@ -4,7 +4,8 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { Collapsible } from "radix-ui";
 import { ChevronDown } from "lucide-react";
-import { Icon } from "@/src/presentation/design-system";
+import { Icon, stillWhenReduced } from "@/src/presentation/design-system";
+import { cn } from "@/src/lib/utils";
 
 interface OrderLocationRowProps {
   location: string;
@@ -45,7 +46,7 @@ export function OrderLocationRow({ location, label }: OrderLocationRowProps) {
           <Icon
             icon={ChevronDown}
             size="xs"
-            className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+            className={cn("transition-transform duration-200", stillWhenReduced, open && "rotate-180")}
           />
         </Collapsible.Trigger>
         <Collapsible.Content className="text-muted-foreground">{location}</Collapsible.Content>

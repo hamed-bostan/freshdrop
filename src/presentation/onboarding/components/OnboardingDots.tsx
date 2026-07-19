@@ -1,4 +1,5 @@
 import { cn } from "@/src/lib/utils";
+import { stillWhenReduced } from "@/src/presentation/design-system";
 
 interface OnboardingDotsProps {
   count: number;
@@ -14,6 +15,7 @@ export function OnboardingDots({ count, activeIndex }: OnboardingDotsProps) {
           key={index}
           className={cn(
             "h-1.5 rounded-full transition-all",
+            stillWhenReduced,
             index === activeIndex ? "w-5 bg-primary" : "w-1.5 bg-border",
           )}
         />

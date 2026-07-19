@@ -1,4 +1,5 @@
 import { cn } from "@/src/lib/utils";
+import { stillWhenReduced } from "../../shared/motion";
 import { RequiredMark } from "../shared/RequiredMark";
 
 type FloatingLabelProps = {
@@ -24,6 +25,8 @@ export function FloatingLabel({ htmlFor, label, required, offset }: FloatingLabe
       htmlFor={htmlFor}
       className={cn(
         "pointer-events-none absolute z-10 origin-left text-foreground transition-all duration-200",
+        // The label still ends up on the border; it just stops travelling there.
+        stillWhenReduced,
         // Default = floating position; overridden to centered while the placeholder shows.
         "top-0 -translate-y-1/2",
         "peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-muted-foreground",

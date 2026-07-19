@@ -8,6 +8,7 @@ import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 import { getLangDir } from "@/src/i18n/direction";
 import { cn } from "@/src/lib/utils";
+import { stillWhenReduced } from "@/src/presentation/design-system";
 import { FavoriteToggle } from "./FavoriteToggle";
 
 interface ProductGalleryProps {
@@ -60,6 +61,7 @@ export function ProductGallery({ images, productName, productId, initialFavorite
                 aria-hidden
                 className={cn(
                   "h-1.5 rounded-full transition-all duration-200",
+                  stillWhenReduced,
                   index === activeIndex ? "w-4 bg-primary" : "w-1.5 bg-border",
                 )}
               />

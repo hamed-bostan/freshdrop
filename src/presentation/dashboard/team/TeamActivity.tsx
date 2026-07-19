@@ -2,6 +2,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { roleChangeKind } from "@/src/domain/entities/RoleChange";
 import type { Locale } from "@/src/i18n/routing";
 import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
+import { DataTable } from "@/src/presentation/design-system";
 import type { RoleChangeEntry } from "./team-history-response-schema";
 
 type TeamActivityProps = {
@@ -33,31 +34,35 @@ export function TeamActivity({ changes }: TeamActivityProps) {
           {t("activityEmpty")}
         </p>
       ) : (
-        <ol className="divide-y divide-border overflow-hidden rounded-card-lg border border-border">
-          {changes.map((change) => (
-            <li
-              key={change.id}
-              className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 bg-background px-4 py-3"
-            >
-              <span className="text-body-b6 text-foreground">
-                {t(`activity.${roleChangeKind(change)}`, {
-                  user: change.userName,
-                  actor: change.actorName,
-                })}
-                {/* The name alone doesn't identify anyone until they've completed
-                    their profile — everyone granted access before their first
-                    sign-in carries the same placeholder. The id is their phone,
-                    which does identify them. */}
-                <span dir="ltr" className="ms-2 text-body-b10 text-muted-foreground">
-                  {change.userId}
+        // The frame is the same card the admin tables sit in; the rows inside are
+        // an ordered list, not a table — a log entry is one sentence, not columns.
+        <DataTable>
+          <ol className="divide-y divide-border">
+            {changes.map((change) => (
+              <li
+                key={change.id}
+                className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 bg-background px-4 py-3"
+              >
+                <span className="text-body-b6 text-foreground">
+                  {t(`activity.${roleChangeKind(change)}`, {
+                    user: change.userName,
+                    actor: change.actorName,
+                  })}
+                  {/* The name alone doesn't identify anyone until they've completed
+                      their profile — everyone granted access before their first
+                      sign-in carries the same placeholder. The id is their phone,
+                      which does identify them. */}
+                  <span dir="ltr" className="ms-2 text-body-b10 text-muted-foreground">
+                    {change.userId}
+                  </span>
                 </span>
-              </span>
-              <time dateTime={change.at} className="text-body-b10 text-muted-foreground">
-                {formatRelativeTime(change.at, locale)}
-              </time>
-            </li>
-          ))}
-        </ol>
+                <time dateTime={change.at} className="text-body-b10 text-muted-foreground">
+                  {formatRelativeTime(change.at, locale)}
+                </time>
+              </li>
+            ))}
+          </ol>
+        </DataTable>
       )}
     </section>
   );

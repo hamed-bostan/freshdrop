@@ -5,6 +5,7 @@ import { Star } from "lucide-react";
 import { RadioGroup as RadioGroupPrimitive } from "radix-ui";
 import { cn } from "@/src/lib/utils";
 import { focusRing } from "../shared/focusRing";
+import { stillWhenReduced } from "../shared/motion";
 
 /** Amber used for stars across the app (the `rating` design token). */
 const STAR_COLOR_CLASS = "text-rating";
@@ -73,7 +74,14 @@ export function RatingStars({ value, max = 5, onChange, size = "md", label, clas
           key={starValue}
           value={String(starValue)}
           aria-label={t("ratingStar", { count: starValue })}
-          className={cn("cursor-pointer rounded-full transition-transform active:scale-90", focusRing)}
+          className={cn(
+            "cursor-pointer rounded-full transition-transform",
+            // The press-shrink is decorative feedback, so it goes entirely rather
+            // than just arriving instantly.
+            "motion-safe:active:scale-90",
+            stillWhenReduced,
+            focusRing,
+          )}
         >
           {star(starValue <= value)}
         </RadioGroupPrimitive.Item>

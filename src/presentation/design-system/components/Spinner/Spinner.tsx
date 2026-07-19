@@ -17,6 +17,10 @@ export type SpinnerProps = Omit<IconProps, "icon">;
  * Inside a button, prefer `<Button loading>` over placing this by hand — the
  * button handles the spacing, and disables itself so the action can't be
  * submitted twice.
+ *
+ * This keeps spinning under `prefers-reduced-motion` — deliberately, and as the
+ * one exception to the system's motion policy (see `shared/motion.ts`). A still
+ * spinner doesn't read as restraint, it reads as a hung application.
  */
 export const Spinner = React.forwardRef<SVGSVGElement, SpinnerProps>(({ className, ...props }, ref) => (
   <Icon ref={ref} icon={Loader2} className={cn("animate-spin", className)} {...props} />

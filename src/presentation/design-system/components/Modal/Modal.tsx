@@ -45,8 +45,12 @@ export const ModalContent = React.forwardRef<HTMLDivElement, ModalContentProps>(
         className={cn(
           "fixed left-1/2 top-1/2 z-50 w-[calc(100%-3rem)] max-w-sm -translate-x-1/2 -translate-y-1/2",
           "rounded-modal bg-popover p-6 shadow-lg focus:outline-none",
-          "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
-          "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+          "data-[state=open]:animate-in data-[state=open]:fade-in-0",
+          "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
+          // The fade above carries the transition on its own, so only the scale
+          // is dropped under reduced motion.
+          "motion-safe:data-[state=open]:zoom-in-95",
+          "motion-safe:data-[state=closed]:zoom-out-95",
           "duration-200",
           className,
         )}

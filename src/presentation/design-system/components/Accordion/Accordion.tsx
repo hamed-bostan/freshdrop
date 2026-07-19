@@ -6,6 +6,7 @@ import { ChevronDown } from "lucide-react";
 import { Icon } from "../Icon";
 import { cn } from "@/src/lib/utils";
 import { focusRing } from "../shared/focusRing";
+import { stillWhenReduced } from "../shared/motion";
 
 /**
  * Disclosure list built on Radix Accordion. Composable parts:
@@ -47,7 +48,11 @@ export const AccordionTrigger = React.forwardRef<
       {...props}
     >
       {children}
-      <Icon icon={ChevronDown} size="sm" className="shrink-0 text-foreground transition-transform duration-200" />
+      <Icon
+        icon={ChevronDown}
+        size="sm"
+        className={cn("shrink-0 text-foreground transition-transform duration-200", stillWhenReduced)}
+      />
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));

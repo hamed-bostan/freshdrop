@@ -57,7 +57,7 @@ export function TrackingEta({ etaMinutes, steps }: TrackingEtaProps) {
         <p className="truncate text-body-b7 text-foreground">{title}</p>
         {live && (
           <span className="flex items-center gap-1.5 text-body-b10 text-muted-foreground">
-            <span aria-hidden className="size-2 animate-pulse rounded-full bg-primary" />
+            <span aria-hidden className="size-2 animate-pulse motion-reduce:animate-none rounded-full bg-primary" />
             {t("liveTracking")}
           </span>
         )}
