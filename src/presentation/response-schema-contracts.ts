@@ -74,6 +74,7 @@ import { orderTrackingResponseSchema } from "./orders/order-tracking-response-sc
 import { paymentMethodResponseSchema } from "./payment/payment-method-response-schema";
 import { productResponseSchema } from "./product/product-response-schema";
 import { reviewResponseSchema } from "./product/review-response-schema";
+import { userResponseSchema, type UserProfile } from "./profile/profile-response-schema";
 import { savedCardResponseSchema, walletResponseSchema } from "./wallet/wallet-response-schema";
 
 export type _Cart = Expect<Equal<z.infer<typeof cartResponseSchema>, Cart>>;
@@ -97,5 +98,11 @@ export type _OrderTracking = Expect<Equal<z.infer<typeof orderTrackingResponseSc
 export type _PaymentMethod = Expect<Equal<z.infer<typeof paymentMethodResponseSchema>, PaymentMethod>>;
 export type _Product = Expect<Equal<z.infer<typeof productResponseSchema>, Product>>;
 export type _Review = Expect<Equal<z.infer<typeof reviewResponseSchema>, Review>>;
+// `UserProfile` is `Omit<User, "role">`, and that omission is a security boundary:
+// the schema strips `role` so no client can branch on an authorization fact read
+// from a response body. Re-adding it — or leaving any field behind after the entity
+// drops one — is the extra-key direction, which `satisfies z.ZodType<UserProfile>`
+// accepts in silence. Verified: adding `role` back fails here and nowhere else.
+export type _UserProfile = Expect<Equal<z.infer<typeof userResponseSchema>, UserProfile>>;
 export type _SavedCard = Expect<Equal<z.infer<typeof savedCardResponseSchema>, SavedCard>>;
 export type _Wallet = Expect<Equal<z.infer<typeof walletResponseSchema>, Wallet>>;
