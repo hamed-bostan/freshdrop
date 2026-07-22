@@ -54,10 +54,13 @@ export const productsServerApi = {
    *
    * Canonical: this feeds the edit form, which writes back to the base row —
    * prefilling it with translated text would overwrite that row on save.
+   *
+   * The admin endpoint rather than the public one, because the edit form must be
+   * able to open an unpublished product — the public read answers 404 for those.
    */
   async getById(id: string): Promise<Product | null> {
     try {
-      return await serverApiGet(`/products/${id}`, productResponseSchema, { canonical: true });
+      return await serverApiGet(`/admin/products/${id}`, productResponseSchema, { canonical: true });
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) return null;
       throw error;

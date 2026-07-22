@@ -43,7 +43,7 @@ export class ReorderItems {
     let skipped = 0;
 
     for (const item of order.items) {
-      const product = await this.productRepo.getById(item.productId);
+      const product = await this.productRepo.getPublishedById(item.productId);
       if (!product) {
         skipped += 1;
         continue;

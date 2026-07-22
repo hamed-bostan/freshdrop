@@ -105,6 +105,10 @@ export type _CategoryTranslation = Expect<
 export type _CustomerOrderSummary = Expect<
   Equal<z.infer<typeof customerOrderSummaryResponseSchema>, CustomerOrderSummary>
 >;
+export type _CustomerLifetime = Expect<
+  Equal<z.infer<typeof customerLifetimeResponseSchema>, CustomerLifetime>
+>;
+export type _CustomerDetail = Expect<Equal<z.infer<typeof customerDetailResponseSchema>, CustomerDetail>>;
 export type _ProductTranslation = Expect<
   Equal<z.infer<typeof productTranslationResponseSchema>, ProductTranslationInput>
 >;

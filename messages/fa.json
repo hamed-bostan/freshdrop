@@ -669,6 +669,10 @@
     "noResultsBody": "هیچ ردیفی با جست‌وجو و فیلترهای فعلی مطابقت ندارد.",
     "clearFilters": "پاک کردن فیلترها"
   },
+  "dashBulk": {
+    "selected": "{count, plural, other {# مورد انتخاب‌شده}}",
+    "clear": "پاک کردن"
+  },
   "dashProducts": {
     "heading": "محصولات",
     "count": "{count, plural, other {# محصول}}",
@@ -793,7 +797,22 @@
     "historyByActor": "توسط {actor}",
     "historyByOrder": "از یک سفارش",
     "historyUnknownActor": "کاربر حذف‌شده",
-    "historyRemaining": "· {count} باقی‌مانده"
+    "historyRemaining": "· {count} باقی‌مانده",
+    "selectAllAria": "انتخاب همه محصولات این صفحه",
+    "selectRowAria": "انتخاب {name}",
+    "unpublishedBadge": "منتشرنشده",
+    "publishedLabel": "منتشرشده",
+    "publishedDescription": "محصولات منتشرنشده در فروشگاه دیده نمی‌شوند و قابل خرید نیستند.",
+    "publishedAria": "منتشرشده",
+    "filterVisibilityLabel": "وضعیت انتشار",
+    "filterVisibilityAll": "همه",
+    "filterVisibilityPublished": "منتشرشده",
+    "filterVisibilityUnpublished": "منتشرنشده",
+    "bulkPublish": "انتشار",
+    "bulkUnpublish": "لغو انتشار",
+    "bulkAssignCategory": "انتقال به دسته‌بندی…",
+    "bulkAssignCategoryAria": "انتقال محصولات انتخاب‌شده به یک دسته‌بندی",
+    "bulkError": "به‌روزرسانی محصولات انتخاب‌شده ممکن نشد."
   },
   "dashOrders": {
     "heading": "سفارش‌ها",
@@ -904,7 +923,12 @@
     "noComment": "بدون نظر",
     "moderateAria": "بررسی نظر",
     "moderatePlaceholder": "بررسی…",
-    "updateError": "به‌روزرسانی نظر ممکن نشد. لطفاً دوباره تلاش کنید."
+    "updateError": "به‌روزرسانی نظر ممکن نشد. لطفاً دوباره تلاش کنید.",
+    "selectAllAria": "انتخاب همه دیدگاه‌های این صفحه",
+    "selectRowAria": "انتخاب دیدگاه {name}",
+    "bulkApprove": "تأیید",
+    "bulkReject": "رد",
+    "bulkError": "اعمال تغییر روی دیدگاه‌های انتخاب‌شده ممکن نشد."
   },
   "dashCustomers": {
     "heading": "مشتریان",

@@ -73,6 +73,7 @@ export const productFormSchema = z
     imageUrl: z.string().min(1, "imageRequired").url("imageInvalid"),
     stockQuantity: stockField,
     isFeatured: z.boolean(),
+    isPublished: z.boolean(),
     badge: optionalText,
     unit: optionalText,
     description: optionalText,

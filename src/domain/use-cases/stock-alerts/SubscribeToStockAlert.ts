@@ -15,7 +15,7 @@ export class SubscribeToStockAlert {
   ) {}
 
   async execute(userId: string, productId: string): Promise<void> {
-    const product = await this.productRepo.getById(productId);
+    const product = await this.productRepo.getPublishedById(productId);
     if (!product) throw new NotFoundError("product", productId);
 
     await this.stockAlerts.subscribe(userId, productId);

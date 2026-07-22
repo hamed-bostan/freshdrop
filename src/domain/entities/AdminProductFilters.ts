@@ -38,10 +38,24 @@ export const DEFAULT_ADMIN_PRODUCT_DIRECTION = "desc";
 export const ADMIN_STOCK_FILTERS = ["needsRestock", "in", "low", "out"] as const;
 export type AdminStockFilter = StockStatus["level"] | "needsRestock";
 
+/**
+ * Visibility states the management list can be narrowed to.
+ *
+ * A filter rather than a default: the catalog list shows published and unpublished
+ * products together, because an operator's list of "our products" includes the ones
+ * currently withdrawn — those are precisely what they'd come here to find and put
+ * back. Hiding them by default would make an unpublished product as invisible to
+ * the dashboard as it is to the storefront, which is how products get forgotten.
+ */
+export const ADMIN_VISIBILITY_FILTERS = ["published", "unpublished"] as const;
+export type AdminVisibilityFilter = (typeof ADMIN_VISIBILITY_FILTERS)[number];
+
 export type AdminProductFilters = {
   /** Free-text term matched against name and description. */
   query?: string;
   categoryId?: string;
   /** Narrow to one stock state; omitted means every state. */
   stock?: AdminStockFilter;
+  /** Narrow to published or unpublished products; omitted means both. */
+  visibility?: AdminVisibilityFilter;
 };

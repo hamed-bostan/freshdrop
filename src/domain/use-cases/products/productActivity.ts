@@ -24,6 +24,7 @@ export function productSnapshot(product: Product | NewProduct): Record<string, u
     stockQuantity: product.stockQuantity,
     categoryId: product.categoryId,
     isFeatured: product.isFeatured,
+    isPublished: product.isPublished,
     badge: product.badge,
     unit: product.unit,
     brand: product.brand,

@@ -21,6 +21,7 @@ import {
   Thumbnail,
 } from "@/src/presentation/design-system";
 import { ListSortHeader } from "@/src/presentation/dashboard/list";
+import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
 import { Link } from "@/src/i18n/navigation";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
@@ -53,6 +54,9 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
       <Table>
         <TableHeader>
           <tr>
+            <TableHead className="w-10">
+              <BulkSelectAllCheckbox label={t("selectAllAria")} />
+            </TableHead>
             <TableHead>{t("colImage")}</TableHead>
             <ListSortHeader sortKey="name" {...SORT_DEFAULTS}>
               {t("colName")}
@@ -77,6 +81,9 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
             return (
             <TableRow key={product.id}>
               <TableCell>
+                <BulkRowCheckbox id={product.id} label={t("selectRowAria", { name: product.name })} />
+              </TableCell>
+              <TableCell>
                 <Thumbnail className="size-10">
                   <Image src={product.imageUrl} alt="" width={40} height={40} className="size-full object-cover" />
                 </Thumbnail>
@@ -98,6 +105,9 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
               </TableCell>
               <TableCell>
                 <div className="flex flex-wrap items-center gap-1.5">
+                  {/* First in the row: an unpublished product isn't for sale, which
+                      changes what every other badge beside it means. */}
+                  {!product.isPublished && <Badge variant="neutral">{t("unpublishedBadge")}</Badge>}
                   {product.isFeatured && <Badge variant="success">{t("featuredBadge")}</Badge>}
                   {stock.level === "out" && <Badge variant="destructive">{t("outOfStock")}</Badge>}
                   {stock.level === "low" && (

@@ -64,6 +64,9 @@ function toDefaults(product?: Product, translations?: ProductTranslationInput[])
     stockQuantity: product != null ? String(product.stockQuantity) : "",
     imageUrl: product?.imageUrl ?? "",
     isFeatured: product?.isFeatured ?? false,
+    // A new product is live by default, matching the column — an operator who wants
+    // to stage one unpublishes it deliberately.
+    isPublished: product?.isPublished ?? true,
     badge: product?.badge ?? "",
     unit: product?.unit ?? "",
     description: product?.description ?? "",
@@ -388,6 +391,27 @@ export function ProductForm(props: ProductFormProps) {
               checked={field.value}
               onCheckedChange={field.onChange}
               aria-label={t("featuredAria")}
+            />
+          </div>
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="isPublished"
+        render={({ field }) => (
+          <div className="flex items-center justify-between rounded-card-md border border-border px-4 py-3">
+            <div>
+              <label htmlFor="isPublished" className="text-body-b7 text-input-foreground">
+                {t("publishedLabel")}
+              </label>
+              <p className="text-body-b10 text-muted-foreground">{t("publishedDescription")}</p>
+            </div>
+            <Switch
+              id="isPublished"
+              checked={field.value}
+              onCheckedChange={field.onChange}
+              aria-label={t("publishedAria")}
             />
           </div>
         )}

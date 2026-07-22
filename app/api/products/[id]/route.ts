@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { GetProductById } from "@/src/domain/use-cases/products/GetProductById";
+import { GetPublishedProduct } from "@/src/domain/use-cases/products/GetPublishedProduct";
 import { UpdateProduct } from "@/src/domain/use-cases/products/UpdateProduct";
 import { DeleteProduct } from "@/src/domain/use-cases/products/DeleteProduct";
 import {
@@ -23,12 +23,15 @@ export const dynamic = "force-dynamic";
 type RouteContext = { params: Promise<{ id: string }> };
 
 /**
- * GET /api/products/:id — fetch one product. Public. 404 when it doesn't exist.
+ * GET /api/products/:id — fetch one product. Public. 404 when it doesn't exist —
+ * or when it's unpublished, which to this endpoint is the same answer: a withdrawn
+ * product must not still be readable by anyone holding the link. The dashboard's
+ * `GET /api/admin/products/:id` is the read that sees every state.
  */
 export async function GET(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
   const { id } = await params;
   try {
-    const product = await new GetProductById(productRepository).execute(id, getRequestLocale(request));
+    const product = await new GetPublishedProduct(productRepository).execute(id, getRequestLocale(request));
     if (!product) return errorResponse(404, { message: "Product not found.", code: "NOT_FOUND" });
     return NextResponse.json(product);
   } catch (error) {

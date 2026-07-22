@@ -24,6 +24,7 @@ export const productResponseSchema = z.object({
   imageUrl: z.string(),
   categoryId: z.string(),
   isFeatured: z.boolean(),
+  isPublished: z.boolean(),
   badge: z.string().optional(),
   images: z.array(z.string()).optional(),
   unit: z.string().optional(),

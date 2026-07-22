@@ -8,6 +8,8 @@ import { DEFAULT_ADMIN_PRODUCT_DIRECTION } from "@/src/domain/entities/AdminProd
 import { paginateArray, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
 import { getStockStatus } from "@/src/domain/entities/stock";
 import type {
+  BulkProductChange,
+  BulkProductUpdate,
   IProductRepository,
   NewProduct,
   ProductTranslationInput,
@@ -286,6 +288,9 @@ function buildProduct(seed: ProductSeed, category: Category, index: number, seri
     imageUrl: category.iconUrl,
     categoryId: category.id,
     isFeatured: seed.featured ?? false,
+    // The mock catalog is a demo storefront: everything in it is on sale. Matches
+    // the column's `DEFAULT true` — unpublished is a state someone chooses.
+    isPublished: true,
     badge: seed.badge,
     unit: seed.unit,
     // Assigned from the same pool + rule the DB backfill uses: brand by per-category
@@ -324,11 +329,15 @@ const PRODUCTS: Product[] = buildCatalog();
 
 export class MockProductRepository implements IProductRepository {
   async getAll(): Promise<Product[]> {
-    return PRODUCTS;
+    return PRODUCTS.filter((p) => p.isPublished);
   }
 
   async getById(id: string): Promise<Product | null> {
     return PRODUCTS.find((p) => p.id === id) ?? null;
+  }
+
+  async getPublishedById(id: string): Promise<Product | null> {
+    return PRODUCTS.find((p) => p.id === id && p.isPublished) ?? null;
   }
 
   async getByIds(ids: readonly string[]): Promise<Product[]> {
@@ -337,11 +346,11 @@ export class MockProductRepository implements IProductRepository {
   }
 
   async getFeatured(): Promise<Product[]> {
-    return PRODUCTS.filter((p) => p.isFeatured);
+    return PRODUCTS.filter((p) => p.isPublished && p.isFeatured);
   }
 
   async getSpecialOffers(): Promise<Product[]> {
-    return PRODUCTS.filter((p) => p.badge != null);
+    return PRODUCTS.filter((p) => p.isPublished && p.badge != null);
   }
 
   async search(filters: ProductFilters): Promise<Product[]> {
@@ -350,6 +359,9 @@ export class MockProductRepository implements IProductRepository {
     const needle = filters.query?.toLowerCase() ?? "";
 
     return PRODUCTS.filter((p) => {
+      // Published only, like the Prisma repo's `PUBLISHED` clause — no query
+      // reaches a withdrawn product.
+      if (!p.isPublished) return false;
       if (
         needle &&
         !p.name.toLowerCase().includes(needle) &&
@@ -392,6 +404,9 @@ export class MockProductRepository implements IProductRepository {
         const matches = filters.stock === "needsRestock" ? level !== "in" : level === filters.stock;
         if (!matches) return false;
       }
+      // Absent means both states — the management list shows withdrawn products
+      // alongside live ones (see `ADMIN_VISIBILITY_FILTERS`).
+      if (filters.visibility && p.isPublished !== (filters.visibility === "published")) return false;
       return true;
     });
 
@@ -404,8 +419,12 @@ export class MockProductRepository implements IProductRepository {
 
     // Same-category siblings first, then top up with other products so the rail
     // always has something to show in the mock dataset.
-    const sameCategory = PRODUCTS.filter((p) => p.id !== productId && p.categoryId === product.categoryId);
-    const others = PRODUCTS.filter((p) => p.id !== productId && p.categoryId !== product.categoryId);
+    const sameCategory = PRODUCTS.filter(
+      (p) => p.isPublished && p.id !== productId && p.categoryId === product.categoryId,
+    );
+    const others = PRODUCTS.filter(
+      (p) => p.isPublished && p.id !== productId && p.categoryId !== product.categoryId,
+    );
 
     return [...sameCategory, ...others].slice(0, SIMILAR_LIMIT);
   }
@@ -444,6 +463,26 @@ export class MockProductRepository implements IProductRepository {
   async delete(id: string): Promise<void> {
     const index = PRODUCTS.findIndex((p) => p.id === id);
     if (index !== -1) PRODUCTS.splice(index, 1);
+  }
+
+  /**
+   * Mirrors the Prisma repo's contract: ids that don't exist are skipped, products
+   * already holding the target value are left out of the result, and the returned
+   * pairs carry the "before". Records no audit entries, for the same reason
+   * `adjustStock` records no movements — the log is a table this mock doesn't have.
+   */
+  async applyBulkChange(ids: readonly string[], change: BulkProductChange): Promise<BulkProductUpdate[]> {
+    const wanted = new Set(ids);
+    const updates: BulkProductUpdate[] = [];
+
+    PRODUCTS.forEach((product, index) => {
+      if (!wanted.has(product.id) || product[change.field] === change.value) return;
+      const updated = { ...product, [change.field]: change.value };
+      PRODUCTS[index] = updated;
+      updates.push({ product: updated, previous: product });
+    });
+
+    return updates;
   }
 
   /**

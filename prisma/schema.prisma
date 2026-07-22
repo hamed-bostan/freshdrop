@@ -231,6 +231,12 @@ model Product {
   // never cascades into or is blocked by its products. Indexed for category reads.
   categoryId    String   @map("category_id")
   isFeatured    Boolean  @default(false) @map("is_featured")
+  // Whether the storefront may show it at all. Defaults to true so every existing
+  // row (and every product created before there was a choice) stays visible —
+  // "unpublished" has to be something an operator did on purpose, never a state a
+  // product drifts into. Distinct from `isFeatured`, which is about promotion
+  // *within* the storefront; this is about being in it.
+  isPublished   Boolean  @default(true) @map("is_published")
   badge         String?
   unit          String?
   description   String?
@@ -245,6 +251,7 @@ model Product {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@index([categoryId])
+  @@index([isPublished])
   @@map("products")
 }
 

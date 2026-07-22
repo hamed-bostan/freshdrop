@@ -15,6 +15,7 @@ export * from "./components/Modal";
 export * from "./components/Switch";
 export * from "./components/Tabs";
 export * from "./components/FilterTabs";
+export * from "./components/Checkbox";
 export * from "./components/Chip";
 export * from "./components/SelectableTile";
 export * from "./components/RatingStars";

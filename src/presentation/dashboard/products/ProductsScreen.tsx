@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Plus } from "lucide-react";
 import {
   ADMIN_STOCK_FILTERS,
+  ADMIN_VISIBILITY_FILTERS,
   type AdminProductFilters,
 } from "@/src/domain/entities/AdminProductFilters";
 import type { Page } from "@/src/domain/entities/Pagination";
@@ -11,6 +12,8 @@ import { Button, Icon } from "@/src/presentation/design-system";
 import { ListFilterSelect, ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
 import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvLink";
 import { Link } from "@/src/i18n/navigation";
+import { BulkActionBar, BulkSelectionProvider } from "@/src/presentation/dashboard/bulk";
+import { ProductBulkActions } from "./ProductBulkActions";
 import { ProductsTable } from "./ProductsTable";
 
 type ProductsScreenProps = {
@@ -38,13 +41,22 @@ export async function ProductsScreen({ products, categories, filters }: Products
   // An empty page means two different things, and they need different copy: a
   // catalog with nothing in it wants "create your first product", while a search
   // that matched nothing wants a way back to the full list.
-  const isFiltered = filters.query != null || filters.categoryId != null || filters.stock != null;
+  const isFiltered =
+    filters.query != null ||
+    filters.categoryId != null ||
+    filters.stock != null ||
+    filters.visibility != null;
 
   const stockLabels: Record<(typeof ADMIN_STOCK_FILTERS)[number], string> = {
     needsRestock: t("filterStockNeedsRestock"),
     in: t("filterStockIn"),
     low: t("filterStockLow"),
     out: t("filterStockOut"),
+  };
+
+  const visibilityLabels: Record<(typeof ADMIN_VISIBILITY_FILTERS)[number], string> = {
+    published: t("filterVisibilityPublished"),
+    unpublished: t("filterVisibilityUnpublished"),
   };
 
   return (
@@ -82,6 +94,16 @@ export async function ProductsScreen({ products, categories, filters }: Products
                 ...ADMIN_STOCK_FILTERS.map((level) => ({ value: level, label: stockLabels[level] })),
               ]}
             />
+            <ListFilterSelect
+              paramName="visibility"
+              label={t("filterVisibilityLabel")}
+              options={[
+                // "All" is the default and shows withdrawn products alongside live
+                // ones — the dashboard is where you go to find them again.
+                { value: "", label: t("filterVisibilityAll") },
+                ...ADMIN_VISIBILITY_FILTERS.map((value) => ({ value, label: visibilityLabels[value] })),
+              ]}
+            />
             {/* Carries the current query string, so `?stock=needsRestock` exports
                 the restocking round rather than the whole catalog. */}
             <ExportCsvLink resource="products" label={tAnalytics("exportCsv")} />
@@ -90,10 +112,18 @@ export async function ProductsScreen({ products, categories, filters }: Products
       />
 
       {products.items.length > 0 ? (
-        <>
+        // The provider wraps both the bar and the table so a row's checkbox and the
+        // actions above it share one selection. The rows stay server-rendered
+        // inside it — only the checkboxes and the bar are client islands.
+        <BulkSelectionProvider ids={products.items.map((product) => product.id)}>
+          <BulkActionBar>
+            {({ selected, onDone }) => (
+              <ProductBulkActions selected={selected} onDone={onDone} categories={categories} />
+            )}
+          </BulkActionBar>
           <ProductsTable products={products.items} categoryNames={categoryNames} />
           <ListPager page={products} />
-        </>
+        </BulkSelectionProvider>
       ) : (
         <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
           <p className="text-body-b4 text-foreground">

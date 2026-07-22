@@ -19,6 +19,7 @@ import {
   Thumbnail,
 } from "@/src/presentation/design-system";
 import { Link } from "@/src/i18n/navigation";
+import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
 import { ReviewStatusSelect } from "./ReviewStatusSelect";
 
 type ReviewsTableProps = {
@@ -83,6 +84,9 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
       <Table className="border-collapse">
         <TableHeader>
           <tr>
+            <TableHead className="w-10">
+              <BulkSelectAllCheckbox label={t("selectAllAria")} />
+            </TableHead>
             <TableHead>{t("colAuthor")}</TableHead>
             <TableHead>{t("colProduct")}</TableHead>
             <TableHead>{t("colRating")}</TableHead>
@@ -97,6 +101,9 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
             const product = productsById.get(review.productId);
             return (
               <TableRow key={review.id} className="align-top">
+                <TableCell className="py-4">
+                  <BulkRowCheckbox id={review.id} label={t("selectRowAria", { name: review.authorName })} />
+                </TableCell>
                 <TableCell className="py-4">
                   <div className="flex items-center gap-3">
                     <Avatar name={review.authorName} className="size-9">

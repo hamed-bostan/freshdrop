@@ -6,6 +6,8 @@ import { createPage, toSkipTake, type Page, type PageRequest } from "@/src/domai
 import { LOW_STOCK_THRESHOLD } from "@/src/domain/entities/stock";
 import type { ProductFilters, ProductSort } from "@/src/domain/entities/ProductFilters";
 import type {
+  BulkProductChange,
+  BulkProductUpdate,
   IProductRepository,
   NewProduct,
   ProductTranslationInput,
@@ -24,6 +26,13 @@ import { recordAudit } from "./writeActivityEntry";
 const SIMILAR_LIMIT = 6;
 
 /**
+ * The visibility predicate every storefront read carries, written once so no query
+ * can quietly forget it. Spread into a wider `where` (`{ ...PUBLISHED, … }`) or used
+ * as one clause of an `AND`.
+ */
+const PUBLISHED = { isPublished: true } satisfies Prisma.ProductWhereInput;
+
+/**
  * Products backed by PostgreSQL via Prisma. Server-side only (it opens a DB
  * connection), bound through the container — never imported by client code.
  */
@@ -37,12 +46,24 @@ export class PrismaProductRepository implements IProductRepository {
   constructor(private readonly db: PrismaDb = prisma) {}
 
   async getAll(locale?: string): Promise<Product[]> {
-    const rows = await this.db.product.findMany({ orderBy: { createdAt: "asc" } });
+    // The storefront catalog: published only. `getById` (any state) is the
+    // dashboard's read — see the port for why the split is in the method names.
+    const rows = await this.db.product.findMany({ where: PUBLISHED, orderBy: { createdAt: "asc" } });
     return localizeProducts(rows.map(toProduct), locale);
   }
 
   async getById(id: string, locale?: string): Promise<Product | null> {
     const row = await this.db.product.findUnique({ where: { id } });
+    if (!row) return null;
+    return (await localizeProducts([toProduct(row)], locale))[0];
+  }
+
+  async getPublishedById(id: string, locale?: string): Promise<Product | null> {
+    // `findFirst`, not `findUnique`: the lookup is by id *and* visibility, and
+    // `findUnique` only accepts the unique key. An unpublished product resolves to
+    // `null` here, indistinguishable from one that never existed — which is the
+    // point, since this read sits behind the storefront's 404.
+    const row = await this.db.product.findFirst({ where: { ...PUBLISHED, id } });
     if (!row) return null;
     return (await localizeProducts([toProduct(row)], locale))[0];
   }
@@ -56,13 +77,19 @@ export class PrismaProductRepository implements IProductRepository {
   }
 
   async getFeatured(locale?: string): Promise<Product[]> {
-    const rows = await this.db.product.findMany({ where: { isFeatured: true }, orderBy: { createdAt: "asc" } });
+    const rows = await this.db.product.findMany({
+      where: { ...PUBLISHED, isFeatured: true },
+      orderBy: { createdAt: "asc" },
+    });
     return localizeProducts(rows.map(toProduct), locale);
   }
 
   async getSpecialOffers(locale?: string): Promise<Product[]> {
     // "Special offers" are products carrying a badge — mirrors the mock's rule.
-    const rows = await this.db.product.findMany({ where: { badge: { not: null } }, orderBy: { createdAt: "asc" } });
+    const rows = await this.db.product.findMany({
+      where: { ...PUBLISHED, badge: { not: null } },
+      orderBy: { createdAt: "asc" },
+    });
     return localizeProducts(rows.map(toProduct), locale);
   }
 
@@ -70,7 +97,9 @@ export class PrismaProductRepository implements IProductRepository {
     // Each supplied filter is one AND clause; the text term matches name OR
     // description (case-insensitive), dietary/brand match ANY of their values.
     // Alphabetical by name is a stable default; relevance ranking and sort follow.
-    const and: Prisma.ProductWhereInput[] = [];
+    // Every search starts from the published catalog — no query, however specific,
+    // reaches a withdrawn product.
+    const and: Prisma.ProductWhereInput[] = [PUBLISHED];
 
     if (filters.query) {
       const or: Prisma.ProductWhereInput[] = [
@@ -104,7 +133,7 @@ export class PrismaProductRepository implements IProductRepository {
     if (filters.brands?.length) and.push({ brand: { in: filters.brands } });
 
     const rows = await this.db.product.findMany({
-      where: and.length ? { AND: and } : {},
+      where: { AND: and },
       orderBy: orderByFor(filters.sort),
     });
     // Matched on canonical + localized text above; localize the rows for display.
@@ -140,11 +169,11 @@ export class PrismaProductRepository implements IProductRepository {
     // always has something to show.
     const [sameCategory, others] = await Promise.all([
       this.db.product.findMany({
-        where: { categoryId: product.categoryId, id: { not: productId } },
+        where: { ...PUBLISHED, categoryId: product.categoryId, id: { not: productId } },
         orderBy: { createdAt: "asc" },
       }),
       this.db.product.findMany({
-        where: { categoryId: { not: product.categoryId } },
+        where: { ...PUBLISHED, categoryId: { not: product.categoryId } },
         orderBy: { createdAt: "asc" },
         take: SIMILAR_LIMIT,
       }),
@@ -293,6 +322,51 @@ export class PrismaProductRepository implements IProductRepository {
     } catch (error) {
       throw toDomainError(error);
     }
+  }
+
+  async applyBulkChange(
+    ids: readonly string[],
+    change: BulkProductChange,
+    audit?: AuditHook<BulkProductUpdate>,
+  ): Promise<BulkProductUpdate[]> {
+    if (ids.length === 0) return [];
+
+    return inTransaction(this.db, async (tx) => {
+      // Read the rows *before* writing, and narrow to the ones the change would
+      // actually move. This is what lets each audit entry carry a real "before",
+      // and it's why re-publishing an already-published product records nothing —
+      // the row never enters this set. It also silently drops ids that don't exist,
+      // which is the documented behaviour: a bulk action shouldn't fail wholesale
+      // because one row was deleted in another tab a second ago.
+      const targets = await tx.product.findMany({
+        where: { id: { in: [...ids] }, NOT: { [change.field]: change.value } },
+      });
+      if (targets.length === 0) return [];
+
+      const targetIds = targets.map((row) => row.id);
+      await tx.product.updateMany({
+        where: { id: { in: targetIds } },
+        data: { [change.field]: change.value },
+      });
+
+      // Re-read rather than patching the in-memory rows: `updatedAt` moved, and the
+      // result should be what the database holds, not our reconstruction of it.
+      const written = await tx.product.findMany({ where: { id: { in: targetIds } } });
+      const previousById = new Map(targets.map((row) => [row.id, toProduct(row)]));
+
+      const updates: BulkProductUpdate[] = written.map((row) => ({
+        product: toProduct(row),
+        previous: previousById.get(row.id)!,
+      }));
+
+      // One entry per product, inside the same transaction as the writes — so the
+      // batch is atomic and each product's own activity panel explains its state.
+      for (const update of updates) {
+        await recordAudit(tx, update, audit);
+      }
+
+      return updates;
+    });
   }
 
   async decrementStock(lines: readonly StockAdjustment[], context: StockMovementContext): Promise<void> {
@@ -492,6 +566,10 @@ function adminWhere(filters: AdminProductFilters): Prisma.ProductWhereInput {
   // overview's "needs restocking" tile counts.
   if (filters.stock === "needsRestock") and.push({ stockQuantity: { lte: LOW_STOCK_THRESHOLD } });
 
+  // No clause when the filter is absent: this list deliberately shows both states
+  // together (see `ADMIN_VISIBILITY_FILTERS`).
+  if (filters.visibility) and.push({ isPublished: filters.visibility === "published" });
+
   return and.length ? { AND: and } : {};
 }
 
@@ -540,6 +618,7 @@ type ProductRow = {
   imageUrl: string;
   categoryId: string;
   isFeatured: boolean;
+  isPublished: boolean;
   badge: string | null;
   unit: string | null;
   description: string | null;
@@ -568,6 +647,7 @@ function toProduct(row: ProductRow): Product {
     imageUrl: row.imageUrl,
     categoryId: row.categoryId,
     isFeatured: row.isFeatured,
+    isPublished: row.isPublished,
     badge: row.badge ?? undefined,
     unit: row.unit ?? undefined,
     description: row.description ?? undefined,

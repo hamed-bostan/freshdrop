@@ -669,6 +669,10 @@
     "noResultsBody": "No rows match the current search and filters.",
     "clearFilters": "Clear filters"
   },
+  "dashBulk": {
+    "selected": "{count, plural, one {# selected} other {# selected}}",
+    "clear": "Clear"
+  },
   "dashProducts": {
     "heading": "Products",
     "count": "{count, plural, one {# product} other {# products}}",
@@ -793,7 +797,22 @@
       "shrinkage": "Shrinkage",
       "correction": "Correction",
       "sale": "Sale"
-    }
+    },
+    "selectAllAria": "Select all products on this page",
+    "selectRowAria": "Select {name}",
+    "unpublishedBadge": "Unpublished",
+    "publishedLabel": "Published",
+    "publishedDescription": "Unpublished products are hidden from the storefront and can't be bought.",
+    "publishedAria": "Published",
+    "filterVisibilityLabel": "Visibility",
+    "filterVisibilityAll": "All",
+    "filterVisibilityPublished": "Published",
+    "filterVisibilityUnpublished": "Unpublished",
+    "bulkPublish": "Publish",
+    "bulkUnpublish": "Unpublish",
+    "bulkAssignCategory": "Move to category…",
+    "bulkAssignCategoryAria": "Move selected products to a category",
+    "bulkError": "Could not update the selected products."
   },
   "dashOrders": {
     "heading": "Orders",
@@ -904,7 +923,12 @@
     "noComment": "No comment",
     "moderateAria": "Moderate review",
     "moderatePlaceholder": "Moderate…",
-    "updateError": "Couldn't update the review. Please try again."
+    "updateError": "Couldn't update the review. Please try again.",
+    "selectAllAria": "Select all reviews on this page",
+    "selectRowAria": "Select the review by {name}",
+    "bulkApprove": "Approve",
+    "bulkReject": "Reject",
+    "bulkError": "Could not moderate the selected reviews."
   },
   "dashCustomers": {
     "heading": "Customers",

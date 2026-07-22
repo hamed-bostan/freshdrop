@@ -1,0 +1,68 @@
+import { z } from "zod";
+
+/**
+ * The single source of truth for the dashboard's bulk actions, shared by the
+ * selection UI and the admin REST routes (defensive re-validation — never trust the
+ * client). Framework-free, so it stays importable from both.
+ *
+ * Both endpoints take the selected ids plus a *discriminated* action rather than a
+ * loose patch object. The union is the guard rail: `PATCH /admin/products/bulk`
+ * accepts publish, unpublish and "move to category" and cannot be made to express
+ * "set the price of these forty products", because that variant doesn't exist. A
+ * partial-`Product` body would have accepted it and left the refusal to a runtime
+ * check somebody has to remember to write.
+ */
+
+/** Ids a bulk action applies to. Bounded here too — the use-cases enforce the same cap. */
+const idsField = z
+  .array(z.string().min(1))
+  .min(1, "selectionRequired")
+  .max(200, "selectionTooLarge");
+
+/**
+ * What to do to the selected products.
+ *
+ * `publish`/`unpublish` are two variants rather than one carrying a boolean because
+ * that's what the UI has: two buttons. A `{ type: "setPublished", value }` shape
+ * would be the same thing with an extra hop, and would let a caller send a
+ * non-boolean to find out what happens.
+ */
+export const productBulkActionSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("publish") }),
+  z.object({ type: z.literal("unpublish") }),
+  z.object({ type: z.literal("assignCategory"), categoryId: z.string().min(1, "categoryRequired") }),
+]);
+
+export const productBulkRequestSchema = z.object({
+  ids: idsField,
+  action: productBulkActionSchema,
+});
+
+export type ProductBulkAction = z.infer<typeof productBulkActionSchema>;
+export type ProductBulkRequest = z.infer<typeof productBulkRequestSchema>;
+
+/**
+ * Bulk review moderation. `status` matches `reviewModerationSchema` — an admin can
+ * only approve or reject, since "pending" is the submission-time default and not a
+ * decision anyone makes.
+ */
+export const reviewBulkRequestSchema = z.object({
+  ids: idsField,
+  status: z.enum(["approved", "rejected"]),
+});
+
+export type ReviewBulkRequest = z.infer<typeof reviewBulkRequestSchema>;
+
+/**
+ * What a bulk endpoint answers with: how many rows the action actually changed.
+ *
+ * `updated` is not necessarily `ids.length` — ids that no longer exist and rows
+ * already holding the target value are skipped — and the screen reports this number
+ * rather than the selection size, so "12 of 20 updated" is something the admin can
+ * see rather than a silent discrepancy.
+ */
+export const bulkResultSchema = z.object({
+  updated: z.number(),
+});
+
+export type BulkResult = z.infer<typeof bulkResultSchema>;

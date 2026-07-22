@@ -16,7 +16,7 @@ export class AddToCart {
   ) {}
 
   async execute({ userId, productId, quantity = 1 }: AddToCartRequest): Promise<void> {
-    const product = await this.productRepo.getById(productId);
+    const product = await this.productRepo.getPublishedById(productId);
     if (!product) throw new NotFoundError("product");
 
     // Fail fast at the door: the cart may never hold more units than are on hand.

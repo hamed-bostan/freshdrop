@@ -8,7 +8,11 @@ import type {
 import { DEFAULT_ADMIN_REVIEW_DIRECTION } from "@/src/domain/entities/AdminReviewFilters";
 import { createPage, toSkipTake, type PageRequest } from "@/src/domain/entities/Pagination";
 import type { Review, ReviewStatus } from "@/src/domain/entities/Review";
-import type { IReviewRepository, NewReview } from "@/src/domain/repositories/IReviewRepository";
+import type {
+  BulkReviewUpdate,
+  IReviewRepository,
+  NewReview,
+} from "@/src/domain/repositories/IReviewRepository";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import { prisma } from "@/src/infrastructure/prisma/client";
@@ -111,6 +115,49 @@ export class PrismaReviewRepository implements IReviewRepository {
   async getById(id: string): Promise<Review | null> {
     const row = await prisma.review.findUnique({ where: { id } });
     return row ? toReview(row) : null;
+  }
+
+  async updateStatusMany(
+    ids: readonly string[],
+    status: ReviewStatus,
+    audit?: AuditHook<BulkReviewUpdate>,
+  ): Promise<BulkReviewUpdate[]> {
+    if (ids.length === 0) return [];
+
+    return prisma.$transaction(async (tx) => {
+      // Only the reviews the change would actually move: re-approving an approved
+      // review is not an event, and the "before" each audit entry needs is only
+      // available from this read.
+      const targets = await tx.review.findMany({
+        where: { id: { in: [...ids] }, NOT: { status } },
+      });
+      if (targets.length === 0) return [];
+
+      await tx.review.updateMany({
+        where: { id: { in: targets.map((row) => row.id) } },
+        data: { status },
+      });
+
+      // Every product any of these reviews belongs to, each recomputed once — the
+      // same single-source-of-truth rule `updateStatus` follows, but a bulk approve
+      // routinely touches several reviews of one product, and recomputing per
+      // review would repeat identical work inside the transaction.
+      const productIds = [...new Set(targets.map((row) => row.productId))];
+      for (const productId of productIds) {
+        await recomputeProductRating(tx, productId);
+      }
+
+      const updates: BulkReviewUpdate[] = targets.map((row) => ({
+        review: toReview({ ...row, status }),
+        previousStatus: row.status as ReviewStatus,
+      }));
+
+      for (const update of updates) {
+        await recordAudit(tx, update, audit);
+      }
+
+      return updates;
+    });
   }
 
   async updateStatus(id: string, status: ReviewStatus, audit?: AuditHook<Review>): Promise<Review> {

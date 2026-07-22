@@ -10,7 +10,7 @@ export class AddFavorite {
 
   async execute(productId: string): Promise<void> {
     // Don't let a favorite point at a product that doesn't exist — surfaces as 404.
-    const product = await this.productRepo.getById(productId);
+    const product = await this.productRepo.getPublishedById(productId);
     if (!product) throw new NotFoundError("product", productId);
 
     await this.favoriteRepo.addFavorite(productId);

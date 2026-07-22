@@ -29,7 +29,7 @@ export class UpdateCartItemQuantity {
       return;
     }
 
-    const product = await this.productRepo.getById(productId);
+    const product = await this.productRepo.getPublishedById(productId);
     if (!product) throw new NotFoundError("product");
 
     // The cart may never hold more units than are on hand — refuse a set that

@@ -3,6 +3,7 @@ import { apiDelete, apiPatch, apiPost, apiPut } from "@/src/lib/api/client";
 import { productResponseSchema } from "@/src/presentation/product/product-response-schema";
 import type { ProductFormInput } from "@/src/contracts/product-schema";
 import type { StockAdjustmentInput } from "@/src/contracts/stock-adjustment-schema";
+import { bulkResultSchema, type BulkResult, type ProductBulkAction } from "@/src/contracts/bulk-action-schema";
 
 /**
  * Typed client for the product REST *mutations*. UI components call these instead
@@ -40,5 +41,15 @@ export const productsApi = {
    */
   adjustStock(id: string, values: StockAdjustmentInput): Promise<Product> {
     return apiPatch(`/products/${id}/stock`, values, productResponseSchema);
+  },
+
+  /**
+   * Apply one change to a selection of products — publish, unpublish, or move to a
+   * category. Resolves with how many products actually changed, which can be fewer
+   * than were selected (some already held the value), so the caller reports the
+   * returned count rather than the size of its own selection.
+   */
+  bulkUpdate(ids: readonly string[], action: ProductBulkAction): Promise<BulkResult> {
+    return apiPatch("/admin/products/bulk", { ids, action }, bulkResultSchema);
   },
 };

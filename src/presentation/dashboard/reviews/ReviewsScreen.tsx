@@ -3,6 +3,8 @@ import type { PublicReviewPage } from "@/src/domain/entities/AdminReviewFilters"
 import type { Product } from "@/src/domain/entities/Product";
 import { ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
 import { ReviewStatusTabs } from "./ReviewStatusTabs";
+import { BulkActionBar, BulkSelectionProvider } from "@/src/presentation/dashboard/bulk";
+import { ReviewBulkActions } from "./ReviewBulkActions";
 import { ReviewsTable } from "./ReviewsTable";
 
 type ReviewsScreenProps = {
@@ -44,10 +46,14 @@ export async function ReviewsScreen({ reviews, products, isPending, isSearching 
       <ListToolbar search={<ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} />} />
 
       {reviews.items.length > 0 ? (
-        <>
+        // Bar and table share one selection; the rows stay server-rendered inside.
+        <BulkSelectionProvider ids={reviews.items.map((review) => review.id)}>
+          <BulkActionBar>
+            {({ selected, onDone }) => <ReviewBulkActions selected={selected} onDone={onDone} />}
+          </BulkActionBar>
           <ReviewsTable reviews={reviews.items} productsById={productsById} />
           <ListPager page={reviews} />
-        </>
+        </BulkSelectionProvider>
       ) : (
         <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
           <p className="text-body-b4 text-foreground">
