@@ -177,6 +177,32 @@ model Order {
   @@map("orders")
 }
 
+// An internal note left on an order by whoever is working it — "customer called,
+// wants it left with the neighbour", "second delivery attempt failed". Staff-facing
+// only: nothing here is ever shown to the customer, which is what distinguishes a
+// note from the messages `NotifyOrderCustomer` sends.
+//
+// Append-only, like the activity log and the stock ledger, and for the same reason:
+// these are read later by someone reconstructing what happened, and a note that can
+// be quietly edited afterwards can't be relied on for that. There is no update and
+// no delete — not here, and none in the repository.
+//
+// `orderId` and `authorId` are plain references, not foreign keys — the same loose
+// coupling the rest of the schema uses. The author's name is snapshotted alongside
+// their id so the note still reads correctly after they're renamed or removed.
+model OrderNote {
+  id         String   @id @default(uuid())
+  orderId    String   @map("order_id")
+  authorId   String   @map("author_id")
+  authorName String   @map("author_name")
+  body       String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // The only query: one order's notes, newest first.
+  @@index([orderId, createdAt])
+  @@map("order_notes")
+}
+
 model OrderItem {
   id        String @id @default(uuid())
   orderId   String @map("order_id")

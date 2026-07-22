@@ -13,6 +13,8 @@ import {
   type OrderNotificationInput,
   type OrderNotificationResult,
 } from "@/src/contracts/order-notification-schema";
+import type { OrderNote } from "@/src/domain/entities/OrderNote";
+import { orderNoteResponseSchema, type OrderNoteInput } from "@/src/contracts/order-note-schema";
 
 /**
  * Typed client for the order REST *mutations*. UI components call these instead of
@@ -58,5 +60,13 @@ export const ordersApi = {
    */
   notifyCustomer(orderId: string, values: OrderNotificationInput): Promise<OrderNotificationResult> {
     return apiPost(`/admin/orders/${orderId}/notifications`, values, orderNotificationResultSchema);
+  },
+
+  /**
+   * Append an internal note to the order — staff-facing, never shown to the
+   * customer. Resolves with the note as written.
+   */
+  addNote(orderId: string, values: OrderNoteInput): Promise<OrderNote> {
+    return apiPost(`/admin/orders/${orderId}/notes`, values, orderNoteResponseSchema);
   },
 };

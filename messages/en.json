@@ -899,7 +899,8 @@
     "refundedToWallet": "Refunded to wallet",
     "netPaid": "Net paid",
     "viewCustomer": "View customer",
-    "commsHeading": "Customer comms"
+    "commsHeading": "Customer comms",
+    "notesHeading": "Internal notes"
   },
   "dashOrderComms": {
     "resendHeading": "Resend a notification",
@@ -921,6 +922,13 @@
     "noEmail": "This customer has no email address on file, so a one-off message can't be sent.",
     "sentConfirmation": "Sent {what} to the customer.",
     "sendError": "Could not send that message."
+  },
+  "dashOrderNotes": {
+    "label": "Note",
+    "placeholder": "Customer called — leave with the neighbour at no. 12.",
+    "add": "Add note",
+    "empty": "No notes on this order yet.",
+    "addError": "Could not add that note."
   },
   "dashReviews": {
     "heading": "Reviews",

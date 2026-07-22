@@ -8,6 +8,7 @@ import type { IDeliverySlotRepository } from "@/src/domain/repositories/IDeliver
 import type { IGeocodingRepository } from "@/src/domain/repositories/IGeocodingRepository";
 import type { IWalletRepository } from "@/src/domain/repositories/IWalletRepository";
 import type { IOrderRepository } from "@/src/domain/repositories/IOrderRepository";
+import type { IOrderNoteRepository } from "@/src/domain/repositories/IOrderNoteRepository";
 import type { IOrderTrackingRepository } from "@/src/domain/repositories/IOrderTrackingRepository";
 import type { ICartRepository } from "@/src/domain/repositories/ICartRepository";
 import type { IStockAlertRepository } from "@/src/domain/repositories/IStockAlertRepository";
@@ -39,6 +40,7 @@ import { PrismaPaymentMethodRepository } from "./repositories/PrismaPaymentMetho
 import { PrismaDeliverySlotRepository } from "./repositories/PrismaDeliverySlotRepository";
 import { PrismaWalletRepository } from "./repositories/PrismaWalletRepository";
 import { PrismaOrderRepository } from "./repositories/PrismaOrderRepository";
+import { PrismaOrderNoteRepository } from "./repositories/PrismaOrderNoteRepository";
 import { MockOrderTrackingRepository } from "./repositories/mock/MockOrderTrackingRepository";
 import { PrismaCartRepository } from "./repositories/PrismaCartRepository";
 import { PrismaStockAlertRepository } from "./repositories/PrismaStockAlertRepository";
@@ -137,6 +139,9 @@ export const walletRepository: IWalletRepository = new PrismaWalletRepository();
 // on in the seed migration that backfilled the table; orders advance through
 // delivery stages from the dashboard.
 export const orderRepository: IOrderRepository = new PrismaOrderRepository();
+// Internal, staff-facing notes on an order — append-only, and never shown to the
+// customer (see `OrderNote`).
+export const orderNoteRepository: IOrderNoteRepository = new PrismaOrderNoteRepository();
 // Tracking composes the real order (its persisted stage drives the stepper) with
 // a SIMULATED courier feed. The stage and the destination (snapshotted from the
 // address at checkout) are production data; the movement is a stand-in — the

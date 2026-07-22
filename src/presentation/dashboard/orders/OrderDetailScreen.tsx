@@ -16,8 +16,10 @@ import { OrderStageAdvance } from "./OrderStageAdvance";
 import { OrderReturnControl } from "./OrderReturnControl";
 import { OrderItemPickControl } from "./OrderItemPickControl";
 import { OrderCommsPanel } from "./OrderCommsPanel";
+import { OrderNotesPanel } from "./OrderNotesPanel";
 import { ActivityPanel } from "@/src/presentation/dashboard/activity/ActivityPanel";
 import type { ActivityEntryWire } from "@/src/presentation/dashboard/activity/activity-response-schema";
+import type { OrderNote } from "@/src/domain/entities/OrderNote";
 
 type OrderDetailScreenProps = {
   order: Order;
@@ -32,6 +34,10 @@ type OrderDetailScreenProps = {
   canFulfill: boolean;
   /** Whether the viewer may message the customer about it. */
   canNotify: boolean;
+  /** The order's internal notes, newest first. */
+  notes: OrderNote[];
+  /** Whether the viewer may add one. Every dashboard role can, including support. */
+  canNote: boolean;
 };
 
 /**
@@ -47,6 +53,8 @@ export async function OrderDetailScreen({
   activity,
   canFulfill,
   canNotify,
+  notes,
+  canNote,
 }: OrderDetailScreenProps) {
   const t = await getTranslations("dashOrders");
   const locale = await getLocale();
@@ -200,6 +208,16 @@ export async function OrderDetailScreen({
             >
               {t("viewCustomer")}
             </Link>
+          </section>
+
+          {/* Above comms, deliberately: notes are what the people working the order
+              tell each other, and reading them is what should inform anything you
+              then decide to send the customer. */}
+          <section className="rounded-card-lg border border-border p-5">
+            <h2 className="mb-4 text-body-b8 uppercase tracking-wide text-muted-foreground">
+              {t("notesHeading")}
+            </h2>
+            <OrderNotesPanel orderId={order.id} notes={notes} canWrite={canNote} />
           </section>
 
           {/* Below the customer card, because that's who these go to. */}

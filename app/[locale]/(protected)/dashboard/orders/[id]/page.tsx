@@ -6,6 +6,7 @@ import { activityServerApi } from "@/src/presentation/dashboard/activity/activit
 import { OrderDetailScreen } from "@/src/presentation/dashboard/orders/OrderDetailScreen";
 import { auth } from "@/auth";
 import { sessionHas } from "@/src/lib/require-permission";
+import { orderNotesServerApi } from "@/src/presentation/dashboard/orders/order-note-server-api";
 
 // The order is read from the REST API (BFF) per request — never statically cached.
 export const dynamic = "force-dynamic";
@@ -26,18 +27,20 @@ export default async function DashboardOrderPage({ params }: DashboardOrderPageP
   // and finding one in the result.
   // The customer and the order's activity are both keyed off the order, so they
   // run together once it's in hand.
-  const [customers, activity, session] = await Promise.all([
+  const [customers, activity, notes, session] = await Promise.all([
     customersServerApi.listByIds([order.userId]),
     activityServerApi.listForEntity("order", order.id, DEFAULT_ACTIVITY_LIMIT),
+    orderNotesServerApi.listForOrder(order.id),
     auth(),
   ]);
   const customer = customers.items[0];
 
-  // Which controls the screen draws. Support reads this page in full and can act on
-  // none of it; the endpoints behind each control re-check regardless.
-  const [canFulfill, canNotify] = await Promise.all([
+  // Which controls the screen draws. Support reads this page in full and can write
+  // only a note; the endpoints behind each control re-check regardless.
+  const [canFulfill, canNotify, canNote] = await Promise.all([
     sessionHas(session, "orders.fulfill"),
     sessionHas(session, "orders.notify"),
+    sessionHas(session, "orders.note"),
   ]);
 
   return (
@@ -45,8 +48,10 @@ export default async function DashboardOrderPage({ params }: DashboardOrderPageP
       order={order}
       customer={customer}
       activity={activity}
+      notes={notes}
       canFulfill={canFulfill}
       canNotify={canNotify}
+      canNote={canNote}
     />
   );
 }
