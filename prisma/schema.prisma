@@ -169,6 +169,11 @@ model Order {
   updatedAt DateTime    @updatedAt @map("updated_at")
 
   @@index([userId])
+  // Every analytics aggregate is a scan of one date range (see
+  // `PrismaAnalyticsRepository`), so this is what keeps the dashboard's cost
+  // proportional to the period being asked about rather than to the store's
+  // whole history.
+  @@index([placedAt])
   @@map("orders")
 }
 

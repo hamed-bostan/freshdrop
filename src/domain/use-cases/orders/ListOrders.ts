@@ -6,9 +6,10 @@ import type { IOrderRepository } from "../../repositories/IOrderRepository";
 /**
  * One page of the admin order-tracking list. Backs `GET /api/admin/orders`.
  *
- * The paged counterpart to {@link GetAllOrders}, which stays for the overview's
- * cross-order KPIs. A blank search term normalises to "no term" so `?q=` behaves
- * like an unfiltered list.
+ * The only way to read the cross-user order list: the whole-history counterpart
+ * (`GetAllOrders`) is gone, along with the endpoint behind it — the overview's KPIs
+ * that needed it are now aggregate queries (see `IAnalyticsRepository`). A blank
+ * search term normalises to "no term" so `?q=` behaves like an unfiltered list.
  */
 export class ListOrders {
   constructor(private readonly orderRepo: IOrderRepository) {}

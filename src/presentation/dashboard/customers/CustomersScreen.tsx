@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import type { Page } from "@/src/domain/entities/Pagination";
 import { ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
+import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvLink";
 import { CustomersTable } from "./CustomersTable";
 
 type CustomersScreenProps = {
@@ -24,6 +25,7 @@ type CustomersScreenProps = {
  */
 export async function CustomersScreen({ customers, query }: CustomersScreenProps) {
   const t = await getTranslations("dashCustomers");
+  const tAnalytics = await getTranslations("dashAnalytics");
   const rows = customers.items.map((customer) => ({ customer, rank: customer.rank }));
   const isSearching = query != null && query.length > 0;
 
@@ -36,6 +38,9 @@ export async function CustomersScreen({ customers, query }: CustomersScreenProps
 
       <ListToolbar
         search={<ListSearchInput label={t("searchPlaceholder")} placeholder={t("searchPlaceholder")} />}
+        // Carries the current search, so an export is the rows on screen. This file
+        // holds names and phone numbers — see the endpoint's own note.
+        filters={<ExportCsvLink resource="customers" label={tAnalytics("exportCsv")} />}
       />
 
       {rows.length > 0 ? (

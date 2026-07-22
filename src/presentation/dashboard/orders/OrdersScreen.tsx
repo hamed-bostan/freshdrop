@@ -16,6 +16,7 @@ import {
   ListToolbar,
   type ListSortOption,
 } from "@/src/presentation/dashboard/list";
+import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvLink";
 import { OrdersTable } from "./OrdersTable";
 
 type OrdersScreenProps = {
@@ -41,6 +42,7 @@ type OrdersScreenProps = {
 export async function OrdersScreen({ orders, customers, filters }: OrdersScreenProps) {
   const t = await getTranslations("dashOrders");
   const tList = await getTranslations("dashList");
+  const tAnalytics = await getTranslations("dashAnalytics");
 
   // Look up each order's customer by the user who placed it, so the table can
   // label rows by name instead of a raw id.
@@ -91,6 +93,10 @@ export async function OrdersScreen({ orders, customers, filters }: OrdersScreenP
               defaultSort={DEFAULT_ADMIN_ORDER_SORT}
               defaultDirection={DEFAULT_ADMIN_ORDER_DIRECTION}
             />
+            {/* Exports the *filtered* set, not the page: the link carries the
+                current query string, so whatever narrows this table narrows the
+                file (see `ExportCsvLink`). */}
+            <ExportCsvLink resource="orders" label={tAnalytics("exportCsv")} />
           </>
         }
       />

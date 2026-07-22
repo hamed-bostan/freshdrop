@@ -21,8 +21,9 @@ export const dynamic = "force-dynamic";
  * Query params: `page`, `pageSize`, `sort`, `dir` (paging) and `q`, `status`
  * (filters). Responds with `{ items, total, page, pageSize }`.
  *
- * The storefront's per-user list is the separate `GET /api/orders`; the overview's
- * whole-history read is `GET /api/admin/orders/all`.
+ * The storefront's per-user list is the separate `GET /api/orders`. There is no
+ * whole-history variant: the overview's KPIs, which were the only caller of one,
+ * now read aggregates from `GET /api/admin/analytics`.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   if (!(await getAdminSession())) return unauthorizedResponse();

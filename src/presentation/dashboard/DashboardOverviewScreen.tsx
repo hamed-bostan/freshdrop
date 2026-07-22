@@ -1,115 +1,219 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { DollarSign, ClipboardList, Star, AlertTriangle } from "lucide-react";
+import { AlertTriangle, ClipboardList, DollarSign, Receipt, Star, Users } from "lucide-react";
+import { ANALYTICS_RANGE_PRESETS, percentChange } from "@/src/domain/entities/Analytics";
 import type { Order } from "@/src/domain/entities/Order";
-import { orderNetPaid, orderRecognizedRevenue } from "@/src/domain/entities/Order";
+import { orderNetPaid } from "@/src/domain/entities/Order";
 import { LOW_STOCK_THRESHOLD } from "@/src/domain/entities/stock";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
+import type { Locale } from "@/src/i18n/routing";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
+import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { StatCard } from "./StatCard";
 import { TopCustomersPanel } from "./orders/TopCustomersPanel";
-
-type DashboardOverviewScreenProps = {
-  orders: Order[];
-  /**
-   * How many reviews await moderation. A count, not the reviews themselves: the
-   * moderation endpoint reports it directly, so the overview no longer reads every
-   * review to derive one number.
-   */
-  pendingReviews: number;
-  /**
-   * How many products aren't comfortably in stock (low *or* out — out-of-stock is
-   * the more urgent case, not one to hide from the tile). Counted by the products
-   * endpoint's stock filter, which classifies through the domain's
-   * `getStockStatus`, so this can't diverge from what the storefront calls "low".
-   */
-  lowStockCount: number;
-  /** Per-customer order summaries, ranked by total spend (highest first). */
-  customers: CustomerOrderSummary[];
-};
-
-/** How many days back the revenue KPI sums over. */
-const REVENUE_WINDOW_DAYS = 30;
-/** How many of the latest orders the recent-orders mini-list shows. */
-const RECENT_ORDERS_COUNT = 5;
+import type { AnalyticsOverviewWire } from "./analytics/analytics-response-schema";
+import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./analytics/AnalyticsRangePicker";
+import { ExportCsvLink } from "./analytics/ExportCsvLink";
+import { OrderStatusBreakdown } from "./analytics/OrderStatusBreakdown";
+import { RevenueChart } from "./analytics/RevenueChart";
+import { RevenueRankPanel, type RevenueRankRow } from "./analytics/RevenueRankPanel";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/**
- * Orders placed within the trailing {@link REVENUE_WINDOW_DAYS}. Pure — `now` is
- * injected (defaulting to the current time) so the impure clock read stays out of
- * the component render, mirroring the domain's `isReturnable(order, now)`. The
- * revenue KPI derives both its total and its order-count hint from this window.
- */
-function ordersInWindow(orders: Order[], now: number = Date.now()): Order[] {
-  const since = now - REVENUE_WINDOW_DAYS * DAY_MS;
-  return orders.filter((order) => new Date(order.placedAt).getTime() >= since);
-}
+type DashboardOverviewScreenProps = {
+  /** Every period-scoped figure on the screen, from one aggregate endpoint. */
+  analytics: AnalyticsOverviewWire;
+  /** The period's bounds as `YYYY-MM-DD` for the picker's date inputs (`to` inclusive). */
+  from: string;
+  to: string;
+  /** Whether the URL names an explicit period rather than a preset. */
+  isCustomRange: boolean;
+  /** The latest few orders — a page, not the history. */
+  recentOrders: Order[];
+  /**
+   * How many reviews await moderation. A count, not the reviews themselves: the
+   * moderation endpoint reports it directly.
+   */
+  pendingReviews: number;
+  /**
+   * How many products aren't comfortably in stock (low *or* out), counted by the
+   * products endpoint's own stock filter — so this can't diverge from what the
+   * storefront calls "low".
+   */
+  lowStockCount: number;
+  /** Top spenders — an all-time ranking, not a period-scoped one (see below). */
+  customers: CustomerOrderSummary[];
+};
 
 /**
- * Admin dashboard overview. Presentational: the dashboard root page fetches orders,
- * reviews, products, and customer summaries over the REST API (BFF) during server
- * render and passes them in. The KPIs and lists are derived here — no client data
- * state, so the server stays the single source of truth.
+ * Admin dashboard overview: how the store did over a chosen period, and how that
+ * compares to the period before it.
+ *
+ * Presentational, and a server component. The period lives in the URL, so changing
+ * it is a navigation that re-runs this render with new numbers — no client data
+ * state, no fetch waterfall, and no way for one panel to show a different period
+ * from the one beside it.
+ *
+ * Nothing here computes a metric. Every period figure arrives from
+ * `GET /api/admin/analytics`, which derives them with aggregate SQL over an indexed
+ * date range. That is the change this screen exists to make: it used to receive
+ * *every order in the store's history*, with its items, and reduce four numbers out
+ * of them in JS — correct on a demo dataset, and quietly worse with every sale. The
+ * only arithmetic left below turns two periods into a percentage.
+ *
+ * Two things on this page are deliberately *not* period-scoped, and are labelled so:
+ *
+ *  - **Top customers** — standing is a lifetime fact. Re-ranking it to the last 30
+ *    days would answer "who bought recently" under a heading that says otherwise.
+ *  - **Pending reviews / needs restocking** — these count a *current* state, not
+ *    something that happened during a period, so they carry no comparison. A "vs
+ *    previous 30 days" on a queue length would be a trend line through a snapshot.
  */
 export async function DashboardOverviewScreen({
-  orders,
+  analytics,
+  from,
+  to,
+  isCustomRange,
+  recentOrders,
   pendingReviews,
   lowStockCount,
   customers,
 }: DashboardOverviewScreenProps) {
   const t = await getTranslations("dashHome");
-  const locale = await getLocale();
+  const tAnalytics = await getTranslations("dashAnalytics");
+  const locale = (await getLocale()) as Locale;
 
-  // Only orders that actually earned money — a cancelled or fully-returned order
-  // had its total credited back, so it contributes neither revenue nor a count
-  // (see `orderRecognizedRevenue`). Otherwise the tile reads "0 from 5 orders".
-  const earningOrders = ordersInWindow(orders).filter((order) => orderRecognizedRevenue(order) > 0);
-  const revenue30d = earningOrders.reduce((sum, order) => sum + orderRecognizedRevenue(order), 0);
+  const { totals, previousTotals } = analytics;
 
-  const inProgress = orders.filter((order) => order.status === "processing").length;
-  // Latest orders first — the source order isn't guaranteed sorted, so sort by when
-  // each was placed and take the leading few.
-  const recentOrders = [...orders]
-    .sort((a, b) => new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime())
-    .slice(0, RECENT_ORDERS_COUNT);
+  /**
+   * One KPI's movement against the baseline, spread onto `StatCard`.
+   *
+   * `undefined` when there is no baseline to divide by: a period following one that
+   * earned nothing is not "+100%", and a tile that claims a number there is worse
+   * than one that stays quiet (see `percentChange`).
+   */
+  function delta(
+    current: number,
+    previous: number,
+  ): { delta: string; deltaTone: "up" | "down" | "flat" } | undefined {
+    const change = percentChange(current, previous);
+    if (change === null) return undefined;
+
+    const percent = Math.round(change * 100);
+    return {
+      delta: tAnalytics("deltaPercent", { percent }),
+      deltaTone: percent > 0 ? "up" : percent < 0 ? "down" : "flat",
+    };
+  }
+
+  const periodDays = Math.round(
+    (new Date(analytics.range.to).getTime() - new Date(analytics.range.from).getTime()) / DAY_MS,
+  );
+  const comparisonLabel = tAnalytics("vsPrevious", { days: periodDays });
+
+  const topProducts: RevenueRankRow[] = analytics.topProducts.map((product) => ({
+    id: product.productId,
+    label: product.name,
+    imageUrl: product.imageUrl,
+    units: product.units,
+    revenue: product.revenue,
+    href: `/dashboard/products/${product.productId}/edit`,
+  }));
+
+  const topCategories: RevenueRankRow[] = analytics.topCategories.map((category) => ({
+    id: category.categoryId,
+    label: category.name,
+    units: category.units,
+    revenue: category.revenue,
+    href: `/dashboard/products?categoryId=${category.categoryId}`,
+  }));
+
   const customersById = new Map(customers.map((customer) => [customer.userId, customer]));
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
-        <p className="text-body-b6 text-muted-foreground">{t("subtitle")}</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
+          {/* The days actually covered, spelled out. A dashboard headed only "Last
+              30 days" makes every number on it unverifiable; this is the line that
+              lets someone reconcile a tile against the orders list. */}
+          <p className="text-body-b6 text-muted-foreground">
+            {tAnalytics("rangeCaption", {
+              from: formatMediumDate(analytics.range.from, locale),
+              to: formatMediumDate(analytics.range.to, locale),
+            })}
+          </p>
+        </div>
+
+        <AnalyticsRangePicker
+          presetLabel={tAnalytics("rangeLabel")}
+          presetOptions={[
+            ...ANALYTICS_RANGE_PRESETS.map((preset) => ({
+              value: preset,
+              label: tAnalytics(`preset.${preset}`),
+            })),
+            { value: CUSTOM_RANGE_VALUE, label: tAnalytics("presetCustom") },
+          ]}
+          fromLabel={tAnalytics("rangeFrom")}
+          toLabel={tAnalytics("rangeTo")}
+          from={from}
+          to={to}
+          isCustom={isCustomRange}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           icon={DollarSign}
           tone="brand"
-          value={formatMoney(revenue30d, locale)}
-          label={t("kpiRevenue", { days: REVENUE_WINDOW_DAYS })}
-          hint={t("kpiRevenueHint", { count: earningOrders.length })}
+          value={formatMoney(totals.revenue, locale)}
+          label={tAnalytics("kpiRevenue")}
+          deltaLabel={comparisonLabel}
+          {...delta(totals.revenue, previousTotals.revenue)}
         />
         <StatCard
           icon={ClipboardList}
           tone="info"
-          value={formatNumber(inProgress, locale)}
-          label={t("kpiInProgress")}
-          hint={t("kpiInProgressHint")}
+          value={formatNumber(totals.orders, locale)}
+          label={tAnalytics("kpiOrders")}
+          deltaLabel={comparisonLabel}
+          {...delta(totals.orders, previousTotals.orders)}
         />
+        <StatCard
+          icon={Receipt}
+          tone="warning"
+          value={formatMoney(totals.averageOrderValue, locale)}
+          label={tAnalytics("kpiAverageOrder")}
+          deltaLabel={comparisonLabel}
+          {...delta(totals.averageOrderValue, previousTotals.averageOrderValue)}
+        />
+        <StatCard
+          icon={Users}
+          tone="danger"
+          value={formatNumber(totals.customers, locale)}
+          label={tAnalytics("kpiCustomers")}
+          deltaLabel={comparisonLabel}
+          {...delta(totals.customers, previousTotals.customers)}
+        />
+      </div>
+
+      {/* The two tiles that name something to *do*, kept apart from the period KPIs
+          above because they measure the queue as it stands right now — and kept
+          linked to the rows behind them, since "4 low on stock" is only actionable
+          once you can see which four. `?stock=needsRestock` is the products list's
+          own filter vocabulary and counts exactly what this tile counts. */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <StatCard
           icon={Star}
           tone="warning"
           value={formatNumber(pendingReviews, locale)}
           label={t("kpiPendingReviews")}
           hint={t("kpiPendingReviewsHint")}
+          href="/dashboard/reviews"
         />
-        {/* The one KPI that names something to *do*, so it leads to the rows
-            behind it. `?stock=needsRestock` is the management list's own filter
-            vocabulary (see `AdminProductFilters`) and counts exactly what this
-            tile counts — so the number and the list it opens always agree. */}
         <StatCard
           icon={AlertTriangle}
           tone="danger"
@@ -118,6 +222,30 @@ export async function DashboardOverviewScreen({
           hint={t("kpiLowStockHint", { threshold: LOW_STOCK_THRESHOLD })}
           href="/dashboard/products?stock=needsRestock"
         />
+      </div>
+
+      <RevenueChart points={analytics.revenueSeries} granularity={analytics.granularity} />
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <OrderStatusBreakdown breakdown={analytics.statusBreakdown} />
+        <RevenueRankPanel
+          heading={tAnalytics("topProducts")}
+          rows={topProducts}
+          emptyLabel={tAnalytics("noSales")}
+          unitsLabel={(units) => tAnalytics("unitsSold", { units })}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <RevenueRankPanel
+          heading={tAnalytics("topCategories")}
+          rows={topCategories}
+          emptyLabel={tAnalytics("noSales")}
+          unitsLabel={(units) => tAnalytics("unitsSold", { units })}
+        />
+        {customers.length > 0 ? (
+          <TopCustomersPanel customers={customers} compact viewAllHref="/dashboard/customers" />
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -151,9 +279,22 @@ export async function DashboardOverviewScreen({
           )}
         </section>
 
-        {customers.length > 0 ? (
-          <TopCustomersPanel customers={customers} compact viewAllHref="/dashboard/customers" />
-        ) : null}
+        {/* The exports sit here because this is where someone lands when the
+            dashboard *can't* answer their question — which is exactly when they
+            want the rows in a spreadsheet. Each link carries the current query
+            string, so they honour their own lists' filters when reached from those
+            pages; from here they export everything. */}
+        <section className="flex flex-col justify-between gap-4 rounded-card-lg border border-border p-4">
+          <div>
+            <h2 className="text-body-b5 text-foreground">{tAnalytics("exportHeading")}</h2>
+            <p className="mt-1 text-body-b8 text-muted-foreground">{tAnalytics("exportBody")}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <ExportCsvLink resource="orders" label={tAnalytics("exportOrders")} />
+            <ExportCsvLink resource="products" label={tAnalytics("exportProducts")} />
+            <ExportCsvLink resource="customers" label={tAnalytics("exportCustomers")} />
+          </div>
+        </section>
       </div>
     </div>
   );

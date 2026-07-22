@@ -46,11 +46,17 @@ export type IOrderRepository = {
   getOrders(userId: string): Promise<Order[]>;
 
   /**
-   * Every order, newest first — the admin dashboard's cross-user view.
+   * Every order, newest first.
    *
-   * Whole-history read, kept for the overview's KPIs, which aggregate across all
-   * orders. The order *list* uses {@link listPage}; this one is on borrowed time
-   * and should give way to aggregate queries rather than growing more callers.
+   * A whole-history read with exactly one caller left: `GetCustomerOrderSummaries`,
+   * which groups the history by customer to build the spend ranking and has no
+   * customers table to page instead. The dashboard's KPIs used to be the other
+   * caller; they are aggregate SQL now (see `IAnalyticsRepository`), and nothing
+   * reaches this over HTTP any more — `GET /api/admin/orders/all` was deleted with
+   * them rather than left as a whole-table read anyone could pick up.
+   *
+   * It should not grow callers. The customer ranking is the next thing to move into
+   * an aggregate query, at which point this method goes with it.
    */
   getAllOrders(): Promise<Order[]>;
 

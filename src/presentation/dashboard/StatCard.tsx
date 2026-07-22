@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 import { focusRing, Icon } from "@/src/presentation/design-system";
 import { Link } from "@/src/i18n/navigation";
 import { cn } from "@/src/lib/utils";
@@ -36,6 +37,34 @@ type StatCardProps = {
    * filtered list of anything).
    */
   href?: string;
+  /**
+   * How this metric moved against the previous period, already formatted for the
+   * locale (e.g. "+12%"). Omitted when there is nothing to compare — a tile that
+   * counts a *current* state (open orders, the review queue) has no previous-period
+   * version of itself, and inventing one would read as a trend.
+   */
+  delta?: string;
+  /**
+   * Which way the metric moved, deciding the arrow and the colour. Separate from
+   * the formatted `delta` because the sign alone doesn't say whether the move was
+   * good: a rise in revenue is green and a rise in cancellations is not, so the
+   * caller states the direction it means rather than the tile inferring it from a
+   * leading "+".
+   */
+  deltaTone?: "up" | "down" | "flat";
+  /** What the delta is measured against, e.g. "vs previous 30 days". Replaces `hint` when present. */
+  deltaLabel?: string;
+};
+
+/**
+ * Arrow and colour per direction. `flat` is deliberately muted and gets a dash
+ * rather than an arrow: "no change" is information, and drawing it in a trend
+ * colour makes a still metric look like a moving one.
+ */
+const DELTA_STYLES: Record<"up" | "down" | "flat", { icon: LucideIcon; className: string }> = {
+  up: { icon: TrendingUp, className: "text-success-foreground" },
+  down: { icon: TrendingDown, className: "text-error-foreground" },
+  flat: { icon: Minus, className: "text-muted-foreground" },
 };
 
 /**
@@ -47,7 +76,19 @@ type StatCardProps = {
  * affordance in a corner: the tile is already the thing you'd click, and a small
  * target inside a large clickable-looking card is the worse of the two.
  */
-export function StatCard({ value, label, hint, icon, tone, href }: StatCardProps) {
+export function StatCard({
+  value,
+  label,
+  hint,
+  icon,
+  tone,
+  href,
+  delta,
+  deltaTone = "flat",
+  deltaLabel,
+}: StatCardProps) {
+  const trend = DELTA_STYLES[deltaTone];
+
   const content = (
     <>
       <div className="flex items-start justify-between gap-3">
@@ -63,7 +104,18 @@ export function StatCard({ value, label, hint, icon, tone, href }: StatCardProps
       </div>
       <div>
         <p className="text-heading-h2 text-foreground">{value}</p>
-        {hint ? <p className="text-body-b8 text-muted-foreground">{hint}</p> : null}
+        {delta ? (
+          // The change and what it's measured against sit on one line: a "+12%"
+          // with no stated baseline is the most common way a dashboard misleads,
+          // because every reader supplies a different one.
+          <p className="mt-1 flex items-center gap-1 text-body-b8">
+            <Icon icon={trend.icon} size="xs" className={trend.className} />
+            <span className={trend.className}>{delta}</span>
+            {deltaLabel ? <span className="text-muted-foreground">{deltaLabel}</span> : null}
+          </p>
+        ) : hint ? (
+          <p className="text-body-b8 text-muted-foreground">{hint}</p>
+        ) : null}
       </div>
     </>
   );

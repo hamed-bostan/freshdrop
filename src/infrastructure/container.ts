@@ -20,6 +20,7 @@ import type { IImageStorageRepository } from "@/src/domain/repositories/IImageSt
 import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
 import type { IActivityLog } from "@/src/domain/repositories/IActivityLog";
 import type { IUnitOfWork } from "@/src/domain/repositories/IUnitOfWork";
+import type { IAnalyticsRepository } from "@/src/domain/repositories/IAnalyticsRepository";
 import type { IStockMovementLog } from "@/src/domain/repositories/IStockMovementLog";
 import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
 import type { ITeamNotifier } from "@/src/domain/repositories/ITeamNotifier";
@@ -30,6 +31,7 @@ import { PrismaUserRepository } from "./repositories/PrismaUserRepository";
 import { PrismaActivityLog } from "./repositories/PrismaActivityLog";
 import { PrismaUnitOfWork } from "./repositories/PrismaUnitOfWork";
 import { PrismaStockMovementLog } from "./repositories/PrismaStockMovementLog";
+import { PrismaAnalyticsRepository } from "./repositories/PrismaAnalyticsRepository";
 import { MockFavoriteRepository } from "./repositories/mock/MockFavoriteRepository";
 import { PrismaReviewRepository } from "./repositories/PrismaReviewRepository";
 import { PrismaDeliveryLocationRepository } from "./repositories/PrismaDeliveryLocationRepository";
@@ -104,6 +106,12 @@ export const unitOfWork: IUnitOfWork = new PrismaUnitOfWork();
 // role log is: entries are written by `PrismaProductRepository` inside the same
 // transaction as the quantity they explain, which a logging stub could not be.
 export const stockMovementLog: IStockMovementLog = new PrismaStockMovementLog();
+// Store aggregates — revenue, order mix, product and category rankings — computed
+// in PostgreSQL rather than in the app. Not a data source of its own: it reads the
+// same orders, items and catalog rows the repositories above write, so there is no
+// second copy of the numbers to fall out of sync. See `IAnalyticsRepository` for
+// why this is a port rather than more methods on `IOrderRepository`.
+export const analyticsRepository: IAnalyticsRepository = new PrismaAnalyticsRepository();
 export const favoriteRepository: IFavoriteRepository = new MockFavoriteRepository(productRepository);
 // Reviews are real data now — PostgreSQL via Prisma. The demo reviews live on in
 // the seed migration that backfilled the table; new reviews are written by

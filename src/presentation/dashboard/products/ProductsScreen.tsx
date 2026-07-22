@@ -9,6 +9,7 @@ import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { ListFilterSelect, ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
+import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvLink";
 import { Link } from "@/src/i18n/navigation";
 import { ProductsTable } from "./ProductsTable";
 
@@ -31,6 +32,7 @@ type ProductsScreenProps = {
 export async function ProductsScreen({ products, categories, filters }: ProductsScreenProps) {
   const t = await getTranslations("dashProducts");
   const tList = await getTranslations("dashList");
+  const tAnalytics = await getTranslations("dashAnalytics");
   const categoryNames = new Map(categories.map((category) => [category.id, category.name]));
 
   // An empty page means two different things, and they need different copy: a
@@ -80,6 +82,9 @@ export async function ProductsScreen({ products, categories, filters }: Products
                 ...ADMIN_STOCK_FILTERS.map((level) => ({ value: level, label: stockLabels[level] })),
               ]}
             />
+            {/* Carries the current query string, so `?stock=needsRestock` exports
+                the restocking round rather than the whole catalog. */}
+            <ExportCsvLink resource="products" label={tAnalytics("exportCsv")} />
           </>
         }
       />
