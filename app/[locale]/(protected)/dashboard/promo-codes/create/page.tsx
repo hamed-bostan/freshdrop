@@ -1,7 +1,13 @@
 import { getTranslations } from "next-intl/server";
 import { PromoCodeForm } from "@/src/presentation/dashboard/promo-codes/PromoCodeForm";
+import { requirePermission } from "@/src/lib/require-permission";
 
 export default async function CreatePromoCodePage() {
+  // The layout only gates on `dashboard.view`; this whole section is a write
+  // surface, so anyone without the permission is redirected rather than shown a
+  // page whose every read would 401.
+  await requirePermission("promotions.write");
+
   const t = await getTranslations("dashPromoCodes");
 
   return (

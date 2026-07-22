@@ -1000,13 +1000,15 @@
     "role": {
       "admin": "Admin",
       "owner": "Owner",
-      "customer": "Customer"
+      "customer": "Customer",
+      "support": "Support",
+      "staff": "Staff"
     }
   },
   "dashTeam": {
     "heading": "Team",
     "summary": "{count, plural, one {# person has} other {# people have}} dashboard access",
-    "grantHeading": "Add an admin",
+    "grantHeading": "Add a team member",
     "grantDescription": "Enter the phone number they sign in with. They'll get dashboard access the next time they sign in — only the holder of that number can use it.",
     "phoneLabel": "Phone number",
     "phonePlaceholder": "09xxxxxxxxx",
@@ -1020,8 +1022,6 @@
     "colPhone": "Phone",
     "colAccess": "Access",
     "colActions": "Actions",
-    "badgeAdmin": "Admin",
-    "badgeOwner": "Owner",
     "youSuffix": "(you)",
     "managedInEnv": "Set in server config",
     "revokeBlocked": {
@@ -1069,7 +1069,16 @@
     "revokeConfirm": "Remove access",
     "revokeErrorTitle": "Couldn't remove access",
     "revokeError": "Couldn't remove access. Please try again.",
-    "revokeTryAgain": "Try again"
+    "revokeTryAgain": "Try again",
+    "roleLabel": "Role",
+    "roleHint": "What they can do.",
+    "role": {
+      "support": "Support",
+      "staff": "Staff",
+      "admin": "Admin",
+      "owner": "Owner",
+      "customer": "No access"
+    }
   },
   "dashPromoCodes": {
     "heading": "Promo codes",

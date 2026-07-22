@@ -16,6 +16,12 @@ type ReviewsScreenProps = {
   isPending: boolean;
   /** Whether a search term is narrowing the queue, to tell "nothing here" from "nothing matched". */
   isSearching: boolean;
+  /**
+   * Whether the viewer may decide reviews. The queue is readable by everyone with
+   * dashboard access — support looks things up in it — but only moderators get the
+   * controls. Presentation only; the endpoints check for themselves.
+   */
+  canModerate: boolean;
 };
 
 /**
@@ -29,7 +35,13 @@ type ReviewsScreenProps = {
  * and the queue no longer has to ship every review to the browser to filter and
  * count them there.
  */
-export async function ReviewsScreen({ reviews, products, isPending, isSearching }: ReviewsScreenProps) {
+export async function ReviewsScreen({
+  reviews,
+  products,
+  isPending,
+  isSearching,
+  canModerate,
+}: ReviewsScreenProps) {
   const t = await getTranslations("dashReviews");
   const tList = await getTranslations("dashList");
   const productsById = new Map(products.map((product) => [product.id, product]));
@@ -48,10 +60,12 @@ export async function ReviewsScreen({ reviews, products, isPending, isSearching 
       {reviews.items.length > 0 ? (
         // Bar and table share one selection; the rows stay server-rendered inside.
         <BulkSelectionProvider ids={reviews.items.map((review) => review.id)}>
-          <BulkActionBar>
-            {({ selected, onDone }) => <ReviewBulkActions selected={selected} onDone={onDone} />}
-          </BulkActionBar>
-          <ReviewsTable reviews={reviews.items} productsById={productsById} />
+          {canModerate ? (
+            <BulkActionBar>
+              {({ selected, onDone }) => <ReviewBulkActions selected={selected} onDone={onDone} />}
+            </BulkActionBar>
+          ) : null}
+          <ReviewsTable reviews={reviews.items} productsById={productsById} canModerate={canModerate} />
           <ListPager page={reviews} />
         </BulkSelectionProvider>
       ) : (

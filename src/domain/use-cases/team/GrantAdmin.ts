@@ -1,4 +1,4 @@
-import { PLACEHOLDER_USER_NAME, type User } from "../../entities/User";
+import { PLACEHOLDER_USER_NAME, type GrantableRole, type User } from "../../entities/User";
 import { isPlausiblePhone, normalizePhone } from "../../entities/Phone";
 import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { ITeamNotifier } from "../../repositories/ITeamNotifier";
@@ -11,10 +11,15 @@ export type GrantAdminCommand = {
   phone: string;
   /** Optional contact address, used to email the invitation (and saved on the profile). */
   email?: string | null;
+  /**
+   * The job they're being given. `owner` isn't grantable — it moves by transfer
+   * (see `TransferOwnership`), so the type says so instead of a runtime check.
+   */
+  role: GrantableRole;
 };
 
 /**
- * Promote the holder of a phone number to admin, then tell them.
+ * Give the holder of a phone number a dashboard role, then tell them.
  *
  * The phone *is* the invitation. Because a user's id is their normalized phone
  * and sign-in is OTP on that number, granting the role to a number is equivalent
@@ -47,19 +52,22 @@ export class GrantAdmin {
 
     const email = input.email?.trim() || null;
     // Whether this grant actually changes anything decides both whether an
-    // invitation goes out and whether it's recorded. Re-granting someone who is
-    // already an admin is a harmless no-op on the row, but mailing them "you've
+    // invitation goes out and whether it's recorded. Re-granting someone the role
+    // they already hold is a harmless no-op on the row, but mailing them "you've
     // been given access" a second time is not — and the log tracks changes, not
     // clicks.
     const [existing, actor] = await Promise.all([
       this.userRepo.getById(id),
       this.userRepo.getById(actorId),
     ]);
-    const alreadyAdmin = existing?.role === "admin";
+    // Compared against the *requested* role rather than against "admin": moving
+    // someone from support to staff is a real change and must be recorded, while
+    // re-granting the role they already hold still isn't.
+    const unchanged = existing?.role === input.role;
 
     const [user] = await this.userRepo.applyRoleChanges({
-      assignments: [{ id, phone: input.phone.trim(), role: "admin", email }],
-      entries: alreadyAdmin
+      assignments: [{ id, phone: input.phone.trim(), role: input.role, email }],
+      entries: unchanged
         ? []
         : [
             roleChangeEntry({
@@ -68,7 +76,7 @@ export class GrantAdmin {
               user: { id, name: existing?.name ?? PLACEHOLDER_USER_NAME },
               actor: { id: actorId, name: actor?.name ?? actorId },
               fromRole: existing?.role ?? "customer",
-              toRole: "admin",
+              toRole: input.role,
             }),
           ],
     });
@@ -76,7 +84,7 @@ export class GrantAdmin {
     // Best-effort, and after the write: the access is already real, so a mail or
     // SMS failure must not fail the grant or leave the caller thinking it didn't
     // happen (see `ITeamNotifier`).
-    if (this.notifier && signInUrl && !alreadyAdmin) {
+    if (this.notifier && signInUrl && !unchanged) {
       await this.notifier.adminGranted(
         { name: user.name, phone: user.phone, email: user.email },
         signInUrl,

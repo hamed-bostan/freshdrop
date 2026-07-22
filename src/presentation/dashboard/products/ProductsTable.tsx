@@ -33,6 +33,12 @@ type ProductsTableProps = {
   products: Product[];
   /** Category id → display name, for the Category column. */
   categoryNames: Map<string, string>;
+  /**
+   * Whether the viewer may change the catalog. Drops the row actions *and* the
+   * selection checkboxes — there's nothing to select for when every bulk action is
+   * unavailable. Presentation only; the endpoints behind them check for themselves.
+   */
+  canWrite: boolean;
 };
 
 /**
@@ -45,7 +51,7 @@ const SORT_DEFAULTS = {
 } as const;
 
 /** Admin list of products with per-row edit + delete actions. */
-export async function ProductsTable({ products, categoryNames }: ProductsTableProps) {
+export async function ProductsTable({ products, categoryNames, canWrite }: ProductsTableProps) {
   const t = await getTranslations("dashProducts");
   const locale = await getLocale();
 
@@ -54,9 +60,11 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
       <Table>
         <TableHeader>
           <tr>
-            <TableHead className="w-10">
-              <BulkSelectAllCheckbox label={t("selectAllAria")} />
-            </TableHead>
+            {canWrite ? (
+              <TableHead className="w-10">
+                <BulkSelectAllCheckbox label={t("selectAllAria")} />
+              </TableHead>
+            ) : null}
             <TableHead>{t("colImage")}</TableHead>
             <ListSortHeader sortKey="name" {...SORT_DEFAULTS}>
               {t("colName")}
@@ -72,7 +80,7 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
             <ListSortHeader sortKey="stock" initialDirection="asc" {...SORT_DEFAULTS}>
               {t("colStatus")}
             </ListSortHeader>
-            <TableHead className="text-end">{t("colActions")}</TableHead>
+            {canWrite ? <TableHead className="text-end">{t("colActions")}</TableHead> : null}
           </tr>
         </TableHeader>
         <TableBody>
@@ -80,9 +88,11 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
             const stock = getStockStatus(product.stockQuantity);
             return (
             <TableRow key={product.id}>
-              <TableCell>
-                <BulkRowCheckbox id={product.id} label={t("selectRowAria", { name: product.name })} />
-              </TableCell>
+              {canWrite ? (
+                <TableCell>
+                  <BulkRowCheckbox id={product.id} label={t("selectRowAria", { name: product.name })} />
+                </TableCell>
+              ) : null}
               <TableCell>
                 <Thumbnail className="size-10">
                   <Image src={product.imageUrl} alt="" width={40} height={40} className="size-full object-cover" />
@@ -115,25 +125,27 @@ export async function ProductsTable({ products, categoryNames }: ProductsTablePr
                   )}
                 </div>
               </TableCell>
-              <TableCell>
-                <div className="flex items-center justify-end gap-2">
-                  {/* Stock adjust sits first among the actions: it's the one an
-                      operator reaches for repeatedly (a delivery arrives, a crate
-                      is damaged), where editing a product is occasional. */}
-                  <AdjustStockButton
-                    id={product.id}
-                    name={product.name}
-                    stockQuantity={product.stockQuantity}
-                  />
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/dashboard/products/${product.id}/edit`}>
-                      <Icon icon={Pencil} size="sm" className="me-1.5" />
-                      {t("edit")}
-                    </Link>
-                  </Button>
-                  <DeleteProductButton id={product.id} name={product.name} />
-                </div>
-              </TableCell>
+              {canWrite ? (
+                <TableCell>
+                  <div className="flex items-center justify-end gap-2">
+                    {/* Stock adjust sits first among the actions: it's the one an
+                        operator reaches for repeatedly (a delivery arrives, a crate
+                        is damaged), where editing a product is occasional. */}
+                    <AdjustStockButton
+                      id={product.id}
+                      name={product.name}
+                      stockQuantity={product.stockQuantity}
+                    />
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/dashboard/products/${product.id}/edit`}>
+                        <Icon icon={Pencil} size="sm" className="me-1.5" />
+                        {t("edit")}
+                      </Link>
+                    </Button>
+                    <DeleteProductButton id={product.id} name={product.name} />
+                  </div>
+                </TableCell>
+              ) : null}
             </TableRow>
             );
           })}

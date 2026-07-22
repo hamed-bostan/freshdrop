@@ -4,7 +4,7 @@ import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid, orderRecognizedRevenue, orderRefundedTotal } from "@/src/domain/entities/Order";
 import { ExportOrders } from "@/src/domain/use-cases/exports/ExportOrders";
 import { orderRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminOrderFilters } from "@/src/lib/api/admin-order-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
 import { unauthorizedResponse } from "@/src/lib/api/responses";
@@ -28,7 +28,7 @@ export const dynamic = "force-dynamic";
  * silently truncating a file an admin would otherwise trust.
  */
 export async function GET(request: NextRequest): Promise<Response> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
 
   const params = request.nextUrl.searchParams;
   const filters = parseAdminOrderFilters(params);

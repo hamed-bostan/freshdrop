@@ -6,7 +6,7 @@ import {
 } from "@/src/domain/entities/AdminOrderFilters";
 import { ListOrders } from "@/src/domain/use-cases/orders/ListOrders";
 import { orderRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminOrderFilters } from "@/src/lib/api/admin-order-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
@@ -26,7 +26,7 @@ export const dynamic = "force-dynamic";
  * now read aggregates from `GET /api/admin/analytics`.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
 
   const params = request.nextUrl.searchParams;
   const filters = parseAdminOrderFilters(params);

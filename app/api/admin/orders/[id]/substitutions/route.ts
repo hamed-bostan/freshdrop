@@ -6,7 +6,7 @@ import {
   unitOfWork,
   orderNotifier,
 } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { orderSubstitutionSchema } from "@/src/contracts/order-substitution-schema";
 import {
   errorResponse,
@@ -30,7 +30,7 @@ type RouteContext = { params: Promise<{ id: string }> };
  * substitution to 400, and a replacement that's also out of stock to 409.
  */
 export async function POST(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("orders.fulfill");
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;

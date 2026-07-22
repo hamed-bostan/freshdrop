@@ -7,7 +7,7 @@ import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
 import { ExportProducts } from "@/src/domain/use-cases/exports/ExportProducts";
 import { productRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminProductFilters } from "@/src/lib/api/admin-product-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
 import { unauthorizedResponse } from "@/src/lib/api/responses";
@@ -25,7 +25,7 @@ export const dynamic = "force-dynamic";
  * response is a bare streamed body rather than the JSON envelope.
  */
 export async function GET(request: NextRequest): Promise<Response> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
 
   const params = request.nextUrl.searchParams;
   const filters = parseAdminProductFilters(params);

@@ -3,7 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, FormMessage, Input, TextField } from "@/src/presentation/design-system";
+import { GRANTABLE_ROLES } from "@/src/domain/entities/User";
+import { Button, FormMessage, Input, Select, TextField } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
@@ -33,7 +34,9 @@ export function GrantAdminForm() {
     formState: { errors, isSubmitting },
   } = useForm<GrantAdminInput>({
     resolver: zodResolver(grantAdminSchema, undefined, { raw: true }),
-    defaultValues: { phone: "", email: "" },
+    // Least privilege by default — the person adding someone has to choose to give
+    // them more than read access.
+    defaultValues: { phone: "", email: "", role: "support" },
   });
 
   const onSubmit = handleSubmit(async (values) => {
@@ -112,6 +115,24 @@ export function GrantAdminForm() {
                 autoComplete="off"
                 placeholder={t("emailPlaceholder")}
               />
+            )}
+          </TextField>
+        </div>
+
+        <div className="sm:w-44">
+          {/* The role goes beside the phone rather than behind an "advanced"
+              disclosure: choosing what someone may do is part of adding them, and
+              defaulting quietly to the most powerful option is how everyone ends
+              up an admin. */}
+          <TextField label={t("roleLabel")} description={t("roleHint")}>
+            {(control) => (
+              <Select {...control} {...register("role")}>
+                {GRANTABLE_ROLES.map((role) => (
+                  <option key={role} value={role}>
+                    {t(`role.${role}`)}
+                  </option>
+                ))}
+              </Select>
             )}
           </TextField>
         </div>

@@ -3,7 +3,7 @@ import { GetCategories } from "@/src/domain/use-cases/categories/GetCategories";
 import { GetCategoryBySlug } from "@/src/domain/use-cases/categories/GetCategoryBySlug";
 import { CreateCategory } from "@/src/domain/use-cases/categories/CreateCategory";
 import { categoryRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
 import { categoryFormSchema } from "@/src/contracts/category-schema";
 import {
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
  * delegate to the use-case → map domain errors to HTTP status codes.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("catalog.write");
   if (!session) return unauthorizedResponse();
 
   const body = await parseJsonBody(request);

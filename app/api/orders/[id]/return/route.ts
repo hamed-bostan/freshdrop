@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { RequestOrderReturn } from "@/src/domain/use-cases/orders/RequestOrderReturn";
 import { ResolveOrderReturn } from "@/src/domain/use-cases/orders/ResolveOrderReturn";
 import { orderRepository, unitOfWork, orderNotifier } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { getUserSession } from "@/src/lib/require-auth";
 import { orderReturnDecisionSchema } from "@/src/contracts/order-return-schema";
 import {
@@ -51,7 +51,7 @@ export async function POST(_request: NextRequest, { params }: RouteContext): Pro
  * an unknown id to 404 and an order with no pending request to 400.
  */
 export async function PUT(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("orders.fulfill");
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;

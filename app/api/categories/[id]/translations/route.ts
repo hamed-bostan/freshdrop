@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { GetCategoryTranslations } from "@/src/domain/use-cases/categories/GetCategoryTranslations";
 import { categoryRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ type RouteContext = { params: Promise<{ id: string }> };
  * categories via the catalog endpoints, not this one).
  */
 export async function GET(_request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  if (!(await getSessionWith("catalog.write"))) return unauthorizedResponse();
 
   const { id } = await params;
   try {

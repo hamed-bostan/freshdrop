@@ -4,6 +4,7 @@ import { EditProductScreen } from "@/src/presentation/dashboard/products/EditPro
 import { productsServerApi } from "@/src/presentation/dashboard/products/product-server-api";
 import { categoriesServerApi } from "@/src/presentation/dashboard/categories/category-server-api";
 import { activityServerApi } from "@/src/presentation/dashboard/activity/activity-server-api";
+import { requirePermission } from "@/src/lib/require-permission";
 
 type EditProductPageProps = {
   params: Promise<{ id: string }>;
@@ -15,6 +16,11 @@ type EditProductPageProps = {
 export const dynamic = "force-dynamic";
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
+  // The layout only gates on `dashboard.view`; this whole section is a write
+  // surface, so anyone without the permission is redirected rather than shown a
+  // page whose every read would 401.
+  await requirePermission("catalog.write");
+
   const { id } = await params;
   const [product, categories, translations, stockMovements, activity] = await Promise.all([
     productsServerApi.getById(id),

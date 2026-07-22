@@ -2,6 +2,8 @@ import { reviewsServerApi } from "@/src/presentation/dashboard/reviews/review-se
 import { productsServerApi } from "@/src/presentation/dashboard/products/product-server-api";
 import { ReviewsScreen } from "@/src/presentation/dashboard/reviews/ReviewsScreen";
 import { toSearchParams } from "@/src/lib/api/searchParams";
+import { auth } from "@/auth";
+import { sessionHas } from "@/src/lib/require-permission";
 
 // Reviews are read from the REST API (BFF) per request — never statically cached.
 export const dynamic = "force-dynamic";
@@ -31,12 +33,16 @@ export default async function DashboardReviewsPage({ searchParams }: DashboardRe
   const productIds = [...new Set(reviews.items.map((review) => review.productId))];
   const products = productIds.length > 0 ? await productsServerApi.listByIds(productIds) : [];
 
+  // The queue is readable by everyone in the dashboard; deciding a review is not.
+  const canModerate = await sessionHas(await auth(), "reviews.moderate");
+
   return (
     <ReviewsScreen
       reviews={reviews}
       products={products}
       isPending={status === "pending"}
       isSearching={params.get("q") != null}
+      canModerate={canModerate}
     />
   );
 }

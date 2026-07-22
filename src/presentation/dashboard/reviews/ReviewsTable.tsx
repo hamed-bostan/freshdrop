@@ -26,6 +26,11 @@ type ReviewsTableProps = {
   reviews: PublicReview[];
   /** Product id → product, for the Product column's name + thumbnail. */
   productsById: Map<string, Product>;
+  /**
+   * Whether the viewer may decide reviews. Drops the per-row control *and* the
+   * selection checkboxes — there's nothing to select for without the bulk actions.
+   */
+  canModerate: boolean;
 };
 
 // Fixed UTC formatters → deterministic output (identical on server and client), so
@@ -75,7 +80,7 @@ const STATUS_BADGE: Record<ReviewStatus, { variant: "success" | "warning" | "des
 };
 
 /** Admin moderation table: one row per review with its status and a moderation control. */
-export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
+export function ReviewsTable({ reviews, productsById, canModerate }: ReviewsTableProps) {
   const t = useTranslations("dashReviews");
   const locale = useLocale();
 
@@ -84,15 +89,17 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
       <Table className="border-collapse">
         <TableHeader>
           <tr>
-            <TableHead className="w-10">
-              <BulkSelectAllCheckbox label={t("selectAllAria")} />
-            </TableHead>
+            {canModerate ? (
+              <TableHead className="w-10">
+                <BulkSelectAllCheckbox label={t("selectAllAria")} />
+              </TableHead>
+            ) : null}
             <TableHead>{t("colAuthor")}</TableHead>
             <TableHead>{t("colProduct")}</TableHead>
             <TableHead>{t("colRating")}</TableHead>
             <TableHead>{t("colReview")}</TableHead>
             <TableHead>{t("colStatus")}</TableHead>
-            <TableHead className="text-end">{t("colAction")}</TableHead>
+            {canModerate ? <TableHead className="text-end">{t("colAction")}</TableHead> : null}
           </tr>
         </TableHeader>
         <TableBody>
@@ -101,9 +108,11 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
             const product = productsById.get(review.productId);
             return (
               <TableRow key={review.id} className="align-top">
-                <TableCell className="py-4">
-                  <BulkRowCheckbox id={review.id} label={t("selectRowAria", { name: review.authorName })} />
-                </TableCell>
+                {canModerate ? (
+                  <TableCell className="py-4">
+                    <BulkRowCheckbox id={review.id} label={t("selectRowAria", { name: review.authorName })} />
+                  </TableCell>
+                ) : null}
                 <TableCell className="py-4">
                   <div className="flex items-center gap-3">
                     <Avatar name={review.authorName} className="size-9">
@@ -169,9 +178,11 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
                 <TableCell className="py-4">
                   <Badge variant={badge.variant}>{t(badge.labelKey)}</Badge>
                 </TableCell>
-                <TableCell className="py-4">
-                  <ReviewStatusSelect id={review.id} status={review.status} />
-                </TableCell>
+                {canModerate ? (
+                  <TableCell className="py-4">
+                    <ReviewStatusSelect id={review.id} status={review.status} />
+                  </TableCell>
+                ) : null}
               </TableRow>
             );
           })}

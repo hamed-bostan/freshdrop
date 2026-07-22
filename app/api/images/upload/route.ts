@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { UploadImage } from "@/src/domain/use-cases/images/UploadImage";
 import { imageStorageRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { getUserSession } from "@/src/lib/require-auth";
 import { AVATAR_IMAGE_FOLDER, MANAGED_IMAGE_FOLDERS } from "@/src/lib/imageFolders";
 import { errorResponse, unauthorizedResponse } from "@/src/lib/api/responses";
@@ -22,7 +22,7 @@ const ALLOWED_FOLDERS = new Set<string>([...MANAGED_IMAGE_FOLDERS, AVATAR_IMAGE_
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // Decide which session this caller has up front; the folder check below picks
   // the right requirement. (Admins satisfy the user check too.)
-  const [adminSession, userSession] = await Promise.all([getAdminSession(), getUserSession()]);
+  const [adminSession, userSession] = await Promise.all([getSessionWith("catalog.write"), getUserSession()]);
   if (!adminSession && !userSession) return unauthorizedResponse();
 
   let formData: FormData;

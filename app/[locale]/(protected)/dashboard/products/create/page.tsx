@@ -1,12 +1,18 @@
 import { getTranslations } from "next-intl/server";
 import { ProductForm } from "@/src/presentation/dashboard/products/ProductForm";
 import { categoriesServerApi } from "@/src/presentation/dashboard/categories/category-server-api";
+import { requirePermission } from "@/src/lib/require-permission";
 
 // The category list for the picker is fetched over the REST API (BFF) during
 // server render. A failed fetch surfaces via the dashboard error boundary.
 export const dynamic = "force-dynamic";
 
 export default async function CreateProductPage() {
+  // The layout only gates on `dashboard.view`; this whole section is a write
+  // surface, so anyone without the permission is redirected rather than shown a
+  // page whose every read would 401.
+  await requirePermission("catalog.write");
+
   const [categories, t] = await Promise.all([
     categoriesServerApi.list(),
     getTranslations("dashProducts"),

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { ListActivityActors } from "@/src/domain/use-cases/activity/ListActivityActors";
 import { activityLog } from "@/src/infrastructure/container";
-import { getAdminSession, isOwner } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
+import { isOwner } from "@/src/lib/require-admin";
 import { visibleActivityEntityTypes } from "@/src/lib/api/activity-visibility";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 
@@ -18,7 +19,7 @@ export const dynamic = "force-dynamic";
  * people who happen to appear on the page you're already looking at).
  */
 export async function GET(): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("activity.view");
   if (!session) return unauthorizedResponse();
 
   try {

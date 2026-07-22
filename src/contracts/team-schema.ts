@@ -1,7 +1,8 @@
 import { z } from "zod";
+import { GRANTABLE_ROLES } from "@/src/domain/entities/User";
 
 /**
- * The single source of truth for granting admin access, shared by the client form
+ * The single source of truth for granting dashboard access, shared by the client form
  * (React Hook Form resolver) and the REST route handler (defensive re-validation —
  * never trust the client). Framework-free, so it stays importable from both.
  * Validation messages are `formErrors` message keys, translated at display time
@@ -29,6 +30,11 @@ export const grantAdminSchema = z.object({
     .max(254, "emailTooLong")
     .optional()
     .or(z.literal("")),
+  /**
+   * Which job they're being given. `owner` isn't offered: there is exactly one,
+   * and it moves by transfer rather than by grant — see `TransferOwnership`.
+   */
+  role: z.enum(GRANTABLE_ROLES),
 });
 
 /** Form value shape, and the validated payload the route forwards to the use-case. */

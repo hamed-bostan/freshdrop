@@ -2,7 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { SweepOrphanImages } from "@/src/domain/use-cases/images/SweepOrphanImages";
 import { categoryRepository, imageStorageRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { MANAGED_IMAGE_FOLDERS } from "@/src/lib/imageFolders";
 
 // Reads the DB + bucket on every call; never cache or statically analyse it.
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
 /** Admins may run it (and dry-run it); automation uses the `IMAGE_SWEEP_SECRET` bearer. */
 async function isAuthorized(request: NextRequest): Promise<boolean> {
-  if (await getAdminSession()) return true;
+  if (await getSessionWith("catalog.write")) return true;
 
   const secret = process.env.IMAGE_SWEEP_SECRET;
   if (!secret) return false; // No secret configured → only an admin session is accepted.

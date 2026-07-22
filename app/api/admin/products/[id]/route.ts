@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { GetProductById } from "@/src/domain/use-cases/products/GetProductById";
 import { productRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
 import {
   errorResponse,
@@ -27,7 +27,7 @@ type RouteContext = { params: Promise<{ id: string }> };
  * place to change a product.
  */
 export async function GET(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
 
   const { id } = await params;
   try {

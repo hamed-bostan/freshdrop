@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { GetDeliveryWindows } from "@/src/domain/use-cases/delivery-slots/GetDeliveryWindows";
 import { CreateDeliveryWindow } from "@/src/domain/use-cases/delivery-slots/CreateDeliveryWindow";
 import { deliverySlotRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import {
   errorResponse,
   errorResponseFromException,
@@ -29,7 +29,7 @@ export const dynamic = "force-dynamic";
  * definition an operator edits; that is the schedule it produces.
  */
 export async function GET(): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("promotions.write");
   if (!session) return unauthorizedResponse();
 
   try {
@@ -47,7 +47,7 @@ export async function GET(): Promise<NextResponse> {
  * delegate to the use-case → map domain errors to HTTP status codes.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("promotions.write");
   if (!session) return unauthorizedResponse();
 
   const body = await parseJsonBody(request);

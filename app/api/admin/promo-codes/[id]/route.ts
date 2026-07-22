@@ -3,7 +3,7 @@ import { GetPromoCodeById } from "@/src/domain/use-cases/promo-codes/GetPromoCod
 import { UpdatePromoCode } from "@/src/domain/use-cases/promo-codes/UpdatePromoCode";
 import { SetPromoCodeActive } from "@/src/domain/use-cases/promo-codes/SetPromoCodeActive";
 import { promoCodeRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import {
   errorResponse,
   errorResponseFromException,
@@ -24,7 +24,7 @@ type RouteContext = { params: Promise<{ id: string }> };
  * public read, this answers with the operator-facing shape). 404 when it's gone.
  */
 export async function GET(_request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  if (!(await getSessionWith("promotions.write"))) return unauthorizedResponse();
 
   const { id } = await params;
   try {
@@ -38,7 +38,7 @@ export async function GET(_request: NextRequest, { params }: RouteContext): Prom
 
 /** PUT /api/admin/promo-codes/:id — edit a campaign. Admin only. */
 export async function PUT(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("promotions.write");
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;
@@ -73,7 +73,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
  * it — removing the row would strand both. See `SetPromoCodeActive`.
  */
 export async function PATCH(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("promotions.write");
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;

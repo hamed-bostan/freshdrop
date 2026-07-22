@@ -3,7 +3,7 @@ import { GetDeliveryWindowById } from "@/src/domain/use-cases/delivery-slots/Get
 import { UpdateDeliveryWindow } from "@/src/domain/use-cases/delivery-slots/UpdateDeliveryWindow";
 import { DeleteDeliveryWindow } from "@/src/domain/use-cases/delivery-slots/DeleteDeliveryWindow";
 import { deliverySlotRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import {
   errorResponse,
   errorResponseFromException,
@@ -20,7 +20,7 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 /** GET /api/admin/delivery-windows/:id — one window, to prefill the edit form. Admin only. */
 export async function GET(_request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("promotions.write");
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;
@@ -39,7 +39,7 @@ export async function GET(_request: NextRequest, { params }: RouteContext): Prom
  * order that booked this window reference, and it's immutable after creation.
  */
 export async function PUT(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("promotions.write");
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;
@@ -72,7 +72,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
  * success; 409 while orders are still booked into it (see `DeleteDeliveryWindow`).
  */
 export async function DELETE(_request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("promotions.write");
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;

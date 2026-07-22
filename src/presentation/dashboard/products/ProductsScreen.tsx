@@ -22,6 +22,12 @@ type ProductsScreenProps = {
   categories: Category[];
   /** The filters this page was fetched with, to distinguish "no products" from "no matches". */
   filters: AdminProductFilters;
+  /**
+   * Whether the viewer may change the catalog. Decides which controls are drawn —
+   * the list itself is readable by anyone with dashboard access. Presentation only:
+   * the endpoints behind every control check for themselves.
+   */
+  canWrite: boolean;
 };
 
 /**
@@ -32,7 +38,7 @@ type ProductsScreenProps = {
  * DeleteProductButton). Either way the server stays the single source of truth;
  * there's no client-side copy of the list.
  */
-export async function ProductsScreen({ products, categories, filters }: ProductsScreenProps) {
+export async function ProductsScreen({ products, categories, filters, canWrite }: ProductsScreenProps) {
   const t = await getTranslations("dashProducts");
   const tList = await getTranslations("dashList");
   const tAnalytics = await getTranslations("dashAnalytics");
@@ -66,12 +72,14 @@ export async function ProductsScreen({ products, categories, filters }: Products
           <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
           <p className="text-body-b6 text-muted-foreground">{t("count", { count: products.total })}</p>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/products/create">
-            <Icon icon={Plus} size="sm" className="me-1.5" />
-            {t("newProduct")}
-          </Link>
-        </Button>
+        {canWrite ? (
+          <Button asChild>
+            <Link href="/dashboard/products/create">
+              <Icon icon={Plus} size="sm" className="me-1.5" />
+              {t("newProduct")}
+            </Link>
+          </Button>
+        ) : null}
       </div>
 
       <ListToolbar
@@ -116,12 +124,14 @@ export async function ProductsScreen({ products, categories, filters }: Products
         // actions above it share one selection. The rows stay server-rendered
         // inside it — only the checkboxes and the bar are client islands.
         <BulkSelectionProvider ids={products.items.map((product) => product.id)}>
-          <BulkActionBar>
-            {({ selected, onDone }) => (
-              <ProductBulkActions selected={selected} onDone={onDone} categories={categories} />
-            )}
-          </BulkActionBar>
-          <ProductsTable products={products.items} categoryNames={categoryNames} />
+          {canWrite ? (
+            <BulkActionBar>
+              {({ selected, onDone }) => (
+                <ProductBulkActions selected={selected} onDone={onDone} categories={categories} />
+              )}
+            </BulkActionBar>
+          ) : null}
+          <ProductsTable products={products.items} categoryNames={categoryNames} canWrite={canWrite} />
           <ListPager page={products} />
         </BulkSelectionProvider>
       ) : (

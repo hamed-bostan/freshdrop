@@ -8,7 +8,7 @@ import { SearchProducts } from "@/src/domain/use-cases/products/SearchProducts";
 import { CreateProduct } from "@/src/domain/use-cases/products/CreateProduct";
 import { hasProductSearchCriteria } from "@/src/domain/entities/ProductFilters";
 import { productRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { productFormSchema } from "@/src/contracts/product-schema";
 import { parseProductFilters } from "@/src/lib/api/product-search-params";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
  * delegate to the use-case → map domain errors to HTTP status codes.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("catalog.write");
   if (!session) return unauthorizedResponse();
 
   const body = await parseJsonBody(request);

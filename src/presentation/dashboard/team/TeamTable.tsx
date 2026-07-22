@@ -9,6 +9,7 @@ import {
   DataTable,
   Icon,
 } from "@/src/presentation/design-system";
+import type { UserRole } from "@/src/domain/entities/User";
 import type { TeamMember } from "@/src/contracts/team-response-schema";
 import { RevokeAdminButton } from "./RevokeAdminButton";
 import { TransferOwnershipButton } from "./TransferOwnershipButton";
@@ -23,6 +24,19 @@ type TeamTableProps = {
  * it so the columns line up. Columns: member, phone, access, actions.
  */
 const TEAM_ROW_GRID = "grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto_auto] items-center gap-4";
+
+/**
+ * Badge tone per role, warm as the role gets more powerful — owner stands out,
+ * support reads as neutral. `customer` can't appear in this table (revoking access
+ * removes the row) but the map is total so the type stays honest.
+ */
+const ROLE_BADGE_VARIANT: Record<UserRole, "warning" | "success" | "info" | "neutral"> = {
+  owner: "warning",
+  admin: "success",
+  staff: "info",
+  support: "neutral",
+  customer: "neutral",
+};
 
 /**
  * The admin team list. Built on a shared CSS grid rather than a `<table>` so the
@@ -71,11 +85,7 @@ export function TeamTable({ members }: TeamTableProps) {
                 rendering "Server config" as a peer of "Admin" implied they were
                 two different access levels, which they never were. */}
             <span className="flex flex-col items-start gap-1">
-              {member.role === "owner" ? (
-                <Badge variant="warning">{t("badgeOwner")}</Badge>
-              ) : (
-                <Badge variant="success">{t("badgeAdmin")}</Badge>
-              )}
+              <Badge variant={ROLE_BADGE_VARIANT[member.role]}>{t(`role.${member.role}`)}</Badge>
               {member.breakGlass && (
                 <span className="text-body-b10 text-muted-foreground">{t("managedInEnv")}</span>
               )}

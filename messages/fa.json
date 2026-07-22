@@ -1000,13 +1000,15 @@
     "role": {
       "admin": "مدیر",
       "owner": "مالک",
-      "customer": "مشتری"
+      "customer": "مشتری",
+      "support": "پشتیبانی",
+      "staff": "کارمند"
     }
   },
   "dashTeam": {
     "heading": "تیم",
     "summary": "{count, plural, other {# نفر}} به داشبورد دسترسی دارند",
-    "grantHeading": "افزودن مدیر",
+    "grantHeading": "افزودن عضو تیم",
     "grantDescription": "شماره تلفنی را که با آن وارد می‌شوند وارد کنید. از ورود بعدی‌شان به داشبورد دسترسی خواهند داشت — فقط دارندهٔ همان شماره می‌تواند از آن استفاده کند.",
     "phoneLabel": "شماره تلفن",
     "phonePlaceholder": "09xxxxxxxxx",
@@ -1020,8 +1022,6 @@
     "colPhone": "تلفن",
     "colAccess": "دسترسی",
     "colActions": "عملیات",
-    "badgeAdmin": "مدیر",
-    "badgeOwner": "مالک",
     "youSuffix": "(شما)",
     "managedInEnv": "تنظیم‌شده در پیکربندی سرور",
     "revokeBlocked": {
@@ -1069,7 +1069,16 @@
     "revokeConfirm": "حذف دسترسی",
     "revokeErrorTitle": "حذف دسترسی انجام نشد",
     "revokeError": "حذف دسترسی انجام نشد. دوباره تلاش کنید.",
-    "revokeTryAgain": "تلاش دوباره"
+    "revokeTryAgain": "تلاش دوباره",
+    "roleLabel": "نقش",
+    "roleHint": "کارهایی که می‌تواند انجام دهد.",
+    "role": {
+      "support": "پشتیبانی",
+      "staff": "کارمند",
+      "admin": "مدیر",
+      "owner": "مالک",
+      "customer": "بدون دسترسی"
+    }
   },
   "dashPromoCodes": {
     "heading": "کدهای تخفیف",

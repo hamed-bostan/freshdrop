@@ -6,7 +6,7 @@ import {
 } from "@/src/domain/entities/AdminProductFilters";
 import { ListProducts } from "@/src/domain/use-cases/products/ListProducts";
 import { productRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminProductFilters } from "@/src/lib/api/admin-product-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
@@ -28,7 +28,7 @@ export const dynamic = "force-dynamic";
  * dietary tag and brand; an operator filters by stock level).
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
 
   const params = request.nextUrl.searchParams;
   const filters = parseAdminProductFilters(params);

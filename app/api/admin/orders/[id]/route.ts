@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { GetOrderById } from "@/src/domain/use-cases/orders/GetOrderById";
 import { orderRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import {
   errorResponse,
   errorResponseFromException,
@@ -19,7 +19,7 @@ type RouteContext = { params: Promise<{ id: string }> };
  * `notFound()`. The storefront's owner-scoped read is the separate `GET /api/orders`.
  */
 export async function GET(_request: Request, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
 
   const { id } = await params;
   try {

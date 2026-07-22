@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { GetAnalyticsOverview } from "@/src/domain/use-cases/analytics/GetAnalyticsOverview";
 import { analyticsRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAnalyticsRange } from "@/src/lib/api/analytics-params";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 
@@ -27,7 +27,7 @@ export const dynamic = "force-dynamic";
  * shipped every order and its items so the screen could reduce four of them.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
 
   const range = parseAnalyticsRange(request.nextUrl.searchParams);
 

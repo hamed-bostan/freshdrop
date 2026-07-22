@@ -7,7 +7,7 @@ import {
   orderRepository,
   userRepository,
 } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { orderNotificationSchema } from "@/src/contracts/order-notification-schema";
 import {
   errorResponse,
@@ -37,7 +37,7 @@ type RouteContext = { params: Promise<{ id: string }> };
  * best-effort and can't be confirmed by anyone.
  */
 export async function POST(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("orders.notify");
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;

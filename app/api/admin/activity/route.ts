@@ -9,7 +9,8 @@ import {
 import { GetEntityActivity } from "@/src/domain/use-cases/activity/GetEntityActivity";
 import { ListActivity } from "@/src/domain/use-cases/activity/ListActivity";
 import { activityLog } from "@/src/infrastructure/container";
-import { getAdminSession, isOwner } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
+import { isOwner } from "@/src/lib/require-admin";
 import { parseAdminActivityFilters } from "@/src/lib/api/admin-activity-params";
 import {
   canReadActivityEntityType,
@@ -38,7 +39,7 @@ export const dynamic = "force-dynamic";
  * place to keep the admin guard correct.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("activity.view");
   if (!session) return unauthorizedResponse();
 
   // The owner check is what decides whether team-access history is readable. It's

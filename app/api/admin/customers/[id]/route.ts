@@ -7,7 +7,7 @@ import {
   userRepository,
   walletRepository,
 } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 
 // Reads one customer's profile, orders, addresses, wallet and reviews per request —
@@ -30,7 +30,7 @@ type RouteContext = { params: Promise<{ id: string }> };
  * mapped here, so the detail page can `notFound()`.
  */
 export async function GET(_request: Request, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
 
   const { id } = await params;
   try {

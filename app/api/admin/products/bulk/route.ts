@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { BulkUpdateProducts } from "@/src/domain/use-cases/products/BulkUpdateProducts";
 import type { BulkProductChange } from "@/src/domain/repositories/IProductRepository";
 import { productRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { productBulkRequestSchema, type ProductBulkAction } from "@/src/contracts/bulk-action-schema";
 import {
   errorResponse,
@@ -29,7 +29,7 @@ export const dynamic = "force-dynamic";
  * place instead of three near-identical handlers.
  */
 export async function PATCH(request: NextRequest): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("catalog.write");
   if (!session) return unauthorizedResponse();
 
   const body = await parseJsonBody(request);

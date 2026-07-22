@@ -6,7 +6,7 @@ import {
   orderTrackingRepository,
   orderNotifier,
 } from "@/src/infrastructure/container";
-import { getAdminSession, isAdmin } from "@/src/lib/require-admin";
+import { getSessionWith, sessionHas } from "@/src/lib/require-permission";
 import { getUserSession } from "@/src/lib/require-auth";
 import { orderTrackingStageSchema } from "@/src/contracts/order-tracking-schema";
 import {
@@ -36,7 +36,13 @@ export async function GET(_request: NextRequest, { params }: RouteContext): Prom
 
   const { id } = await params;
   try {
-    const viewer = { userId: session.user.id, isAdmin: await isAdmin(session) };
+    // Reading any order's tracking is a dashboard read, so it's `dashboard.view`
+    // rather than the fulfilment permission the `PUT` below needs — support can
+    // look up where a delivery is without being able to move it.
+    const viewer = {
+      userId: session.user.id,
+      canViewAnyOrder: await sessionHas(session, "dashboard.view"),
+    };
     const tracking = await new GetOrderTracking(orderTrackingRepository).execute(id, viewer);
     if (!tracking) return errorResponse(404, { message: "This order can't be tracked.", code: "NOT_FOUND" });
     return NextResponse.json(tracking);
@@ -53,7 +59,7 @@ export async function GET(_request: NextRequest, { params }: RouteContext): Prom
  * unknown id to 404 and an untrackable order to 400.
  */
 export async function PUT(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("orders.fulfill");
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;
@@ -77,7 +83,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
     );
     const tracking = await new GetOrderTracking(orderTrackingRepository).execute(id, {
       userId: session.user.id,
-      isAdmin: true,
+      canViewAnyOrder: true,
     });
     return NextResponse.json(tracking);
   } catch (error) {

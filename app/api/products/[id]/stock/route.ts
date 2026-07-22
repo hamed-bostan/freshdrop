@@ -8,7 +8,7 @@ import {
   stockMovementLog,
   userRepository,
 } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { stockAdjustmentSchema } from "@/src/contracts/stock-adjustment-schema";
 import {
   errorResponse,
@@ -31,7 +31,7 @@ type RouteContext = { params: Promise<{ id: string }> };
  * `?limit` caps the entries (clamped by the use-case).
  */
 export async function GET(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  if (!(await getSessionWith("catalog.write"))) return unauthorizedResponse();
 
   const { id } = await params;
   // Absent stays `undefined` so the use-case applies its default. `Number(null)`
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest, { params }: RouteContext): Promi
  * a movement ("+12, restock"), not a new value for a field.
  */
 export async function PATCH(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("catalog.write");
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;

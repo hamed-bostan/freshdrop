@@ -3,6 +3,8 @@ import { productsServerApi } from "@/src/presentation/dashboard/products/product
 import { categoriesServerApi } from "@/src/presentation/dashboard/categories/category-server-api";
 import { parseAdminProductFilters } from "@/src/lib/api/admin-product-params";
 import { toSearchParams } from "@/src/lib/api/searchParams";
+import { auth } from "@/auth";
+import { sessionHas } from "@/src/lib/require-permission";
 
 // One page of products is fetched during server render over the REST API (BFF)
 // and passed to the presentational screen. Search, filters, sorting and paging
@@ -21,12 +23,21 @@ export default async function DashboardProductsPage({ searchParams }: DashboardP
 
   // The query string is forwarded to the API as-is; the screen gets the parsed
   // filters back only to tell "no products yet" from "nothing matched".
-  const [products, categories] = await Promise.all([
+  // The list itself is a read anyone in the dashboard needs — support answers
+  // "do we still sell this?" from it. Whether the *controls* are drawn is the
+  // catalog permission, resolved here and passed down.
+  const [products, categories, canWrite] = await Promise.all([
     productsServerApi.listPage(params),
     categoriesServerApi.list(),
+    auth().then((session) => sessionHas(session, "catalog.write")),
   ]);
 
   return (
-    <ProductsScreen products={products} categories={categories} filters={parseAdminProductFilters(params)} />
+    <ProductsScreen
+      products={products}
+      categories={categories}
+      filters={parseAdminProductFilters(params)}
+      canWrite={canWrite}
+    />
   );
 }

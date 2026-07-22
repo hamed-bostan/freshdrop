@@ -25,6 +25,13 @@ type OrderDetailScreenProps = {
   customer: CustomerOrderSummary | undefined;
   /** This order's recent admin activity, newest first. */
   activity: ActivityEntryWire[];
+  /**
+   * Whether the viewer may move the order along — advance the stage, pick items,
+   * resolve a return. Support reads this page without any of that.
+   */
+  canFulfill: boolean;
+  /** Whether the viewer may message the customer about it. */
+  canNotify: boolean;
 };
 
 /**
@@ -34,14 +41,22 @@ type OrderDetailScreenProps = {
  * items (with pick controls while the order is being picked) totalled at the foot, and
  * a customer/address card. Stage/return/pick writes re-run this render via `router.refresh()`.
  */
-export async function OrderDetailScreen({ order, customer, activity }: OrderDetailScreenProps) {
+export async function OrderDetailScreen({
+  order,
+  customer,
+  activity,
+  canFulfill,
+  canNotify,
+}: OrderDetailScreenProps) {
   const t = await getTranslations("dashOrders");
   const locale = await getLocale();
 
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
-  const pickable = isPicking(order);
   const showTracking = order.status === "processing" || order.status === "completed";
-  const advanceNext = isAdvanceable(order) && order.stage ? nextStage(order.stage) : null;
+  // Controls are drawn only for what the viewer may actually do; every endpoint
+  // behind them re-checks, so this is about not offering a button that can only 401.
+  const advanceNext = canFulfill && isAdvanceable(order) && order.stage ? nextStage(order.stage) : null;
+  const pickable = canFulfill && isPicking(order);
 
   return (
     <div className="flex flex-col gap-6">
@@ -81,7 +96,7 @@ export async function OrderDetailScreen({ order, customer, activity }: OrderDeta
             </section>
           ) : null}
 
-          {order.status === "return_requested" ? (
+          {canFulfill && order.status === "return_requested" ? (
             <section className="rounded-card-lg border border-border p-5">
               <h2 className="text-body-b5 text-foreground">{t("returnHeading")}</h2>
               <p className="mt-1 text-body-b7 text-muted-foreground">{t("returnBody")}</p>
@@ -188,12 +203,14 @@ export async function OrderDetailScreen({ order, customer, activity }: OrderDeta
           </section>
 
           {/* Below the customer card, because that's who these go to. */}
-          <section className="rounded-card-lg border border-border p-5">
-            <h2 className="mb-4 text-body-b8 uppercase tracking-wide text-muted-foreground">
-              {t("commsHeading")}
-            </h2>
-            <OrderCommsPanel order={order} canEmail={customer?.email != null} />
-          </section>
+          {canNotify ? (
+            <section className="rounded-card-lg border border-border p-5">
+              <h2 className="mb-4 text-body-b8 uppercase tracking-wide text-muted-foreground">
+                {t("commsHeading")}
+              </h2>
+              <OrderCommsPanel order={order} canEmail={customer?.email != null} />
+            </section>
+          ) : null}
         </div>
       </div>
     </div>

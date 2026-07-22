@@ -7,7 +7,7 @@ import {
   stockAlertRepository,
   stockAlertNotifier,
 } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
 import { productFormSchema } from "@/src/contracts/product-schema";
 import {
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest, { params }: RouteContext): Promi
  * PUT /api/products/:id — update a product. Admin only.
  */
 export async function PUT(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("catalog.write");
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;
@@ -81,7 +81,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
  * DELETE /api/products/:id — delete a product. Admin only. 204 on success.
  */
 export async function DELETE(_request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("catalog.write");
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;

@@ -16,6 +16,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { Permission } from "@/src/domain/entities/Permission";
 import { Link, usePathname } from "@/src/i18n/navigation";
 import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
@@ -26,33 +27,35 @@ import { cn } from "@/src/lib/utils";
  * lucide marks rendered through the design-system `Icon`.
  */
 const SECTIONS = [
-  { href: "/dashboard", labelKey: "navDashboard", icon: LayoutDashboard },
-  { href: "/dashboard/categories", labelKey: "navCategories", icon: Tag },
-  { href: "/dashboard/products", labelKey: "navProducts", icon: Package },
-  { href: "/dashboard/orders", labelKey: "navOrders", icon: ClipboardList },
-  { href: "/dashboard/reviews", labelKey: "navReviews", icon: Star },
-  { href: "/dashboard/customers", labelKey: "navCustomers", icon: Users },
-  { href: "/dashboard/promo-codes", labelKey: "navPromoCodes", icon: PercentCircle },
-  { href: "/dashboard/delivery-slots", labelKey: "navDeliverySlots", icon: CalendarClock },
+  { href: "/dashboard", labelKey: "navDashboard", icon: LayoutDashboard, needs: "dashboard.view" },
+  { href: "/dashboard/categories", labelKey: "navCategories", icon: Tag, needs: "catalog.write" },
+  // Products, orders, reviews and customers are reads for everyone with the
+  // dashboard — the catalog list is how support answers "do we still sell this?".
+  // The write controls *inside* those pages are what the finer permissions gate.
+  { href: "/dashboard/products", labelKey: "navProducts", icon: Package, needs: "dashboard.view" },
+  { href: "/dashboard/orders", labelKey: "navOrders", icon: ClipboardList, needs: "dashboard.view" },
+  { href: "/dashboard/reviews", labelKey: "navReviews", icon: Star, needs: "dashboard.view" },
+  { href: "/dashboard/customers", labelKey: "navCustomers", icon: Users, needs: "dashboard.view" },
+  { href: "/dashboard/promo-codes", labelKey: "navPromoCodes", icon: PercentCircle, needs: "promotions.write" },
+  { href: "/dashboard/delivery-slots", labelKey: "navDeliverySlots", icon: CalendarClock, needs: "promotions.write" },
   // Last, and after the things it records: it's a place you go to answer a
   // question about the other sections, not somewhere work starts.
-  { href: "/dashboard/activity", labelKey: "navActivity", icon: History },
-] as const satisfies readonly { href: string; labelKey: string; icon: LucideIcon }[];
-
-/**
- * Sections only the owner can reach — appended when the viewer is one.
- *
- * Activity is *not* here: the audit trail is admin-visible, with only its
- * team-access entries reserved to the owner (see `activity-visibility`), so an
- * ordinary admin gets a real page rather than a redirect.
- */
-const OWNER_SECTIONS = [
-  { href: "/dashboard/team", labelKey: "navTeam", icon: ShieldCheck },
-] as const satisfies readonly { href: string; labelKey: string; icon: LucideIcon }[];
+  { href: "/dashboard/activity", labelKey: "navActivity", icon: History, needs: "activity.view" },
+  // Owner only. Activity deliberately is not — the trail is visible to everyone
+  // holding `activity.view`, with only its team-access entries reserved to the
+  // owner (see `activity-visibility`), so a plain admin gets a real page rather
+  // than a redirect.
+  { href: "/dashboard/team", labelKey: "navTeam", icon: ShieldCheck, needs: "team.manage" },
+] as const satisfies readonly {
+  href: string;
+  labelKey: string;
+  icon: LucideIcon;
+  needs: Permission;
+}[];
 
 type DashboardSidebarProps = {
-  /** Whether the viewer owns the store, deciding if the Team section is offered. */
-  isOwner: boolean;
+  /** What the viewer may do — decides which sections are offered. */
+  permissions: readonly Permission[];
 };
 
 /**
@@ -61,12 +64,12 @@ type DashboardSidebarProps = {
  * escape hatch pinned to the bottom. Client component — the active state is
  * derived from the current path.
  */
-export function DashboardSidebar({ isOwner }: DashboardSidebarProps) {
+export function DashboardSidebar({ permissions }: DashboardSidebarProps) {
   const t = useTranslations("dashboard");
   const pathname = usePathname();
-  // Navigation only — the page and its endpoints re-check independently. Hiding
-  // the link keeps an admin from walking into a redirect, it doesn't secure it.
-  const sections = isOwner ? [...SECTIONS, ...OWNER_SECTIONS] : SECTIONS;
+  // Navigation only — every page and endpoint re-checks independently. Hiding a
+  // link keeps someone from walking into a redirect; it isn't what stops them.
+  const sections = SECTIONS.filter((section) => permissions.includes(section.needs));
 
   return (
     <aside className="sticky top-0 flex h-dvh w-64 shrink-0 flex-col border-e border-border bg-background">

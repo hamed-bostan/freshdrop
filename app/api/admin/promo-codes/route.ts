@@ -7,7 +7,7 @@ import {
 import { ListPromoCodes } from "@/src/domain/use-cases/promo-codes/ListPromoCodes";
 import { CreatePromoCode } from "@/src/domain/use-cases/promo-codes/CreatePromoCode";
 import { promoCodeRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminPromoCodeFilters } from "@/src/lib/api/admin-promo-code-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
 import {
@@ -35,7 +35,7 @@ export const dynamic = "force-dynamic";
  * figure that is nobody's business but the store's.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  if (!(await getSessionWith("promotions.write"))) return unauthorizedResponse();
 
   const params = request.nextUrl.searchParams;
   const filters = parseAdminPromoCodeFilters(params);
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
  * delegate to the use-case → map domain errors to HTTP status codes.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("promotions.write");
   if (!session) return unauthorizedResponse();
 
   const body = await parseJsonBody(request);

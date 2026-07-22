@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { EditPromoCodeScreen } from "@/src/presentation/dashboard/promo-codes/EditPromoCodeScreen";
 import { promoCodesServerApi } from "@/src/presentation/dashboard/promo-codes/promo-code-server-api";
+import { requirePermission } from "@/src/lib/require-permission";
 
 type EditPromoCodePageProps = {
   params: Promise<{ id: string }>;
@@ -11,6 +12,11 @@ type EditPromoCodePageProps = {
 export const dynamic = "force-dynamic";
 
 export default async function EditPromoCodePage({ params }: EditPromoCodePageProps) {
+  // The layout only gates on `dashboard.view`; this whole section is a write
+  // surface, so anyone without the permission is redirected rather than shown a
+  // page whose every read would 401.
+  await requirePermission("promotions.write");
+
   const { id } = await params;
   const promoCode = await promoCodesServerApi.getById(id);
   if (!promoCode) notFound();

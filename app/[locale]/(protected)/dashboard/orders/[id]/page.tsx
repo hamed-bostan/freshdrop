@@ -4,6 +4,8 @@ import { ordersServerApi } from "@/src/presentation/dashboard/orders/order-serve
 import { customersServerApi } from "@/src/presentation/dashboard/customers/customer-server-api";
 import { activityServerApi } from "@/src/presentation/dashboard/activity/activity-server-api";
 import { OrderDetailScreen } from "@/src/presentation/dashboard/orders/OrderDetailScreen";
+import { auth } from "@/auth";
+import { sessionHas } from "@/src/lib/require-permission";
 
 // The order is read from the REST API (BFF) per request — never statically cached.
 export const dynamic = "force-dynamic";
@@ -24,11 +26,27 @@ export default async function DashboardOrderPage({ params }: DashboardOrderPageP
   // and finding one in the result.
   // The customer and the order's activity are both keyed off the order, so they
   // run together once it's in hand.
-  const [customers, activity] = await Promise.all([
+  const [customers, activity, session] = await Promise.all([
     customersServerApi.listByIds([order.userId]),
     activityServerApi.listForEntity("order", order.id, DEFAULT_ACTIVITY_LIMIT),
+    auth(),
   ]);
   const customer = customers.items[0];
 
-  return <OrderDetailScreen order={order} customer={customer} activity={activity} />;
+  // Which controls the screen draws. Support reads this page in full and can act on
+  // none of it; the endpoints behind each control re-check regardless.
+  const [canFulfill, canNotify] = await Promise.all([
+    sessionHas(session, "orders.fulfill"),
+    sessionHas(session, "orders.notify"),
+  ]);
+
+  return (
+    <OrderDetailScreen
+      order={order}
+      customer={customer}
+      activity={activity}
+      canFulfill={canFulfill}
+      canNotify={canNotify}
+    />
+  );
 }

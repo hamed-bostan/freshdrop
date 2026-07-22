@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { BulkModerateReviews } from "@/src/domain/use-cases/reviews/BulkModerateReviews";
 import { reviewRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { reviewBulkRequestSchema } from "@/src/contracts/bulk-action-schema";
 import {
   errorResponse,
@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
  * back to a UI that already knows which review it moderated.
  */
 export async function PATCH(request: NextRequest): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("reviews.moderate");
   if (!session) return unauthorizedResponse();
 
   const body = await parseJsonBody(request);

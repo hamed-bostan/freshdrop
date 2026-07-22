@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { toPublicReview } from "@/src/domain/entities/Review";
 import { ModerateReview } from "@/src/domain/use-cases/reviews/ModerateReview";
 import { reviewRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 import { reviewModerationSchema } from "@/src/contracts/review-moderation-schema";
 import {
   errorResponse,
@@ -26,7 +26,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
-  const session = await getAdminSession();
+  const session = await getSessionWith("reviews.moderate");
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;

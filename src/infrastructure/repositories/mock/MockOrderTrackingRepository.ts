@@ -144,7 +144,7 @@ export class MockOrderTrackingRepository implements IOrderTrackingRepository {
       return null;
     }
 
-    if (!viewer.isAdmin && order.userId !== viewer.userId) {
+    if (!viewer.canViewAnyOrder && order.userId !== viewer.userId) {
       return null;
     }
 

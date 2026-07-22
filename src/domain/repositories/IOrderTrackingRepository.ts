@@ -9,8 +9,15 @@ import type { OrderTracking } from "../entities/OrderTracking";
 export type TrackingViewer = {
   /** The signed-in caller's user id. */
   userId: string;
-  /** True for an allowlisted admin — bypasses the ownership check. */
-  isAdmin: boolean;
+  /**
+   * True when the caller may read any order's tracking, not just their own —
+   * anyone with dashboard access. Bypasses the ownership check.
+   *
+   * Named for the capability rather than for a role: the domain has no business
+   * knowing which roles exist, and "is an admin" stopped being a single answer
+   * once support and staff arrived.
+   */
+  canViewAnyOrder: boolean;
 };
 
 /**
