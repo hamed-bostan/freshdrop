@@ -897,7 +897,30 @@
     "shipping": "هزینه ارسال",
     "discount": "تخفیف",
     "refundedToWallet": "بازپرداخت به کیف پول",
-    "netPaid": "پرداخت خالص"
+    "netPaid": "پرداخت خالص",
+    "viewCustomer": "مشاهده مشتری",
+    "commsHeading": "ارتباط با مشتری"
+  },
+  "dashOrderComms": {
+    "resendHeading": "ارسال دوباره اعلان",
+    "resendConfirmation": "تأیید سفارش",
+    "resendOutForDelivery": "ارسال شد",
+    "resendDelivered": "تحویل شد",
+    "resendReturnApproved": "مرجوعی تأیید شد",
+    "linesHeading": "اعلان اقلام",
+    "linesHint": "ارسال دوباره اعلان برای قلمی که جایگزین یا مسترد شده است.",
+    "notifySubstituted": "جایگزین‌شده: {name}",
+    "notifyRefunded": "مسترد‌شده: {name}",
+    "messageHeading": "ارسال پیام",
+    "subjectLabel": "موضوع",
+    "subjectPlaceholder": "موضوع",
+    "messageLabel": "پیام",
+    "messagePlaceholder": "پیک شما حدود ۲۰ دقیقه تأخیر دارد…",
+    "sendMessage": "ارسال ایمیل",
+    "messageSentLabel": "پیام شما",
+    "noEmail": "برای این مشتری ایمیلی ثبت نشده است، بنابراین ارسال پیام ممکن نیست.",
+    "sentConfirmation": "{what} برای مشتری ارسال شد.",
+    "sendError": "ارسال این پیام ممکن نشد."
   },
   "dashReviews": {
     "heading": "نظرات",
@@ -1196,7 +1219,8 @@
       "order": {
         "stageChanged": "{actor} مرحله ارسال سفارش {entity} را تغییر داد",
         "returnResolved": "{actor} درخواست مرجوعی سفارش {entity} را بررسی کرد",
-        "itemSubstituted": "{actor} یک قلم ناموجود سفارش {entity} را تعیین تکلیف کرد"
+        "itemSubstituted": "{actor} یک قلم ناموجود سفارش {entity} را تعیین تکلیف کرد",
+        "customerNotified": "{actor} درباره سفارش {entity} به مشتری پیام داد"
       },
       "review": {
         "moderated": "{actor} نظر {entity} را بررسی کرد"

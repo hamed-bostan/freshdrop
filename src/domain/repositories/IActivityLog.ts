@@ -3,18 +3,20 @@ import type {
   ActivityEntry,
   ActivityFilters,
   ActivitySort,
+  NewActivityEntry,
 } from "../entities/ActivityEntry";
 import type { Page, PageRequest } from "../entities/Pagination";
 
 /**
- * Read access to the append-only activity log.
+ * Read access to the append-only activity log, plus the one narrow write that
+ * {@link IActivityLog.recordEvent} documents at the bottom.
  *
- * Read-only, for the same reason `IStockMovementLog` is: entries are written by
- * the repository methods that make the changes they describe, inside the same
- * transaction. A `record` here would offer a second, non-atomic way to write the
- * same table — which is exactly the gap that arrangement closes. A log whose
- * entries can drift from the changes they explain is worse than none, because it
- * reads as authoritative without being so.
+ * Read-only for every *change*, for the same reason `IStockMovementLog` is:
+ * entries are written by the repository methods that make the changes they
+ * describe, inside the same transaction. A general `record` here would offer a
+ * second, non-atomic way to write the same table — which is exactly the gap that
+ * arrangement closes. A log whose entries can drift from the changes they explain
+ * is worse than none, because it reads as authoritative without being so.
  *
  * The writes are split across two layers, deliberately, and the split is the whole
  * design:
@@ -64,4 +66,27 @@ export type IActivityLog = {
    * name people whose only appearance in the log is one of those entries.
    */
   listActors(visibleEntityTypes?: readonly string[]): Promise<ActivityActorOption[]>;
+
+  /**
+   * Record an admin action that *isn't* a change to anything stored — currently
+   * only a message sent to a customer about their order.
+   *
+   * This is the one write on this port, and it is a carve-out rather than a
+   * loophole. Everything above argues that an entry must commit inside the
+   * transaction of the change it explains; that argument is about entries which
+   * *have* a change to be atomic with, and its failure mode is an entry drifting
+   * from the row it claims to describe. A sent notification has no row. There is no
+   * transaction to join, nothing that can commit without it, and nothing for it to
+   * drift from — so the rule it would be breaking doesn't reach it.
+   *
+   * What that means in practice: every audited *edit* still goes through
+   * {@link AuditHook}, and this must never be used to record one. An entry written
+   * here is exactly as atomic as the thing it describes — which for an outbound
+   * message is not at all, since the send already happened and can't be unsent.
+   *
+   * Best-effort, like the sends themselves: the implementation swallows and logs a
+   * failure rather than throwing. Failing the request after the customer has
+   * already been messaged would invite an admin to send it a second time.
+   */
+  recordEvent(entry: NewActivityEntry): Promise<void>;
 };

@@ -65,6 +65,7 @@ export class GetCustomerOrderSummaries {
         userId,
         name: user?.name ?? userId,
         phone: user?.phone ?? "",
+        email: user?.email ?? null,
         avatarUrl: user?.avatarUrl ?? null,
         orderCount: stats.orderCount,
         totalSpent: stats.totalSpent,

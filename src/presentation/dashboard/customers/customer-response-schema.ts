@@ -12,6 +12,7 @@ export const customerOrderSummaryResponseSchema = z.object({
   userId: z.string(),
   name: z.string(),
   phone: z.string(),
+  email: z.string().nullable(),
   avatarUrl: z.string().nullable(),
   orderCount: z.number(),
   totalSpent: z.number(),

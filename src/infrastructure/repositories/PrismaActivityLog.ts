@@ -5,6 +5,7 @@ import type {
   ActivityEntry,
   ActivityFilters,
   ActivitySort,
+  NewActivityEntry,
 } from "@/src/domain/entities/ActivityEntry";
 import {
   DEFAULT_ACTIVITY_DIRECTION,
@@ -15,15 +16,17 @@ import type { Page, PageRequest } from "@/src/domain/entities/Pagination";
 import { createPage, toSkipTake } from "@/src/domain/entities/Pagination";
 import type { IActivityLog } from "@/src/domain/repositories/IActivityLog";
 import { prisma } from "@/src/infrastructure/prisma/client";
+import { toActivityRow } from "./writeActivityEntry";
 
 /**
  * The activity log backed by PostgreSQL via Prisma. Server-side only (it opens a
  * DB connection), bound through the container — never imported by client code.
  *
- * Read only. Entries are written by the repositories that make the changes they
- * describe, inside the same transaction (see `recordAudit`), so this class has no
- * `record` and there is no second way into the table. No update and no delete
- * anywhere, here or in the migration.
+ * Read only for changes. Entries describing a change are written by the
+ * repositories that make it, inside the same transaction (see `recordAudit`), so
+ * there is no second way into the table for those. `recordEvent` is the one write
+ * here, and only for admin actions that change nothing stored — see the port. No
+ * update and no delete anywhere, here or in the migration.
  */
 export class PrismaActivityLog implements IActivityLog {
   async list(
@@ -84,6 +87,19 @@ export class PrismaActivityLog implements IActivityLog {
     return [...latest.entries()]
       .map(([id, { name }]) => ({ id, name }))
       .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async recordEvent(entry: NewActivityEntry): Promise<void> {
+    // Best-effort, matching the port and the thing being recorded: the message has
+    // already gone out and can't be unsent, so throwing here would fail a request
+    // whose visible effect already happened — and invite the admin to send it
+    // again. A lost entry is emitted whole behind a greppable marker, so the
+    // record survives in the logs even when the row didn't get written.
+    try {
+      await prisma.activityEntry.create({ data: toActivityRow(entry) });
+    } catch (error) {
+      console.error("[ACTIVITY_LOG_WRITE_FAILED]", JSON.stringify(entry), error);
+    }
   }
 }
 

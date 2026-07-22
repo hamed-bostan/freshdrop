@@ -69,6 +69,11 @@ export const ACTIVITY_ACTIONS = [
   "order.stageChanged",
   "order.returnResolved",
   "order.itemSubstituted",
+  // The one action here that isn't a change to anything stored — an admin sent the
+  // customer a message about their order. Recorded through
+  // `IActivityLog.recordEvent` rather than an audit hook, because there is no
+  // transaction to ride; see that method for why the rule doesn't reach it.
+  "order.customerNotified",
   "review.moderated",
   "promoCode.created",
   "promoCode.updated",

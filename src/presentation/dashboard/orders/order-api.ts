@@ -8,6 +8,11 @@ import { productListResponseSchema } from "@/src/presentation/product/product-re
 import type { OrderTrackingStageInput } from "@/src/contracts/order-tracking-schema";
 import type { OrderReturnDecisionInput } from "@/src/contracts/order-return-schema";
 import type { OrderSubstitutionInput } from "@/src/contracts/order-substitution-schema";
+import {
+  orderNotificationResultSchema,
+  type OrderNotificationInput,
+  type OrderNotificationResult,
+} from "@/src/contracts/order-notification-schema";
 
 /**
  * Typed client for the order REST *mutations*. UI components call these instead of
@@ -41,5 +46,17 @@ export const ordersApi = {
    */
   listReplacementCandidates(productId: string): Promise<Product[]> {
     return apiGet(`/products/${productId}/similar`, productListResponseSchema);
+  },
+
+  /**
+   * Send the customer a message about this order — a re-sent lifecycle
+   * notification, a per-line substitution/refund notice, or a one-off email.
+   *
+   * Resolves with what was sent and how it went out, which is as much as anyone
+   * can promise: the underlying channels are best-effort by contract, so this
+   * confirms the send was *made*, not that it arrived.
+   */
+  notifyCustomer(orderId: string, values: OrderNotificationInput): Promise<OrderNotificationResult> {
+    return apiPost(`/admin/orders/${orderId}/notifications`, values, orderNotificationResultSchema);
   },
 };

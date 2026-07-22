@@ -897,7 +897,30 @@
     "shipping": "Delivery",
     "discount": "Discount",
     "refundedToWallet": "Refunded to wallet",
-    "netPaid": "Net paid"
+    "netPaid": "Net paid",
+    "viewCustomer": "View customer",
+    "commsHeading": "Customer comms"
+  },
+  "dashOrderComms": {
+    "resendHeading": "Resend a notification",
+    "resendConfirmation": "Order confirmation",
+    "resendOutForDelivery": "Out for delivery",
+    "resendDelivered": "Delivered",
+    "resendReturnApproved": "Return approved",
+    "linesHeading": "Item notices",
+    "linesHint": "Re-send the notice for a line that was substituted or refunded.",
+    "notifySubstituted": "Substituted: {name}",
+    "notifyRefunded": "Refunded: {name}",
+    "messageHeading": "Send a message",
+    "subjectLabel": "Subject",
+    "subjectPlaceholder": "Subject",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Your driver is running about 20 minutes late…",
+    "sendMessage": "Send email",
+    "messageSentLabel": "your message",
+    "noEmail": "This customer has no email address on file, so a one-off message can't be sent.",
+    "sentConfirmation": "Sent {what} to the customer.",
+    "sendError": "Could not send that message."
   },
   "dashReviews": {
     "heading": "Reviews",
@@ -1196,7 +1219,8 @@
       "order": {
         "stageChanged": "{actor} changed the delivery stage of order {entity}",
         "returnResolved": "{actor} resolved the return on order {entity}",
-        "itemSubstituted": "{actor} resolved an out-of-stock item on order {entity}"
+        "itemSubstituted": "{actor} resolved an out-of-stock item on order {entity}",
+        "customerNotified": "{actor} messaged the customer about order {entity}"
       },
       "review": {
         "moderated": "{actor} moderated {entity}'s review"

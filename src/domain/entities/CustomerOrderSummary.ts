@@ -11,6 +11,15 @@ export type CustomerOrderSummary = {
   name: string;
   /** Contact phone from the profile; empty string when unknown. */
   phone: string;
+  /**
+   * Contact email from the profile, when they've given one.
+   *
+   * Carried because it's the difference between a channel being available and not:
+   * the dashboard's order comms can email a customer a one-off note, and the panel
+   * needs to know whether to offer that before the admin has typed anything. The
+   * user row is already read to build this summary, so it costs nothing extra.
+   */
+  email: string | null;
   /** Profile avatar URL, when set. */
   avatarUrl: string | null;
   /** How many orders the customer has placed. */

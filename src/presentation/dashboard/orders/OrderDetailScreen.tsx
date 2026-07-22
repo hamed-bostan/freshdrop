@@ -15,6 +15,7 @@ import { OrderDeliveryTracker } from "./OrderDeliveryTracker";
 import { OrderStageAdvance } from "./OrderStageAdvance";
 import { OrderReturnControl } from "./OrderReturnControl";
 import { OrderItemPickControl } from "./OrderItemPickControl";
+import { OrderCommsPanel } from "./OrderCommsPanel";
 import { ActivityPanel } from "@/src/presentation/dashboard/activity/ActivityPanel";
 import type { ActivityEntryWire } from "@/src/presentation/dashboard/activity/activity-response-schema";
 
@@ -175,6 +176,23 @@ export async function OrderDetailScreen({ order, customer, activity }: OrderDeta
             {order.locationLabel ? (
               <p className="mt-0.5 text-body-b7 text-muted-foreground">{order.locationLabel}</p>
             ) : null}
+
+            {/* A link out to the whole customer rather than more of them inline —
+                their history, wallet and addresses have a page of their own. */}
+            <Link
+              href={`/dashboard/customers/${order.userId}`}
+              className="mt-6 inline-block text-body-b8 text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
+            >
+              {t("viewCustomer")}
+            </Link>
+          </section>
+
+          {/* Below the customer card, because that's who these go to. */}
+          <section className="rounded-card-lg border border-border p-5">
+            <h2 className="mb-4 text-body-b8 uppercase tracking-wide text-muted-foreground">
+              {t("commsHeading")}
+            </h2>
+            <OrderCommsPanel order={order} canEmail={customer?.email != null} />
           </section>
         </div>
       </div>
