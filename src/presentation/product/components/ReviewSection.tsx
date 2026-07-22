@@ -1,11 +1,11 @@
 import { getTranslations } from "next-intl/server";
-import type { Review } from "@/src/domain/entities/Review";
+import type { PublicReview } from "@/src/domain/entities/Review";
 import { ReviewItem } from "./ReviewItem";
 import { AddReviewFlow } from "./AddReviewFlow";
 
 interface ReviewSectionProps {
   productId: string;
-  reviews: Review[];
+  reviews: PublicReview[];
 }
 
 export async function ReviewSection({ productId, reviews }: ReviewSectionProps) {

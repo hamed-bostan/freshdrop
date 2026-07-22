@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import type { ReviewPage } from "@/src/domain/entities/AdminReviewFilters";
+import type { PublicReviewPage } from "@/src/domain/entities/AdminReviewFilters";
 import type { Product } from "@/src/domain/entities/Product";
 import { ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
 import { ReviewStatusTabs } from "./ReviewStatusTabs";
@@ -7,7 +7,7 @@ import { ReviewsTable } from "./ReviewsTable";
 
 type ReviewsScreenProps = {
   /** One page of the queue, plus the per-status counts the tabs display. */
-  reviews: ReviewPage;
+  reviews: PublicReviewPage;
   /** Only the products this page's reviews refer to — not the whole catalog. */
   products: Product[];
   /** Whether the Pending tab is the active one, which gets its own empty-state copy. */

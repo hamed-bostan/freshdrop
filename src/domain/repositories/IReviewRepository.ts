@@ -23,6 +23,13 @@ export type IReviewRepository = {
    * per-status counts the tabs display (see {@link ReviewPage}).
    */
   listPage(filters: AdminReviewFilters, page: PageRequest<AdminReviewSort>): Promise<ReviewPage>;
+  /**
+   * Everything one user has reviewed, newest first, in every moderation status —
+   * the admin's per-customer view, where a pending or rejected review is exactly
+   * what the admin came to look at. Matched on `authorId`, so reviews the backfill
+   * left unlinked don't appear (see {@link Review.authorId}).
+   */
+  listByAuthor(authorId: string): Promise<Review[]>;
   create(input: NewReview): Promise<Review>;
   /**
    * Set a review's moderation status and recompute the product's rating (only

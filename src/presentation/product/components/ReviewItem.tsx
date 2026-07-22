@@ -4,10 +4,10 @@ import { Star } from "lucide-react";
 import { Avatar, Icon } from "@/src/presentation/design-system";
 import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
 import { formatRating } from "@/src/lib/formatNumber";
-import type { Review } from "@/src/domain/entities/Review";
+import type { PublicReview } from "@/src/domain/entities/Review";
 
 interface ReviewItemProps {
-  review: Review;
+  review: PublicReview;
 }
 
 export function ReviewItem({ review }: ReviewItemProps) {

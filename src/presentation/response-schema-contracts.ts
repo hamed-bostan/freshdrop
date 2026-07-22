@@ -48,6 +48,7 @@ import type { Cart } from "@/src/domain/entities/Cart";
 import type { Category } from "@/src/domain/entities/Category";
 import type { AdminPromoCode } from "@/src/domain/entities/PromoCode";
 import type { DeliveryWindow } from "@/src/domain/entities/DeliveryWindow";
+import type { CustomerDetail, CustomerLifetime } from "@/src/domain/entities/CustomerDetail";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
@@ -56,7 +57,7 @@ import type { OrderTracking } from "@/src/domain/entities/OrderTracking";
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
 import type { Product } from "@/src/domain/entities/Product";
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
-import type { Review } from "@/src/domain/entities/Review";
+import type { PublicReview } from "@/src/domain/entities/Review";
 import type { SavedCard, Wallet } from "@/src/domain/entities/Wallet";
 import type { CategoryTranslationInput } from "@/src/domain/repositories/ICategoryRepository";
 import type { ProductTranslationInput } from "@/src/domain/repositories/IProductRepository";
@@ -68,6 +69,10 @@ import { categoryResponseSchema } from "./category/category-response-schema";
 import { deliverySlotDayResponseSchema } from "./checkout/delivery-slot-response-schema";
 import { categoryTranslationResponseSchema } from "./dashboard/categories/category-translation-response-schema";
 import { customerOrderSummaryResponseSchema } from "./dashboard/customers/customer-response-schema";
+import {
+  customerDetailResponseSchema,
+  customerLifetimeResponseSchema,
+} from "./dashboard/customers/customer-detail-response-schema";
 import { adminPromoCodeResponseSchema } from "./dashboard/promo-codes/promo-code-admin-response-schema";
 import { deliveryWindowResponseSchema } from "./dashboard/delivery-slots/delivery-window-response-schema";
 import { productTranslationResponseSchema } from "./dashboard/products/product-translation-response-schema";
@@ -112,7 +117,11 @@ export type _ReorderItemsResult = Expect<Equal<z.infer<typeof reorderResultRespo
 export type _OrderTracking = Expect<Equal<z.infer<typeof orderTrackingResponseSchema>, OrderTracking>>;
 export type _PaymentMethod = Expect<Equal<z.infer<typeof paymentMethodResponseSchema>, PaymentMethod>>;
 export type _Product = Expect<Equal<z.infer<typeof productResponseSchema>, Product>>;
-export type _Review = Expect<Equal<z.infer<typeof reviewResponseSchema>, Review>>;
+// A `PublicReview`, not a `Review`: `authorId` is the reviewer's account id, which in
+// this app is their phone digits, so no endpoint sends it (see `toPublicReview`).
+// Same shape of boundary as `UserProfile` below — and this is the assertion that
+// catches it if the field ever creeps back onto the wire.
+export type _Review = Expect<Equal<z.infer<typeof reviewResponseSchema>, PublicReview>>;
 // `UserProfile` is `Omit<User, "role">`, and that omission is a security boundary:
 // the schema strips `role` so no client can branch on an authorization fact read
 // from a response body. Re-adding it — or leaving any field behind after the entity

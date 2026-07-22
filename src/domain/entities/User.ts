@@ -13,8 +13,14 @@
  */
 export type UserRole = "customer" | "admin" | "owner";
 
-/** The persisted role values, for validating a string read from the database. */
-export const USER_ROLES: readonly UserRole[] = ["customer", "admin", "owner"];
+/**
+ * The persisted role values, for validating a string read from the database.
+ *
+ * A `const` tuple rather than a widened `readonly UserRole[]` so it can also be
+ * handed straight to `z.enum` at the API boundary — a widened array only types as
+ * `string[]` there, which would parse any string as a role.
+ */
+export const USER_ROLES = ["customer", "admin", "owner"] as const satisfies readonly UserRole[];
 
 /** The roles that can reach the dashboard — `owner` is a superset of `admin`. */
 export const DASHBOARD_ROLES: readonly UserRole[] = ["admin", "owner"];

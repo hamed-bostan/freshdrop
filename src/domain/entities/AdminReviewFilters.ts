@@ -1,5 +1,5 @@
 import type { Page } from "./Pagination";
-import type { Review, ReviewStatus } from "./Review";
+import type { PublicReview, Review, ReviewStatus } from "./Review";
 
 /** Filter and sort vocabulary for the admin review moderation queue. */
 
@@ -30,3 +30,11 @@ export type ReviewStatusCounts = Record<ReviewStatus | "all", number>;
  * makes the other tabs' numbers vanish.
  */
 export type ReviewPage = Page<Review> & { counts: ReviewStatusCounts };
+
+/**
+ * The queue page as it goes over the wire — a {@link ReviewPage} whose rows have had
+ * the author's id projected away (see {@link PublicReview}). The repository produces
+ * the former; the route handler sends the latter, and the dashboard's typed service
+ * receives it.
+ */
+export type PublicReviewPage = Page<PublicReview> & { counts: ReviewStatusCounts };

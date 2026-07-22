@@ -444,6 +444,13 @@ model DeliverySlotBooking {
 model Review {
   id              String   @id @default(uuid())
   productId       String   @map("product_id")
+  // Who wrote it, as a plain reference to `users.id` — the identity behind the
+  // snapshot, so the dashboard can answer "what has this customer reviewed?"
+  // without matching on a display name that two people can share and either can
+  // change. Nullable: reviews written before the column existed are only linked
+  // where the backfill found exactly one user with that name, and a review always
+  // outlives the profile it came from.
+  authorId        String?  @map("author_id")
   authorName      String   @map("author_name")
   authorAvatarUrl String?  @map("author_avatar_url")
   rating          Int
@@ -456,6 +463,7 @@ model Review {
 
   @@index([productId])
   @@index([status])
+  @@index([authorId])
   @@map("reviews")
 }
 

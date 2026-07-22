@@ -1,7 +1,10 @@
+import type { CustomerDetail } from "@/src/domain/entities/CustomerDetail";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import type { Page } from "@/src/domain/entities/Pagination";
+import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
 import { customerOrderSummaryPageResponseSchema } from "./customer-response-schema";
+import { customerDetailResponseSchema } from "./customer-detail-response-schema";
 
 /**
  * Server-side customer-analytics reads for the admin dashboard (BFF). Returns the
@@ -24,6 +27,24 @@ export const customersServerApi = {
    */
   listTop(count: number): Promise<Page<CustomerOrderSummary>> {
     return this.listPage(new URLSearchParams({ page: "1", pageSize: String(count) }));
+  },
+
+  /**
+   * Everything about one customer — profile, lifetime figures, orders, addresses,
+   * wallet and reviews — for the detail page. Returns `null` for an id that names
+   * nobody (404) so the page can `notFound()`.
+   *
+   * Not derived from `listPage`: that ranks every customer by aggregating the whole
+   * order history, which is a lot of work to answer a question about one person.
+   * This is its own endpoint reading only that person's rows.
+   */
+  async getById(userId: string): Promise<CustomerDetail | null> {
+    try {
+      return await serverApiGet(`/admin/customers/${userId}`, customerDetailResponseSchema);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) return null;
+      throw error;
+    }
   },
 
   /**

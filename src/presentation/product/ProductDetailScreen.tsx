@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Product } from "@/src/domain/entities/Product";
-import type { Review } from "@/src/domain/entities/Review";
+import type { PublicReview } from "@/src/domain/entities/Review";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import {
   ProductGallery,
@@ -13,7 +13,7 @@ import {
 interface ProductDetailScreenProps {
   product: Product;
   similar: Product[];
-  reviews: Review[];
+  reviews: PublicReview[];
   /** Whether the signed-in user has favorited this product (false when anonymous). */
   initialFavorite: boolean;
   /** Whether the signed-in user is subscribed to this product's back-in-stock alert. */

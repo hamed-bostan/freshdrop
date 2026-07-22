@@ -1,4 +1,4 @@
-import type { Review } from "@/src/domain/entities/Review";
+import type { PublicReview } from "@/src/domain/entities/Review";
 import { apiPost } from "@/src/lib/api/client";
 import { reviewResponseSchema } from "./review-response-schema";
 import type { ReviewSubmissionInput } from "@/src/contracts/review-schema";
@@ -10,7 +10,7 @@ import type { ReviewSubmissionInput } from "@/src/contracts/review-schema";
  * (see `reviewsServerApi`).
  */
 export const reviewsApi = {
-  create(input: ReviewSubmissionInput): Promise<Review> {
+  create(input: ReviewSubmissionInput): Promise<PublicReview> {
     return apiPost("/reviews", input, reviewResponseSchema);
   },
 };

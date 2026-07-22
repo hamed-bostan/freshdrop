@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { toPublicReview } from "@/src/domain/entities/Review";
 import { ModerateReview } from "@/src/domain/use-cases/reviews/ModerateReview";
 import { reviewRepository } from "@/src/infrastructure/container";
 import { getAdminSession } from "@/src/lib/require-admin";
@@ -50,7 +51,9 @@ export async function PATCH(
       parsed.data.status,
       { id: session.user.id, name: session.user.name ?? session.user.id },
     );
-    return NextResponse.json(review);
+    // The author's id stays server-side even here — the moderation queue shows the
+    // display snapshot, and nothing on the client needs the account behind it.
+    return NextResponse.json(toPublicReview(review));
   } catch (error) {
     return errorResponseFromException(error, "PATCH /api/admin/reviews/[id] failed");
   }

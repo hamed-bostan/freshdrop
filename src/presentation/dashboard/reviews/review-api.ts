@@ -1,4 +1,4 @@
-import type { Review } from "@/src/domain/entities/Review";
+import type { PublicReview } from "@/src/domain/entities/Review";
 import { apiPatch } from "@/src/lib/api/client";
 import { reviewResponseSchema } from "@/src/presentation/product/review-response-schema";
 import type { ReviewModerationInput } from "@/src/contracts/review-moderation-schema";
@@ -11,7 +11,7 @@ import type { ReviewModerationInput } from "@/src/contracts/review-moderation-sc
  */
 export const reviewsApi = {
   /** Approve or reject a review; resolves with the updated review. */
-  setStatus(id: string, values: ReviewModerationInput): Promise<Review> {
+  setStatus(id: string, values: ReviewModerationInput): Promise<PublicReview> {
     return apiPatch(`/admin/reviews/${id}`, values, reviewResponseSchema);
   },
 };

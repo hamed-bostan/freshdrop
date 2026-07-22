@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ReviewPage } from "@/src/domain/entities/AdminReviewFilters";
+import type { PublicReviewPage } from "@/src/domain/entities/AdminReviewFilters";
 import { serverApiGet } from "@/src/lib/api/server-client";
 import { pageResponseSchema } from "@/src/lib/api/page-response-schema";
 import { reviewResponseSchema } from "@/src/presentation/product/review-response-schema";
@@ -21,7 +21,7 @@ const reviewPageResponseSchema = pageResponseSchema(reviewResponseSchema).and(
       all: z.number(),
     }),
   }),
-) as z.ZodType<ReviewPage>;
+) as z.ZodType<PublicReviewPage>;
 
 /**
  * Server-side review reads for the admin dashboard (BFF). Unlike the storefront's
@@ -32,7 +32,7 @@ const reviewPageResponseSchema = pageResponseSchema(reviewResponseSchema).and(
  */
 export const reviewsServerApi = {
   /** One page of the queue, with the filters and ordering the caller's query string carries. */
-  listPage(params: URLSearchParams): Promise<ReviewPage> {
+  listPage(params: URLSearchParams): Promise<PublicReviewPage> {
     return serverApiGet("/admin/reviews", reviewPageResponseSchema, {
       params: Object.fromEntries(params),
     });

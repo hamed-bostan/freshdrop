@@ -919,7 +919,42 @@
     "colPhone": "Phone",
     "colOrders": "Orders",
     "colSpent": "Total spent",
-    "noPhone": "—"
+    "noPhone": "—",
+    "viewCustomerAria": "View {name}"
+  },
+  "dashCustomerDetail": {
+    "backToCustomers": "Back to customers",
+    "notFoundTitle": "Customer not found",
+    "notFoundBody": "That customer no longer exists, or never did.",
+    "noPhone": "No phone on file",
+    "noProfile": "No profile — these orders were placed under an account that was never signed up.",
+    "lifetimeSpend": "Lifetime spend",
+    "since": "Since {date}",
+    "orderCount": "Orders",
+    "lastOrdered": "Last {date}",
+    "averageOrder": "Average order",
+    "walletBalance": "Wallet balance",
+    "orderHistory": "Order history ({count})",
+    "noOrders": "This customer has not placed an order yet.",
+    "addresses": "Addresses",
+    "defaultAddress": "Default",
+    "noAddresses": "No saved addresses.",
+    "wallet": "Wallet",
+    "walletActivity": "Recent activity",
+    "noWalletActivity": "No wallet activity.",
+    "reviews": "Reviews",
+    "noReviews": "This customer has not reviewed anything.",
+    "viewReviewedProduct": "View product",
+    "reviewStatus": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "role": {
+      "admin": "Admin",
+      "owner": "Owner",
+      "customer": "Customer"
+    }
   },
   "dashTeam": {
     "heading": "Team",

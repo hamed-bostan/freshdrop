@@ -2,7 +2,7 @@ import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Star } from "lucide-react";
 import type { Locale } from "@/src/i18n/routing";
-import type { Review, ReviewStatus } from "@/src/domain/entities/Review";
+import type { PublicReview, ReviewStatus } from "@/src/domain/entities/Review";
 import type { Product } from "@/src/domain/entities/Product";
 import { formatNumber } from "@/src/lib/formatNumber";
 import {
@@ -22,7 +22,7 @@ import { Link } from "@/src/i18n/navigation";
 import { ReviewStatusSelect } from "./ReviewStatusSelect";
 
 type ReviewsTableProps = {
-  reviews: Review[];
+  reviews: PublicReview[];
   /** Product id → product, for the Product column's name + thumbnail. */
   productsById: Map<string, Product>;
 };

@@ -76,6 +76,17 @@ export class PrismaReviewRepository implements IReviewRepository {
     return { ...createPage(rows.map(toReview), total, page), counts };
   }
 
+  async listByAuthor(authorId: string): Promise<Review[]> {
+    // Every status, unlike the storefront list: on a customer's detail page a
+    // pending or rejected review is the interesting one. Served by
+    // `reviews_author_id_idx`.
+    const rows = await prisma.review.findMany({
+      where: { authorId },
+      orderBy: { createdAt: "desc" },
+    });
+    return rows.map(toReview);
+  }
+
   async create(input: NewReview): Promise<Review> {
     // New reviews start `pending` (the column default) so they stay hidden until an
     // admin approves them — a pending review doesn't affect the product's rating,
@@ -84,6 +95,7 @@ export class PrismaReviewRepository implements IReviewRepository {
       const created = await tx.review.create({
         data: {
           productId: input.productId,
+          authorId: input.authorId,
           authorName: input.authorName,
           authorAvatarUrl: input.authorAvatarUrl ?? null,
           rating: input.rating,
@@ -145,6 +157,7 @@ async function recomputeProductRating(tx: Prisma.TransactionClient, productId: s
 type ReviewRow = {
   id: string;
   productId: string;
+  authorId: string | null;
   authorName: string;
   authorAvatarUrl: string | null;
   rating: number;
@@ -157,6 +170,7 @@ function toReview(row: ReviewRow): Review {
   return {
     id: row.id,
     productId: row.productId,
+    authorId: row.authorId,
     authorName: row.authorName,
     authorAvatarUrl: row.authorAvatarUrl ?? undefined,
     rating: row.rating,

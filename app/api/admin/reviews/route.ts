@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { toPublicReview } from "@/src/domain/entities/Review";
 import {
   ADMIN_REVIEW_SORTS,
   DEFAULT_ADMIN_REVIEW_DIRECTION,
@@ -39,7 +40,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   try {
     const result = await new ListReviews(reviewRepository).execute(filters, page);
-    return NextResponse.json(result);
+    // The queue renders the author snapshot, not the account — so the id (the
+    // reviewer's phone digits) is projected away before the page goes out.
+    return NextResponse.json({ ...result, items: result.items.map(toPublicReview) });
   } catch (error) {
     return errorResponseFromException(error, "GET /api/admin/reviews failed");
   }

@@ -919,7 +919,42 @@
     "colPhone": "تلفن",
     "colOrders": "سفارش‌ها",
     "colSpent": "مجموع خرید",
-    "noPhone": "—"
+    "noPhone": "—",
+    "viewCustomerAria": "مشاهده {name}"
+  },
+  "dashCustomerDetail": {
+    "backToCustomers": "بازگشت به مشتریان",
+    "notFoundTitle": "مشتری پیدا نشد",
+    "notFoundBody": "این مشتری دیگر وجود ندارد، یا هرگز وجود نداشته است.",
+    "noPhone": "شماره تلفنی ثبت نشده",
+    "noProfile": "بدون پروفایل — این سفارش‌ها با حسابی ثبت شده‌اند که هرگز ساخته نشده است.",
+    "lifetimeSpend": "مجموع خرید",
+    "since": "از {date}",
+    "orderCount": "سفارش‌ها",
+    "lastOrdered": "آخرین: {date}",
+    "averageOrder": "میانگین سفارش",
+    "walletBalance": "موجودی کیف پول",
+    "orderHistory": "تاریخچه سفارش‌ها ({count})",
+    "noOrders": "این مشتری هنوز سفارشی ثبت نکرده است.",
+    "addresses": "آدرس‌ها",
+    "defaultAddress": "پیش‌فرض",
+    "noAddresses": "آدرس ذخیره‌شده‌ای نیست.",
+    "wallet": "کیف پول",
+    "walletActivity": "فعالیت اخیر",
+    "noWalletActivity": "فعالیتی در کیف پول نیست.",
+    "reviews": "دیدگاه‌ها",
+    "noReviews": "این مشتری دیدگاهی ثبت نکرده است.",
+    "viewReviewedProduct": "مشاهده محصول",
+    "reviewStatus": {
+      "pending": "در انتظار",
+      "approved": "تأییدشده",
+      "rejected": "ردشده"
+    },
+    "role": {
+      "admin": "مدیر",
+      "owner": "مالک",
+      "customer": "مشتری"
+    }
   },
   "dashTeam": {
     "heading": "تیم",
