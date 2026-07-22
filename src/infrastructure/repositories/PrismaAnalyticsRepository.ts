@@ -12,7 +12,7 @@ import {
 import { ORDER_STATUSES, type OrderStatus } from "@/src/domain/entities/Order";
 import type { IAnalyticsRepository } from "@/src/domain/repositories/IAnalyticsRepository";
 import { prisma } from "@/src/infrastructure/prisma/client";
-import type { PrismaDb } from "@/src/infrastructure/prisma/transaction";
+import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transaction";
 
 /**
  * Store aggregates computed in PostgreSQL. Server-side only, bound through the
@@ -53,6 +53,26 @@ import type { PrismaDb } from "@/src/infrastructure/prisma/transaction";
  */
 export class PrismaAnalyticsRepository implements IAnalyticsRepository {
   constructor(private readonly db: PrismaDb = prisma) {}
+
+  snapshot<T>(work: (analytics: IAnalyticsRepository) => Promise<T>): Promise<T> {
+    return inTransaction(
+      this.db,
+      // A repository bound to the transaction client, so every read the callback
+      // makes queues on that one connection — the same construction
+      // `PrismaUnitOfWork` uses to hand out transaction-bound repositories.
+      (tx) => work(new PrismaAnalyticsRepository(tx)),
+      {
+        // What makes the "one moment" claim true; see `TransactionOptions`.
+        isolationLevel: "RepeatableRead",
+        // Prisma's defaults are 2s to acquire and 5s to run, both sized for a
+        // single quick write. This is seven aggregates queued on one connection,
+        // and the first request after a cold start pays for connecting too — the
+        // defaults turn that into an error rather than a slow page.
+        maxWait: 10_000,
+        timeout: 20_000,
+      },
+    );
+  }
 
   async totals(range: DateRange): Promise<AnalyticsTotals> {
     const rows = await this.db.$queryRaw<TotalsRow[]>(Prisma.sql`

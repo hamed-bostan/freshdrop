@@ -31,15 +31,20 @@ export class GetAnalyticsOverview {
     const previous = previousPeriod(range);
     const granularity = granularityFor(range);
 
+    // One batch, because the numbers have to agree with each other and because
+    // seven independent reads is seven connections taken from a pool the rest of
+    // the dashboard is also drawing on — see `IAnalyticsRepository.snapshot`.
     const [totals, previousTotals, revenueSeries, statusBreakdown, topProducts, topCategories] =
-      await Promise.all([
-        this.analytics.totals(range),
-        this.analytics.totals(previous),
-        this.analytics.revenueSeries(range, granularity),
-        this.analytics.statusBreakdown(range),
-        this.analytics.topProducts(range, TOP_LIMIT),
-        this.analytics.topCategories(range, TOP_LIMIT),
-      ]);
+      await this.analytics.snapshot((analytics) =>
+        Promise.all([
+          analytics.totals(range),
+          analytics.totals(previous),
+          analytics.revenueSeries(range, granularity),
+          analytics.statusBreakdown(range),
+          analytics.topProducts(range, TOP_LIMIT),
+          analytics.topCategories(range, TOP_LIMIT),
+        ]),
+      );
 
     return {
       // Echoed back rather than left implicit: the caller may have sent a preset,

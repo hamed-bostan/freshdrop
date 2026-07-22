@@ -39,6 +39,33 @@ import type {
  */
 export type IAnalyticsRepository = {
   /**
+   * Run several of the reads below as one consistent, single-connection batch.
+   *
+   * Two problems, one answer — and the connection one is not a micro-optimisation.
+   * The overview needs seven aggregates at once, and issued as seven independent
+   * queries they each take a pool connection and hold it. The dashboard page also
+   * fans out to four other endpoints in parallel, every one of which opens an
+   * interactive transaction for its `listPage`, and those have two seconds to
+   * acquire a connection before Prisma gives up with `P2028`. Seven concurrent
+   * aggregates was enough to starve them: the overview rendered and the lists
+   * around it returned 500s. Inside one transaction the queries queue on a single
+   * connection instead, so the whole overview costs the pool exactly one.
+   *
+   * The second problem is that the numbers should agree. Read independently, the
+   * KPI totals and the chart beside them can be computed either side of an order
+   * landing — a chart whose bars don't add up to the tile above it, intermittently
+   * and unreproducibly. One transaction at `RepeatableRead` gives them all one
+   * snapshot (Postgres' default READ COMMITTED would not — it re-snapshots per
+   * statement).
+   *
+   * Shaped as a combinator rather than folded into one `overview()` method, the
+   * same choice {@link IUnitOfWork} makes: the five reads below stay a vocabulary
+   * a caller can use singly, and "these ones belong together" stays something the
+   * caller states rather than something the port hard-codes.
+   */
+  snapshot<T>(work: (analytics: IAnalyticsRepository) => Promise<T>): Promise<T>;
+
+  /**
    * The headline figures for `range` — revenue, earning orders, units and distinct
    * customers. The same call answers the current period and its baseline; the
    * use-case makes it twice with two ranges.
