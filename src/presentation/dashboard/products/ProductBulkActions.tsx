@@ -8,13 +8,10 @@ import type { ProductBulkAction } from "@/src/contracts/bulk-action-schema";
 import { Button, Icon, Select } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { useBulkSelection } from "@/src/presentation/dashboard/bulk";
 import { productsApi } from "./product-api";
 
 type ProductBulkActionsProps = {
-  /** The selected product ids, from the surrounding `BulkActionBar`. */
-  selected: string[];
-  /** Clears the selection once an action has been applied. */
-  onDone: () => void;
   /** Categories to offer in the "move to" picker. */
   categories: Category[];
 };
@@ -30,11 +27,16 @@ type ProductBulkActionsProps = {
  * Each action writes over the API and then `router.refresh()`es, so the rows come
  * back from the server rather than being patched locally; the selection clears
  * because those rows have been replaced.
+ *
+ * Reads the selection from context rather than taking it as props: the bar around
+ * it is rendered from a Server Component, which can't hand a client component a
+ * callback (see `BulkActionBar`).
  */
-export function ProductBulkActions({ selected, onDone, categories }: ProductBulkActionsProps) {
+export function ProductBulkActions({ categories }: ProductBulkActionsProps) {
   const t = useTranslations("dashProducts");
   const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
+  const { selected, clear } = useBulkSelection();
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
 
@@ -46,7 +48,7 @@ export function ProductBulkActions({ selected, onDone, categories }: ProductBulk
         // Re-run the server render so the list reflects the change, then drop the
         // selection — the rows it referred to have just been replaced.
         router.refresh();
-        onDone();
+        clear();
       } catch (err) {
         setError(localizeApiError(err, tApiErrors, t("bulkError")));
       }

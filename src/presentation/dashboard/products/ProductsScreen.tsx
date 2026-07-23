@@ -126,9 +126,7 @@ export async function ProductsScreen({ products, categories, filters, canWrite }
         <BulkSelectionProvider ids={products.items.map((product) => product.id)}>
           {canWrite ? (
             <BulkActionBar>
-              {({ selected, onDone }) => (
-                <ProductBulkActions selected={selected} onDone={onDone} categories={categories} />
-              )}
+              <ProductBulkActions categories={categories} />
             </BulkActionBar>
           ) : null}
           <ProductsTable products={products.items} categoryNames={categoryNames} canWrite={canWrite} />

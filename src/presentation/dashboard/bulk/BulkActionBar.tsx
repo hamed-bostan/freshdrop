@@ -7,11 +7,18 @@ import { useBulkSelection } from "./BulkSelectionProvider";
 
 type BulkActionBarProps = {
   /**
-   * The actions themselves — a render prop rather than plain children, because each
-   * action needs the ids and the "done" callback and would otherwise have to reach
-   * for the context a second time.
+   * The actions this list offers — plain children, *not* a render prop.
+   *
+   * A render prop would be the natural shape here, since every action needs the
+   * selected ids and a way to clear them. It can't be: these bars are rendered from
+   * Server Components, and a function can't cross that boundary — React has no way
+   * to serialize one, and says so at runtime rather than at build time.
+   *
+   * So the ids travel through context instead of through props. Each action is a
+   * client component already (it has to be, to call the API), so reaching for
+   * `useBulkSelection()` costs it one line and keeps this boundary crossable.
    */
-  children: (context: { selected: string[]; onDone: () => void }) => React.ReactNode;
+  children: React.ReactNode;
 };
 
 /**
@@ -35,7 +42,7 @@ export function BulkActionBar({ children }: BulkActionBarProps) {
     <div className="flex flex-wrap items-center gap-3 rounded-card-lg border border-primary bg-accent px-4 py-3">
       <span className="text-body-b7 text-foreground">{t("selected", { count: selected.length })}</span>
       <div className="ms-auto flex flex-wrap items-center gap-2">
-        {children({ selected, onDone: clear })}
+        {children}
         <Button variant="ghost" size="sm" onClick={clear}>
           <Icon icon={X} size="sm" className="me-1.5" />
           {t("clear")}

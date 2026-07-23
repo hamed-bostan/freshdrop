@@ -6,14 +6,8 @@ import { Check, X } from "lucide-react";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { useBulkSelection } from "@/src/presentation/dashboard/bulk";
 import { reviewsApi } from "./review-api";
-
-type ReviewBulkActionsProps = {
-  /** The selected review ids, from the surrounding `BulkActionBar`. */
-  selected: string[];
-  /** Clears the selection once an action has been applied. */
-  onDone: () => void;
-};
 
 /**
  * The moderation queue's bulk actions: approve or reject the selection.
@@ -21,11 +15,16 @@ type ReviewBulkActionsProps = {
  * Only the two decisions a moderator makes — there's no bulk "back to pending",
  * because pending is the state a review arrives in rather than a verdict, and
  * undoing a moderation is a per-review reconsideration, not a batch.
+ *
+ * Reads the selection from context rather than taking it as props: the bar around
+ * it is rendered from a Server Component, which can't hand a client component a
+ * callback (see `BulkActionBar`).
  */
-export function ReviewBulkActions({ selected, onDone }: ReviewBulkActionsProps) {
+export function ReviewBulkActions() {
   const t = useTranslations("dashReviews");
   const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
+  const { selected, clear } = useBulkSelection();
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
 
@@ -37,7 +36,7 @@ export function ReviewBulkActions({ selected, onDone }: ReviewBulkActionsProps) 
         // The queue's tab counts move too, and they're computed server-side — so
         // the whole segment re-renders rather than the rows being patched here.
         router.refresh();
-        onDone();
+        clear();
       } catch (err) {
         setError(localizeApiError(err, tApiErrors, t("bulkError")));
       }

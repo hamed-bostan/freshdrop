@@ -62,7 +62,7 @@ export async function ReviewsScreen({
         <BulkSelectionProvider ids={reviews.items.map((review) => review.id)}>
           {canModerate ? (
             <BulkActionBar>
-              {({ selected, onDone }) => <ReviewBulkActions selected={selected} onDone={onDone} />}
+              <ReviewBulkActions />
             </BulkActionBar>
           ) : null}
           <ReviewsTable reviews={reviews.items} productsById={productsById} canModerate={canModerate} />
