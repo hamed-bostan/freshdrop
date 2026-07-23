@@ -7,14 +7,9 @@ import {
   type AdminOrderSort,
 } from "@/src/domain/entities/AdminOrderFilters";
 import type { Order } from "@/src/domain/entities/Order";
-import {
-  ORDER_PIPELINE_STAGES,
-  type OrderPipelineStage,
-} from "@/src/domain/entities/OrderPipelineStage";
 import type { Page } from "@/src/domain/entities/Pagination";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import {
-  ListFilterSelect,
   ListPager,
   ListSearchInput,
   ListSortSelect,
@@ -22,6 +17,7 @@ import {
   type ListSortOption,
 } from "@/src/presentation/dashboard/list";
 import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvLink";
+import { OrdersFilterBar } from "./OrdersFilterBar";
 import { OrdersTable } from "./OrdersTable";
 
 type OrdersScreenProps = {
@@ -54,20 +50,6 @@ export async function OrdersScreen({ orders, customers, filters }: OrdersScreenP
   const customersById = new Map(customers.map((customer) => [customer.userId, customer]));
   const isFiltered = hasAdminOrderFilters(filters);
 
-  // The filter's vocabulary is the pipeline stage, not the raw status: an
-  // operator asks "what's still waiting to be confirmed" and "what's on a van",
-  // and neither is a status — both are a status *and* a milestone. See
-  // `OrderPipelineStage`.
-  const pipelineLabels: Record<OrderPipelineStage, string> = {
-    pending: t("filterPipelinePending"),
-    confirmed: t("filterPipelineConfirmed"),
-    out_for_delivery: t("filterPipelineOutForDelivery"),
-    delivered: t("filterPipelineDelivered"),
-    return_requested: t("filterPipelineReturnRequested"),
-    cancelled: t("filterPipelineCancelled"),
-    refunded: t("filterPipelineRefunded"),
-  };
-
   const sortOptions: ListSortOption<AdminOrderSort>[] = [
     { sort: "placedAt", direction: "desc", label: t("sortNewest") },
     { sort: "placedAt", direction: "asc", label: t("sortOldest") },
@@ -86,17 +68,10 @@ export async function OrdersScreen({ orders, customers, filters }: OrdersScreenP
         search={<ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} />}
         filters={
           <>
-            <ListFilterSelect
-              paramName="pipeline"
-              label={t("filterStatusLabel")}
-              options={[
-                { value: "", label: t("filterStatusAll") },
-                ...ORDER_PIPELINE_STAGES.map((stage) => ({
-                  value: stage,
-                  label: pipelineLabels[stage],
-                })),
-              ]}
-            />
+            {/* The filters are one client island: they all write query params,
+                and the labels they need are resolved inside it rather than
+                threaded through as props. */}
+            <OrdersFilterBar />
             <ListSortSelect
               label={t("sortLabel")}
               options={sortOptions}

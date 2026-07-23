@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import type { OrderStatusCount } from "@/src/domain/entities/Analytics";
 import type { OrderStatus } from "@/src/domain/entities/Order";
+import type { OrderPipelineStage } from "@/src/domain/entities/OrderPipelineStage";
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
@@ -27,18 +28,33 @@ const STATUS_BARS: Record<OrderStatus, string> = {
 };
 
 /**
- * Label per status, in the *raw status* vocabulary the orders list's filter uses
- * (`dashOrders.filterStatus*`) rather than the badge's. `OrderStatusBadge` folds a
- * status together with its delivery stage — an admin's `processing` order reads
- * "In progress" where a shopper's reads "Shipped" — which is the wrong vocabulary
- * for a breakdown that counts statuses and links into a `?status=` filter.
+ * The pipeline stage each status corresponds to — what the row is labelled with,
+ * and what its link filters the orders list to.
+ *
+ * Every status maps onto exactly one stage, `processing` onto the umbrella that
+ * spans its three milestones (see `OrderPipelineStage`). That correspondence is
+ * what lets a row link somewhere honest: clicking "9 cancelled" has to land on
+ * those nine orders and no others.
+ *
+ * Not the badge's vocabulary: `OrderStatusBadge` folds a status together with its
+ * delivery stage — an admin's `processing` order reads "In progress" where a
+ * shopper's reads "Shipped" — which is the wrong vocabulary for a breakdown that
+ * counts statuses.
  */
+const STATUS_PIPELINE = {
+  completed: "delivered",
+  processing: "in_progress",
+  cancelled: "cancelled",
+  return_requested: "return_requested",
+  refunded: "refunded",
+} as const satisfies Record<OrderStatus, OrderPipelineStage>;
+
 const STATUS_LABEL_KEYS = {
-  completed: "filterStatusCompleted",
-  processing: "filterStatusProcessing",
-  cancelled: "filterStatusCancelled",
-  return_requested: "filterStatusReturnRequested",
-  refunded: "filterStatusRefunded",
+  completed: "filterPipelineDelivered",
+  processing: "filterPipelineInProgress",
+  cancelled: "filterPipelineCancelled",
+  return_requested: "filterPipelineReturnRequested",
+  refunded: "filterPipelineRefunded",
 } as const satisfies Record<OrderStatus, string>;
 
 /**
@@ -90,7 +106,7 @@ export async function OrderStatusBreakdown({ breakdown }: OrderStatusBreakdownPr
             {present.map((slice) => (
               <li key={slice.status}>
                 <Link
-                  href={`/dashboard/orders?status=${slice.status}`}
+                  href={`/dashboard/orders?pipeline=${STATUS_PIPELINE[slice.status]}`}
                   className="flex items-center gap-3 rounded-card-md py-1 transition-colors hover:bg-muted"
                 >
                   <span className={`size-2.5 shrink-0 rounded-full ${STATUS_BARS[slice.status]}`} />

@@ -25,6 +25,7 @@ import type { TrackingMilestone } from "./OrderTracking";
  * filter that silently matches nothing. They arrive when the milestone does.
  */
 export const ORDER_PIPELINE_STAGES = [
+  "in_progress",
   "pending",
   "confirmed",
   "out_for_delivery",
@@ -50,6 +51,11 @@ export type OrderPipelinePredicate = {
 };
 
 const PIPELINE_PREDICATES: Record<OrderPipelineStage, OrderPipelinePredicate> = {
+  // Every live order, whatever milestone it's reached — the umbrella over the
+  // three below it. Deliberately overlapping rather than mutually exclusive: "how
+  // much is in flight right now" is the question the queue is opened with, and
+  // answering it by ticking three boxes is worse than one option that says so.
+  in_progress: { status: "processing" },
   // Placed, but nobody has accepted it yet — the top of the work queue.
   pending: { status: "processing", stage: null },
   // Accepted and being put together; still in the store's hands.
@@ -71,8 +77,13 @@ export function pipelinePredicate(stage: OrderPipelineStage): OrderPipelinePredi
 }
 
 /**
- * Which pipeline stage an order presents as — the inverse of the predicates
+ * Which pipeline stage an order presents as — a near-inverse of the predicates
  * above, for labelling a row.
+ *
+ * Never returns `in_progress`: that stage exists to be *asked for*, and a row
+ * labelled with the umbrella instead of the milestone it actually reached would
+ * be telling an operator less than the data knows. It is the one stage that
+ * filters but doesn't label, which is why this isn't a true inverse.
  *
  * Ordered most-specific-first so a live order resolves by its milestone and
  * every terminal status short-circuits before that. An unexpected pairing (a
