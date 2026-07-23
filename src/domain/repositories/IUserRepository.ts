@@ -58,6 +58,19 @@ export type IUserRepository = {
   /** Every user holding one of `roles`, oldest first — the team is small enough to read whole. */
   listByRoles(roles: readonly UserRole[]): Promise<User[]>;
   /**
+   * Ids of users whose name or phone contains `term`, at most `limit` of them.
+   *
+   * Exists so a list keyed by `userId` can be searched by *who* rather than by id
+   * — the orders list, which references a user with no DB foreign key and so
+   * can't join its way to a name.
+   *
+   * Returns ids rather than users because the caller only ever feeds them back
+   * into another query, and `limit` is required rather than optional so that the
+   * caller has to have thought about what happens when a term matches half the
+   * store. See `resolveOrderSearch` for what that decision looks like.
+   */
+  findIdsMatching(term: string, limit: number): Promise<string[]>;
+  /**
    * Apply a batch of role changes and their audit entries atomically — all of it
    * commits or none of it does.
    *

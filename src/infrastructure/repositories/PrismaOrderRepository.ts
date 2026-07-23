@@ -279,7 +279,17 @@ type OrderRow = {
 function toOrderWhere(filters: AdminOrderFilters): Prisma.OrderWhereInput {
   const and: Prisma.OrderWhereInput[] = [];
 
-  if (filters.query) and.push({ id: { contains: filters.query, mode: "insensitive" } });
+  // The term is one filter with two ways to match: the order's own id, or the
+  // customer it resolved to. One OR-group inside the AND, so it narrows *with*
+  // the other filters rather than widening past them — flattened into the
+  // top-level AND, a customer match would drag in orders of every status.
+  if (filters.query) {
+    const or: Prisma.OrderWhereInput[] = [
+      { id: { contains: filters.query, mode: "insensitive" } },
+    ];
+    if (filters.userIds?.length) or.push({ userId: { in: filters.userIds } });
+    and.push({ OR: or });
+  }
 
   if (filters.pipeline) {
     const predicate = pipelinePredicate(filters.pipeline);

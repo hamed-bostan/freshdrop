@@ -817,8 +817,8 @@
   "dashOrders": {
     "heading": "سفارش‌ها",
     "summary": "{count, plural, other {# سفارش}} · برای به‌روزرسانی مرحله تحویل، سفارش را باز کنید",
-    "searchLabel": "جست‌وجوی سفارش با شناسه",
-    "searchPlaceholder": "جست‌وجو با شناسه سفارش…",
+    "searchLabel": "جست‌وجوی سفارش با شناسه، نام مشتری یا شماره تماس",
+    "searchPlaceholder": "جست‌وجو با شناسه سفارش، نام مشتری یا شماره…",
     "filterStatusLabel": "فیلتر بر اساس وضعیت",
     "filterStatusAll": "هر وضعیتی",
     "filterPipelineInProgress": "در جریان",

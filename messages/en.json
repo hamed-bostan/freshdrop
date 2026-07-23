@@ -817,8 +817,8 @@
   "dashOrders": {
     "heading": "Orders",
     "summary": "{count, plural, one {# order} other {# orders}} · open an order to update its delivery stage",
-    "searchLabel": "Search orders by ID",
-    "searchPlaceholder": "Search by order ID…",
+    "searchLabel": "Search orders by ID, customer or phone",
+    "searchPlaceholder": "Search by order ID, customer, phone…",
     "filterStatusLabel": "Filter by status",
     "filterStatusAll": "Any status",
     "filterPipelineInProgress": "In progress",

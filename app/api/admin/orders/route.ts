@@ -5,7 +5,7 @@ import {
   DEFAULT_ADMIN_ORDER_SORT,
 } from "@/src/domain/entities/AdminOrderFilters";
 import { ListOrders } from "@/src/domain/use-cases/orders/ListOrders";
-import { orderRepository } from "@/src/infrastructure/container";
+import { orderRepository, userRepository } from "@/src/infrastructure/container";
 import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminOrderFilters } from "@/src/lib/api/admin-order-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   });
 
   try {
-    const result = await new ListOrders(orderRepository).execute(filters, page);
+    const result = await new ListOrders(orderRepository, userRepository).execute(filters, page);
     return NextResponse.json(result);
   } catch (error) {
     return errorResponseFromException(error, "GET /api/admin/orders failed");

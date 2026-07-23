@@ -159,8 +159,12 @@ export class MockOrderRepository implements IOrderRepository {
     // exact delivery/payment, and inclusive date and total bounds — all AND-ed,
     // so an empty filter matches every order.
     const needle = filters.query?.toLowerCase() ?? "";
+    const customerIds = filters.userIds?.length ? new Set(filters.userIds) : null;
     const matched = (await this.getAllOrders()).filter((order) => {
-      if (needle && !order.id.toLowerCase().includes(needle)) return false;
+      // Id *or* customer — see the OR-group in `toOrderWhere`.
+      if (needle && !order.id.toLowerCase().includes(needle) && !customerIds?.has(order.userId)) {
+        return false;
+      }
 
       if (filters.pipeline) {
         const predicate = pipelinePredicate(filters.pipeline);

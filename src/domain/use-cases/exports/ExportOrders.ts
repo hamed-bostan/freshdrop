@@ -5,6 +5,8 @@ import {
 } from "../../entities/AdminOrderFilters";
 import type { Order } from "../../entities/Order";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
+import type { IUserRepository } from "../../repositories/IUserRepository";
+import { resolveOrderSearch } from "../orders/resolveOrderSearch";
 import { streamAllPages } from "./streamAllPages";
 
 /**
@@ -22,11 +24,19 @@ import { streamAllPages } from "./streamAllPages";
  * filters.
  */
 export class ExportOrders {
-  constructor(private readonly orders: IOrderRepository) {}
+  constructor(
+    private readonly orders: IOrderRepository,
+    private readonly users: IUserRepository,
+  ) {}
 
-  execute(filters: AdminOrderFilters, sort?: AdminOrderSort): AsyncGenerator<Order> {
-    return streamAllPages<Order, AdminOrderSort>(
-      (page) => this.orders.listPage(filters, page),
+  async *execute(filters: AdminOrderFilters, sort?: AdminOrderSort): AsyncGenerator<Order> {
+    // Resolved once, before the first page: the same customer ids then narrow
+    // every page of the export, so a customer created midway through a long
+    // download can't start matching partway down the file.
+    const resolved = await resolveOrderSearch(filters, this.users);
+
+    yield* streamAllPages<Order, AdminOrderSort>(
+      (page) => this.orders.listPage(resolved, page),
       {
         sort: sort ?? DEFAULT_ADMIN_ORDER_SORT,
         direction: DEFAULT_ADMIN_ORDER_DIRECTION,

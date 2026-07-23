@@ -43,6 +43,26 @@ export class PrismaUserRepository implements IUserRepository {
     return rows.map(toUser);
   }
 
+  async findIdsMatching(term: string, limit: number): Promise<string[]> {
+    const rows = await prisma.user.findMany({
+      where: {
+        OR: [
+          { name: { contains: term, mode: "insensitive" } },
+          // No `mode` on the phone: it's digits, so case-insensitivity would only
+          // cost the comparison something and buy nothing.
+          { phone: { contains: term } },
+        ],
+      },
+      // Oldest first, so a truncated result is at least *stable* between two
+      // identical searches rather than reshuffling under whatever order the
+      // planner happened to pick.
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+      take: limit,
+    });
+    return rows.map((row) => row.id);
+  }
+
   async applyRoleChanges(batch: RoleChangeBatch): Promise<User[]> {
     // An interactive transaction, not a batched array: each assignment needs a
     // read (see below) before its write, and the audit entries must land in the

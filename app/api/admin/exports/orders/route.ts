@@ -3,7 +3,7 @@ import { ADMIN_ORDER_SORTS, DEFAULT_ADMIN_ORDER_SORT } from "@/src/domain/entiti
 import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid, orderRecognizedRevenue, orderRefundedTotal } from "@/src/domain/entities/Order";
 import { ExportOrders } from "@/src/domain/use-cases/exports/ExportOrders";
-import { orderRepository } from "@/src/infrastructure/container";
+import { orderRepository, userRepository } from "@/src/infrastructure/container";
 import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminOrderFilters } from "@/src/lib/api/admin-order-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest): Promise<Response> {
   const filters = parseAdminOrderFilters(params);
   const { sort } = parsePageRequest(params, ADMIN_ORDER_SORTS, { sort: DEFAULT_ADMIN_ORDER_SORT });
 
-  const orders = new ExportOrders(orderRepository).execute(filters, sort);
+  const orders = new ExportOrders(orderRepository, userRepository).execute(filters, sort);
 
   return csvResponse(
     csvFilename("orders"),

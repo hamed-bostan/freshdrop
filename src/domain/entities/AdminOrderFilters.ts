@@ -19,15 +19,23 @@ export const DEFAULT_ADMIN_ORDER_DIRECTION = "desc";
 
 export type AdminOrderFilters = {
   /**
-   * Free-text term matched against the order id.
-   *
-   * Not against the customer's name: orders reference a user by id with no DB
-   * foreign key (the schema's deliberate loose coupling), so a name search would
-   * mean resolving users first and passing a possibly-huge id list into the
-   * query. Searching customers by name belongs on the customers list, which can
-   * then link through to the orders — that's Phase 6's customer detail page.
+   * Free-text term, matched against the order id — and, via `userIds`, against
+   * who placed it.
    */
   query?: string;
+  /**
+   * Customers the term resolved to, matched as an *alternative* to the id: an
+   * order is a hit if its id looks like the term **or** it was placed by one of
+   * these users.
+   *
+   * Not a filter anyone sets. It's derived from `query` by `resolveOrderSearch`
+   * before the filters reach a repository, and never parsed from the URL — the
+   * wire contract carries the term the operator typed, not the ids it happened to
+   * resolve to on one request. Orders reference a user with no DB foreign key
+   * (the schema's deliberate loose coupling), so this indirection is what a join
+   * would otherwise be.
+   */
+  userIds?: string[];
   /**
    * Where the order is in the queue, as one flat vocabulary rather than the
    * `status`/`stage` pair it resolves to — see {@link OrderPipelineStage} for why
