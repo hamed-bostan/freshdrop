@@ -161,6 +161,11 @@ export class CreateOrder {
         userId,
         status: "processing",
         phase: "current",
+        // Checkout books a delivery window, so every order it places is couriered;
+        // pickup has no path through this flow yet. Payment is settled by the time
+        // we get here — the order is only written once the charge went through.
+        deliveryType: "delivery",
+        paymentStatus: "paid",
         stage: "confirmed",
         placedAt: new Date().toISOString(),
         location,

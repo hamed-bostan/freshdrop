@@ -43,6 +43,8 @@ export const orderResponseSchema = z.object({
   userId: z.string(),
   status: z.enum(["completed", "processing", "cancelled", "return_requested", "refunded"]),
   phase: z.enum(["current", "previous"]),
+  deliveryType: z.enum(["delivery", "pickup"]),
+  paymentStatus: z.enum(["paid", "pending", "failed", "refunded"]),
   placedAt: z.string(),
   location: z.string(),
   locationLabel: z.string().optional(),

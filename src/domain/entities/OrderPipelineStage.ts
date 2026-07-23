@@ -1,0 +1,100 @@
+import type { OrderStatus } from "./Order";
+import type { TrackingMilestone } from "./OrderTracking";
+
+/**
+ * The order list's status vocabulary *as an operator thinks about it* — one flat
+ * list of "where is this order right now", rather than the two fields the domain
+ * actually stores.
+ *
+ * The split exists because `status` and `stage` answer different questions:
+ * `status` is the lifecycle outcome (is this order live, called off, refunded)
+ * and `stage` is how far along the delivery got. Nobody working the queue thinks
+ * in those terms — they think "which orders haven't been confirmed yet" and
+ * "which are on a van". Those are *combinations*, so a filter offering `status`
+ * alone can't express them: `processing` covers both an order nobody has looked
+ * at and one that's minutes from the door.
+ *
+ * So this is the presentation vocabulary, resolved in the repository rather than
+ * in the UI: each stage maps to a `status` (+ optionally a `stage`) predicate
+ * that the query can be built from, which keeps the paging honest — filtering
+ * after the fact would page a set the count doesn't agree with.
+ *
+ * The list is deliberately only what the domain can currently distinguish.
+ * "Preparing" and "Ready" are real steps in a grocery back-of-house, but
+ * `TrackingMilestone` has no milestones for them, so offering them would be a
+ * filter that silently matches nothing. They arrive when the milestone does.
+ */
+export const ORDER_PIPELINE_STAGES = [
+  "pending",
+  "confirmed",
+  "out_for_delivery",
+  "delivered",
+  "return_requested",
+  "cancelled",
+  "refunded",
+] as const;
+
+export type OrderPipelineStage = (typeof ORDER_PIPELINE_STAGES)[number];
+
+/**
+ * The `(status, stage)` predicate a pipeline stage selects.
+ *
+ * `stage: null` means "the stage column is unset" (an order nobody has confirmed
+ * yet), which is a different query from `stage: undefined` — "any stage, don't
+ * constrain it" — and the distinction is the whole reason `pending` and
+ * `confirmed` can be told apart.
+ */
+export type OrderPipelinePredicate = {
+  status: OrderStatus;
+  stage?: TrackingMilestone | null;
+};
+
+const PIPELINE_PREDICATES: Record<OrderPipelineStage, OrderPipelinePredicate> = {
+  // Placed, but nobody has accepted it yet — the top of the work queue.
+  pending: { status: "processing", stage: null },
+  // Accepted and being put together; still in the store's hands.
+  confirmed: { status: "processing", stage: "confirmed" },
+  // With a courier, on the way to the customer.
+  out_for_delivery: { status: "processing", stage: "shipped" },
+  // Handed over. `status` alone settles it — an order only completes by arriving,
+  // so constraining the stage as well would just exclude legacy rows that
+  // completed before milestones were recorded.
+  delivered: { status: "completed" },
+  return_requested: { status: "return_requested" },
+  cancelled: { status: "cancelled" },
+  refunded: { status: "refunded" },
+};
+
+/** The `(status, stage)` predicate a pipeline stage filters on. */
+export function pipelinePredicate(stage: OrderPipelineStage): OrderPipelinePredicate {
+  return PIPELINE_PREDICATES[stage];
+}
+
+/**
+ * Which pipeline stage an order presents as — the inverse of the predicates
+ * above, for labelling a row.
+ *
+ * Ordered most-specific-first so a live order resolves by its milestone and
+ * every terminal status short-circuits before that. An unexpected pairing (a
+ * `processing` order at `arrived`, which the stage-advance use-case moves to
+ * `completed` in the same write) falls back to `confirmed`: the order is with
+ * the store, which is the safe thing to tell an operator.
+ */
+export function orderPipelineStage(order: {
+  status: OrderStatus;
+  stage?: TrackingMilestone;
+}): OrderPipelineStage {
+  switch (order.status) {
+    case "completed":
+      return "delivered";
+    case "cancelled":
+      return "cancelled";
+    case "refunded":
+      return "refunded";
+    case "return_requested":
+      return "return_requested";
+    case "processing":
+      if (order.stage == null) return "pending";
+      return order.stage === "shipped" ? "out_for_delivery" : "confirmed";
+  }
+}

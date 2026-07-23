@@ -133,6 +133,13 @@ model Order {
   userId    String      @map("user_id")
   status    String
   phase     String
+  // How the order is handed over ("delivery" | "pickup") and where the money stands
+  // ("paid" | "pending" | "failed" | "refunded"). Plain strings matching the domain
+  // unions, the schema's enum-free style. The defaults are what legacy rows truly
+  // were: every order placed before these columns existed was couriered, and was
+  // placed through a flow with no outcome other than paid.
+  deliveryType  String  @default("delivery") @map("delivery_type")
+  paymentStatus String  @default("paid") @map("payment_status")
   placedAt  DateTime    @map("placed_at")
   location  String
   // Short saved-address label ("Home", "Gym") captured at checkout, so the order
@@ -174,6 +181,12 @@ model Order {
   // proportional to the period being asked about rather than to the store's
   // whole history.
   @@index([placedAt])
+  // The admin list's shape: narrow by status, then read newest-first. Leading with
+  // `status` lets the same index serve both halves — the equality seek and the
+  // ordering — where the `placedAt` index alone would sort the whole table and
+  // discard most of it. The other filters (stage, delivery type, payment) ride
+  // along as row checks: they're too low-cardinality to earn their own index.
+  @@index([status, placedAt])
   @@map("orders")
 }
 

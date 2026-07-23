@@ -1,4 +1,5 @@
-import type { OrderStatus } from "./Order";
+import type { DeliveryType, PaymentStatus } from "./Order";
+import type { OrderPipelineStage } from "./OrderPipelineStage";
 
 /**
  * Filter and sort vocabulary for the admin order-tracking list.
@@ -27,5 +28,38 @@ export type AdminOrderFilters = {
    * then link through to the orders — that's Phase 6's customer detail page.
    */
   query?: string;
-  status?: OrderStatus;
+  /**
+   * Where the order is in the queue, as one flat vocabulary rather than the
+   * `status`/`stage` pair it resolves to — see {@link OrderPipelineStage} for why
+   * the two fields are merged here and not offered separately.
+   */
+  pipeline?: OrderPipelineStage;
+  deliveryType?: DeliveryType;
+  paymentStatus?: PaymentStatus;
+  /**
+   * Inclusive bounds on `placedAt`, as ISO 8601 instants. Half-open ranges are
+   * meaningful and supported: "everything since Monday" sets only `placedFrom`.
+   *
+   * Instants rather than calendar dates because the boundary has to be resolved
+   * against *a* timezone and the repository has no business picking one — the
+   * caller that knows the operator's zone turns "today" into the two instants
+   * that bracket it (see `admin-order-params`).
+   */
+  placedFrom?: string;
+  placedTo?: string;
+  /** Inclusive bounds on the order total, in the store's currency. */
+  minTotal?: number;
+  maxTotal?: number;
 };
+
+/**
+ * Whether anything is narrowing the list — what tells "no orders yet" apart from
+ * "no orders match", and what decides if the toolbar's Reset is worth offering.
+ *
+ * A function rather than a check at each call site because the filter set is now
+ * wide enough that an inline `a != null || b != null` chain is a standing
+ * invitation to forget the field someone added last.
+ */
+export function hasAdminOrderFilters(filters: AdminOrderFilters): boolean {
+  return Object.values(filters).some((value) => value != null);
+}

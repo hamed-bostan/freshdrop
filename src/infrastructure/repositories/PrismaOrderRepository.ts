@@ -1,12 +1,15 @@
 import { Prisma } from "@prisma/client";
 import type {
+  DeliveryType,
   ItemSubstitution,
   Order,
   OrderItem,
   OrderPhase,
   OrderStatus,
+  PaymentStatus,
   SubstitutionPreference,
 } from "@/src/domain/entities/Order";
+import { pipelinePredicate } from "@/src/domain/entities/OrderPipelineStage";
 import type { AdminOrderFilters, AdminOrderSort } from "@/src/domain/entities/AdminOrderFilters";
 import { DEFAULT_ADMIN_ORDER_DIRECTION } from "@/src/domain/entities/AdminOrderFilters";
 import { createPage, toSkipTake, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
@@ -55,10 +58,7 @@ export class PrismaOrderRepository implements IOrderRepository {
   }
 
   async listPage(filters: AdminOrderFilters, page: PageRequest<AdminOrderSort>): Promise<Page<Order>> {
-    const and: Prisma.OrderWhereInput[] = [];
-    if (filters.query) and.push({ id: { contains: filters.query, mode: "insensitive" } });
-    if (filters.status) and.push({ status: filters.status });
-    const where: Prisma.OrderWhereInput = and.length ? { AND: and } : {};
+    const where = toOrderWhere(filters);
 
     const direction = page.direction ?? DEFAULT_ADMIN_ORDER_DIRECTION;
     const orderBy: Prisma.OrderOrderByWithRelationInput =
@@ -95,6 +95,8 @@ export class PrismaOrderRepository implements IOrderRepository {
         userId: input.userId,
         status: input.status,
         phase: input.phase,
+        deliveryType: input.deliveryType,
+        paymentStatus: input.paymentStatus,
         placedAt: new Date(input.placedAt),
         location: input.location,
         locationLabel: input.locationLabel ?? null,
@@ -227,6 +229,8 @@ type OrderRow = {
   userId: string;
   status: string;
   phase: string;
+  deliveryType: string;
+  paymentStatus: string;
   placedAt: Date;
   location: string;
   locationLabel: string | null;
@@ -260,6 +264,42 @@ type OrderRow = {
  * strings on the wire (the schema is enum-free) but only ever hold the domain
  * union values, so they're narrowed here; a NULL stage collapses to `undefined`.
  */
+/**
+ * Translate the admin list's filters into one `where` clause.
+ *
+ * All of it happens in the query rather than over the fetched page, so the count
+ * and the rows agree — filtering afterwards would page a set the total doesn't
+ * describe, and the pager would offer pages that aren't there.
+ *
+ * The pipeline filter is the reason this is a function: it's the one filter that
+ * isn't a column, resolving to a `(status, stage)` pair where `stage: null` ("not
+ * yet confirmed") is a genuinely different predicate from an absent stage
+ * constraint. See `OrderPipelineStage`.
+ */
+function toOrderWhere(filters: AdminOrderFilters): Prisma.OrderWhereInput {
+  const and: Prisma.OrderWhereInput[] = [];
+
+  if (filters.query) and.push({ id: { contains: filters.query, mode: "insensitive" } });
+
+  if (filters.pipeline) {
+    const predicate = pipelinePredicate(filters.pipeline);
+    and.push({ status: predicate.status });
+    if (predicate.stage !== undefined) and.push({ stage: predicate.stage });
+  }
+
+  if (filters.deliveryType) and.push({ deliveryType: filters.deliveryType });
+  if (filters.paymentStatus) and.push({ paymentStatus: filters.paymentStatus });
+
+  // Bounds are inclusive and independently optional, so a half-open range
+  // ("everything since Monday") is expressible.
+  if (filters.placedFrom) and.push({ placedAt: { gte: new Date(filters.placedFrom) } });
+  if (filters.placedTo) and.push({ placedAt: { lte: new Date(filters.placedTo) } });
+  if (filters.minTotal != null) and.push({ total: { gte: filters.minTotal } });
+  if (filters.maxTotal != null) and.push({ total: { lte: filters.maxTotal } });
+
+  return and.length ? { AND: and } : {};
+}
+
 function toOrder(row: OrderRow): Order {
   const items: OrderItem[] = row.items.map((item) => ({
     productId: item.productId,
@@ -292,6 +332,8 @@ function toOrder(row: OrderRow): Order {
     userId: row.userId,
     status: row.status as OrderStatus,
     phase: row.phase as OrderPhase,
+    deliveryType: row.deliveryType as DeliveryType,
+    paymentStatus: row.paymentStatus as PaymentStatus,
     placedAt: row.placedAt.toISOString(),
     location: row.location,
     locationLabel: row.locationLabel ?? undefined,

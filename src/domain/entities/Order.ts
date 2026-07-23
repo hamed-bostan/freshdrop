@@ -48,6 +48,37 @@ export type OrderPhase = "current" | "previous";
 export type SubstitutionPreference = "substitute" | "refund";
 
 /**
+ * How the customer takes delivery of the order — the choice made at checkout.
+ *
+ * Declared as an array with the union derived from it, for the same reason as
+ * {@link ORDER_STATUSES}: the admin list validates a `?delivery=` param against
+ * it, which a bare union can't do at runtime.
+ *
+ * - `delivery` — couriered to the saved address; the trackable path.
+ * - `pickup` — collected by the customer from the store; no courier, so an order
+ *   on this path never leaves the `confirmed` milestone.
+ */
+export const DELIVERY_TYPES = ["delivery", "pickup"] as const;
+
+export type DeliveryType = (typeof DELIVERY_TYPES)[number];
+
+/**
+ * Where the money for an order stands — deliberately independent of
+ * {@link OrderStatus}, which tracks the *goods*. The two diverge in exactly the
+ * cases an operator cares about: a `processing` order whose payment `failed` is
+ * the "needs attention" case, and a `cancelled` order can sit at `pending`
+ * (never charged) or `refunded` (charged, then given back).
+ *
+ * - `paid` — settled; the normal state for an order that got placed at all.
+ * - `pending` — authorised but not captured, or cash-on-delivery not yet collected.
+ * - `failed` — the charge was declined or errored; nothing was taken.
+ * - `refunded` — captured and since returned to the customer's wallet.
+ */
+export const PAYMENT_STATUSES = ["paid", "pending", "failed", "refunded"] as const;
+
+export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
+
+/**
  * The outcome recorded once a picker resolves an out-of-stock line — absent while
  * the line is still expected to be fulfilled as ordered.
  *
@@ -97,6 +128,17 @@ export type Order = {
   userId: string;
   status: OrderStatus;
   phase: OrderPhase;
+  /**
+   * How the order is handed over — couriered or collected. Legacy orders placed
+   * before the choice existed read as `delivery`, which is what they were.
+   */
+  deliveryType: DeliveryType;
+  /**
+   * Where the money stands, tracked separately from `status` (see
+   * {@link PAYMENT_STATUSES}). Legacy orders read as `paid`: they were placed
+   * under a flow that had no other outcome.
+   */
+  paymentStatus: PaymentStatus;
   /** ISO 8601 timestamp (UTC) the order was placed. Formatted in the presentation layer. */
   placedAt: string;
   /** Human-readable delivery address. */

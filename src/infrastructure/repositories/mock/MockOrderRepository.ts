@@ -1,10 +1,13 @@
 import type {
+  DeliveryType,
   ItemSubstitution,
   Order,
   OrderItem,
   OrderPhase,
   OrderStatus,
+  PaymentStatus,
 } from "@/src/domain/entities/Order";
+import { pipelinePredicate } from "@/src/domain/entities/OrderPipelineStage";
 import type { AdminOrderFilters, AdminOrderSort } from "@/src/domain/entities/AdminOrderFilters";
 import { DEFAULT_ADMIN_ORDER_DIRECTION } from "@/src/domain/entities/AdminOrderFilters";
 import { paginateArray, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
@@ -35,6 +38,14 @@ type OrderSeed = {
   /** Saved-address label the order card collapses the address to ("Home", "Gym"). */
   locationLabel: string;
   total: number;
+  /**
+   * How it's handed over and where its money stands. Both omitted on most seeds
+   * and defaulted to the ordinary case (couriered, paid) — a seed only states
+   * them when it exists to demonstrate the *unusual* case, so reading the list
+   * shows at a glance which orders are the interesting ones.
+   */
+  deliveryType?: DeliveryType;
+  paymentStatus?: PaymentStatus;
   /** Starting delivery milestone. Omitted for orders that aren't trackable. */
   stage?: TrackingMilestone;
   lines: { productId: string; quantity: number }[];
@@ -143,12 +154,34 @@ export class MockOrderRepository implements IOrderRepository {
   }
 
   async listPage(filters: AdminOrderFilters, page: PageRequest<AdminOrderSort>): Promise<Page<Order>> {
-    // Mirrors the Prisma repo's filters: id substring (case-insensitive) and an
-    // exact status, combined with AND; an empty filter matches every order.
+    // Mirrors `toOrderWhere` in the Prisma repo, predicate for predicate: an id
+    // substring (case-insensitive), the pipeline stage's (status, stage) pair,
+    // exact delivery/payment, and inclusive date and total bounds — all AND-ed,
+    // so an empty filter matches every order.
     const needle = filters.query?.toLowerCase() ?? "";
     const matched = (await this.getAllOrders()).filter((order) => {
       if (needle && !order.id.toLowerCase().includes(needle)) return false;
-      if (filters.status && order.status !== filters.status) return false;
+
+      if (filters.pipeline) {
+        const predicate = pipelinePredicate(filters.pipeline);
+        if (order.status !== predicate.status) return false;
+        // `null` means "no stage set"; `undefined` means the stage is unconstrained.
+        if (predicate.stage !== undefined && (order.stage ?? null) !== predicate.stage) return false;
+      }
+
+      if (filters.deliveryType && order.deliveryType !== filters.deliveryType) return false;
+      if (filters.paymentStatus && order.paymentStatus !== filters.paymentStatus) return false;
+
+      // Compared as instants, not strings: the seeds are written without
+      // milliseconds and the filters arrive from `toISOString()` with them, and
+      // lexicographic order disagrees with chronological order across the two
+      // spellings of the same moment.
+      const placedAt = Date.parse(order.placedAt);
+      if (filters.placedFrom && placedAt < Date.parse(filters.placedFrom)) return false;
+      if (filters.placedTo && placedAt > Date.parse(filters.placedTo)) return false;
+      if (filters.minTotal != null && order.total < filters.minTotal) return false;
+      if (filters.maxTotal != null && order.total > filters.maxTotal) return false;
+
       return true;
     });
 
@@ -187,6 +220,8 @@ export class MockOrderRepository implements IOrderRepository {
         userId: DEMO_USER_ID,
         status: this.statuses.get(seed.id) ?? seed.status,
         phase: this.phases.get(seed.id) ?? seed.phase,
+        deliveryType: seed.deliveryType ?? "delivery",
+        paymentStatus: seed.paymentStatus ?? "paid",
         placedAt: seed.placedAt,
         location: seed.location,
         locationLabel: seed.locationLabel,

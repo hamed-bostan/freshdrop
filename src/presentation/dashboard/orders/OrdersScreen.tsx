@@ -2,10 +2,15 @@ import { getTranslations } from "next-intl/server";
 import {
   DEFAULT_ADMIN_ORDER_DIRECTION,
   DEFAULT_ADMIN_ORDER_SORT,
+  hasAdminOrderFilters,
   type AdminOrderFilters,
   type AdminOrderSort,
 } from "@/src/domain/entities/AdminOrderFilters";
-import { ORDER_STATUSES, type Order } from "@/src/domain/entities/Order";
+import type { Order } from "@/src/domain/entities/Order";
+import {
+  ORDER_PIPELINE_STAGES,
+  type OrderPipelineStage,
+} from "@/src/domain/entities/OrderPipelineStage";
 import type { Page } from "@/src/domain/entities/Pagination";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import {
@@ -47,18 +52,20 @@ export async function OrdersScreen({ orders, customers, filters }: OrdersScreenP
   // Look up each order's customer by the user who placed it, so the table can
   // label rows by name instead of a raw id.
   const customersById = new Map(customers.map((customer) => [customer.userId, customer]));
-  const isFiltered = filters.query != null || filters.status != null;
+  const isFiltered = hasAdminOrderFilters(filters);
 
-  // Filter labels of their own rather than the badge's: `OrderStatusBadge` maps a
-  // status *plus* its delivery stage to a display label (and says "In progress"
-  // for admins where a shopper sees "Shipped"), which is the wrong vocabulary for
-  // a filter that matches on the raw status alone.
-  const statusLabels: Record<Order["status"], string> = {
-    completed: t("filterStatusCompleted"),
-    processing: t("filterStatusProcessing"),
-    cancelled: t("filterStatusCancelled"),
-    return_requested: t("filterStatusReturnRequested"),
-    refunded: t("filterStatusRefunded"),
+  // The filter's vocabulary is the pipeline stage, not the raw status: an
+  // operator asks "what's still waiting to be confirmed" and "what's on a van",
+  // and neither is a status — both are a status *and* a milestone. See
+  // `OrderPipelineStage`.
+  const pipelineLabels: Record<OrderPipelineStage, string> = {
+    pending: t("filterPipelinePending"),
+    confirmed: t("filterPipelineConfirmed"),
+    out_for_delivery: t("filterPipelineOutForDelivery"),
+    delivered: t("filterPipelineDelivered"),
+    return_requested: t("filterPipelineReturnRequested"),
+    cancelled: t("filterPipelineCancelled"),
+    refunded: t("filterPipelineRefunded"),
   };
 
   const sortOptions: ListSortOption<AdminOrderSort>[] = [
@@ -80,11 +87,14 @@ export async function OrdersScreen({ orders, customers, filters }: OrdersScreenP
         filters={
           <>
             <ListFilterSelect
-              paramName="status"
+              paramName="pipeline"
               label={t("filterStatusLabel")}
               options={[
                 { value: "", label: t("filterStatusAll") },
-                ...ORDER_STATUSES.map((status) => ({ value: status, label: statusLabels[status] })),
+                ...ORDER_PIPELINE_STAGES.map((stage) => ({
+                  value: stage,
+                  label: pipelineLabels[stage],
+                })),
               ]}
             />
             <ListSortSelect
