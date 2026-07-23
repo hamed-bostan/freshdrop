@@ -13,6 +13,7 @@ export * from "./components/Skeleton";
 export * from "./components/Sheet";
 export * from "./components/Modal";
 export * from "./components/Popover";
+export * from "./components/DropdownMenu";
 export * from "./components/Switch";
 export * from "./components/Tabs";
 export * from "./components/FilterTabs";

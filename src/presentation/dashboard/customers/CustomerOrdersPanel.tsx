@@ -19,9 +19,11 @@ import { cn } from "@/src/lib/utils";
  * Grid template shared by this panel's header and rows. Columns: order id, status,
  * placed, address, total, and the trailing chevron affordance.
  *
- * Deliberately not `ORDERS_ROW_GRID`: that list's leading column is the customer,
- * which is the one thing every row here has in common — repeating this customer's
- * name down their own page would be pure noise.
+ * Still a grid, where the orders list has gone back to `<table>` markup: this
+ * panel's rows *are* still whole-row links (there is nothing to do to an order
+ * from a customer's page except open it), which is the thing a `<tr>` can't be.
+ * It also carries no customer column — repeating this customer's name down their
+ * own page would be pure noise.
  */
 const CUSTOMER_ORDERS_ROW_GRID =
   "grid grid-cols-[minmax(0,0.9fr)_auto_minmax(0,0.9fr)_minmax(0,1.3fr)_auto_auto] items-center gap-4";

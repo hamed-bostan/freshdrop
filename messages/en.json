@@ -932,7 +932,15 @@
     "netPaid": "Net paid",
     "viewCustomer": "View customer",
     "commsHeading": "Customer comms",
-    "notesHeading": "Internal notes"
+    "notesHeading": "Internal notes",
+    "colDelivery": "Delivery",
+    "colActions": "Actions",
+    "deliveryCouriered": "Delivery",
+    "deliveryPickup": "Pickup",
+    "rowActionView": "View",
+    "rowActionCustomer": "View customer",
+    "rowActionCopyId": "Copy order ID",
+    "rowActionsAria": "More actions for order {id}"
   },
   "dashOrderComms": {
     "resendHeading": "Resend a notification",

@@ -932,7 +932,15 @@
     "netPaid": "پرداخت خالص",
     "viewCustomer": "مشاهده مشتری",
     "commsHeading": "ارتباط با مشتری",
-    "notesHeading": "یادداشت‌های داخلی"
+    "notesHeading": "یادداشت‌های داخلی",
+    "colDelivery": "نحوه تحویل",
+    "colActions": "عملیات",
+    "deliveryCouriered": "ارسال",
+    "deliveryPickup": "تحویل حضوری",
+    "rowActionView": "مشاهده",
+    "rowActionCustomer": "مشاهده مشتری",
+    "rowActionCopyId": "کپی شناسه سفارش",
+    "rowActionsAria": "عملیات بیشتر برای سفارش {id}"
   },
   "dashOrderComms": {
     "resendHeading": "ارسال دوباره اعلان",

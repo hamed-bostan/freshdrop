@@ -1,22 +1,15 @@
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronRight } from "lucide-react";
+import { Store, Truck } from "lucide-react";
 import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid } from "@/src/domain/entities/Order";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
+import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
-import { focusRing, Icon } from "@/src/presentation/design-system";
+import { Button, TableCell, TableRow } from "@/src/presentation/design-system";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatMoney } from "@/src/lib/formatMoney";
-import { formatOrderDate } from "@/src/lib/formatOrderDate";
-import { cn } from "@/src/lib/utils";
-
-/**
- * Shared grid template for the orders list — the header row and every data row use
- * it so the columns line up. Columns: customer, order id, status, placed, address,
- * total, and a trailing chevron affordance.
- */
-export const ORDERS_ROW_GRID =
-  "grid grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)_auto_minmax(0,0.9fr)_minmax(0,1.3fr)_auto_auto] items-center gap-4";
+import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
+import { OrderRowActions } from "./OrderRowActions";
 
 type OrderRowProps = {
   order: Order;
@@ -25,43 +18,91 @@ type OrderRowProps = {
 };
 
 /**
- * One order in the admin list — a flat row linking to the order-detail route. No
- * inline controls: advancing the stage and resolving returns/substitutions now live
- * on the detail page, so the whole row is a single navigation target.
+ * One order in the admin list.
+ *
+ * The row used to be a single `<Link>` — which is why this table was a CSS grid
+ * rather than table markup, a `<tr>` being unable to be one. It can't be any
+ * more: the row now carries a View button and an actions menu, and a link
+ * containing controls is neither valid HTML nor operable by keyboard (there is no
+ * way to reach the button without activating the link). So the row is a real
+ * `<tr>` again, and the order id is the link.
+ *
+ * The trade is deliberate. Losing whole-row click costs a large, forgiving target;
+ * keeping it costs the row every control it needs from here on — this phase's
+ * menu, the next one's checkbox. The affordance goes where it can be used.
  */
 export function OrderRow({ order, customer }: OrderRowProps) {
   const t = useTranslations("dashOrders");
-  const locale = useLocale();
+  const locale = useLocale() as Locale;
+
+  const DeliveryIcon = order.deliveryType === "pickup" ? Store : Truck;
 
   return (
-    <Link
-      href={`/dashboard/orders/${order.id}`}
-      aria-label={t("viewOrderAria", { id: order.id })}
-      className={cn(
-        ORDERS_ROW_GRID,
-        "bg-background px-4 py-3 transition-colors hover:bg-surface-sunken/50",
-        focusRing,
-        "focus-visible:ring-inset",
-      )}
-    >
-      <span className="min-w-0">
-        <span className="block truncate text-body-b7 text-foreground">{customer?.name ?? order.userId}</span>
+    <TableRow>
+      <TableCell>
+        <Link
+          href={`/dashboard/orders/${order.id}`}
+          aria-label={t("viewOrderAria", { id: order.id })}
+          className="text-body-b7 text-primary hover:underline"
+        >
+          {order.id}
+        </Link>
+      </TableCell>
+
+      <TableCell>
+        <span className="block max-w-48 truncate text-body-b7 text-foreground">
+          {customer?.name ?? order.userId}
+        </span>
         {customer?.phone ? (
-          <span className="block truncate text-body-b8 text-muted-foreground">{customer.phone}</span>
+          // `dir="ltr"` because a phone number is digits and reads left-to-right
+          // even in an RTL row; without it the leading zero lands on the wrong end.
+          <span dir="ltr" className="block truncate text-body-b8 text-muted-foreground">
+            {customer.phone}
+          </span>
         ) : null}
-      </span>
-      <span className="truncate text-body-b7 text-muted-foreground">{order.id}</span>
-      <span>
+      </TableCell>
+
+      <TableCell>
         <OrderStatusBadge status={order.status} stage={order.stage} context="admin" />
-      </span>
-      <span className="truncate text-body-b6 text-muted-foreground">
-        {formatOrderDate(order.placedAt, locale)}
-      </span>
-      <span className="truncate text-body-b6 text-muted-foreground">{order.location}</span>
-      <span className="text-end text-body-b7 text-foreground">
+      </TableCell>
+
+      <TableCell>
+        <span className="flex items-center gap-2 whitespace-nowrap text-body-b6 text-muted-foreground">
+          <DeliveryIcon aria-hidden className="size-4 shrink-0" />
+          {order.deliveryType === "pickup" ? t("deliveryPickup") : t("deliveryCouriered")}
+        </span>
+      </TableCell>
+
+      <TableCell>
+        {/* Date and time on separate lines: sorted by date, the column is scanned
+            down the day and only read across to the time once a day matters. */}
+        <span className="block whitespace-nowrap text-body-b6 text-foreground">
+          {formatOrderDateShort(order.placedAt, locale)}
+        </span>
+        <span className="block whitespace-nowrap text-body-b8 text-muted-foreground">
+          {formatOrderTime(order.placedAt, locale)}
+        </span>
+      </TableCell>
+
+      {/* Money is compared down the column, so it aligns to the end of the cell
+          and never wraps. */}
+      <TableCell className="whitespace-nowrap text-end text-body-b7 text-foreground">
         {formatMoney(orderNetPaid(order), locale)}
-      </span>
-      <Icon icon={ChevronRight} size="xs" className="text-icon-muted rtl:-scale-x-100" />
-    </Link>
+      </TableCell>
+
+      <TableCell>
+        <div className="flex items-center justify-end gap-1">
+          <Button asChild variant="outline" size="sm">
+            <Link
+              href={`/dashboard/orders/${order.id}`}
+              aria-label={t("viewOrderAria", { id: order.id })}
+            >
+              {t("rowActionView")}
+            </Link>
+          </Button>
+          <OrderRowActions orderId={order.id} customerId={customer?.userId} />
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }

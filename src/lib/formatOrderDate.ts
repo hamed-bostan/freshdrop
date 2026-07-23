@@ -15,6 +15,7 @@ const INTL_LOCALE: Record<Locale, string> = {
 type OrderFormatters = {
   weekday: Intl.DateTimeFormat;
   month: Intl.DateTimeFormat;
+  monthShort: Intl.DateTimeFormat;
   day: Intl.DateTimeFormat;
   year: Intl.DateTimeFormat;
   time: Intl.DateTimeFormat;
@@ -31,6 +32,7 @@ function getFormatters(locale: Locale): OrderFormatters {
   const formatters: OrderFormatters = {
     weekday: new Intl.DateTimeFormat(tag, { weekday: "long", timeZone: "UTC" }),
     month: new Intl.DateTimeFormat(tag, { month: "long", timeZone: "UTC" }),
+    monthShort: new Intl.DateTimeFormat(tag, { month: "short", timeZone: "UTC" }),
     day: new Intl.DateTimeFormat(tag, { day: "numeric", timeZone: "UTC" }),
     year: new Intl.DateTimeFormat(tag, { year: "numeric", timeZone: "UTC" }),
     // `fa` uses a 24-hour clock (idiomatic in Iran, and avoids the long
@@ -49,6 +51,24 @@ function getFormatters(locale: Locale): OrderFormatters {
 /** "03:22 PM" (en) — Persian numerals, 24-hour clock under `fa` ("۱۵:۲۲"). */
 export function formatOrderTime(iso: string, locale: Locale): string {
   return getFormatters(locale).time.format(new Date(iso));
+}
+
+/**
+ * "Oct 9, 2023" (en); "۹ مهر ۱۴۰۲" under `fa`.
+ *
+ * The column form: a table row shows a date beside six other facts, and the
+ * weekday that helps on an order's own page is noise in a list sorted by date.
+ * Composed in each locale's natural order for the same reason `formatOrderDate`
+ * is — Persian puts the day before the month, and swapping the parts of an
+ * English template around would produce a date that reads as broken.
+ */
+export function formatOrderDateShort(iso: string, locale: Locale): string {
+  const date = new Date(iso);
+  const f = getFormatters(locale);
+  if (locale === "fa") {
+    return `${f.day.format(date)} ${f.monthShort.format(date)} ${f.year.format(date)}`;
+  }
+  return `${f.monthShort.format(date)} ${f.day.format(date)}, ${f.year.format(date)}`;
 }
 
 /**
