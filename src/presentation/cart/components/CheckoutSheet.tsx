@@ -80,7 +80,7 @@ export function CheckoutSheet({
         <Dialog.Content
           className={cn(
             "fixed inset-x-0 bottom-20 z-40 mx-auto w-full max-w-md",
-            "rounded-t-card-xl bg-popover px-6 pb-8 pt-3 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] focus:outline-none",
+            "rounded-t-card-xl bg-popover px-6 pb-8 pt-3 shadow-[var(--shadow-sheet)] focus:outline-none",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             // Matches the DS Sheet: the slide goes under reduced motion, a fade replaces it.
             "motion-safe:data-[state=open]:slide-in-from-bottom",

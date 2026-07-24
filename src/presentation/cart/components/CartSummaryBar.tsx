@@ -16,7 +16,7 @@ export function CartSummaryBar({ total, onCheckout }: CartSummaryBarProps) {
   const locale = useLocale();
 
   return (
-    <div className="fixed inset-x-0 bottom-20 z-40 mx-auto w-full max-w-md rounded-t-card-xl border-t border-border bg-surface px-6 pb-6 pt-3 shadow-[0_-4px_24px_rgba(0,0,0,0.06)]">
+    <div className="fixed inset-x-0 bottom-20 z-40 mx-auto w-full max-w-md rounded-t-card-xl border-t border-border bg-surface px-6 pb-6 pt-3 shadow-[var(--shadow-sheet)]">
       <div className="mx-auto mb-4 h-1.5 w-12 rounded-pill bg-border" aria-hidden />
 
       <div className="mb-4 flex items-center gap-2">

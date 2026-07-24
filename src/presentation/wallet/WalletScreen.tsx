@@ -7,11 +7,12 @@ import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { Link } from "@/src/i18n/navigation";
 import { TransactionItem, WalletCard } from "./components";
 
-// Decorative brand gradients (green / magenta), cycled per card. Kept as a
-// feature-level constant rather than design tokens: the token pipeline only
-// models solid `--color-*` values, not gradients. The dark stops are the
-// primary[700]/secondary[700] brand shades; the light stops are off-palette.
-const CARD_GRADIENTS = ["from-[#2EC16E] to-[#0A682F]", "from-[#C42E9D] to-[#680A43]"];
+// Decorative brand gradients (green / magenta), cycled per card. Stops come
+// from the `colors.wallet` design tokens (see tokens/semantic/colors.ts).
+const CARD_GRADIENTS = [
+  "from-[var(--color-wallet-primary-from)] to-[var(--color-wallet-primary-to)]",
+  "from-[var(--color-wallet-secondary-from)] to-[var(--color-wallet-secondary-to)]",
+];
 
 interface WalletScreenProps {
   wallet: Wallet;
