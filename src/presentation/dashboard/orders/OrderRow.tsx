@@ -44,17 +44,17 @@ export function OrderRow({ order, customer, canFulfill }: OrderRowProps) {
     <TableRow>
       {canFulfill ? (
         <TableCell>
-          <BulkRowCheckbox id={order.id} label={t("selectRowAria", { id: order.id })} />
+          <BulkRowCheckbox id={order.id} label={t("selectRowAria", { id: order.orderNumber })} />
         </TableCell>
       ) : null}
 
       <TableCell>
         <Link
           href={`/dashboard/orders/${order.id}`}
-          aria-label={t("viewOrderAria", { id: order.id })}
+          aria-label={t("viewOrderAria", { id: order.orderNumber })}
           className="text-body-b7 text-primary hover:underline"
         >
-          {order.id}
+          #{order.orderNumber}
         </Link>
       </TableCell>
 
@@ -104,7 +104,7 @@ export function OrderRow({ order, customer, canFulfill }: OrderRowProps) {
           <Button asChild variant="outline" size="sm">
             <Link
               href={`/dashboard/orders/${order.id}`}
-              aria-label={t("viewOrderAria", { id: order.id })}
+              aria-label={t("viewOrderAria", { id: order.orderNumber })}
             >
               {t("rowActionView")}
             </Link>

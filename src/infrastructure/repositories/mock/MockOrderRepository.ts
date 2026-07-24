@@ -31,6 +31,8 @@ const DEMO_USER_ID = "demo";
  */
 type OrderSeed = {
   id: string;
+  /** The seed's human-facing number — assigned in placement order (oldest first), same as the real backfill. */
+  orderNumber: number;
   status: OrderStatus;
   phase: OrderPhase;
   placedAt: string;
@@ -54,6 +56,7 @@ type OrderSeed = {
 const ORDER_SEEDS: OrderSeed[] = [
   {
     id: "FD-10231",
+    orderNumber: 1004,
     status: "completed",
     phase: "current",
     placedAt: "2023-10-09T15:22:00Z",
@@ -71,6 +74,7 @@ const ORDER_SEEDS: OrderSeed[] = [
   },
   {
     id: "FD-10219",
+    orderNumber: 1003,
     status: "processing",
     phase: "current",
     placedAt: "2023-10-08T11:05:00Z",
@@ -88,6 +92,7 @@ const ORDER_SEEDS: OrderSeed[] = [
   },
   {
     id: "FD-09984",
+    orderNumber: 1002,
     status: "completed",
     phase: "previous",
     placedAt: "2023-09-21T18:40:00Z",
@@ -104,6 +109,7 @@ const ORDER_SEEDS: OrderSeed[] = [
   },
   {
     id: "FD-09870",
+    orderNumber: 1001,
     status: "cancelled",
     phase: "previous",
     placedAt: "2023-09-03T09:15:00Z",
@@ -148,6 +154,8 @@ export class MockOrderRepository implements IOrderRepository {
   /** Orders placed at runtime (via checkout), newest appended last. */
   private readonly created: Order[] = [];
   private nextId = 1;
+  /** Continues the seeds' numbering (highest seeded is 1004) for runtime-created orders. */
+  private nextOrderNumber = 1005;
 
   constructor(private readonly products: IProductRepository) {}
 
@@ -161,10 +169,16 @@ export class MockOrderRepository implements IOrderRepository {
     // exact delivery/payment, and inclusive date and total bounds — all AND-ed,
     // so an empty filter matches every order.
     const needle = filters.query?.toLowerCase() ?? "";
+    const needleAsOrderNumber = Number.parseInt(needle.replace(/^#/, ""), 10);
     const customerIds = filters.userIds?.length ? new Set(filters.userIds) : null;
     const matched = (await this.getAllOrders()).filter((order) => {
-      // Id *or* customer — see the OR-group in `toOrderWhere`.
-      if (needle && !order.id.toLowerCase().includes(needle) && !customerIds?.has(order.userId)) {
+      // Id, order number, *or* customer — see the OR-group in `toOrderWhere`.
+      if (
+        needle &&
+        !order.id.toLowerCase().includes(needle) &&
+        order.orderNumber !== needleAsOrderNumber &&
+        !customerIds?.has(order.userId)
+      ) {
         return false;
       }
 
@@ -223,6 +237,7 @@ export class MockOrderRepository implements IOrderRepository {
 
       return {
         id: seed.id,
+        orderNumber: seed.orderNumber,
         userId: DEMO_USER_ID,
         status: this.statuses.get(seed.id) ?? seed.status,
         phase: this.phases.get(seed.id) ?? seed.phase,
@@ -264,8 +279,14 @@ export class MockOrderRepository implements IOrderRepository {
 
   async createOrder(input: NewOrder): Promise<Order> {
     // Honour a caller-minted id (checkout mints one so its stock movements can
-    // name the order); fall back to the mock's own sequence otherwise.
-    const order: Order = { ...input, id: input.id ?? `FD-${String(this.nextId++).padStart(5, "0")}` };
+    // name the order); fall back to the mock's own sequence otherwise. The order
+    // number is always assigned here — nothing ever supplies one, same as the
+    // real DB's autoincrement default.
+    const order: Order = {
+      ...input,
+      id: input.id ?? `FD-${String(this.nextId++).padStart(5, "0")}`,
+      orderNumber: this.nextOrderNumber++,
+    };
     this.created.push(order);
     return order;
   }

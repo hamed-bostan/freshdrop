@@ -12,12 +12,7 @@ type NeedsAttentionPanelProps = {
   items: AttentionItem[];
 };
 
-const TONE_TEXT: Record<AttentionItem["tone"], string> = {
-  warning: "text-warning-foreground",
-  danger: "text-error-foreground",
-};
-
-const TONE_BADGE: Record<AttentionItem["tone"], string> = {
+const TONE_TINT: Record<AttentionItem["tone"], string> = {
   warning: "bg-warning text-warning-foreground",
   danger: "bg-error text-error-foreground",
 };
@@ -42,15 +37,17 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
   const locale = (await getLocale()) as Locale;
 
   const active = items.filter((item) => item.count > 0);
-  const total = active.reduce((sum, item) => sum + item.count, 0);
 
   return (
     <section className="rounded-card-lg border border-border">
       <div className="flex items-center gap-3 p-4 pb-0">
         <h2 className="text-body-b5 text-foreground">{t("attentionHeading")}</h2>
-        {total > 0 ? (
-          <Badge variant="warning" size="sm">
-            {formatNumber(total, locale)}
+        {/* Counts the *categories* needing a look, not the sum of their items — "2
+            things need you" is what an operator scanning the header wants, not a
+            number that conflates 25 low-stock products with 1 stale order. */}
+        {active.length > 0 ? (
+          <Badge variant="error" size="sm">
+            {formatNumber(active.length, locale)}
           </Badge>
         ) : null}
       </div>
@@ -62,32 +59,48 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
               key={item.key}
               href={item.href}
               className={cn(
-                "flex flex-1 flex-col gap-2 p-4 transition-colors hover:bg-muted",
+                "flex flex-1 flex-col gap-3 p-4 transition-colors hover:bg-muted",
                 focusRing,
               )}
             >
-              <div className="flex items-center gap-2">
-                <Icon icon={item.icon} size="sm" className={TONE_TEXT[item.tone]} />
+              <div className="flex items-center gap-3">
+                <div
+                  className={cn(
+                    "flex size-10 shrink-0 items-center justify-center rounded-full",
+                    TONE_TINT[item.tone],
+                  )}
+                >
+                  <Icon icon={item.icon} size="sm" />
+                </div>
                 <p className="text-body-b7 text-foreground">{item.title}</p>
               </div>
               <div className="flex items-baseline gap-2">
                 <span
                   className={cn(
                     "inline-flex min-w-8 items-center justify-center rounded-full px-2 py-0.5 text-heading-h4",
-                    TONE_BADGE[item.tone],
+                    TONE_TINT[item.tone],
                   )}
                 >
                   {formatNumber(item.count, locale)}
                 </span>
                 <span className="text-body-b8 text-muted-foreground">{item.detail}</span>
               </div>
-              <span className="mt-auto text-body-b8 text-primary hover:underline">{item.ctaLabel}</span>
+              <span
+                className={cn(
+                  "mt-auto inline-flex w-fit items-center rounded-full px-3 py-1.5 text-body-b8",
+                  TONE_TINT[item.tone],
+                )}
+              >
+                {item.ctaLabel}
+              </span>
             </Link>
           ))}
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2 p-8 text-center">
-          <Icon icon={CheckCircle2} size="lg" className="text-success-foreground" />
+          <div className="flex size-10 items-center justify-center rounded-full bg-success text-success-foreground">
+            <Icon icon={CheckCircle2} size="sm" />
+          </div>
           <p className="text-body-b6 text-foreground">{t("attentionAllClearTitle")}</p>
           <p className="text-body-b8 text-muted-foreground">{t("attentionAllClearBody")}</p>
         </div>

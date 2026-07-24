@@ -124,6 +124,13 @@ export type OrderItem = {
 /** A placed order shown on the "My Order" screen. */
 export type Order = {
   id: string;
+  /**
+   * A short sequential number for humans — dashboard lists, order detail, support
+   * conversations — where `id` (the real key) is either too long to scan or, sliced
+   * down for space, indistinguishable from its neighbours. DB-assigned; nothing
+   * ever supplies one.
+   */
+  orderNumber: number;
   /** The user who placed the order — orders are read back scoped to their owner. */
   userId: string;
   status: OrderStatus;

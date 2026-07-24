@@ -69,14 +69,14 @@ export function CustomerOrdersPanel({ orders }: CustomerOrdersPanelProps) {
           <Link
             key={order.id}
             href={`/dashboard/orders/${order.id}`}
-            aria-label={tOrders("viewOrderAria", { id: order.id })}
+            aria-label={tOrders("viewOrderAria", { id: order.orderNumber })}
             className={cn(
               CUSTOMER_ORDERS_ROW_GRID,
               focusRing,
               "bg-background px-4 py-3 transition-colors hover:bg-surface-sunken/50",
             )}
           >
-            <span className="truncate font-mono text-body-b6 text-foreground">#{order.id}</span>
+            <span className="truncate font-mono text-body-b6 text-foreground">#{order.orderNumber}</span>
             <OrderStatusBadge status={order.status} stage={order.stage} context="admin" />
             <span className="truncate text-body-b6 text-muted-foreground">
               {formatOrderDate(order.placedAt, locale)}

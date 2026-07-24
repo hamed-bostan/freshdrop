@@ -8,10 +8,9 @@ import { customerDetailResponseSchema } from "./customer-detail-response-schema"
 
 /**
  * Server-side customer-analytics reads for the admin dashboard (BFF). Returns the
- * per-customer order summaries ranked by total spend — powering the Customers page,
- * the overview's "top customers" panel, and the Orders table's customer column.
- * `serverApiGet` forwards the admin's session cookie so the admin endpoint authorizes
- * the call.
+ * per-customer order summaries ranked by total spend — powering the Customers page
+ * and the Orders table's customer column. `serverApiGet` forwards the admin's
+ * session cookie so the admin endpoint authorizes the call.
  */
 export const customersServerApi = {
   /** One page of the customers list, with the filters and ordering the caller's query string carries. */
@@ -19,14 +18,6 @@ export const customersServerApi = {
     return serverApiGet("/admin/customers", customerOrderSummaryPageResponseSchema, {
       params: Object.fromEntries(params),
     });
-  },
-
-  /**
-   * The top spenders, for the overview's panel — the list's default ordering, so
-   * this is just its first page.
-   */
-  listTop(count: number): Promise<Page<CustomerOrderSummary>> {
-    return this.listPage(new URLSearchParams({ page: "1", pageSize: String(count) }));
   },
 
   /**

@@ -78,9 +78,16 @@ export async function OrderDetailScreen({
         </Link>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="truncate font-mono text-heading-h2 text-foreground">#{order.id}</h1>
+            <h1 className="truncate text-heading-h2 text-foreground">
+              {t("orderNumber", { id: order.orderNumber })}
+            </h1>
             <p className="text-body-b6 text-muted-foreground">
               {t("placedOn", { date: formatOrderDate(order.placedAt, locale) })}
+            </p>
+            {/* The full id, for support conversations and log lookups — the number
+                above is what an operator says out loud, this is what they grep for. */}
+            <p className="truncate font-mono text-body-b9 text-muted-foreground">
+              {t("internalId", { id: order.id })}
             </p>
           </div>
           <OrderStatusBadge status={order.status} stage={order.stage} context="admin" />

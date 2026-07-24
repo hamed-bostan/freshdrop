@@ -30,9 +30,6 @@ const COUNT_ONLY = "page=1&pageSize=1";
 /** How many of the latest orders the recent-orders mini-list shows. */
 const RECENT_ORDERS_COUNT = 5;
 
-/** How many top spenders the overview's panel shows. */
-const TOP_CUSTOMERS_COUNT = 5;
-
 type DashboardPageProps = {
   /** The period the picker writes: `range` (a preset) or `from`/`to`. */
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -73,7 +70,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   // filtered endpoints; the recent orders are literally the first five. The
   // overview used to start by fetching every order in the store's history — see
   // `IAnalyticsRepository`.
-  const [analytics, recentOrders, reviews, needsRestock, staleOrders, overdueOrders, customers] =
+  const [analytics, recentOrders, reviews, needsRestock, staleOrders, overdueOrders] =
     await Promise.all([
       analyticsServerApi.getOverview(params),
       ordersServerApi.listPage(new URLSearchParams(`page=1&pageSize=${RECENT_ORDERS_COUNT}`)),
@@ -94,14 +91,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       ordersServerApi.listPage(
         new URLSearchParams(`${COUNT_ONLY}&pipeline=in_progress&to=${overdueOrdersCutoff}`),
       ),
-      customersServerApi.listTop(TOP_CUSTOMERS_COUNT),
     ]);
 
-  // Labels for the recent-orders list, fetched for those orders' own customers —
-  // not the top-spenders list above. The two rarely overlap, and looking a recent
-  // order's customer up against "top customers" would miss almost every time,
-  // falling back to the raw (phone-derived) userId in the UI. Same pattern as the
-  // orders list page: a page of orders needs at most that many customers.
+  // Labels for the recent-orders list, fetched for those orders' own customers.
+  // Same pattern as the orders list page: a page of orders needs at most that
+  // many customers.
   const recentOrderCustomers = await customersServerApi.listByIds([
     ...new Set(recentOrders.items.map((order) => order.userId)),
   ]);
@@ -124,7 +118,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       staleOrdersCutoff={staleOrdersCutoff}
       overdueOrdersCount={overdueOrders.total}
       overdueOrdersCutoff={overdueOrdersCutoff}
-      customers={customers.items}
     />
   );
 }

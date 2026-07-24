@@ -207,6 +207,7 @@ export class PrismaOrderRepository implements IOrderRepository {
 /** The persisted columns an Order maps from (DB-only timestamps dropped). */
 type OrderRow = {
   id: string;
+  orderNumber: number;
   userId: string;
   status: string;
   phase: string;
@@ -260,14 +261,17 @@ type OrderRow = {
 function toOrderWhere(filters: AdminOrderFilters): Prisma.OrderWhereInput {
   const and: Prisma.OrderWhereInput[] = [];
 
-  // The term is one filter with two ways to match: the order's own id, or the
-  // customer it resolved to. One OR-group inside the AND, so it narrows *with*
-  // the other filters rather than widening past them — flattened into the
+  // The term is one filter with three ways to match: the order's own id, its
+  // human-facing number (with or without the leading "#" the UI shows it with),
+  // or the customer it resolved to. One OR-group inside the AND, so it narrows
+  // *with* the other filters rather than widening past them — flattened into the
   // top-level AND, a customer match would drag in orders of every status.
   if (filters.query) {
     const or: Prisma.OrderWhereInput[] = [
       { id: { contains: filters.query, mode: "insensitive" } },
     ];
+    const asOrderNumber = Number.parseInt(filters.query.replace(/^#/, ""), 10);
+    if (Number.isInteger(asOrderNumber) && asOrderNumber > 0) or.push({ orderNumber: asOrderNumber });
     if (filters.userIds?.length) or.push({ userId: { in: filters.userIds } });
     and.push({ OR: or });
   }
@@ -358,6 +362,7 @@ function toOrder(row: OrderRow): Order {
 
   return {
     id: row.id,
+    orderNumber: row.orderNumber,
     userId: row.userId,
     status: row.status as OrderStatus,
     phase: row.phase as OrderPhase,

@@ -33,7 +33,6 @@ import { cn } from "@/src/lib/utils";
 import type { AttentionItem } from "./attention/AttentionItem";
 import { NeedsAttentionPanel } from "./attention/NeedsAttentionPanel";
 import { StatCard } from "./StatCard";
-import { TopCustomersPanel } from "./orders/TopCustomersPanel";
 import type { AnalyticsOverviewWire } from "./analytics/analytics-response-schema";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./analytics/AnalyticsRangePicker";
 import { CustomerInsightsPanel, type CustomerInsightMetric } from "./analytics/CustomerInsightsPanel";
@@ -50,16 +49,6 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  */
 const RECENT_ORDERS_ROW_GRID =
   "grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)_auto_minmax(0,0.9fr)_auto_auto] items-center gap-4";
-
-/**
- * A short, human-scannable stand-in for the order id on this compact list — the
- * orders list and detail route show the canonical full id (it's what search and
- * support match against), but this row has no room for 36 characters and no need
- * for a lookup key, only something a glance can tell apart from its neighbours.
- */
-function shortOrderId(id: string): string {
-  return `#${id.slice(-8).toUpperCase()}`;
-}
 
 type DashboardOverviewScreenProps = {
   /** Every period-scoped figure on the screen, from one aggregate endpoint. */
@@ -97,8 +86,6 @@ type DashboardOverviewScreenProps = {
   /** Orders undelivered after {@link UNFULFILLED_ORDER_SLA_HOURS}, and its cutoff (see above). */
   overdueOrdersCount: number;
   overdueOrdersCutoff: string;
-  /** Top spenders — an all-time ranking, not a period-scoped one (see below). */
-  customers: CustomerOrderSummary[];
 };
 
 /**
@@ -117,13 +104,14 @@ type DashboardOverviewScreenProps = {
  * of them in JS — correct on a demo dataset, and quietly worse with every sale. The
  * only arithmetic left below turns two periods into a percentage.
  *
- * Two things on this page are deliberately *not* period-scoped, and are labelled so:
+ * One thing on this page is deliberately *not* period-scoped, and is labelled so:
  *
- *  - **Top customers** — standing is a lifetime fact. Re-ranking it to the last 30
- *    days would answer "who bought recently" under a heading that says otherwise.
  *  - **Pending reviews / needs restocking** — these count a *current* state, not
  *    something that happened during a period, so they carry no comparison. A "vs
  *    previous 30 days" on a queue length would be a trend line through a snapshot.
+ *
+ * Lifetime rankings (top spenders) live on the Customers page, not here — this
+ * screen only answers "how did the chosen period go."
  */
 export async function DashboardOverviewScreen({
   analytics,
@@ -140,7 +128,6 @@ export async function DashboardOverviewScreen({
   staleOrdersCutoff,
   overdueOrdersCount,
   overdueOrdersCutoff,
-  customers,
 }: DashboardOverviewScreenProps) {
   const t = await getTranslations("dashHome");
   const tOrders = await getTranslations("dashOrders");
@@ -418,12 +405,10 @@ export async function DashboardOverviewScreen({
           heading={tAnalytics("customerInsights")}
           metrics={customerMetrics}
           comparisonLabel={comparisonLabel}
+          viewAllHref="/dashboard/customers"
+          viewAllLabel={tAnalytics("viewAll")}
         />
       </div>
-
-      {customers.length > 0 ? (
-        <TopCustomersPanel customers={customers} compact viewAllHref="/dashboard/customers" />
-      ) : null}
 
       <section className="rounded-card-lg border border-border p-4">
         <div className="flex items-center justify-between gap-3">
@@ -450,7 +435,7 @@ export async function DashboardOverviewScreen({
                   <Link
                     key={order.id}
                     href={`/dashboard/orders/${order.id}`}
-                    aria-label={tOrders("viewOrderAria", { id: order.id })}
+                    aria-label={tOrders("viewOrderAria", { id: order.orderNumber })}
                     className={cn(
                       RECENT_ORDERS_ROW_GRID,
                       focusRing,
@@ -458,7 +443,7 @@ export async function DashboardOverviewScreen({
                     )}
                   >
                     <span className="truncate font-mono text-body-b6 text-foreground">
-                      {shortOrderId(order.id)}
+                      #{order.orderNumber}
                     </span>
                     <span className="truncate text-body-b7 text-foreground">
                       {customer?.name ?? order.userId}

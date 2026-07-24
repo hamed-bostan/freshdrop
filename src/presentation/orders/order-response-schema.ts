@@ -40,6 +40,7 @@ const orderItemResponseSchema = z.object({
 
 export const orderResponseSchema = z.object({
   id: z.string(),
+  orderNumber: z.number().int().positive(),
   userId: z.string(),
   status: z.enum(["completed", "processing", "cancelled", "return_requested", "refunded"]),
   phase: z.enum(["current", "previous"]),

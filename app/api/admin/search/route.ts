@@ -65,7 +65,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         "orders",
         raw.orders.map((hit) => ({
           id: hit.order.id,
-          title: hit.order.id,
+          title: `#${hit.order.orderNumber}`,
           subtitle: joinTruthy([hit.customerName, hit.customerPhone]),
           href: `/dashboard/orders/${hit.order.id}`,
         })),

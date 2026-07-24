@@ -176,6 +176,10 @@ model AdminNotification {
 // with the rest of the schema's enum-free style.
 model Order {
   id        String      @id @default(uuid())
+  // A short sequential number for humans (dashboard lists, support conversations)
+  // — `id` stays the real key (checkout mints it, stock movements reference it),
+  // this is purely a friendlier label. DB-assigned; nothing ever supplies one.
+  orderNumber Int       @unique @default(autoincrement()) @map("order_number")
   // The user who placed the order. A plain reference (not a DB foreign key),
   // same loose coupling as the rest of the schema. Indexed for the per-user read.
   userId    String      @map("user_id")

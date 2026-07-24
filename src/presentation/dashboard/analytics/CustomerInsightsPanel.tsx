@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Minus, TrendingDown, TrendingUp } from "lucide-react";
+import { Link } from "@/src/i18n/navigation";
 import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
 
@@ -18,6 +19,9 @@ type CustomerInsightsPanelProps = {
   metrics: CustomerInsightMetric[];
   /** What every metric's delta is measured against, shown once rather than repeated per row. */
   comparisonLabel: string;
+  /** Where the footer's "view all" link leads — the full Customers page. */
+  viewAllHref: string;
+  viewAllLabel: string;
 };
 
 const DELTA_ICON: Record<"up" | "down" | "flat", LucideIcon> = {
@@ -44,12 +48,18 @@ const DELTA_BADGE: Record<"up" | "down" | "flat", string> = {
  * the screen resolves the figures, formats them and computes the deltas; this
  * only lays out what it's handed.
  */
-export function CustomerInsightsPanel({ heading, metrics, comparisonLabel }: CustomerInsightsPanelProps) {
+export function CustomerInsightsPanel({
+  heading,
+  metrics,
+  comparisonLabel,
+  viewAllHref,
+  viewAllLabel,
+}: CustomerInsightsPanelProps) {
   return (
     <section className="flex h-full flex-col rounded-card-lg border border-border p-4">
       <h2 className="text-body-b5 text-foreground">{heading}</h2>
 
-      <ul className="mt-4 flex flex-1 flex-col justify-center gap-4">
+      <ul className="mt-4 flex flex-1 flex-col gap-4">
         {metrics.map((metric) => (
           <li key={metric.key} className="flex items-center justify-between gap-3">
             <span className="text-body-b7 text-muted-foreground">{metric.label}</span>
@@ -71,7 +81,12 @@ export function CustomerInsightsPanel({ heading, metrics, comparisonLabel }: Cus
         ))}
       </ul>
 
-      <p className="mt-3 border-t border-border pt-3 text-body-b8 text-muted-foreground">{comparisonLabel}</p>
+      <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
+        <p className="text-body-b8 text-muted-foreground">{comparisonLabel}</p>
+        <Link href={viewAllHref} className="text-body-b8 text-primary hover:underline">
+          {viewAllLabel}
+        </Link>
+      </div>
     </section>
   );
 }

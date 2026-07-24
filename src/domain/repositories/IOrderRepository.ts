@@ -23,7 +23,7 @@ export type OrderTrackingUpdate = {
  * front is what lets that attribution be real rather than backfilled — an
  * append-only ledger shouldn't need a second write to say what it always meant.
  */
-export type NewOrder = Omit<Order, "id"> & { id?: string };
+export type NewOrder = Omit<Order, "id" | "orderNumber"> & { id?: string };
 
 /**
  * A guarded lifecycle transition. `from` (status, and optionally stage) is a
