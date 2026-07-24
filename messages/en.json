@@ -1376,6 +1376,7 @@
       "stage": "Delivery stage changes",
       "capacity": "Capacity changes",
       "role": "Access changes"
-    }
+    },
+    "action.order.created": "Order created"
   }
 }

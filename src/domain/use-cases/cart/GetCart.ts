@@ -1,10 +1,6 @@
-import type { Cart, CartItem } from "../../entities/Cart";
+import { priceCart, type Cart } from "../../entities/Cart";
 import type { PromoCode } from "../../entities/PromoCode";
 import type { ICartRepository } from "../../repositories/ICartRepository";
-import { promoDiscount } from "@/src/lib/promoDiscount";
-
-/** Flat delivery fee while there's no zone/weight-based shipping engine. */
-const SHIPPING_FEE = 5;
 
 export type GetCartOptions = {
   /** The owner whose cart to read. */
@@ -20,26 +16,8 @@ export class GetCart {
 
   async execute({ userId, promo, locale }: GetCartOptions): Promise<Cart> {
     const items = await this.cartRepo.getItems(userId, locale);
-    return this.buildCart(items, promo ?? null);
-  }
-
-  private buildCart(items: CartItem[], promo: PromoCode | null): Cart {
-    const subtotal = items.reduce(
-      (sum, item) => sum + item.product.price * item.quantity,
-      0,
-    );
-
-    // Nothing charged or discounted on an empty cart.
-    const shipping = items.length > 0 ? SHIPPING_FEE : 0;
-    const discount = promo && items.length > 0 ? promoDiscount(subtotal, promo.discountPercent) : 0;
-
-    return {
-      items,
-      subtotal,
-      shipping,
-      discount,
-      total: subtotal + shipping - discount,
-      itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
-    };
+    // Priced by the shared rule rather than here: an admin placing an order for a
+    // customer prices the same way, and the two must agree (see `priceCart`).
+    return priceCart(items, promo ?? null);
   }
 }

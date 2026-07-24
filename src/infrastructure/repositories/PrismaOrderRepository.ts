@@ -86,42 +86,22 @@ export class PrismaOrderRepository implements IOrderRepository {
     return row ? toOrder(row) : null;
   }
 
-  async createOrder(input: NewOrder): Promise<Order> {
+  async createOrder(input: NewOrder, audit?: AuditHook<Order>): Promise<Order> {
+    // Wrapped only when there's an entry to write, so checkout's create stays the
+    // single statement it has always been. `inTransaction` joins the caller's
+    // transaction when there is one — and `placeOrder` always has one open, since
+    // the stock claim and the slot claim commit with this row.
+    if (audit) {
+      const row = await inTransaction(this.db, async (tx) => {
+        const created = await tx.order.create({ data: toOrderCreateData(input), include: ITEMS_INCLUDE });
+        await recordAudit(tx, toOrder(created), audit);
+        return created;
+      });
+      return toOrder(row);
+    }
+
     const row = await this.db.order.create({
-      data: {
-        // Undefined when the caller didn't mint one, leaving the column's
-        // `@default(uuid())` to assign it.
-        id: input.id,
-        userId: input.userId,
-        status: input.status,
-        phase: input.phase,
-        deliveryType: input.deliveryType,
-        paymentStatus: input.paymentStatus,
-        placedAt: new Date(input.placedAt),
-        location: input.location,
-        locationLabel: input.locationLabel ?? null,
-        destinationLat: input.destination?.latitude ?? null,
-        destinationLng: input.destination?.longitude ?? null,
-        subtotal: input.subtotal,
-        shipping: input.shipping,
-        discount: input.discount,
-        total: input.total,
-        stage: input.stage ?? null,
-        deliveryDate: input.deliveryDate ?? null,
-        deliveryWindowId: input.deliveryWindowId ?? null,
-        deliveryWindow: input.deliveryWindow ?? null,
-        items: {
-          create: input.items.map((item, index) => ({
-            productId: item.productId,
-            name: item.name,
-            imageUrl: item.imageUrl,
-            quantity: item.quantity,
-            price: item.price,
-            substitutionPreference: item.substitutionPreference,
-            position: index + 1,
-          })),
-        },
-      },
+      data: toOrderCreateData(input),
       include: ITEMS_INCLUDE,
     });
     return toOrder(row);
@@ -308,6 +288,44 @@ function toOrderWhere(filters: AdminOrderFilters): Prisma.OrderWhereInput {
   if (filters.maxTotal != null) and.push({ total: { lte: filters.maxTotal } });
 
   return and.length ? { AND: and } : {};
+}
+
+/** The row an order is written as. Shared by both branches of `createOrder`, so the audited path can't drift from the plain one. */
+function toOrderCreateData(input: NewOrder): Prisma.OrderCreateInput {
+  return {
+    // Undefined when the caller didn't mint one, leaving the column's
+    // `@default(uuid())` to assign it.
+    id: input.id,
+    userId: input.userId,
+    status: input.status,
+    phase: input.phase,
+    deliveryType: input.deliveryType,
+    paymentStatus: input.paymentStatus,
+    placedAt: new Date(input.placedAt),
+    location: input.location,
+    locationLabel: input.locationLabel ?? null,
+    destinationLat: input.destination?.latitude ?? null,
+    destinationLng: input.destination?.longitude ?? null,
+    subtotal: input.subtotal,
+    shipping: input.shipping,
+    discount: input.discount,
+    total: input.total,
+    stage: input.stage ?? null,
+    deliveryDate: input.deliveryDate ?? null,
+    deliveryWindowId: input.deliveryWindowId ?? null,
+    deliveryWindow: input.deliveryWindow ?? null,
+    items: {
+      create: input.items.map((item, index) => ({
+        productId: item.productId,
+        name: item.name,
+        imageUrl: item.imageUrl,
+        quantity: item.quantity,
+        price: item.price,
+        substitutionPreference: item.substitutionPreference,
+        position: index + 1,
+      })),
+    },
+  };
 }
 
 function toOrder(row: OrderRow): Order {

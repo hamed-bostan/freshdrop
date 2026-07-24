@@ -66,8 +66,15 @@ export type IOrderRepository = {
   /** A single order by id, or `null` when none matches. */
   getById(orderId: string): Promise<Order | null>;
 
-  /** Persist a newly placed order, returning it with its generated id. */
-  createOrder(input: NewOrder): Promise<Order>;
+  /**
+   * Persist a newly placed order, returning it with its generated id.
+   *
+   * `audit` is passed only when a *person other than the customer* placed it — an
+   * admin taking an order over the phone. Checkout leaves it off: the activity log
+   * records what staff did, and every order in it having an entry that says
+   * "placed by the customer" would bury the handful that didn't.
+   */
+  createOrder(input: NewOrder, audit?: AuditHook<Order>): Promise<Order>;
 
   /**
    * Apply a delivery-stage transition to an order, returning the updated order.

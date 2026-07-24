@@ -66,6 +66,7 @@ export const ACTIVITY_ACTIONS = [
   "category.created",
   "category.updated",
   "category.deleted",
+  "order.created",
   "order.stageChanged",
   "order.returnResolved",
   "order.itemSubstituted",

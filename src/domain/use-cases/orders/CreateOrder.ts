@@ -1,7 +1,5 @@
 import type { Cart } from "../../entities/Cart";
-import type { DeliveryWindow } from "../../entities/DeliveryWindow";
-import { formatWindowRange } from "../../entities/DeliveryWindow";
-import type { Order, OrderItem, SubstitutionPreference } from "../../entities/Order";
+import type { Order, SubstitutionPreference } from "../../entities/Order";
 import type { GeoPoint } from "../../entities/Place";
 import type { ICartRepository } from "../../repositories/ICartRepository";
 import type { IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
@@ -9,9 +7,7 @@ import type { IUnitOfWork } from "../../repositories/IUnitOfWork";
 import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
 import type { IPromoCodeRepository } from "../../repositories/IPromoCodeRepository";
 import type { PromoCode } from "../../entities/PromoCode";
-import { SlotUnavailableError } from "../../errors/SlotUnavailableError";
-import { ValidationError } from "../../errors/ValidationError";
-import { SLOT_HORIZON_DAYS } from "../delivery-slots/GetDeliverySlots";
+import { placeOrder } from "./placeOrder";
 
 export type CreateOrderInput = {
   /** The user placing the order. */
@@ -48,30 +44,19 @@ export type CreateOrderInput = {
   substitutionPreferences?: Record<string, SubstitutionPreference>;
 };
 
-/** The out-of-stock pre-approval used when the customer didn't set one for a line. */
-const DEFAULT_SUBSTITUTION_PREFERENCE: SubstitutionPreference = "substitute";
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-const slotDateFormatter = new Intl.DateTimeFormat("en-US", {
-  weekday: "short",
-  month: "short",
-  day: "numeric",
-  timeZone: "UTC",
-});
-
 /**
- * Place an order: snapshot the cart into an owned, trackable order and empty the
- * cart. A freshly placed order is live (`current`), in progress (`processing`)
- * and at the first delivery milestone (`confirmed`). Totals and item prices come
- * from the server-computed cart — never the client — so the recorded amount can't
- * be tampered with.
+ * Check out: snapshot the shopper's cart into an owned, trackable order, empty the
+ * cart, and tell them it's confirmed. Totals and item prices come from the
+ * server-computed cart — never the client — so the recorded amount can't be
+ * tampered with.
  *
- * Two scarce resources are claimed before the order is recorded, each with an
- * atomic guard so the order is refused rather than oversold: product stock, and
- * the booked delivery slot's capacity. As with stock, the slot claim isn't rolled
- * back if a later step fails — the same non-atomic seam the stock decrement already
- * accepts (a rare, self-healing under-count, never an oversell).
+ * The order itself is written by {@link placeOrder}, which is shared with the
+ * admin's phone-order path. What belongs *here* is everything checkout does that
+ * placing an order in general does not: the cart it consumes, the promo redemption
+ * it counts, and the confirmation the shopper is sent.
+ *
+ * Every order from this path is couriered and already paid — checkout books a
+ * delivery window, and the order is only written once the charge went through.
  */
 export class CreateOrder {
   constructor(
@@ -82,105 +67,13 @@ export class CreateOrder {
     private readonly promoRepo: IPromoCodeRepository,
   ) {}
 
-  async execute({
-    userId,
-    location,
-    locationLabel,
-    destination,
-    cart,
-    promo,
-    deliveryDate,
-    deliveryWindowId,
-    substitutionPreferences,
-  }: CreateOrderInput): Promise<Order> {
-    if (cart.items.length === 0) {
-      throw new ValidationError("cart", "Your cart is empty.");
-    }
+  async execute(input: CreateOrderInput): Promise<Order> {
+    const { userId, promo, ...rest } = input;
 
-    // Resolve the booked window (for its capacity + display snapshot) and confirm
-    // the date is still inside the offered horizon — the server never trusts the
-    // client's view of what's bookable.
-    const windows = await this.slotRepo.listWindows();
-    const window = windows.find((w) => w.id === deliveryWindowId);
-    if (!window || !isWithinHorizon(deliveryDate)) {
-      throw new SlotUnavailableError("That delivery time is no longer available.");
-    }
-
-    const items: OrderItem[] = cart.items.map(({ product, quantity }) => ({
-      productId: product.id,
-      name: product.name,
-      imageUrl: product.imageUrl,
-      quantity,
-      // Snapshot the unit price so a later substitution refund uses the amount
-      // actually charged, not today's catalog price.
-      price: product.price,
-      substitutionPreference:
-        substitutionPreferences?.[product.id] ?? DEFAULT_SUBSTITUTION_PREFERENCE,
-    }));
-
-    // The order's id, minted here rather than by the repository, because the
-    // stock claimed below is attributed to this order and the claim has to happen
-    // before the order exists (see below). `crypto` is the platform global, not a
-    // Node import — the domain stays framework-free.
-    const orderId = crypto.randomUUID();
-
-    const stockLines = cart.items.map(({ product, quantity }) => ({
-      productId: product.id,
-      name: product.name,
-      quantity,
-    }));
-
-    // Checkout claims two scarce resources — units of stock and a seat in a
-    // delivery window — and then records the order that justifies holding them.
-    // All three commit together or none of them do.
-    //
-    // This used to be a compensating sequence: claim, claim, write, and undo the
-    // earlier claims by hand if a later step failed. That is the right shape when
-    // the three live in different *services*; here they are three tables in one
-    // Postgres, so the database can do it properly. The compensations it replaces
-    // had the flaw every hand-rolled rollback has — they can themselves fail, and
-    // when they did the units stayed claimed with no order to explain them.
-    //
-    // Both guards keep working inside the transaction, and still refuse rather
-    // than oversell: a short line throws `InsufficientStockError`, a full window
-    // resolves `false`. Either way nothing is left held.
-    const order = await this.uow.run(async ({ products, slots, orders }) => {
-      await products.decrementStock(stockLines, { reason: "sale", orderId });
-
-      // One unit of the slot's capacity (atomic guard). A full window is refused
-      // here, so the slot is never overbooked.
-      const claimed = await slots.claim(deliveryDate, window.id, window.capacity);
-      if (!claimed) {
-        // The window filled up while we were claiming stock. Throwing rolls the
-        // stock decrement back with it — no release to write, and none to fail.
-        throw new SlotUnavailableError(`${slotLabel(deliveryDate, window)} is fully booked.`);
-      }
-
-      return orders.createOrder({
-        id: orderId,
-        userId,
-        status: "processing",
-        phase: "current",
-        // Checkout books a delivery window, so every order it places is couriered;
-        // pickup has no path through this flow yet. Payment is settled by the time
-        // we get here — the order is only written once the charge went through.
-        deliveryType: "delivery",
-        paymentStatus: "paid",
-        stage: "confirmed",
-        placedAt: new Date().toISOString(),
-        location,
-        locationLabel,
-        destination,
-        subtotal: cart.subtotal,
-        shipping: cart.shipping,
-        discount: cart.discount,
-        total: cart.total,
-        deliveryDate,
-        deliveryWindowId: window.id,
-        deliveryWindow: slotLabel(deliveryDate, window),
-        items,
-      });
-    });
+    const order = await placeOrder(
+      { uow: this.uow, slotRepo: this.slotRepo },
+      { ...rest, userId, deliveryType: "delivery", paymentStatus: "paid" },
+    );
 
     // The order now owns the snapshot, so the working cart is emptied.
     await this.cartRepo.clear(userId);
@@ -203,20 +96,4 @@ export class CreateOrder {
 
     return order;
   }
-}
-
-/** Whether `date` (YYYY-MM-DD) falls within [today, today + horizon) in UTC. */
-function isWithinHorizon(date: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
-  const now = new Date();
-  const startOfToday = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  const target = new Date(`${date}T00:00:00Z`).getTime();
-  const dayOffset = Math.round((target - startOfToday) / DAY_MS);
-  return dayOffset >= 0 && dayOffset < SLOT_HORIZON_DAYS;
-}
-
-/** Absolute display snapshot, e.g. "Thu, Jul 3 · 6:00 – 8:00 PM" — stable over time. */
-function slotLabel(date: string, window: DeliveryWindow): string {
-  const day = slotDateFormatter.format(new Date(`${date}T00:00:00Z`));
-  return `${day} · ${formatWindowRange(window.startMinutes, window.endMinutes)}`;
 }
