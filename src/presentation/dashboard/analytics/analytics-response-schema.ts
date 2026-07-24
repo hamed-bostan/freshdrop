@@ -63,10 +63,13 @@ const topCategorySchema = z.object({
 export const analyticsOverviewResponseSchema = z.object({
   range: rangeSchema,
   previousRange: rangeSchema,
+  previousYearRange: rangeSchema,
   granularity: z.enum(["day", "week", "month"]),
   totals: totalsSchema,
   previousTotals: totalsSchema,
   revenueSeries: z.array(revenuePointSchema),
+  previousSeries: z.array(revenuePointSchema),
+  previousYearSeries: z.array(revenuePointSchema),
   statusBreakdown: z.array(statusCountSchema),
   topProducts: z.array(topProductSchema),
   topCategories: z.array(topCategorySchema),

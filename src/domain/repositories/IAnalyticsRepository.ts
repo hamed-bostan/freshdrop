@@ -85,6 +85,28 @@ export type IAnalyticsRepository = {
   revenueSeries(range: DateRange, granularity: AnalyticsGranularity): Promise<RevenuePoint[]>;
 
   /**
+   * `revenueSeries(range, granularity)`'s buckets, revalued against a different
+   * period — the revenue chart's "compare with" series (the immediately preceding
+   * period, or the same days a year earlier; see `previousPeriod` /
+   * `previousYearRange`).
+   *
+   * Returned index-aligned to `range`'s own buckets rather than bucketed
+   * independently by `compareRange`'s calendar dates: entry `i` is "whatever
+   * `compareRange` earned during the window `range`'s bucket `i` would occupy if
+   * shifted back onto `compareRange`", not "`compareRange`'s own `i`-th calendar
+   * bucket". The two are usually the same count, but not guaranteed to be —
+   * `date_trunc('month', …)` on two 365-day windows a year apart can legitimately
+   * split into 12 months on one side and 13 on the other. Aligning by construction
+   * means the chart can zip the two arrays by position and never has to reconcile
+   * mismatched lengths or re-derive which bucket pairs with which.
+   */
+  compareRevenueSeries(
+    range: DateRange,
+    compareRange: DateRange,
+    granularity: AnalyticsGranularity,
+  ): Promise<RevenuePoint[]>;
+
+  /**
    * How orders placed in `range` ended up — one row per status that occurred.
    *
    * Counts *every* status, unlike {@link totals}, which counts only orders that

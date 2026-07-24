@@ -143,6 +143,50 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     }));
   }
 
+  async compareRevenueSeries(
+    range: DateRange,
+    compareRange: DateRange,
+    granularity: AnalyticsGranularity,
+  ): Promise<RevenuePoint[]> {
+    const unit = Prisma.raw(assertGranularity(granularity));
+
+    // Every order below is read from `compareRange`, but the buckets are `range`'s
+    // own — generated exactly as `revenueSeries` generates them, over `range`, not
+    // `compareRange`. That's what index-aligns the result to `revenueSeries(range,
+    // granularity)`: shifting a `compareRange` order forward by this offset before
+    // truncating is what lands it in the bucket its `range`-relative counterpart
+    // occupies, rather than in whatever bucket `compareRange`'s own calendar
+    // produces (which, per the port doc, isn't guaranteed to even total the same
+    // number of buckets).
+    const shiftMs = range.from.getTime() - compareRange.from.getTime();
+
+    const rows = await this.db.$queryRaw<SeriesRow[]>(Prisma.sql`
+      WITH ${recognizedOrders(compareRange)},
+      buckets AS (
+        SELECT generate_series(
+          date_trunc('${unit}', ${range.from}::timestamp),
+          ${range.to}::timestamp - interval '1 microsecond',
+          '1 ${unit}'::interval
+        ) AS bucket
+      )
+      SELECT
+        b.bucket                                                   AS bucket,
+        COALESCE(SUM(r.revenue), 0)::double precision              AS revenue,
+        COUNT(r.id) FILTER (WHERE r.revenue > 0)::int              AS orders
+      FROM buckets b
+      LEFT JOIN recognized r
+        ON date_trunc('${unit}', r.placed_at + (${shiftMs} * interval '1 millisecond')) = b.bucket
+      GROUP BY b.bucket
+      ORDER BY b.bucket
+    `);
+
+    return rows.map((row) => ({
+      bucket: row.bucket.toISOString(),
+      revenue: row.revenue,
+      orders: row.orders,
+    }));
+  }
+
   async statusBreakdown(range: DateRange): Promise<OrderStatusCount[]> {
     const rows = await this.db.$queryRaw<StatusRow[]>(Prisma.sql`
       WITH ${recognizedOrders(range)}

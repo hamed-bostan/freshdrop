@@ -1,6 +1,7 @@
 import {
   granularityFor,
   previousPeriod,
+  previousYearRange,
   rangeToWire,
   type AnalyticsOverview,
   type DateRange,
@@ -17,7 +18,7 @@ const TOP_LIMIT = 5;
  * The whole screen is one use-case and one endpoint because every figure on it has
  * to describe the same range: six independent fetches is six chances for the range
  * to drift, and one failure away from a page that half-answers the question. The
- * queries themselves are independent, so they run together — seven aggregates over
+ * queries themselves are independent, so they run together — eight aggregates over
  * the same indexed range, in parallel, rather than in sequence.
  *
  * The baseline is chosen here rather than by the caller. "Compared to what" is a
@@ -29,32 +30,46 @@ export class GetAnalyticsOverview {
 
   async execute(range: DateRange): Promise<AnalyticsOverview> {
     const previous = previousPeriod(range);
+    const previousYear = previousYearRange(range);
     const granularity = granularityFor(range);
 
     // One batch, because the numbers have to agree with each other and because
-    // seven independent reads is seven connections taken from a pool the rest of
+    // eight independent reads is eight connections taken from a pool the rest of
     // the dashboard is also drawing on — see `IAnalyticsRepository.snapshot`.
-    const [totals, previousTotals, revenueSeries, statusBreakdown, topProducts, topCategories] =
-      await this.analytics.snapshot((analytics) =>
-        Promise.all([
-          analytics.totals(range),
-          analytics.totals(previous),
-          analytics.revenueSeries(range, granularity),
-          analytics.statusBreakdown(range),
-          analytics.topProducts(range, TOP_LIMIT),
-          analytics.topCategories(range, TOP_LIMIT),
-        ]),
-      );
+    const [
+      totals,
+      previousTotals,
+      revenueSeries,
+      previousSeries,
+      previousYearSeries,
+      statusBreakdown,
+      topProducts,
+      topCategories,
+    ] = await this.analytics.snapshot((analytics) =>
+      Promise.all([
+        analytics.totals(range),
+        analytics.totals(previous),
+        analytics.revenueSeries(range, granularity),
+        analytics.compareRevenueSeries(range, previous, granularity),
+        analytics.compareRevenueSeries(range, previousYear, granularity),
+        analytics.statusBreakdown(range),
+        analytics.topProducts(range, TOP_LIMIT),
+        analytics.topCategories(range, TOP_LIMIT),
+      ]),
+    );
 
     return {
       // Echoed back rather than left implicit: the caller may have sent a preset,
       // and the screen has to be able to say which days it is actually showing.
       range: rangeToWire(range),
       previousRange: rangeToWire(previous),
+      previousYearRange: rangeToWire(previousYear),
       granularity,
       totals,
       previousTotals,
       revenueSeries,
+      previousSeries,
+      previousYearSeries,
       statusBreakdown,
       topProducts,
       topCategories,

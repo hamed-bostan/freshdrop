@@ -280,7 +280,15 @@ export async function DashboardOverviewScreen({
           through a snapshot. */}
       <NeedsAttentionPanel items={attentionItems} />
 
-      <RevenueChart points={analytics.revenueSeries} granularity={analytics.granularity} />
+      <RevenueChart
+        points={analytics.revenueSeries}
+        previousPoints={analytics.previousSeries}
+        previousYearPoints={analytics.previousYearSeries}
+        granularity={analytics.granularity}
+        range={analytics.range}
+        previousRange={analytics.previousRange}
+        previousYearRange={analytics.previousYearRange}
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <OrderStatusBreakdown breakdown={analytics.statusBreakdown} />

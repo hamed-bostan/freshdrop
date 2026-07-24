@@ -96,6 +96,34 @@ export function previousPeriod(range: DateRange): DateRange {
 }
 
 /**
+ * The same days one year earlier — calendar-aligned rather than same-length like
+ * {@link previousPeriod}. December compared against last November is barely a
+ * comparison; December against last December is the one a seasonal business
+ * actually wants from a "compare with" control.
+ *
+ * Shifting the UTC year is enough because every range this app builds starts and
+ * ends at UTC midnight (see `startOfUtcDay`); a Feb 29 bound simply lands on
+ * Feb 28 or Mar 1 a year later, the same way every other calendar-year-shift does.
+ */
+export function previousYearRange(range: DateRange): DateRange {
+  return { from: shiftUtcYear(range.from, -1), to: shiftUtcYear(range.to, -1) };
+}
+
+function shiftUtcYear(at: Date, years: number): Date {
+  return new Date(
+    Date.UTC(
+      at.getUTCFullYear() + years,
+      at.getUTCMonth(),
+      at.getUTCDate(),
+      at.getUTCHours(),
+      at.getUTCMinutes(),
+      at.getUTCSeconds(),
+      at.getUTCMilliseconds(),
+    ),
+  );
+}
+
+/**
  * Bucket width for a range: fine enough to show shape, coarse enough that the
  * chart isn't a picket fence. A quarter is still readable daily; a year is not.
  */
@@ -215,11 +243,23 @@ export type AnalyticsOverview = {
   range: { from: string; to: string };
   /** The baseline `totals` are compared against — the equally-long period before `range`. */
   previousRange: { from: string; to: string };
+  /** The same days one year earlier — the chart's other "compare with" option. */
+  previousYearRange: { from: string; to: string };
   granularity: AnalyticsGranularity;
   totals: AnalyticsTotals;
   previousTotals: AnalyticsTotals;
   /** Gap-filled: every bucket in the range is present, including the empty ones. */
   revenueSeries: RevenuePoint[];
+  /**
+   * `previousRange`'s revenue, one entry per bucket of `revenueSeries` in the same
+   * order — index `i` is the previous period's counterpart to `revenueSeries[i]`,
+   * not a bucket that shares its calendar date. That is what lets the chart draw
+   * them as a grouped pair per bucket regardless of which calendar days each period
+   * actually fell on.
+   */
+  previousSeries: RevenuePoint[];
+  /** Same alignment as {@link previousSeries}, but sourced from `previousYearRange`. */
+  previousYearSeries: RevenuePoint[];
   statusBreakdown: OrderStatusCount[];
   topProducts: TopProduct[];
   topCategories: TopCategory[];
