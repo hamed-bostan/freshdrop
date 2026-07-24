@@ -962,8 +962,7 @@
     "cardOutForDelivery": "Out for delivery",
     "cardOutForDeliveryHint": "On the way to the customer",
     "cardReturns": "Returns to review",
-    "cardReturnsHint": "Waiting on your decision",
-    "createOrder": "Create order"
+    "cardReturnsHint": "Waiting on your decision"
   },
   "dashOrderComms": {
     "resendHeading": "Resend a notification",
@@ -1297,7 +1296,6 @@
         "stockAdjusted": "{actor} adjusted stock for {entity}"
       },
       "order": {
-        "created": "{actor} created order {entity}",
         "stageChanged": "{actor} changed the delivery stage of order {entity}",
         "returnResolved": "{actor} resolved the return on order {entity}",
         "itemSubstituted": "{actor} resolved an out-of-stock item on order {entity}",
@@ -1379,40 +1377,5 @@
       "capacity": "Capacity changes",
       "role": "Access changes"
     }
-  },
-  "dashCreateOrder": {
-    "heading": "Create order",
-    "subtitle": "Place an order for a customer who ordered by phone.",
-    "customerHeading": "Customer",
-    "customerSearchLabel": "Search customers",
-    "customerSearchPlaceholder": "Search by name or phone…",
-    "customerSearchHint": "Type a name or phone number.",
-    "customerSearchEmpty": "No customers match.",
-    "changeCustomer": "Change",
-    "productsHeading": "Products",
-    "productSearchLabel": "Search products",
-    "productSearchPlaceholder": "Search products to add…",
-    "productSearchHint": "Type a product name.",
-    "productSearchEmpty": "No products match.",
-    "noLines": "No products added yet.",
-    "quantityLabel": "Quantity of {name}",
-    "removeLine": "Remove {name}",
-    "addressLabel": "Delivery address",
-    "addressPlaceholder": "Street, city…",
-    "slotLabel": "Delivery slot",
-    "slotPlaceholder": "Choose a slot…",
-    "deliveryTypeLabel": "Delivery type",
-    "deliveryType_delivery": "Delivery",
-    "deliveryType_pickup": "Pickup",
-    "paymentStatusLabel": "Payment status",
-    "paymentStatus_paid": "Paid",
-    "paymentStatus_pending": "Pending",
-    "paymentStatus_failed": "Failed",
-    "subtotalPreview": "Items subtotal",
-    "submit": "Place order",
-    "errorCustomerRequired": "Choose a customer.",
-    "errorLinesRequired": "Add at least one product.",
-    "errorSlotRequired": "Choose a delivery slot.",
-    "formError": "The order could not be placed. Please try again."
   }
 }

@@ -962,8 +962,7 @@
     "cardOutForDelivery": "در مسیر تحویل",
     "cardOutForDeliveryHint": "در راه رسیدن به مشتری",
     "cardReturns": "مرجوعی‌های در انتظار بررسی",
-    "cardReturnsHint": "منتظر تصمیم شما",
-    "createOrder": "ایجاد سفارش"
+    "cardReturnsHint": "منتظر تصمیم شما"
   },
   "dashOrderComms": {
     "resendHeading": "ارسال دوباره اعلان",
@@ -1297,7 +1296,6 @@
         "stockAdjusted": "{actor} موجودی {entity} را تغییر داد"
       },
       "order": {
-        "created": "{actor} سفارش {entity} را ثبت کرد",
         "stageChanged": "{actor} مرحله ارسال سفارش {entity} را تغییر داد",
         "returnResolved": "{actor} درخواست مرجوعی سفارش {entity} را بررسی کرد",
         "itemSubstituted": "{actor} یک قلم ناموجود سفارش {entity} را تعیین تکلیف کرد",
@@ -1379,40 +1377,5 @@
       "capacity": "تغییر ظرفیت",
       "role": "تغییر دسترسی"
     }
-  },
-  "dashCreateOrder": {
-    "heading": "ایجاد سفارش",
-    "subtitle": "برای مشتری‌ای که تلفنی سفارش داده، سفارش ثبت کنید.",
-    "customerHeading": "مشتری",
-    "customerSearchLabel": "جست‌وجوی مشتریان",
-    "customerSearchPlaceholder": "جست‌وجو با نام یا شماره…",
-    "customerSearchHint": "نام یا شماره تلفن را وارد کنید.",
-    "customerSearchEmpty": "مشتری‌ای یافت نشد.",
-    "changeCustomer": "تغییر",
-    "productsHeading": "محصولات",
-    "productSearchLabel": "جست‌وجوی محصولات",
-    "productSearchPlaceholder": "محصول برای افزودن جست‌وجو کنید…",
-    "productSearchHint": "نام محصول را وارد کنید.",
-    "productSearchEmpty": "محصولی یافت نشد.",
-    "noLines": "هنوز محصولی اضافه نشده است.",
-    "quantityLabel": "تعداد {name}",
-    "removeLine": "حذف {name}",
-    "addressLabel": "آدرس تحویل",
-    "addressPlaceholder": "خیابان، شهر…",
-    "slotLabel": "بازه تحویل",
-    "slotPlaceholder": "یک بازه انتخاب کنید…",
-    "deliveryTypeLabel": "نوع تحویل",
-    "deliveryType_delivery": "ارسال",
-    "deliveryType_pickup": "تحویل حضوری",
-    "paymentStatusLabel": "وضعیت پرداخت",
-    "paymentStatus_paid": "پرداخت‌شده",
-    "paymentStatus_pending": "در انتظار",
-    "paymentStatus_failed": "ناموفق",
-    "subtotalPreview": "جمع اقلام",
-    "submit": "ثبت سفارش",
-    "errorCustomerRequired": "یک مشتری انتخاب کنید.",
-    "errorLinesRequired": "حداقل یک محصول اضافه کنید.",
-    "errorSlotRequired": "یک بازه تحویل انتخاب کنید.",
-    "formError": "سفارش ثبت نشد. دوباره تلاش کنید."
   }
 }

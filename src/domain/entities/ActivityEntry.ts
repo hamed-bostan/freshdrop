@@ -66,7 +66,9 @@ export const ACTIVITY_ACTIONS = [
   "category.created",
   "category.updated",
   "category.deleted",
-  "order.created",
+  // No `order.created`: an order is only ever created by the customer placing it,
+  // and the order row already records who that is. The log exists for the changes
+  // *staff* make to something stored.
   "order.stageChanged",
   "order.returnResolved",
   "order.itemSubstituted",
