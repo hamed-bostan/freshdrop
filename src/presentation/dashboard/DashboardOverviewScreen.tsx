@@ -1,8 +1,9 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { AlertTriangle, ClipboardList, DollarSign, Receipt, Star, Users } from "lucide-react";
+import { AlertTriangle, ClipboardList, Clock, DollarSign, Receipt, Star, Truck, Users } from "lucide-react";
 import { ANALYTICS_RANGE_PRESETS, percentChange } from "@/src/domain/entities/Analytics";
 import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid } from "@/src/domain/entities/Order";
+import { PENDING_ORDER_SLA_HOURS, UNFULFILLED_ORDER_SLA_HOURS } from "@/src/domain/entities/OrderSla";
 import { LOW_STOCK_THRESHOLD } from "@/src/domain/entities/stock";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
@@ -11,6 +12,8 @@ import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStat
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
+import type { AttentionItem } from "./attention/AttentionItem";
+import { NeedsAttentionPanel } from "./attention/NeedsAttentionPanel";
 import { StatCard } from "./StatCard";
 import { TopCustomersPanel } from "./orders/TopCustomersPanel";
 import type { AnalyticsOverviewWire } from "./analytics/analytics-response-schema";
@@ -43,6 +46,16 @@ type DashboardOverviewScreenProps = {
    * storefront calls "low".
    */
   lowStockCount: number;
+  /**
+   * Orders still unconfirmed after {@link PENDING_ORDER_SLA_HOURS}, and the exact
+   * cutoff instant that count was drawn against — reused for the tile's `href` so
+   * the link can never disagree with the number above it.
+   */
+  staleOrdersCount: number;
+  staleOrdersCutoff: string;
+  /** Orders undelivered after {@link UNFULFILLED_ORDER_SLA_HOURS}, and its cutoff (see above). */
+  overdueOrdersCount: number;
+  overdueOrdersCutoff: string;
   /** Top spenders — an all-time ranking, not a period-scoped one (see below). */
   customers: CustomerOrderSummary[];
 };
@@ -79,6 +92,10 @@ export async function DashboardOverviewScreen({
   recentOrders,
   pendingReviews,
   lowStockCount,
+  staleOrdersCount,
+  staleOrdersCutoff,
+  overdueOrdersCount,
+  overdueOrdersCutoff,
   customers,
 }: DashboardOverviewScreenProps) {
   const t = await getTranslations("dashHome");
@@ -131,6 +148,53 @@ export async function DashboardOverviewScreen({
   }));
 
   const customersById = new Map(customers.map((customer) => [customer.userId, customer]));
+
+  // The panel's whole vocabulary: a count, what it means, and where the rows
+  // behind it live. Each `href` carries the exact filter its count was drawn
+  // from (see the props above and `page.tsx`), so a tile can never send
+  // someone to a list that disagrees with the number they clicked.
+  const attentionItems: AttentionItem[] = [
+    {
+      key: "pendingReviews",
+      icon: Star,
+      tone: "warning",
+      count: pendingReviews,
+      title: t("attentionPendingReviews"),
+      detail: t("attentionPendingReviewsDetail"),
+      ctaLabel: t("attentionPendingReviewsCta"),
+      href: "/dashboard/reviews",
+    },
+    {
+      key: "lowStock",
+      icon: AlertTriangle,
+      tone: "danger",
+      count: lowStockCount,
+      title: t("attentionLowStock"),
+      detail: t("attentionLowStockDetail", { threshold: LOW_STOCK_THRESHOLD }),
+      ctaLabel: t("attentionLowStockCta"),
+      href: "/dashboard/products?stock=needsRestock",
+    },
+    {
+      key: "staleOrders",
+      icon: Clock,
+      tone: "danger",
+      count: staleOrdersCount,
+      title: t("attentionStaleOrders"),
+      detail: t("attentionStaleOrdersDetail", { hours: PENDING_ORDER_SLA_HOURS }),
+      ctaLabel: t("attentionStaleOrdersCta"),
+      href: `/dashboard/orders?pipeline=pending&to=${encodeURIComponent(staleOrdersCutoff)}`,
+    },
+    {
+      key: "overdueOrders",
+      icon: Truck,
+      tone: "warning",
+      count: overdueOrdersCount,
+      title: t("attentionOverdueOrders"),
+      detail: t("attentionOverdueOrdersDetail", { hours: UNFULFILLED_ORDER_SLA_HOURS }),
+      ctaLabel: t("attentionOverdueOrdersCta"),
+      href: `/dashboard/orders?pipeline=in_progress&to=${encodeURIComponent(overdueOrdersCutoff)}`,
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -209,29 +273,12 @@ export async function DashboardOverviewScreen({
         />
       </div>
 
-      {/* The two tiles that name something to *do*, kept apart from the period KPIs
-          above because they measure the queue as it stands right now — and kept
-          linked to the rows behind them, since "4 low on stock" is only actionable
-          once you can see which four. `?stock=needsRestock` is the products list's
-          own filter vocabulary and counts exactly what this tile counts. */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <StatCard
-          icon={Star}
-          tone="warning"
-          value={formatNumber(pendingReviews, locale)}
-          label={t("kpiPendingReviews")}
-          hint={t("kpiPendingReviewsHint")}
-          href="/dashboard/reviews"
-        />
-        <StatCard
-          icon={AlertTriangle}
-          tone="danger"
-          value={formatNumber(lowStockCount, locale)}
-          label={t("kpiLowStock")}
-          hint={t("kpiLowStockHint", { threshold: LOW_STOCK_THRESHOLD })}
-          href="/dashboard/products?stock=needsRestock"
-        />
-      </div>
+      {/* One consolidated strip for everything that names something to *do*, kept
+          apart from the period KPIs above because it measures the queue as it
+          stands right now — a moderation backlog and a stale order don't have a
+          "vs previous 30 days" reading, and inventing one would read as a trend
+          through a snapshot. */}
+      <NeedsAttentionPanel items={attentionItems} />
 
       <RevenueChart points={analytics.revenueSeries} granularity={analytics.granularity} />
 
