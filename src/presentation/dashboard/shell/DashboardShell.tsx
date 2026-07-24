@@ -6,26 +6,45 @@ import type { Permission } from "@/src/domain/entities/Permission";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { DashboardTopBar } from "./DashboardTopBar";
 import { NavDrawer } from "./NavDrawer";
+import { SIDEBAR_COLLAPSED_COOKIE_MAX_AGE, SIDEBAR_COLLAPSED_COOKIE_NAME } from "./sidebarCollapseCookie";
 import type { DashboardViewer } from "./viewer";
 
 type DashboardShellProps = {
   permissions: readonly Permission[];
   viewer: DashboardViewer;
+  /** The desktop rail's collapsed/expanded choice, read from its cookie in the layout so the first paint already matches. */
+  initialSidebarCollapsed: boolean;
   children: ReactNode;
 };
 
 /**
  * The dashboard's chrome: the desktop rail, the top bar, and the mobile nav
- * drawer, wrapped around the page body. Owns the one piece of state the chrome
- * needs — whether the drawer is open — so the top bar's hamburger and the
- * drawer itself always agree.
+ * drawer, wrapped around the page body. Owns the state the chrome needs —
+ * whether the drawer is open, and whether the `xl`+ rail is collapsed — so the
+ * top bar's hamburger and the rail's own toggle always agree with what's drawn.
  */
-export function DashboardShell({ permissions, viewer, children }: DashboardShellProps) {
+export function DashboardShell({ permissions, viewer, initialSidebarCollapsed, children }: DashboardShellProps) {
   const [navOpen, setNavOpen] = React.useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(initialSidebarCollapsed);
+
+  function toggleSidebarCollapsed(): void {
+    setSidebarCollapsed((collapsed) => {
+      const next = !collapsed;
+      // No reload needed — unlike the locale cookie, this only ever changes a
+      // client-side layout choice, not anything the server rendered.
+      document.cookie = `${SIDEBAR_COLLAPSED_COOKIE_NAME}=${next ? "1" : "0"}; path=/; max-age=${SIDEBAR_COLLAPSED_COOKIE_MAX_AGE}; samesite=lax`;
+      return next;
+    });
+  }
 
   return (
     <div className="flex min-h-dvh bg-background">
-      <DashboardSidebar permissions={permissions} viewer={viewer} />
+      <DashboardSidebar
+        permissions={permissions}
+        viewer={viewer}
+        collapsed={sidebarCollapsed}
+        onToggleCollapsed={toggleSidebarCollapsed}
+      />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <DashboardTopBar viewer={viewer} onOpenNav={() => setNavOpen(true)} />

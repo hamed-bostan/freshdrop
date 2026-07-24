@@ -577,7 +577,9 @@
     "account": "Account menu",
     "signOut": "Sign out",
     "signOutTitle": "Sign out?",
-    "signOutMessage": "You'll need to sign in again to get back to the dashboard."
+    "signOutMessage": "You'll need to sign in again to get back to the dashboard.",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar"
   },
   "dashHome": {
     "heading": "Dashboard",

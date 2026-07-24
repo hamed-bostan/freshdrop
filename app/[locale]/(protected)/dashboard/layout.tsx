@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { requirePermission, sessionPermissions } from "@/src/lib/require-permission";
 import { DashboardShell } from "@/src/presentation/dashboard/shell/DashboardShell";
 import { dashboardViewerFor } from "@/src/presentation/dashboard/shell/viewer";
+import { SIDEBAR_COLLAPSED_COOKIE_NAME } from "@/src/presentation/dashboard/shell/sidebarCollapseCookie";
 
 /**
  * Shell for the dashboard. Gates the whole `/dashboard` tree on `dashboard.view`,
@@ -24,8 +26,14 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // any page here can recover from — back to the door, same as no session at all.
   if (!viewer) redirect("/login");
 
+  const sidebarCollapsed = (await cookies()).get(SIDEBAR_COLLAPSED_COOKIE_NAME)?.value === "1";
+
   return (
-    <DashboardShell permissions={await sessionPermissions(session)} viewer={viewer}>
+    <DashboardShell
+      permissions={await sessionPermissions(session)}
+      viewer={viewer}
+      initialSidebarCollapsed={sidebarCollapsed}
+    >
       {children}
     </DashboardShell>
   );

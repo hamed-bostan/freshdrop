@@ -577,7 +577,9 @@
     "account": "منوی حساب کاربری",
     "signOut": "خروج از حساب",
     "signOutTitle": "خروج از حساب؟",
-    "signOutMessage": "برای بازگشت به داشبورد باید دوباره وارد شوید."
+    "signOutMessage": "برای بازگشت به داشبورد باید دوباره وارد شوید.",
+    "collapseSidebar": "جمع کردن نوار کناری",
+    "expandSidebar": "باز کردن نوار کناری"
   },
   "dashHome": {
     "heading": "داشبورد",
