@@ -21,6 +21,14 @@ export class PrismaStockMovementLog implements IStockMovementLog {
     });
     return rows.map(toStockMovement);
   }
+
+  async listRecent(limit: number): Promise<StockMovement[]> {
+    const rows = await prisma.stockMovement.findMany({
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
+    return rows.map(toStockMovement);
+  }
 }
 
 /** Fall back to `correction` for a stored reason the domain doesn't know. */

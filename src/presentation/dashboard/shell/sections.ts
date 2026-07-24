@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   CalendarClock,
   ClipboardList,
   History,
@@ -9,6 +10,7 @@ import {
   Star,
   Tag,
   Users,
+  Warehouse,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Permission } from "@/src/domain/entities/Permission";
@@ -33,9 +35,11 @@ export type DashboardSectionLabelKey =
   | "navDashboard"
   | "navCategories"
   | "navProducts"
+  | "navInventory"
   | "navOrders"
   | "navReviews"
   | "navCustomers"
+  | "navAnalytics"
   | "navPromoCodes"
   | "navDeliverySlots"
   | "navActivity"
@@ -58,10 +62,16 @@ const SECTIONS = [
   // dashboard — the catalog list is how support answers "do we still sell this?".
   // The write controls *inside* those pages are what the finer permissions gate.
   { href: "/dashboard/products", labelKey: "navProducts", icon: Package, needs: "dashboard.view", group: "groupCatalog" },
+  // Same rule as Products: the needs-restock list is a read anyone with the
+  // dashboard can use, and it's the same `stock=needsRestock` read Products
+  // already exposes. Only the inline adjust, the ledger panel and bulk restock
+  // — all `catalog.write` — are what the page adds on top.
+  { href: "/dashboard/inventory", labelKey: "navInventory", icon: Warehouse, needs: "dashboard.view", group: "groupCatalog" },
 
   { href: "/dashboard/orders", labelKey: "navOrders", icon: ClipboardList, needs: "dashboard.view", group: "groupSales" },
   { href: "/dashboard/reviews", labelKey: "navReviews", icon: Star, needs: "dashboard.view", group: "groupSales" },
   { href: "/dashboard/customers", labelKey: "navCustomers", icon: Users, needs: "dashboard.view", group: "groupSales" },
+  { href: "/dashboard/analytics", labelKey: "navAnalytics", icon: BarChart3, needs: "dashboard.view", group: "groupSales" },
 
   { href: "/dashboard/promo-codes", labelKey: "navPromoCodes", icon: PercentCircle, needs: "promotions.write", group: "groupMarketing" },
   { href: "/dashboard/delivery-slots", labelKey: "navDeliverySlots", icon: CalendarClock, needs: "promotions.write", group: "groupMarketing" },

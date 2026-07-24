@@ -37,8 +37,6 @@ import { TopCustomersPanel } from "./orders/TopCustomersPanel";
 import type { AnalyticsOverviewWire } from "./analytics/analytics-response-schema";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./analytics/AnalyticsRangePicker";
 import { CustomerInsightsPanel, type CustomerInsightMetric } from "./analytics/CustomerInsightsPanel";
-import { ExportCsvLink } from "./analytics/ExportCsvLink";
-import { OrderStatusBreakdown } from "./analytics/OrderStatusBreakdown";
 import { RevenueChart } from "./analytics/RevenueChart";
 import { RevenueRankPanel, type RevenueRankRow } from "./analytics/RevenueRankPanel";
 
@@ -261,7 +259,10 @@ export async function DashboardOverviewScreen({
       title: t("attentionLowStock"),
       detail: t("attentionLowStockDetail", { threshold: LOW_STOCK_THRESHOLD }),
       ctaLabel: t("attentionLowStockCta"),
-      href: "/dashboard/products?stock=needsRestock",
+      // The consolidated restocking workflow, not the raw filtered catalog list —
+      // same underlying read (`stock=needsRestock`), but with inline adjust and
+      // bulk restock right there instead of one row action at a time.
+      href: "/dashboard/inventory",
     },
     {
       key: "staleOrders",
@@ -310,21 +311,30 @@ export async function DashboardOverviewScreen({
           </p>
         </div>
 
-        <AnalyticsRangePicker
-          presetLabel={tAnalytics("rangeLabel")}
-          presetOptions={[
-            ...ANALYTICS_RANGE_PRESETS.map((preset) => ({
-              value: preset,
-              label: tAnalytics(`preset.${preset}`),
-            })),
-            { value: CUSTOM_RANGE_VALUE, label: tAnalytics("presetCustom") },
-          ]}
-          fromLabel={tAnalytics("rangeFrom")}
-          toLabel={tAnalytics("rangeTo")}
-          from={from}
-          to={to}
-          isCustom={isCustomRange}
-        />
+        <div className="flex flex-col items-start gap-2 sm:items-end">
+          {/* The overview keeps the KPIs and the period chart; everything else
+              analytics can show (the full status breakdown, exports, and the
+              rankings past the top five) moved to its own page — this is the
+              way there. */}
+          <Link href="/dashboard/analytics" className="text-body-b8 text-primary hover:underline">
+            {t("viewFullAnalytics")}
+          </Link>
+          <AnalyticsRangePicker
+            presetLabel={tAnalytics("rangeLabel")}
+            presetOptions={[
+              ...ANALYTICS_RANGE_PRESETS.map((preset) => ({
+                value: preset,
+                label: tAnalytics(`preset.${preset}`),
+              })),
+              { value: CUSTOM_RANGE_VALUE, label: tAnalytics("presetCustom") },
+            ]}
+            fromLabel={tAnalytics("rangeFrom")}
+            toLabel={tAnalytics("rangeTo")}
+            from={from}
+            to={to}
+            isCustom={isCustomRange}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -411,12 +421,9 @@ export async function DashboardOverviewScreen({
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <OrderStatusBreakdown breakdown={analytics.statusBreakdown} />
-        {customers.length > 0 ? (
-          <TopCustomersPanel customers={customers} compact viewAllHref="/dashboard/customers" />
-        ) : null}
-      </div>
+      {customers.length > 0 ? (
+        <TopCustomersPanel customers={customers} compact viewAllHref="/dashboard/customers" />
+      ) : null}
 
       <section className="rounded-card-lg border border-border p-4">
         <div className="flex items-center justify-between gap-3">
@@ -473,17 +480,6 @@ export async function DashboardOverviewScreen({
         ) : (
           <p className="mt-4 text-body-b7 text-muted-foreground">{t("noRecentOrders")}</p>
         )}
-
-        {/* A quiet footer action, not a card competing for half a row: this is
-            where someone lands when the dashboard *can't* answer their question,
-            which is exactly when they want the rows in a spreadsheet. From here
-            each export covers everything (no list filter to carry). */}
-        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-3">
-          <span className="text-body-b8 text-muted-foreground">{tAnalytics("exportHeading")}</span>
-          <ExportCsvLink resource="orders" label={tAnalytics("exportOrders")} />
-          <ExportCsvLink resource="products" label={tAnalytics("exportProducts")} />
-          <ExportCsvLink resource="customers" label={tAnalytics("exportCustomers")} />
-        </div>
       </section>
     </div>
   );

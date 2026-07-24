@@ -10,13 +10,19 @@ import {
 } from "../../entities/Analytics";
 import type { IAnalyticsRepository } from "../../repositories/IAnalyticsRepository";
 
-/** How many rows the "top products" and "top categories" panels rank. */
+/** How many rows the "top products" and "top categories" panels rank, when the caller doesn't say. */
 const TOP_LIMIT = 5;
 
 /** How each ranked panel orders its rows — independent, since a reader can flip one without the other. */
 export type RevenueRankSortOptions = {
   productsSort?: RevenueRankSort;
   categoriesSort?: RevenueRankSort;
+  /**
+   * How many rows `topProducts`/`topCategories` return. Defaults to `TOP_LIMIT`,
+   * the overview's compact-panel size; the analytics page's fuller tables pass a
+   * larger value so they have more than five rows to paginate through.
+   */
+  rankLimit?: number;
 };
 
 /**
@@ -42,6 +48,7 @@ export class GetAnalyticsOverview {
     const granularity = granularityFor(range);
     const productsSort = sort.productsSort ?? DEFAULT_REVENUE_RANK_SORT;
     const categoriesSort = sort.categoriesSort ?? DEFAULT_REVENUE_RANK_SORT;
+    const rankLimit = sort.rankLimit ?? TOP_LIMIT;
 
     // One batch, because the numbers have to agree with each other and because
     // ten independent reads is ten connections taken from a pool the rest of
@@ -65,8 +72,8 @@ export class GetAnalyticsOverview {
         analytics.compareRevenueSeries(range, previous, granularity),
         analytics.compareRevenueSeries(range, previousYear, granularity),
         analytics.statusBreakdown(range),
-        analytics.topProducts(range, TOP_LIMIT, productsSort),
-        analytics.topCategories(range, TOP_LIMIT, categoriesSort),
+        analytics.topProducts(range, rankLimit, productsSort),
+        analytics.topCategories(range, rankLimit, categoriesSort),
         analytics.customerSegments(range),
         analytics.customerSegments(previous),
       ]),

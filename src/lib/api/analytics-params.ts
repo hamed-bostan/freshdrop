@@ -95,6 +95,23 @@ export function parseRevenueRankSort(params: URLSearchParams, paramName: string)
   return value && REVENUE_RANK_SORT_SET.has(value) ? (value as RevenueRankSort) : DEFAULT_REVENUE_RANK_SORT;
 }
 
+/** The most rows a "top products"/"top categories" read may ask for — the analytics page's fuller tables. */
+const MAX_RANK_LIMIT = 100;
+
+/**
+ * How many rows `topProducts`/`topCategories` should return, off the `rankLimit`
+ * query param — the overview's compact panels never set it (falling back to
+ * `defaultLimit`), while the analytics page's fuller tables ask for more.
+ * Clamped rather than rejected, the same rule `MAX_PAGE_SIZE` follows: a
+ * hand-edited `?rankLimit=100000` is a way to ask the database to rank the whole
+ * catalog into one response.
+ */
+export function parseRankLimit(params: URLSearchParams, defaultLimit: number): number {
+  const raw = Number(params.get("rankLimit"));
+  if (!Number.isFinite(raw) || raw <= 0) return defaultLimit;
+  return Math.min(MAX_RANK_LIMIT, Math.floor(raw));
+}
+
 /** Format an instant as the `YYYY-MM-DD` the params and the date inputs speak. */
 export function toDateParam(at: Date): string {
   return at.toISOString().slice(0, 10);

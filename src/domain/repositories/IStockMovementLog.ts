@@ -17,4 +17,10 @@ import type { StockMovement } from "../entities/StockMovement";
 export type IStockMovementLog = {
   /** A product's movements, most recent first, capped by `limit`. */
   listForProduct(productId: string, limit: number): Promise<StockMovement[]>;
+  /**
+   * The store's movements across every product, most recent first, capped by
+   * `limit` — the inventory page's activity feed, where {@link listForProduct} is
+   * one product's own history. Same read, wider `where`.
+   */
+  listRecent(limit: number): Promise<StockMovement[]>;
 };
