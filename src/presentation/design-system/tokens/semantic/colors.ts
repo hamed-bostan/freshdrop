@@ -94,6 +94,20 @@ export const colors = {
     foreground: neutral[0],
   },
 
+  // Categorical ramp for data visualization. Charts pick a color by position
+  // (`chart[1]` first), so a single-series chart renders in the same brand color
+  // used everywhere else, and multi-series charts stay legible without repeating a
+  // hue. Built from existing brand hues rather than new ones, so a chart's palette
+  // is never a system of its own — see `presentation/design-system/chart/`.
+  chart: {
+    1: primary[500],
+    2: info[500],
+    3: secondary[400],
+    4: warning[700],
+    5: error[500],
+    6: neutral[500],
+  },
+
   border: neutral[200],
   ring: primary[300],
 } as const;

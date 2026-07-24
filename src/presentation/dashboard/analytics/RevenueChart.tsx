@@ -1,9 +1,11 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import type { AnalyticsGranularity, RevenuePoint } from "@/src/domain/entities/Analytics";
+import { getLangDir } from "@/src/i18n/direction";
 import type { Locale } from "@/src/i18n/routing";
 import { formatBucketLabel } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { RevenueChartBars } from "./RevenueChartBars";
 
 type RevenueChartProps = {
   /** Gap-filled series, oldest first — empty buckets included (see `IAnalyticsRepository`). */
@@ -11,38 +13,25 @@ type RevenueChartProps = {
   granularity: AnalyticsGranularity;
 };
 
-/** How many x-axis ticks to draw at most before labels start colliding. */
-const MAX_TICKS = 7;
-
-/** Floor height for a non-zero bar, as a percentage — so a small day is visible, not invisible. */
-const MIN_VISIBLE_PERCENT = 2;
-
 /**
  * Revenue over the selected period, one bar per bucket.
  *
- * A server component drawing plain elements rather than a charting library: the
- * data is already computed, the shape is a bar per bucket, and pulling in a chart
- * runtime would ship JavaScript to render numbers that never change after the
- * server sent them. Changing the period is a navigation, not a client update — so
- * there is nothing here for a client chart to be reactive about.
+ * A server component around a client chart: the translated strings and locale
+ * formatting are resolved here (a Client Component can't call `getTranslations`),
+ * then handed to `RevenueChartBars` as plain data. Changing the period is a
+ * navigation that re-runs this whole render — the chart itself has no state of
+ * its own to be reactive about.
  *
- * CSS heights rather than an SVG viewBox, because the chart has to be responsive:
- * an SVG scaled with `preserveAspectRatio="none"` distorts its own stroke widths
- * and text, and one scaled correctly leaves the bars a fixed size on a wide screen.
- * Flex bars are the shape the layout engine is already good at.
- *
- * Every bar carries a `title`, so hovering any bucket names its date, revenue and
- * order count — the read that makes a chart answerable rather than decorative,
- * with no tooltip runtime behind it.
+ * Every point carries its full translated hover string, so hovering any bucket
+ * names its date, revenue and order count — the read that makes a chart
+ * answerable rather than decorative.
  */
 export async function RevenueChart({ points, granularity }: RevenueChartProps) {
   const t = await getTranslations("dashAnalytics");
   const locale = (await getLocale()) as Locale;
+  const dir = getLangDir(locale);
 
   const peak = points.reduce((max, point) => Math.max(max, point.revenue), 0);
-  // Which buckets get an x-axis label. Spread evenly and always including the last,
-  // so the axis is anchored at the end of the period the reader chose.
-  const tickEvery = Math.max(1, Math.ceil(points.length / MAX_TICKS));
 
   return (
     <section className="rounded-card-lg border border-border p-4">
@@ -57,44 +46,20 @@ export async function RevenueChart({ points, granularity }: RevenueChartProps) {
 
       {peak > 0 ? (
         <>
-          <div className="mt-4 flex h-40 items-end gap-[2px]" role="presentation">
-            {points.map((point) => {
-              const share = peak > 0 ? (point.revenue / peak) * 100 : 0;
-              const height = point.revenue > 0 ? Math.max(share, MIN_VISIBLE_PERCENT) : 0;
-
-              return (
-                <div key={point.bucket} className="flex h-full flex-1 items-end">
-                  <div
-                    className={
-                      point.revenue > 0
-                        ? "w-full rounded-t-sm bg-primary"
-                        : // A zero bucket still draws a hairline at the baseline: a
-                          // gap in a row of bars reads as missing data, where a flat
-                          // mark reads as the "no sales" it is.
-                          "w-full rounded-t-sm bg-border"
-                    }
-                    style={{ height: point.revenue > 0 ? `${height}%` : "2px" }}
-                    title={t("chartPoint", {
-                      date: formatBucketLabel(point.bucket, granularity, locale),
-                      amount: formatMoney(point.revenue, locale),
-                      orders: formatNumber(point.orders, locale),
-                    })}
-                  />
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-2 flex gap-[2px]" aria-hidden>
-            {points.map((point, index) => (
-              <div key={point.bucket} className="min-w-0 flex-1 text-center">
-                {index % tickEvery === 0 || index === points.length - 1 ? (
-                  <span className="truncate text-body-b8 text-muted-foreground">
-                    {formatBucketLabel(point.bucket, granularity, locale)}
-                  </span>
-                ) : null}
-              </div>
-            ))}
+          <div className="mt-4" aria-hidden>
+            <RevenueChartBars
+              dir={dir}
+              data={points.map((point) => ({
+                bucket: point.bucket,
+                label: formatBucketLabel(point.bucket, granularity, locale),
+                revenue: point.revenue,
+                tooltipLabel: t("chartPoint", {
+                  date: formatBucketLabel(point.bucket, granularity, locale),
+                  amount: formatMoney(point.revenue, locale),
+                  orders: formatNumber(point.orders, locale),
+                }),
+              }))}
+            />
           </div>
 
           {/* The chart's own content is decorative markup; this is what a screen

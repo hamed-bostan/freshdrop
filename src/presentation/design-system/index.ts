@@ -22,3 +22,4 @@ export * from "./components/Chip";
 export * from "./components/SelectableTile";
 export * from "./components/RatingStars";
 export * from "./icons";
+export * from "./chart";
