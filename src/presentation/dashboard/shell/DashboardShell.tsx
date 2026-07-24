@@ -3,6 +3,7 @@
 import * as React from "react";
 import type { ReactNode } from "react";
 import type { Permission } from "@/src/domain/entities/Permission";
+import { CommandPalette } from "@/src/presentation/dashboard/search/CommandPalette";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { DashboardTopBar } from "./DashboardTopBar";
 import { NavDrawer } from "./NavDrawer";
@@ -25,6 +26,7 @@ type DashboardShellProps = {
  */
 export function DashboardShell({ permissions, viewer, initialSidebarCollapsed, children }: DashboardShellProps) {
   const [navOpen, setNavOpen] = React.useState(false);
+  const [searchOpen, setSearchOpen] = React.useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(initialSidebarCollapsed);
 
   function toggleSidebarCollapsed(): void {
@@ -47,11 +49,12 @@ export function DashboardShell({ permissions, viewer, initialSidebarCollapsed, c
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <DashboardTopBar viewer={viewer} onOpenNav={() => setNavOpen(true)} />
+        <DashboardTopBar viewer={viewer} onOpenNav={() => setNavOpen(true)} onOpenSearch={() => setSearchOpen(true)} />
         <main className="min-w-0 flex-1 px-4 py-6 lg:px-8 lg:py-8">{children}</main>
       </div>
 
       <NavDrawer open={navOpen} onOpenChange={setNavOpen} permissions={permissions} viewer={viewer} />
+      <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} permissions={permissions} viewerId={viewer.id} />
     </div>
   );
 }

@@ -11,6 +11,8 @@ import { userRepository } from "@/src/infrastructure/container";
  * display data — the role here decides what is *drawn*, never what is allowed.
  */
 export type DashboardViewer = {
+  /** The session's user id — keys the command palette's per-user recent searches. */
+  id: string;
   /** Display name, already fallen back to something printable by the layout. */
   name: string;
   /** Shown under the name in the menu; absent for a phone-only account. */
@@ -36,5 +38,5 @@ export async function dashboardViewerFor(session: Session): Promise<DashboardVie
   const [user, role] = await Promise.all([userRepository.getById(userId), sessionRole(session)]);
   if (!user || role == null) return null;
 
-  return { name: user.name, email: user.email, imageUrl: user.avatarUrl, role };
+  return { id: user.id, name: user.name, email: user.email, imageUrl: user.avatarUrl, role };
 }

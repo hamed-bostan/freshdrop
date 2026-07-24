@@ -579,7 +579,30 @@
     "signOutTitle": "خروج از حساب؟",
     "signOutMessage": "برای بازگشت به داشبورد باید دوباره وارد شوید.",
     "collapseSidebar": "جمع کردن نوار کناری",
-    "expandSidebar": "باز کردن نوار کناری"
+    "expandSidebar": "باز کردن نوار کناری",
+    "search": {
+      "trigger": "جستجو",
+      "shortcutHint": "⌘K",
+      "dialogTitle": "جستجو",
+      "placeholder": "جستجوی سفارش‌ها، محصولات، مشتریان…",
+      "recent": "اخیر",
+      "commands": "دستورها",
+      "loading": "در حال جستجو…",
+      "noResults": "نتیجه‌ای برای «{query}» یافت نشد",
+      "error": "بارگذاری نتایج ممکن نشد. دوباره تلاش کنید.",
+      "groups": {
+        "orders": "سفارش‌ها",
+        "products": "محصولات",
+        "customers": "مشتریان",
+        "categories": "دسته‌بندی‌ها",
+        "promoCodes": "کدهای تخفیف"
+      },
+      "commandLabels": {
+        "createProduct": "ایجاد محصول",
+        "viewLowStock": "مشاهده موجودی کم",
+        "goToOrders": "رفتن به سفارش‌ها"
+      }
+    }
   },
   "dashHome": {
     "heading": "داشبورد",

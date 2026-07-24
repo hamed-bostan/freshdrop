@@ -579,7 +579,30 @@
     "signOutTitle": "Sign out?",
     "signOutMessage": "You'll need to sign in again to get back to the dashboard.",
     "collapseSidebar": "Collapse sidebar",
-    "expandSidebar": "Expand sidebar"
+    "expandSidebar": "Expand sidebar",
+    "search": {
+      "trigger": "Search",
+      "shortcutHint": "⌘K",
+      "dialogTitle": "Search",
+      "placeholder": "Search orders, products, customers…",
+      "recent": "Recent",
+      "commands": "Commands",
+      "loading": "Searching…",
+      "noResults": "No results for \"{query}\"",
+      "error": "Couldn't load results. Try again.",
+      "groups": {
+        "orders": "Orders",
+        "products": "Products",
+        "customers": "Customers",
+        "categories": "Categories",
+        "promoCodes": "Promo codes"
+      },
+      "commandLabels": {
+        "createProduct": "Create product",
+        "viewLowStock": "View low stock",
+        "goToOrders": "Go to orders"
+      }
+    }
   },
   "dashHome": {
     "heading": "Dashboard",
