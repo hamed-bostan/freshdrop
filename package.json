@@ -12,6 +12,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "generate:tokens": "tsx src/presentation/design-system/scripts/generate-css.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -55,6 +57,7 @@
     "shadcn": "^3.8.5",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }
