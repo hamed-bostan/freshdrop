@@ -670,8 +670,9 @@
     "clearFilters": "Clear filters"
   },
   "dashBulk": {
-    "selected": "{count, plural, one {# selected} other {# selected}}",
-    "clear": "Clear"
+    "selected": "{count} selected",
+    "selectedOf": "{selected} of {total} selected",
+    "clear": "Clear selection"
   },
   "dashProducts": {
     "heading": "Products",
@@ -940,7 +941,20 @@
     "rowActionView": "View",
     "rowActionCustomer": "View customer",
     "rowActionCopyId": "Copy order ID",
-    "rowActionsAria": "More actions for order {id}"
+    "rowActionsAria": "More actions for order {id}",
+    "selectAllAria": "Select all orders on this page",
+    "selectRowAria": "Select order {id}",
+    "bulkActions": "Bulk actions",
+    "bulkSetStage": "Update delivery stage",
+    "bulkStageConfirmed": "Confirmed",
+    "bulkStageShipped": "Out for delivery",
+    "bulkStageArrived": "Delivered",
+    "bulkCancel": "Cancel orders",
+    "bulkCancelConfirmTitle": "Cancel {count} orders?",
+    "bulkCancelConfirmBody": "Each order is restocked and its total refunded to the customer’s wallet. This cannot be undone.",
+    "bulkCancelConfirm": "Cancel orders",
+    "bulkPartial": "{updated} of {total} orders updated — the rest could not take that action.",
+    "bulkError": "That bulk action failed. Please try again."
   },
   "dashOrderComms": {
     "resendHeading": "Resend a notification",

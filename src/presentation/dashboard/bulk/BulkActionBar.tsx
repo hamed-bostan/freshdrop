@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { X } from "lucide-react";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { useBulkSelection } from "./BulkSelectionProvider";
@@ -34,14 +34,34 @@ type BulkActionBarProps = {
  */
 export function BulkActionBar({ children }: BulkActionBarProps) {
   const t = useTranslations("dashBulk");
-  const { selected, clear } = useBulkSelection();
+  const format = useFormatter();
+  const { selected, total, clear } = useBulkSelection();
 
   if (selected.length === 0) return null;
 
+  /**
+   * Counts are zero-padded to three digits — `001`, `012`, `156`.
+   *
+   * Padding is done by `Intl`, not by `padStart`, and that isn't fussiness: this
+   * bar renders under `fa` too, where the digits are Persian and a Latin `"0"`
+   * glued on the front would be a different character set in the same number.
+   * `minimumIntegerDigits` pads in whatever numbering system the locale uses.
+   */
+  const padded = (value: number): string => format.number(value, { minimumIntegerDigits: 3 });
+
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-card-lg border border-primary bg-accent px-4 py-3">
-      <span className="text-body-b7 text-foreground">{t("selected", { count: selected.length })}</span>
+      <span className="text-body-b7 text-foreground">
+        {t("selected", { count: padded(selected.length) })}
+      </span>
       <div className="ms-auto flex flex-wrap items-center gap-2">
+        {/* How much of the page is selected, which the count alone doesn't say:
+            "003" beside a table of ten reads very differently from "003" beside a
+            table of three, and the second is the case where "select all" has
+            already done everything it can. */}
+        <span className="text-body-b8 text-muted-foreground">
+          {t("selectedOf", { selected: padded(selected.length), total: padded(total) })}
+        </span>
         {children}
         <Button variant="ghost" size="sm" onClick={clear}>
           <Icon icon={X} size="sm" className="me-1.5" />

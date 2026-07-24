@@ -1,7 +1,12 @@
 import type { Order } from "@/src/domain/entities/Order";
 import type { OrderTracking } from "@/src/domain/entities/OrderTracking";
 import type { Product } from "@/src/domain/entities/Product";
-import { apiGet, apiPost, apiPut } from "@/src/lib/api/client";
+import { apiGet, apiPatch, apiPost, apiPut } from "@/src/lib/api/client";
+import {
+  bulkResultSchema,
+  type BulkResult,
+  type OrderBulkAction,
+} from "@/src/contracts/bulk-action-schema";
 import { orderResponseSchema } from "@/src/presentation/orders/order-response-schema";
 import { orderTrackingResponseSchema } from "@/src/presentation/orders/order-tracking-response-schema";
 import { productListResponseSchema } from "@/src/presentation/product/product-response-schema";
@@ -68,5 +73,15 @@ export const ordersApi = {
    */
   addNote(orderId: string, values: OrderNoteInput): Promise<OrderNote> {
     return apiPost(`/admin/orders/${orderId}/notes`, values, orderNoteResponseSchema);
+  },
+
+  /**
+   * Apply one action to a selection of orders. Resolves with how many were
+   * actually moved — orders that couldn't take the action are skipped, so this
+   * can be lower than `ids.length`, and the bar reports it rather than the
+   * selection size.
+   */
+  bulkUpdate(ids: readonly string[], action: OrderBulkAction): Promise<BulkResult> {
+    return apiPatch("/admin/orders/bulk", { ids, action }, bulkResultSchema);
   },
 };

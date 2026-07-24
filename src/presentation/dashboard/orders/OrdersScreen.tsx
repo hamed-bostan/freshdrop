@@ -17,6 +17,8 @@ import {
   type ListSortOption,
 } from "@/src/presentation/dashboard/list";
 import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvLink";
+import { BulkActionBar, BulkSelectionProvider } from "@/src/presentation/dashboard/bulk";
+import { OrderBulkActions } from "./OrderBulkActions";
 import { OrdersFilterBar } from "./OrdersFilterBar";
 import { OrdersTable } from "./OrdersTable";
 
@@ -27,6 +29,12 @@ type OrdersScreenProps = {
   customers: CustomerOrderSummary[];
   /** The filters this page was fetched with, to distinguish "no orders" from "no matches". */
   filters: AdminOrderFilters;
+  /**
+   * Whether the viewer may act on orders. Decides whether the selection column and
+   * its action bar are drawn — the list itself is readable by anyone with
+   * dashboard access. Presentation only: the bulk endpoint checks for itself.
+   */
+  canFulfill: boolean;
 };
 
 /**
@@ -40,7 +48,12 @@ type OrdersScreenProps = {
  * The `customers` summaries only label each row with who placed the order; the
  * "top customers" ranking lives on the dashboard overview, not here.
  */
-export async function OrdersScreen({ orders, customers, filters }: OrdersScreenProps) {
+export async function OrdersScreen({
+  orders,
+  customers,
+  filters,
+  canFulfill,
+}: OrdersScreenProps) {
   const t = await getTranslations("dashOrders");
   const tList = await getTranslations("dashList");
   const tAnalytics = await getTranslations("dashAnalytics");
@@ -87,10 +100,22 @@ export async function OrdersScreen({ orders, customers, filters }: OrdersScreenP
       />
 
       {orders.items.length > 0 ? (
-        <>
-          <OrdersTable orders={orders.items} customersById={customersById} />
+        // The provider wraps both the bar and the table so a row's checkbox and
+        // the actions above it share one selection. The rows stay server-rendered
+        // inside it — only the checkboxes and the bar are client islands.
+        <BulkSelectionProvider ids={orders.items.map((order) => order.id)}>
+          {canFulfill ? (
+            <BulkActionBar>
+              <OrderBulkActions />
+            </BulkActionBar>
+          ) : null}
+          <OrdersTable
+            orders={orders.items}
+            customersById={customersById}
+            canFulfill={canFulfill}
+          />
           <ListPager page={orders} />
-        </>
+        </BulkSelectionProvider>
       ) : (
         <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
           <p className="text-body-b4 text-foreground">

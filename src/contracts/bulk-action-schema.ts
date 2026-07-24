@@ -54,6 +54,32 @@ export const reviewBulkRequestSchema = z.object({
 export type ReviewBulkRequest = z.infer<typeof reviewBulkRequestSchema>;
 
 /**
+ * What to do to the selected orders.
+ *
+ * Far narrower than the row menu might suggest, and narrower still than the
+ * mock's: `setStage` moves the delivery milestone, `cancel` calls the order off.
+ * Nothing else on an order can be done to a *selection* — resolving a return or a
+ * substitution is a decision about one specific order's contents, and there is no
+ * meaningful "approve these twelve returns" that doesn't amount to approving them
+ * unread.
+ *
+ * Orders are capped tighter than products (see `MAX_BULK_ORDERS`): each one of
+ * these moves stock and money, where a product bulk change moves a column.
+ */
+export const orderBulkActionSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("setStage"), stage: z.enum(["confirmed", "shipped", "arrived"]) }),
+  z.object({ type: z.literal("cancel") }),
+]);
+
+export const orderBulkRequestSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1, "selectionRequired").max(100, "selectionTooLarge"),
+  action: orderBulkActionSchema,
+});
+
+export type OrderBulkAction = z.infer<typeof orderBulkActionSchema>;
+export type OrderBulkRequest = z.infer<typeof orderBulkRequestSchema>;
+
+/**
  * What a bulk endpoint answers with: how many rows the action actually changed.
  *
  * `updated` is not necessarily `ids.length` — ids that no longer exist and rows

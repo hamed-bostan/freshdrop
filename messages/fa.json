@@ -670,8 +670,9 @@
     "clearFilters": "پاک کردن فیلترها"
   },
   "dashBulk": {
-    "selected": "{count, plural, other {# مورد انتخاب‌شده}}",
-    "clear": "پاک کردن"
+    "selected": "{count} مورد انتخاب‌شده",
+    "selectedOf": "{selected} از {total} انتخاب‌شده",
+    "clear": "پاک کردن انتخاب"
   },
   "dashProducts": {
     "heading": "محصولات",
@@ -940,7 +941,20 @@
     "rowActionView": "مشاهده",
     "rowActionCustomer": "مشاهده مشتری",
     "rowActionCopyId": "کپی شناسه سفارش",
-    "rowActionsAria": "عملیات بیشتر برای سفارش {id}"
+    "rowActionsAria": "عملیات بیشتر برای سفارش {id}",
+    "selectAllAria": "انتخاب همه سفارش‌های این صفحه",
+    "selectRowAria": "انتخاب سفارش {id}",
+    "bulkActions": "عملیات گروهی",
+    "bulkSetStage": "به‌روزرسانی مرحله تحویل",
+    "bulkStageConfirmed": "تأییدشده",
+    "bulkStageShipped": "در مسیر تحویل",
+    "bulkStageArrived": "تحویل‌شده",
+    "bulkCancel": "لغو سفارش‌ها",
+    "bulkCancelConfirmTitle": "{count} سفارش لغو شود؟",
+    "bulkCancelConfirmBody": "موجودی هر سفارش بازگردانده و مبلغ آن به کیف پول مشتری واریز می‌شود. این کار برگشت‌پذیر نیست.",
+    "bulkCancelConfirm": "لغو سفارش‌ها",
+    "bulkPartial": "{updated} از {total} سفارش به‌روزرسانی شد — بقیه نمی‌توانستند این عملیات را بپذیرند.",
+    "bulkError": "عملیات گروهی ناموفق بود. دوباره تلاش کنید."
   },
   "dashOrderComms": {
     "resendHeading": "ارسال دوباره اعلان",

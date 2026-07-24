@@ -6,6 +6,7 @@ import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSu
 import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
 import { Button, TableCell, TableRow } from "@/src/presentation/design-system";
+import { BulkRowCheckbox } from "@/src/presentation/dashboard/bulk";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
@@ -15,6 +16,8 @@ type OrderRowProps = {
   order: Order;
   /** The customer who placed the order, when a matching summary exists. */
   customer: CustomerOrderSummary | undefined;
+  /** Whether to offer the selection checkbox — see `OrdersTable`. */
+  canFulfill: boolean;
 };
 
 /**
@@ -31,7 +34,7 @@ type OrderRowProps = {
  * keeping it costs the row every control it needs from here on — this phase's
  * menu, the next one's checkbox. The affordance goes where it can be used.
  */
-export function OrderRow({ order, customer }: OrderRowProps) {
+export function OrderRow({ order, customer, canFulfill }: OrderRowProps) {
   const t = useTranslations("dashOrders");
   const locale = useLocale() as Locale;
 
@@ -39,6 +42,12 @@ export function OrderRow({ order, customer }: OrderRowProps) {
 
   return (
     <TableRow>
+      {canFulfill ? (
+        <TableCell>
+          <BulkRowCheckbox id={order.id} label={t("selectRowAria", { id: order.id })} />
+        </TableCell>
+      ) : null}
+
       <TableCell>
         <Link
           href={`/dashboard/orders/${order.id}`}

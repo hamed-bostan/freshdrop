@@ -6,6 +6,8 @@ import * as React from "react";
 type BulkSelectionValue = {
   /** Ids currently selected, in no particular order. */
   selected: string[];
+  /** How many rows are on the page — the denominator of "3 of 10 selected". */
+  total: number;
   /** Whether one row is selected. */
   isSelected: (id: string) => boolean;
   /** Select or deselect one row. */
@@ -62,6 +64,7 @@ export function BulkSelectionProvider({ ids, children }: BulkSelectionProviderPr
 
     return {
       selected: onPage,
+      total: ids.length,
       isSelected: (id) => selected.has(id),
       toggle: (id, next) =>
         setSelected((current) => {

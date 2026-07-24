@@ -3,6 +3,8 @@ import { customersServerApi } from "@/src/presentation/dashboard/customers/custo
 import { OrdersScreen } from "@/src/presentation/dashboard/orders/OrdersScreen";
 import { parseAdminOrderFilters } from "@/src/lib/api/admin-order-params";
 import { toSearchParams } from "@/src/lib/api/searchParams";
+import { auth } from "@/auth";
+import { sessionHas } from "@/src/lib/require-permission";
 
 // Orders are read from the REST API (BFF) per request — never statically cached.
 export const dynamic = "force-dynamic";
@@ -22,6 +24,11 @@ export default async function DashboardOrdersPage({ searchParams }: DashboardOrd
   // means "no orders" or "nothing matched".
   const orders = await ordersServerApi.listPage(params);
 
+  // The list is a read anyone in the dashboard needs — support answers "where is
+  // my order?" from it. Whether the *selection* and its actions are drawn is the
+  // fulfilment permission, resolved here and passed down.
+  const canFulfill = await auth().then((session) => sessionHas(session, "orders.fulfill"));
+
   // Customer labels are fetched for this page's orders only — a page of 20 orders
   // needs at most 20 customers, not every customer who has ever ordered.
   const customers = await customersServerApi.listByIds([
@@ -29,6 +36,11 @@ export default async function DashboardOrdersPage({ searchParams }: DashboardOrd
   ]);
 
   return (
-    <OrdersScreen orders={orders} customers={customers.items} filters={parseAdminOrderFilters(params)} />
+    <OrdersScreen
+      orders={orders}
+      customers={customers.items}
+      filters={parseAdminOrderFilters(params)}
+      canFulfill={canFulfill}
+    />
   );
 }
