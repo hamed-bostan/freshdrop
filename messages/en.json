@@ -1297,6 +1297,7 @@
         "stockAdjusted": "{actor} adjusted stock for {entity}"
       },
       "order": {
+        "created": "{actor} created order {entity}",
         "stageChanged": "{actor} changed the delivery stage of order {entity}",
         "returnResolved": "{actor} resolved the return on order {entity}",
         "itemSubstituted": "{actor} resolved an out-of-stock item on order {entity}",
@@ -1377,8 +1378,7 @@
       "stage": "Delivery stage changes",
       "capacity": "Capacity changes",
       "role": "Access changes"
-    },
-    "action.order.created": "Order created"
+    }
   },
   "dashCreateOrder": {
     "heading": "Create order",

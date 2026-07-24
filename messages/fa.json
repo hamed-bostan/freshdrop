@@ -1297,6 +1297,7 @@
         "stockAdjusted": "{actor} موجودی {entity} را تغییر داد"
       },
       "order": {
+        "created": "{actor} سفارش {entity} را ثبت کرد",
         "stageChanged": "{actor} مرحله ارسال سفارش {entity} را تغییر داد",
         "returnResolved": "{actor} درخواست مرجوعی سفارش {entity} را بررسی کرد",
         "itemSubstituted": "{actor} یک قلم ناموجود سفارش {entity} را تعیین تکلیف کرد",
@@ -1377,8 +1378,7 @@
       "stage": "تغییر مرحله ارسال",
       "capacity": "تغییر ظرفیت",
       "role": "تغییر دسترسی"
-    },
-    "action.order.created": "ایجاد سفارش"
+    }
   },
   "dashCreateOrder": {
     "heading": "ایجاد سفارش",
