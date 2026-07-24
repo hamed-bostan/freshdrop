@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { Plus } from "lucide-react";
 import {
   DEFAULT_ADMIN_ORDER_DIRECTION,
   DEFAULT_ADMIN_ORDER_SORT,
@@ -17,6 +18,8 @@ import {
   ListToolbar,
   type ListSortOption,
 } from "@/src/presentation/dashboard/list";
+import { Button } from "@/src/presentation/design-system";
+import { Link } from "@/src/i18n/navigation";
 import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvLink";
 import { BulkActionBar, BulkSelectionProvider } from "@/src/presentation/dashboard/bulk";
 import { OrderBulkActions } from "./OrderBulkActions";
@@ -80,9 +83,19 @@ export async function OrdersScreen({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
-        <p className="text-body-b6 text-muted-foreground">{t("summary", { count: orders.total })}</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
+          <p className="text-body-b6 text-muted-foreground">{t("summary", { count: orders.total })}</p>
+        </div>
+        {canFulfill ? (
+          <Button asChild>
+            <Link href="/dashboard/orders/create">
+              <Plus aria-hidden className="me-1.5 size-4" />
+              {t("createOrder")}
+            </Link>
+          </Button>
+        ) : null}
       </div>
 
       {/* Above the toolbar, not below it: the cards are how someone *arrives* at a
