@@ -65,6 +65,19 @@ model User {
   // uses), so a stale id (e.g. a card later removed) is tolerated and falls back to
   // the first catalog option at read time. Null until the user picks one.
   selectedPaymentMethodId String?  @map("selected_payment_method_id")
+  // When this user last opened the notification bell — the one column the
+  // derived feed needs. Unread is "activity newer than this", not a per-row
+  // flag: the feed has no rows of its own to flag, only a read of the activity
+  // log plus the attention counts already computed elsewhere. Null until the
+  // first open, so a brand-new admin sees everything as unread rather than
+  // nothing.
+  lastSeenNotificationsAt DateTime? @map("last_seen_notifications_at")
+  // Which of the bell's stored-notification categories (`AdminNotificationAction`
+  // strings) this admin also wants emailed — opt-in, empty by default. Where the
+  // inbound bell and the outbound `IEmailSender` finally meet (Track B3);
+  // `NotifyAdmins` checks this against the same row it already read to resolve
+  // recipients, no second query per person in the fan-out.
+  notifiedCategories String[] @default([]) @map("notified_categories")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -118,6 +131,41 @@ model ActivityEntry {
   // The field filter ("show me every price change"). GIN, declared in the
   // migration — Prisma's schema DSL can't express an index type.
   @@map("activity_log")
+}
+
+// One admin's copy of a notification-worthy event the activity log can't hold:
+// order placement, a return request, a new review, stock hitting zero — all
+// customer- (or self-) initiated, so none of them produce an `ActivityEntry`
+// (see that model's own note on why customer actions aren't audited). Fanned
+// out at write time, one row per recipient — this is what makes per-admin
+// targeting and a per-row `readAt` possible, neither of which a derived read of
+// another table could offer. `userId` is a plain reference, not a DB foreign
+// key, matching the rest of the schema's loose coupling.
+//
+// Named `AdminNotification` rather than `Notification`: that name is already
+// the outbound, customer-facing message the app sends about an order (see
+// `NotificationMessage` in the domain) — a different concept fanning out to a
+// different audience over different channels. This is its own, unrelated
+// inbound record.
+model AdminNotification {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  action      String
+  entityType  String    @map("entity_type")
+  entityId    String    @map("entity_id")
+  entityLabel String?   @map("entity_label")
+  actorId     String?   @map("actor_id")
+  actorName   String?   @map("actor_name")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  // Null = unread. Set once, by the recipient dismissing it (or "mark all
+  // read") — nobody else's row, nobody else's write.
+  readAt      DateTime? @map("read_at")
+
+  // One admin's feed, newest first.
+  @@index([userId, createdAt])
+  // The unread count/badge — matches rows where `readAt` is null.
+  @@index([userId, readAt])
+  @@map("admin_notifications")
 }
 
 // An order is a faithful historical record: each line snapshots the product's

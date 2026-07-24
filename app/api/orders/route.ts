@@ -13,6 +13,9 @@ import {
   deliverySlotRepository,
   promoCodeRepository,
   orderNotifier,
+  userRepository,
+  adminNotificationRepository,
+  emailSender,
 } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
@@ -109,6 +112,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       deliverySlotRepository,
       orderNotifier,
       promoCodeRepository,
+      userRepository,
+      adminNotificationRepository,
+      emailSender,
     ).execute({
       userId: session.user.id,
       location: address.address,

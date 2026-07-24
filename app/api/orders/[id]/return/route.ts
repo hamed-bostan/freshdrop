@@ -1,7 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { RequestOrderReturn } from "@/src/domain/use-cases/orders/RequestOrderReturn";
 import { ResolveOrderReturn } from "@/src/domain/use-cases/orders/ResolveOrderReturn";
-import { orderRepository, unitOfWork, orderNotifier } from "@/src/infrastructure/container";
+import {
+  orderRepository,
+  unitOfWork,
+  orderNotifier,
+  userRepository,
+  adminNotificationRepository,
+  emailSender,
+} from "@/src/infrastructure/container";
 import { getSessionWith } from "@/src/lib/require-permission";
 import { getUserSession } from "@/src/lib/require-auth";
 import { orderReturnDecisionSchema } from "@/src/contracts/order-return-schema";
@@ -32,7 +39,12 @@ export async function POST(_request: NextRequest, { params }: RouteContext): Pro
 
   const { id } = await params;
   try {
-    const order = await new RequestOrderReturn(orderRepository).execute({
+    const order = await new RequestOrderReturn(
+      orderRepository,
+      userRepository,
+      adminNotificationRepository,
+      emailSender,
+    ).execute({
       userId: session.user.id,
       orderId: id,
     });

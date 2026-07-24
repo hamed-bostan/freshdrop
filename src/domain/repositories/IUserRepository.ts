@@ -1,4 +1,5 @@
 import type { NewActivityEntry } from "../entities/ActivityEntry";
+import type { AdminNotificationAction } from "../entities/AdminNotification";
 import type { User, UserRole } from "../entities/User";
 
 /** One user's new access level, as part of a {@link RoleChangeBatch}. */
@@ -85,4 +86,10 @@ export type IUserRepository = {
   getSelectedPaymentMethodId(userId: string): Promise<string | null>;
   /** Persist the user's selected checkout payment method (a catalog option or saved card id). */
   setSelectedPaymentMethodId(userId: string, methodId: string): Promise<void>;
+  /** When this user last opened the notification bell, or `null` if they never have. */
+  getLastSeenNotificationsAt(userId: string): Promise<Date | null>;
+  /** Record that the user has seen every notification up to `at`. */
+  setLastSeenNotificationsAt(userId: string, at: Date): Promise<void>;
+  /** Replace which stored-notification categories this admin also wants emailed (see `User.notifiedCategories`). */
+  setNotifiedCategories(userId: string, categories: readonly AdminNotificationAction[]): Promise<void>;
 }

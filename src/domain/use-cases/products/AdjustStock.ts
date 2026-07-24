@@ -6,9 +6,12 @@ import type { IProductRepository } from "../../repositories/IProductRepository";
 import type { IStockAlertRepository } from "../../repositories/IStockAlertRepository";
 import type { IStockAlertNotifier } from "../../repositories/IStockAlertNotifier";
 import type { IUserRepository } from "../../repositories/IUserRepository";
+import type { IAdminNotificationRepository } from "../../repositories/IAdminNotificationRepository";
+import type { IEmailSender } from "../../repositories/IEmailSender";
 import { ValidationError } from "../../errors/ValidationError";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { FulfillStockAlerts } from "./FulfillStockAlerts";
+import { NotifyAdmins } from "../notifications/NotifyAdmins";
 
 export type AdjustStockInput = {
   productId: string;
@@ -43,6 +46,8 @@ export class AdjustStock {
     private readonly users: IUserRepository,
     private readonly stockAlerts: IStockAlertRepository,
     private readonly notifier: IStockAlertNotifier,
+    private readonly adminNotifications: IAdminNotificationRepository,
+    private readonly emailSender: IEmailSender,
   ) {}
 
   async execute({ productId, delta, reason, note, actorId }: AdjustStockInput): Promise<Product> {
@@ -103,6 +108,24 @@ export class AdjustStock {
     // the full edit form applies, which is why both share `FulfillStockAlerts`.
     if (existing.stockQuantity <= 0 && adjusted.stockQuantity > 0) {
       await new FulfillStockAlerts(this.stockAlerts, this.notifier).execute(adjusted);
+    }
+
+    // The inverse crossing — tell whoever restocks. `excludeUserId` drops the
+    // acting admin: they just did this, they don't need telling. Best-effort,
+    // like the fulfilment above: the adjustment already stands either way.
+    if (existing.stockQuantity > 0 && adjusted.stockQuantity <= 0) {
+      await new NotifyAdmins(this.users, this.adminNotifications, this.emailSender).execute(
+        "catalog.write",
+        {
+          action: "product.stockDepleted",
+          entityType: "product",
+          entityId: adjusted.id,
+          entityLabel: adjusted.name,
+          actorId,
+          actorName,
+        },
+        actorId,
+      );
     }
 
     return adjusted;

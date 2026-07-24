@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { LifeBuoy, Menu, Search } from "lucide-react";
 import { Button, Icon } from "@/src/presentation/design-system";
+import { NotificationBell } from "@/src/presentation/dashboard/notifications/NotificationBell";
 import { LocaleToggle } from "./LocaleToggle";
 import { UserMenu } from "./UserMenu";
 import type { DashboardViewer } from "./viewer";
@@ -59,6 +60,8 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
           <Icon icon={LifeBuoy} size="sm" />
         </a>
       </Button>
+
+      <NotificationBell />
 
       <LocaleToggle />
 

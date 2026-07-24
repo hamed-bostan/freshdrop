@@ -602,6 +602,25 @@
         "viewLowStock": "View low stock",
         "goToOrders": "Go to orders"
       }
+    },
+    "notifications": {
+      "trigger": "Notifications",
+      "unreadAria": "{count} unread notifications",
+      "heading": "Notifications",
+      "markAllRead": "Mark all read",
+      "loading": "Loading…",
+      "error": "Couldn't load notifications. Try again.",
+      "empty": "You're all caught up.",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "viewAllActivity": "View all activity",
+      "dismiss": "Dismiss",
+      "preferencesTrigger": "Email preferences",
+      "preferencesHeading": "Also email me about",
+      "categoryOrderPlaced": "New orders",
+      "categoryOrderReturnRequested": "Return requests",
+      "categoryReviewSubmitted": "New reviews",
+      "categoryProductStockDepleted": "Stock running out"
     }
   },
   "dashHome": {
@@ -1365,16 +1384,20 @@
         "created": "{actor} created {entity}",
         "updated": "{actor} edited {entity}",
         "deleted": "{actor} deleted {entity}",
-        "stockAdjusted": "{actor} adjusted stock for {entity}"
+        "stockAdjusted": "{actor} adjusted stock for {entity}",
+        "stockDepleted": "{entity} is now out of stock"
       },
       "order": {
         "stageChanged": "{actor} changed the delivery stage of order {entity}",
         "returnResolved": "{actor} resolved the return on order {entity}",
         "itemSubstituted": "{actor} resolved an out-of-stock item on order {entity}",
-        "customerNotified": "{actor} messaged the customer about order {entity}"
+        "customerNotified": "{actor} messaged the customer about order {entity}",
+        "placed": "{actor} placed order {entity}",
+        "returnRequested": "{actor} requested a return on order {entity}"
       },
       "review": {
-        "moderated": "{actor} moderated {entity}'s review"
+        "moderated": "{actor} moderated {entity}'s review",
+        "submitted": "{actor} submitted a new review"
       },
       "promoCode": {
         "created": "{actor} created promo code {entity}",

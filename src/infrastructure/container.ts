@@ -20,6 +20,7 @@ import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository"
 import type { IImageStorageRepository } from "@/src/domain/repositories/IImageStorageRepository";
 import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
 import type { IActivityLog } from "@/src/domain/repositories/IActivityLog";
+import type { IAdminNotificationRepository } from "@/src/domain/repositories/IAdminNotificationRepository";
 import type { IUnitOfWork } from "@/src/domain/repositories/IUnitOfWork";
 import type { IAnalyticsRepository } from "@/src/domain/repositories/IAnalyticsRepository";
 import type { IStockMovementLog } from "@/src/domain/repositories/IStockMovementLog";
@@ -30,6 +31,7 @@ import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepositor
 import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
 import { PrismaUserRepository } from "./repositories/PrismaUserRepository";
 import { PrismaActivityLog } from "./repositories/PrismaActivityLog";
+import { PrismaAdminNotificationRepository } from "./repositories/PrismaAdminNotificationRepository";
 import { PrismaUnitOfWork } from "./repositories/PrismaUnitOfWork";
 import { PrismaStockMovementLog } from "./repositories/PrismaStockMovementLog";
 import { PrismaAnalyticsRepository } from "./repositories/PrismaAnalyticsRepository";
@@ -98,6 +100,11 @@ export const userRepository: IUserRepository = new PrismaUserRepository();
 // (route handlers only call use-cases) and impossible to lose (the entry commits
 // with its change). See `IActivityLog` and `AuditHook`.
 export const activityLog: IActivityLog = new PrismaActivityLog();
+// The bell's stored, per-admin notifications — a separate table from the log
+// above, for the events it structurally can't hold (see `AdminNotification`).
+// Best-effort by design, unlike the log: fanned out after the triggering
+// write already committed, the same standing every outbound notifier here has.
+export const adminNotificationRepository: IAdminNotificationRepository = new PrismaAdminNotificationRepository();
 // Runs several repositories' writes as one transaction, for the operations that
 // move an order, its stock and the customer's money together — cancellation,
 // returns, and out-of-stock resolutions. Each of those was three transactions

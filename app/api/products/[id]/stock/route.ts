@@ -7,6 +7,8 @@ import {
   stockAlertRepository,
   stockMovementLog,
   userRepository,
+  adminNotificationRepository,
+  emailSender,
 } from "@/src/infrastructure/container";
 import { getSessionWith } from "@/src/lib/require-permission";
 import { stockAdjustmentSchema } from "@/src/contracts/stock-adjustment-schema";
@@ -81,6 +83,8 @@ export async function PATCH(request: NextRequest, { params }: RouteContext): Pro
       userRepository,
       stockAlertRepository,
       stockAlertNotifier,
+      adminNotificationRepository,
+      emailSender,
     ).execute({
       productId: id,
       ...parsed.data,

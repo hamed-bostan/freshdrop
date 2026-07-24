@@ -2,7 +2,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { toPublicReview } from "@/src/domain/entities/Review";
 import { GetProductReviews } from "@/src/domain/use-cases/reviews/GetProductReviews";
 import { SubmitReview } from "@/src/domain/use-cases/reviews/SubmitReview";
-import { reviewRepository } from "@/src/infrastructure/container";
+import {
+  reviewRepository,
+  userRepository,
+  adminNotificationRepository,
+  emailSender,
+} from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
 import { reviewSubmissionSchema } from "@/src/contracts/review-schema";
 import {
@@ -59,7 +64,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const review = await new SubmitReview(reviewRepository).execute({
+    const review = await new SubmitReview(
+      reviewRepository,
+      userRepository,
+      adminNotificationRepository,
+      emailSender,
+    ).execute({
       productId: parsed.data.productId,
       // The identity, alongside the display snapshot below — both from the session,
       // neither from the client. It's what lets the dashboard list a customer's

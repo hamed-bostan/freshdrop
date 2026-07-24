@@ -1,5 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { changedFields } from "@/src/domain/entities/ActivityEntry";
+import type { AdminNotificationAction } from "@/src/domain/entities/AdminNotification";
+import { toAdminNotificationAction } from "@/src/domain/entities/AdminNotification";
 import type { User, UserRole } from "@/src/domain/entities/User";
 import { PLACEHOLDER_USER_NAME, toUserRole } from "@/src/domain/entities/User";
 import type {
@@ -159,6 +161,44 @@ export class PrismaUserRepository implements IUserRepository {
       throw error;
     }
   }
+
+  async getLastSeenNotificationsAt(userId: string): Promise<Date | null> {
+    const row = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { lastSeenNotificationsAt: true },
+    });
+    return row?.lastSeenNotificationsAt ?? null;
+  }
+
+  async setLastSeenNotificationsAt(userId: string, at: Date): Promise<void> {
+    try {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { lastSeenNotificationsAt: at },
+      });
+    } catch (error) {
+      // P2025: the user row vanished (see `update`). Surface it transport-agnostically.
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+        throw new NotFoundError("user", userId, { cause: error });
+      }
+      throw error;
+    }
+  }
+
+  async setNotifiedCategories(userId: string, categories: readonly AdminNotificationAction[]): Promise<void> {
+    try {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { notifiedCategories: [...categories] },
+      });
+    } catch (error) {
+      // P2025: the user row vanished (see `update`). Surface it transport-agnostically.
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+        throw new NotFoundError("user", userId, { cause: error });
+      }
+      throw error;
+    }
+  }
 }
 
 /** Map a Prisma row to the domain entity (dropping DB-only timestamps). */
@@ -169,6 +209,7 @@ function toUser(row: {
   email: string | null;
   avatarUrl: string | null;
   role: string;
+  notifiedCategories: string[];
 }): User {
   return {
     id: row.id,
@@ -179,5 +220,11 @@ function toUser(row: {
     // The column is a plain string (the schema is enum-free), so narrow it here
     // rather than trusting the database to hold only known values.
     role: toUserRole(row.role),
+    // Same narrowing, and a stored value this build doesn't recognise (a
+    // renamed or retired category) is simply dropped rather than surfaced as
+    // `"unknown"` — there's no toggle for "unknown" to represent.
+    notifiedCategories: row.notifiedCategories
+      .map(toAdminNotificationAction)
+      .filter((action): action is AdminNotificationAction => action !== "unknown"),
   };
 }

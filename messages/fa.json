@@ -602,6 +602,25 @@
         "viewLowStock": "مشاهده موجودی کم",
         "goToOrders": "رفتن به سفارش‌ها"
       }
+    },
+    "notifications": {
+      "trigger": "اعلان‌ها",
+      "unreadAria": "{count} اعلان خوانده‌نشده",
+      "heading": "اعلان‌ها",
+      "markAllRead": "علامت‌گذاری همه به‌عنوان خوانده‌شده",
+      "loading": "در حال بارگذاری…",
+      "error": "بارگذاری اعلان‌ها ممکن نشد. دوباره تلاش کنید.",
+      "empty": "همه چیز به‌روز است.",
+      "today": "امروز",
+      "yesterday": "دیروز",
+      "viewAllActivity": "مشاهده همه فعالیت‌ها",
+      "dismiss": "نادیده گرفتن",
+      "preferencesTrigger": "تنظیمات ایمیل",
+      "preferencesHeading": "برای موارد زیر ایمیل هم بفرست",
+      "categoryOrderPlaced": "سفارش‌های جدید",
+      "categoryOrderReturnRequested": "درخواست‌های مرجوعی",
+      "categoryReviewSubmitted": "نظرات جدید",
+      "categoryProductStockDepleted": "پایان موجودی"
     }
   },
   "dashHome": {
@@ -1365,16 +1384,20 @@
         "created": "{actor} محصول {entity} را ساخت",
         "updated": "{actor} محصول {entity} را ویرایش کرد",
         "deleted": "{actor} محصول {entity} را حذف کرد",
-        "stockAdjusted": "{actor} موجودی {entity} را تغییر داد"
+        "stockAdjusted": "{actor} موجودی {entity} را تغییر داد",
+        "stockDepleted": "موجودی {entity} به پایان رسید"
       },
       "order": {
         "stageChanged": "{actor} مرحله ارسال سفارش {entity} را تغییر داد",
         "returnResolved": "{actor} درخواست مرجوعی سفارش {entity} را بررسی کرد",
         "itemSubstituted": "{actor} یک قلم ناموجود سفارش {entity} را تعیین تکلیف کرد",
-        "customerNotified": "{actor} درباره سفارش {entity} به مشتری پیام داد"
+        "customerNotified": "{actor} درباره سفارش {entity} به مشتری پیام داد",
+        "placed": "{actor} سفارش {entity} را ثبت کرد",
+        "returnRequested": "{actor} برای سفارش {entity} درخواست مرجوعی داد"
       },
       "review": {
-        "moderated": "{actor} نظر {entity} را بررسی کرد"
+        "moderated": "{actor} نظر {entity} را بررسی کرد",
+        "submitted": "{actor} نظر جدیدی ثبت کرد"
       },
       "promoCode": {
         "created": "{actor} کد تخفیف {entity} را ساخت",

@@ -1,6 +1,9 @@
 // Value import, and the dependency only goes this way: `Permission.ts` imports
 // `UserRole` as a *type*, which erases, so there is no runtime cycle.
 import { roleHasPermission } from "./Permission";
+// Same treatment: a type-only import, so it erases and can't create a runtime
+// cycle even though `AdminNotification.ts` itself imports from `Permission.ts`.
+import type { AdminNotificationAction } from "./AdminNotification";
 
 /**
  * Who a user is. What they may *do* is {@link ROLE_PERMISSIONS} — this union names
@@ -94,4 +97,12 @@ export type User = {
   avatarUrl: string | null;
   /** Access level. Everyone is a `"customer"` until an admin promotes them. */
   role: UserRole;
+  /**
+   * Which of the bell's stored-notification categories this admin also wants
+   * emailed — opt-in, empty by default (in-app only). Carried on `User` rather
+   * than fetched separately so `NotifyAdmins` can check it against the same
+   * `listByRoles` read it already does to resolve recipients, with no second
+   * query per person in the fan-out.
+   */
+  notifiedCategories: readonly AdminNotificationAction[];
 }
