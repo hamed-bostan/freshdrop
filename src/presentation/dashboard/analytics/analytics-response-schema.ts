@@ -60,6 +60,13 @@ const topCategorySchema = z.object({
   revenue: z.number(),
 });
 
+const customerSegmentsSchema = z.object({
+  totalCustomers: z.number(),
+  newCustomers: z.number(),
+  returningCustomers: z.number(),
+  repeatCustomers: z.number(),
+});
+
 export const analyticsOverviewResponseSchema = z.object({
   range: rangeSchema,
   previousRange: rangeSchema,
@@ -73,6 +80,8 @@ export const analyticsOverviewResponseSchema = z.object({
   statusBreakdown: z.array(statusCountSchema),
   topProducts: z.array(topProductSchema),
   topCategories: z.array(topCategorySchema),
+  customerSegments: customerSegmentsSchema,
+  previousCustomerSegments: customerSegmentsSchema,
 }) satisfies z.ZodType<AnalyticsOverview>;
 
 export type AnalyticsOverviewWire = z.infer<typeof analyticsOverviewResponseSchema>;

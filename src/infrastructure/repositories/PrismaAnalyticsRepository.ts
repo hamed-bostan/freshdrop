@@ -3,10 +3,12 @@ import {
   makeTotals,
   type AnalyticsGranularity,
   type AnalyticsTotals,
+  type CustomerSegments,
   type DateRange,
   type OrderStateCount,
   type OrderStatusCount,
   type RevenuePoint,
+  type RevenueRankSort,
   type TopCategory,
   type TopProduct,
 } from "@/src/domain/entities/Analytics";
@@ -232,7 +234,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     }));
   }
 
-  async topProducts(range: DateRange, limit: number): Promise<TopProduct[]> {
+  async topProducts(range: DateRange, limit: number, sort: RevenueRankSort): Promise<TopProduct[]> {
     const rows = await this.db.$queryRaw<TopProductRow[]>(Prisma.sql`
       WITH ${earningLines(range)}
       SELECT
@@ -247,18 +249,18 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
       FROM lines l
       LEFT JOIN products p ON p.id = l.product_id
       GROUP BY l.product_id
-      -- The aggregate, spelled out rather than ordering by the output alias
-      -- "revenue": the lines CTE has a column of that name too, and while Postgres
-      -- resolves a bare ORDER BY name to the output column, relying on that is a
-      -- silent ranking bug waiting for someone to rename something.
-      ORDER BY SUM(l.revenue) DESC
+      -- The aggregate, spelled out rather than ordering by an output alias: both
+      -- candidates ("revenue", "units") name a lines CTE column too, and while
+      -- Postgres resolves a bare ORDER BY name to the output column, relying on
+      -- that is a silent ranking bug waiting for someone to rename something.
+      ORDER BY ${REVENUE_RANK_ORDER[sort]} DESC
       LIMIT ${limit}
     `);
 
     return rows;
   }
 
-  async topCategories(range: DateRange, limit: number): Promise<TopCategory[]> {
+  async topCategories(range: DateRange, limit: number, sort: RevenueRankSort): Promise<TopCategory[]> {
     const rows = await this.db.$queryRaw<TopCategoryRow[]>(Prisma.sql`
       WITH ${earningLines(range)}
       SELECT
@@ -273,13 +275,59 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
       JOIN products p ON p.id = l.product_id
       JOIN categories c ON c.id = p.category_id
       GROUP BY c.id, c.name
-      ORDER BY SUM(l.revenue) DESC
+      ORDER BY ${REVENUE_RANK_ORDER[sort]} DESC
       LIMIT ${limit}
     `);
 
     return rows;
   }
+
+  async customerSegments(range: DateRange): Promise<CustomerSegments> {
+    const rows = await this.db.$queryRaw<SegmentsRow[]>(Prisma.sql`
+      WITH range_customers AS (
+        SELECT DISTINCT o.user_id
+        FROM orders o
+        WHERE o.status NOT IN ('cancelled', 'refunded')
+          AND o.placed_at >= ${range.from} AND o.placed_at < ${range.to}
+      ),
+      -- Lifetime stats for exactly the customers above, not the whole customer
+      -- base: restricting the GROUP BY to range_customers first is what keeps
+      -- this a lookup on the customers who matter rather than a full scan of
+      -- every order the store has ever taken (contrast orderStateCounts, which
+      -- has no range to narrow by and pays that cost on purpose).
+      lifetime AS (
+        SELECT
+          o.user_id,
+          MIN(o.placed_at) AS first_order_at,
+          COUNT(*)::int     AS orders
+        FROM orders o
+        WHERE o.status NOT IN ('cancelled', 'refunded')
+          AND o.user_id IN (SELECT user_id FROM range_customers)
+        GROUP BY o.user_id
+      )
+      SELECT
+        COUNT(*)::int                                                  AS "totalCustomers",
+        COUNT(*) FILTER (WHERE l.first_order_at >= ${range.from})::int AS "newCustomers",
+        COUNT(*) FILTER (WHERE l.first_order_at <  ${range.from})::int AS "returningCustomers",
+        COUNT(*) FILTER (WHERE l.orders > 1)::int                      AS "repeatCustomers"
+      FROM lifetime l
+    `);
+
+    const row = rows[0];
+    return {
+      totalCustomers: row?.totalCustomers ?? 0,
+      newCustomers: row?.newCustomers ?? 0,
+      returningCustomers: row?.returningCustomers ?? 0,
+      repeatCustomers: row?.repeatCustomers ?? 0,
+    };
+  }
 }
+
+/** The aggregate each {@link RevenueRankSort} orders by — see the callers' comments on why it's spelled out rather than aliased. */
+const REVENUE_RANK_ORDER: Record<RevenueRankSort, Prisma.Sql> = {
+  revenue: Prisma.sql`SUM(l.revenue)`,
+  units: Prisma.sql`SUM(l.quantity)`,
+};
 
 /**
  * The `recognized` CTE: one row per order placed in `range`, carrying the revenue
@@ -380,3 +428,4 @@ type SeriesRow = { bucket: Date; revenue: number; orders: number };
 type StatusRow = { status: OrderStatus; orders: number; revenue: number };
 type TopProductRow = TopProduct;
 type TopCategoryRow = TopCategory;
+type SegmentsRow = CustomerSegments;

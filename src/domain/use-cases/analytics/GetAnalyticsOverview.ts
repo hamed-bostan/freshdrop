@@ -1,15 +1,23 @@
 import {
+  DEFAULT_REVENUE_RANK_SORT,
   granularityFor,
   previousPeriod,
   previousYearRange,
   rangeToWire,
   type AnalyticsOverview,
   type DateRange,
+  type RevenueRankSort,
 } from "../../entities/Analytics";
 import type { IAnalyticsRepository } from "../../repositories/IAnalyticsRepository";
 
 /** How many rows the "top products" and "top categories" panels rank. */
 const TOP_LIMIT = 5;
+
+/** How each ranked panel orders its rows — independent, since a reader can flip one without the other. */
+export type RevenueRankSortOptions = {
+  productsSort?: RevenueRankSort;
+  categoriesSort?: RevenueRankSort;
+};
 
 /**
  * Everything the dashboard overview shows for one period, alongside the previous
@@ -18,7 +26,7 @@ const TOP_LIMIT = 5;
  * The whole screen is one use-case and one endpoint because every figure on it has
  * to describe the same range: six independent fetches is six chances for the range
  * to drift, and one failure away from a page that half-answers the question. The
- * queries themselves are independent, so they run together — eight aggregates over
+ * queries themselves are independent, so they run together — ten aggregates over
  * the same indexed range, in parallel, rather than in sequence.
  *
  * The baseline is chosen here rather than by the caller. "Compared to what" is a
@@ -28,13 +36,15 @@ const TOP_LIMIT = 5;
 export class GetAnalyticsOverview {
   constructor(private readonly analytics: IAnalyticsRepository) {}
 
-  async execute(range: DateRange): Promise<AnalyticsOverview> {
+  async execute(range: DateRange, sort: RevenueRankSortOptions = {}): Promise<AnalyticsOverview> {
     const previous = previousPeriod(range);
     const previousYear = previousYearRange(range);
     const granularity = granularityFor(range);
+    const productsSort = sort.productsSort ?? DEFAULT_REVENUE_RANK_SORT;
+    const categoriesSort = sort.categoriesSort ?? DEFAULT_REVENUE_RANK_SORT;
 
     // One batch, because the numbers have to agree with each other and because
-    // eight independent reads is eight connections taken from a pool the rest of
+    // ten independent reads is ten connections taken from a pool the rest of
     // the dashboard is also drawing on — see `IAnalyticsRepository.snapshot`.
     const [
       totals,
@@ -45,6 +55,8 @@ export class GetAnalyticsOverview {
       statusBreakdown,
       topProducts,
       topCategories,
+      customerSegments,
+      previousCustomerSegments,
     ] = await this.analytics.snapshot((analytics) =>
       Promise.all([
         analytics.totals(range),
@@ -53,8 +65,10 @@ export class GetAnalyticsOverview {
         analytics.compareRevenueSeries(range, previous, granularity),
         analytics.compareRevenueSeries(range, previousYear, granularity),
         analytics.statusBreakdown(range),
-        analytics.topProducts(range, TOP_LIMIT),
-        analytics.topCategories(range, TOP_LIMIT),
+        analytics.topProducts(range, TOP_LIMIT, productsSort),
+        analytics.topCategories(range, TOP_LIMIT, categoriesSort),
+        analytics.customerSegments(range),
+        analytics.customerSegments(previous),
       ]),
     );
 
@@ -73,6 +87,8 @@ export class GetAnalyticsOverview {
       statusBreakdown,
       topProducts,
       topCategories,
+      customerSegments,
+      previousCustomerSegments,
     };
   }
 }

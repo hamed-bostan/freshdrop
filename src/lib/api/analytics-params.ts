@@ -1,9 +1,12 @@
 import {
   ANALYTICS_RANGE_PRESETS,
   DEFAULT_ANALYTICS_PRESET,
+  DEFAULT_REVENUE_RANK_SORT,
   presetRange,
+  REVENUE_RANK_SORTS,
   type AnalyticsRangePreset,
   type DateRange,
+  type RevenueRankSort,
 } from "@/src/domain/entities/Analytics";
 
 /**
@@ -21,6 +24,7 @@ import {
  */
 
 const PRESET_SET = new Set<string>(ANALYTICS_RANGE_PRESETS);
+const REVENUE_RANK_SORT_SET = new Set<string>(REVENUE_RANK_SORTS);
 
 /** `YYYY-MM-DD`, the only date form accepted. */
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -77,6 +81,18 @@ export function buildAnalyticsPresetParams(preset: AnalyticsRangePreset): URLSea
   const params = new URLSearchParams();
   if (preset !== DEFAULT_ANALYTICS_PRESET) params.set("range", preset);
   return params;
+}
+
+/**
+ * The ranking a "top products"/"top categories" panel's `paramName` query param
+ * names — `productSort` or `categorySort` — falling back to revenue for anything
+ * absent or unrecognised, the same forgiving rule every param here follows.
+ * Independent per panel, so the reader can flip one ranking without disturbing
+ * the other.
+ */
+export function parseRevenueRankSort(params: URLSearchParams, paramName: string): RevenueRankSort {
+  const value = params.get(paramName);
+  return value && REVENUE_RANK_SORT_SET.has(value) ? (value as RevenueRankSort) : DEFAULT_REVENUE_RANK_SORT;
 }
 
 /** Format an instant as the `YYYY-MM-DD` the params and the date inputs speak. */

@@ -652,7 +652,16 @@
     "exportCsv": "Export CSV",
     "exportOrders": "Orders",
     "exportProducts": "Products",
-    "exportCustomers": "Customers"
+    "exportCustomers": "Customers",
+    "sortLabel": "Sort by",
+    "sortByRevenue": "By revenue",
+    "sortByUnits": "By units",
+    "viewAll": "View all",
+    "customerInsights": "Customer insights",
+    "newCustomers": "New customers",
+    "returningCustomers": "Returning customers",
+    "repeatPurchaseRate": "Repeat purchase rate",
+    "repeatRatePercent": "{percent}%"
   },
   "dashCategories": {
     "heading": "Categories",

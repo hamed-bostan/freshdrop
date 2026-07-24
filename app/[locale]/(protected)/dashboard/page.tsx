@@ -12,6 +12,7 @@ import { DashboardOverviewScreen } from "@/src/presentation/dashboard/DashboardO
 import {
   hasCustomAnalyticsRange,
   parseAnalyticsRange,
+  parseRevenueRankSort,
   toDateParam,
   toInclusiveEndParam,
 } from "@/src/lib/api/analytics-params";
@@ -49,6 +50,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   // preset (or a malformed param) is not what the query string says. Same parser
   // on both sides, so the two answers cannot disagree.
   const range = parseAnalyticsRange(params);
+  // Resolved here, same reason as `range`: the two ranked panels' sort selects
+  // need to show which option is active, and the only source of truth for that
+  // is the query string this same request carries.
+  const productSort = parseRevenueRankSort(params, "productSort");
+  const categorySort = parseRevenueRankSort(params, "categorySort");
 
   // The same instant backs both SLA counts below and the cutoffs handed to the
   // screen for their tiles' `href`s — one `now`, so a count can never be drawn
@@ -99,6 +105,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       // last day the period actually includes.
       to={toInclusiveEndParam(range)}
       isCustomRange={hasCustomAnalyticsRange(params)}
+      productSort={productSort}
+      categorySort={categorySort}
       recentOrders={recentOrders.items}
       pendingReviews={reviews.counts.pending}
       lowStockCount={needsRestock.total}

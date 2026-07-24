@@ -1,10 +1,12 @@
 import type {
   AnalyticsGranularity,
   AnalyticsTotals,
+  CustomerSegments,
   DateRange,
   OrderStateCount,
   OrderStatusCount,
   RevenuePoint,
+  RevenueRankSort,
   TopCategory,
   TopProduct,
 } from "../entities/Analytics";
@@ -44,11 +46,11 @@ export type IAnalyticsRepository = {
    * Run several of the reads below as one consistent, single-connection batch.
    *
    * Two problems, one answer — and the connection one is not a micro-optimisation.
-   * The overview needs seven aggregates at once, and issued as seven independent
+   * The overview needs ten aggregates at once, and issued as ten independent
    * queries they each take a pool connection and hold it. The dashboard page also
    * fans out to four other endpoints in parallel, every one of which opens an
    * interactive transaction for its `listPage`, and those have two seconds to
-   * acquire a connection before Prisma gives up with `P2028`. Seven concurrent
+   * acquire a connection before Prisma gives up with `P2028`. Ten concurrent
    * aggregates was enough to starve them: the overview rendered and the lists
    * around it returned 500s. Inside one transaction the queries queue on a single
    * connection instead, so the whole overview costs the pool exactly one.
@@ -117,18 +119,33 @@ export type IAnalyticsRepository = {
   statusBreakdown(range: DateRange): Promise<OrderStatusCount[]>;
 
   /**
-   * The `limit` products that earned the most in `range`.
+   * The `limit` products that ranked highest in `range` by `sort`.
    *
-   * Ranked by revenue rather than units: a case of water outsells everything by
-   * volume and rarely pays for the shelf. Line revenue is net of the order's
+   * Defaults to revenue rather than units: a case of water outsells everything
+   * by volume and rarely pays for the shelf. Line revenue is net of the order's
    * discount, pro-rated the same way a partial refund is (see
-   * `refundForLineValue`), so a product's contribution reflects what was actually
-   * collected for it.
+   * `refundForLineValue`), so a product's contribution reflects what was
+   * actually collected for it. Sorting by `units` instead is what surfaces that
+   * same case of water — the two orders disagree in exactly the interesting
+   * cases, which is why the panel lets the reader flip between them rather than
+   * only ever showing one.
    */
-  topProducts(range: DateRange, limit: number): Promise<TopProduct[]>;
+  topProducts(range: DateRange, limit: number, sort: RevenueRankSort): Promise<TopProduct[]>;
 
-  /** The `limit` categories that earned the most in `range`, measured the same way. */
-  topCategories(range: DateRange, limit: number): Promise<TopCategory[]>;
+  /** The `limit` categories that ranked highest in `range` by `sort`, measured the same way. */
+  topCategories(range: DateRange, limit: number, sort: RevenueRankSort): Promise<TopCategory[]>;
+
+  /**
+   * How `range`'s customers split by purchase history — see `CustomerSegments`.
+   *
+   * Scoped to customers who ordered *in* `range`, but their "new" / "returning"
+   * / "repeat" status is judged against their whole order history, not just
+   * this window — the same reason `orderStateCounts` ignores a range for a
+   * different question. A customer's first-ever order might have landed months
+   * before `range` even opened; this is the query that has to look back far
+   * enough to know that.
+   */
+  customerSegments(range: DateRange): Promise<CustomerSegments>;
 
   /**
    * How many orders are in each `(status, stage)` pair right now — one `GROUP BY`

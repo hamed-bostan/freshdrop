@@ -1,6 +1,11 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { AlertTriangle, ClipboardList, Clock, DollarSign, Receipt, Star, Truck, Users } from "lucide-react";
-import { ANALYTICS_RANGE_PRESETS, percentChange } from "@/src/domain/entities/Analytics";
+import {
+  ANALYTICS_RANGE_PRESETS,
+  percentChange,
+  repeatPurchaseRate,
+  type RevenueRankSort,
+} from "@/src/domain/entities/Analytics";
 import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid } from "@/src/domain/entities/Order";
 import { PENDING_ORDER_SLA_HOURS, UNFULFILLED_ORDER_SLA_HOURS } from "@/src/domain/entities/OrderSla";
@@ -18,6 +23,7 @@ import { StatCard } from "./StatCard";
 import { TopCustomersPanel } from "./orders/TopCustomersPanel";
 import type { AnalyticsOverviewWire } from "./analytics/analytics-response-schema";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./analytics/AnalyticsRangePicker";
+import { CustomerInsightsPanel, type CustomerInsightMetric } from "./analytics/CustomerInsightsPanel";
 import { ExportCsvLink } from "./analytics/ExportCsvLink";
 import { OrderStatusBreakdown } from "./analytics/OrderStatusBreakdown";
 import { RevenueChart } from "./analytics/RevenueChart";
@@ -33,6 +39,9 @@ type DashboardOverviewScreenProps = {
   to: string;
   /** Whether the URL names an explicit period rather than a preset. */
   isCustomRange: boolean;
+  /** The ranking each panel's rows already arrived in — see `RevenueRankPanel`. */
+  productSort: RevenueRankSort;
+  categorySort: RevenueRankSort;
   /** The latest few orders — a page, not the history. */
   recentOrders: Order[];
   /**
@@ -89,6 +98,8 @@ export async function DashboardOverviewScreen({
   from,
   to,
   isCustomRange,
+  productSort,
+  categorySort,
   recentOrders,
   pendingReviews,
   lowStockCount,
@@ -146,6 +157,46 @@ export async function DashboardOverviewScreen({
     revenue: category.revenue,
     href: `/dashboard/products?categoryId=${category.categoryId}`,
   }));
+
+  const revenueRankSortOptions: { value: RevenueRankSort; label: string }[] = [
+    { value: "revenue", label: tAnalytics("sortByRevenue") },
+    { value: "units", label: tAnalytics("sortByUnits") },
+  ];
+
+  // Repeat rate is a share, not a count, so it gets its own null-aware formatting
+  // and delta rather than reusing `delta()` directly on the raw numbers — a
+  // period with no customers has no rate to report at all (see
+  // `repeatPurchaseRate`).
+  const repeatRate = repeatPurchaseRate(analytics.customerSegments);
+  const previousRepeatRate = repeatPurchaseRate(analytics.previousCustomerSegments);
+  const repeatRateValue =
+    repeatRate !== null ? tAnalytics("repeatRatePercent", { percent: Math.round(repeatRate * 100) }) : "—";
+  const repeatRateDelta =
+    repeatRate !== null && previousRepeatRate !== null ? delta(repeatRate, previousRepeatRate) : undefined;
+
+  const customerMetrics: CustomerInsightMetric[] = [
+    {
+      key: "new",
+      label: tAnalytics("newCustomers"),
+      value: formatNumber(analytics.customerSegments.newCustomers, locale),
+      ...delta(analytics.customerSegments.newCustomers, analytics.previousCustomerSegments.newCustomers),
+    },
+    {
+      key: "returning",
+      label: tAnalytics("returningCustomers"),
+      value: formatNumber(analytics.customerSegments.returningCustomers, locale),
+      ...delta(
+        analytics.customerSegments.returningCustomers,
+        analytics.previousCustomerSegments.returningCustomers,
+      ),
+    },
+    {
+      key: "repeatRate",
+      label: tAnalytics("repeatPurchaseRate"),
+      value: repeatRateValue,
+      ...repeatRateDelta,
+    },
+  ];
 
   const customersById = new Map(customers.map((customer) => [customer.userId, customer]));
 
@@ -290,23 +341,40 @@ export async function DashboardOverviewScreen({
         previousYearRange={analytics.previousYearRange}
       />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <OrderStatusBreakdown breakdown={analytics.statusBreakdown} />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <RevenueRankPanel
           heading={tAnalytics("topProducts")}
           rows={topProducts}
           emptyLabel={tAnalytics("noSales")}
           unitsLabel={(units) => tAnalytics("unitsSold", { units })}
+          sort={productSort}
+          sortParamName="productSort"
+          sortLabel={tAnalytics("sortLabel")}
+          sortOptions={revenueRankSortOptions}
+          viewAllHref="/dashboard/products"
+          viewAllLabel={tAnalytics("viewAll")}
         />
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <RevenueRankPanel
           heading={tAnalytics("topCategories")}
           rows={topCategories}
           emptyLabel={tAnalytics("noSales")}
           unitsLabel={(units) => tAnalytics("unitsSold", { units })}
+          sort={categorySort}
+          sortParamName="categorySort"
+          sortLabel={tAnalytics("sortLabel")}
+          sortOptions={revenueRankSortOptions}
+          viewAllHref="/dashboard/categories"
+          viewAllLabel={tAnalytics("viewAll")}
         />
+        <CustomerInsightsPanel
+          heading={tAnalytics("customerInsights")}
+          metrics={customerMetrics}
+          comparisonLabel={comparisonLabel}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <OrderStatusBreakdown breakdown={analytics.statusBreakdown} />
         {customers.length > 0 ? (
           <TopCustomersPanel customers={customers} compact viewAllHref="/dashboard/customers" />
         ) : null}

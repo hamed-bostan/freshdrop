@@ -53,6 +53,13 @@ const PRESET_DAYS: Record<AnalyticsRangePreset, number> = {
 /** How wide a time series bucket is. */
 export type AnalyticsGranularity = "day" | "week" | "month";
 
+/** How the "top products"/"top categories" panels order their rows. */
+export const REVENUE_RANK_SORTS = ["revenue", "units"] as const;
+export type RevenueRankSort = (typeof REVENUE_RANK_SORTS)[number];
+
+/** The ranking each panel opens on — what `topProducts`/`topCategories` always meant before the sort control existed. */
+export const DEFAULT_REVENUE_RANK_SORT: RevenueRankSort = "revenue";
+
 /** The most series points worth drawing before buckets stop being readable as bars. */
 const MAX_DAILY_POINTS = 92;
 const MAX_WEEKLY_POINTS = 78;
@@ -230,6 +237,39 @@ export type TopCategory = {
 };
 
 /**
+ * How a period's customers split, by purchase history.
+ *
+ * `newCustomers` and `returningCustomers` always sum to `totalCustomers` — one
+ * split on "did this customer exist before the period began". `repeatCustomers`
+ * is a different cut, not a third slice of the same pie: a customer who places
+ * two orders inside one wide period is a repeat buyer despite being brand new
+ * to the store, so it can overlap `newCustomers` as easily as
+ * `returningCustomers`. See `IAnalyticsRepository.customerSegments`.
+ */
+export type CustomerSegments = {
+  /** Distinct customers behind a real (non-cancelled, non-refunded) order in the period. */
+  totalCustomers: number;
+  /** Of those, ones whose first-ever order (across their whole history) fell inside the period. */
+  newCustomers: number;
+  /** Of those, ones who had already ordered before the period began. */
+  returningCustomers: number;
+  /** Of those, ones with more than one order across their whole history — see the type doc. */
+  repeatCustomers: number;
+};
+
+/**
+ * Share of a period's customers who are repeat buyers, as a fraction (0.4 =
+ * 40%). `null` when the period had no customers to divide by — the same "no
+ * baseline" rule {@link percentChange} follows, and for the same reason: "0%
+ * repeat" and "not applicable" are different facts, and only one of them is true
+ * when nobody ordered at all.
+ */
+export function repeatPurchaseRate(segments: CustomerSegments): number | null {
+  if (segments.totalCustomers === 0) return null;
+  return segments.repeatCustomers / segments.totalCustomers;
+}
+
+/**
  * Everything the overview renders for one period, plus the previous period's
  * totals to compare against.
  *
@@ -263,6 +303,9 @@ export type AnalyticsOverview = {
   statusBreakdown: OrderStatusCount[];
   topProducts: TopProduct[];
   topCategories: TopCategory[];
+  customerSegments: CustomerSegments;
+  /** `customerSegments` for `previousRange` — the baseline the insights panel's deltas compare against. */
+  previousCustomerSegments: CustomerSegments;
 };
 
 /** Serialise a range for the wire. */

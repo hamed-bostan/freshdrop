@@ -1,10 +1,12 @@
 import Image from "next/image";
 import { getLocale } from "next-intl/server";
+import type { RevenueRankSort } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
 import { Thumbnail } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { RevenueRankSortSelect } from "./RevenueRankSortSelect";
 
 /** One ranked row, flattened from either a `TopProduct` or a `TopCategory`. */
 export type RevenueRankRow = {
@@ -25,6 +27,15 @@ type RevenueRankPanelProps = {
   emptyLabel: string;
   /** Formats the units line for a row, e.g. "48 units" — plural-aware, so the caller owns it. */
   unitsLabel: (units: string) => string;
+  /** The ordering `rows` already arrived in — the panel only has to reflect it in the control. */
+  sort: RevenueRankSort;
+  /** The URL param the sort control writes — distinct per panel instance. */
+  sortParamName: string;
+  sortLabel: string;
+  sortOptions: { value: RevenueRankSort; label: string }[];
+  /** Where the footer's "view all" link leads — the unfiltered list behind the ranking. */
+  viewAllHref: string;
+  viewAllLabel: string;
 };
 
 /**
@@ -47,16 +58,31 @@ export async function RevenueRankPanel({
   rows,
   emptyLabel,
   unitsLabel,
+  sort,
+  sortParamName,
+  sortLabel,
+  sortOptions,
+  viewAllHref,
+  viewAllLabel,
 }: RevenueRankPanelProps) {
   const locale = (await getLocale()) as Locale;
   const leader = rows.reduce((max, row) => Math.max(max, row.revenue), 0);
 
   return (
-    <section className="rounded-card-lg border border-border p-4">
-      <h2 className="text-body-b5 text-foreground">{heading}</h2>
+    <section className="flex h-full flex-col rounded-card-lg border border-border p-4">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-body-b5 text-foreground">{heading}</h2>
+        <RevenueRankSortSelect
+          paramName={sortParamName}
+          value={sort}
+          defaultValue="revenue"
+          label={sortLabel}
+          options={sortOptions}
+        />
+      </div>
 
       {rows.length > 0 ? (
-        <ol className="mt-4 flex flex-col gap-1">
+        <ol className="mt-4 flex flex-1 flex-col gap-1">
           {rows.map((row) => {
             const content = (
               <>
@@ -109,8 +135,14 @@ export async function RevenueRankPanel({
           })}
         </ol>
       ) : (
-        <p className="mt-6 pb-6 text-center text-body-b7 text-muted-foreground">{emptyLabel}</p>
+        <p className="mt-6 flex-1 pb-6 text-center text-body-b7 text-muted-foreground">{emptyLabel}</p>
       )}
+
+      <div className="mt-4 border-t border-border pt-3">
+        <Link href={viewAllHref} className="text-body-b8 text-primary hover:underline">
+          {viewAllLabel}
+        </Link>
+      </div>
     </section>
   );
 }

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { GetAnalyticsOverview } from "@/src/domain/use-cases/analytics/GetAnalyticsOverview";
 import { analyticsRepository } from "@/src/infrastructure/container";
 import { getSessionWith } from "@/src/lib/require-permission";
-import { parseAnalyticsRange } from "@/src/lib/api/analytics-params";
+import { parseAnalyticsRange, parseRevenueRankSort } from "@/src/lib/api/analytics-params";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 
 // Aggregates over a period that usually ends "now" — a cached answer here is a
@@ -14,8 +14,9 @@ export const dynamic = "force-dynamic";
  * period, plus the equally-long period before it to compare against. Admin only.
  *
  * Query params: `range` (a preset: `7d`, `30d`, `90d`, `12m`) or `from` + `to`
- * (`YYYY-MM-DD`, inclusive of both days). Anything unrecognised falls back to the
- * default preset, the rule every list endpoint here follows.
+ * (`YYYY-MM-DD`, inclusive of both days); `productSort`/`categorySort` (`revenue`
+ * or `units`) for the two ranked panels. Anything unrecognised falls back to the
+ * default preset or sort, the rule every list endpoint here follows.
  *
  * One endpoint for the whole screen, not one per tile: every figure has to describe
  * the same period, and independent fetches are independent chances for the range to
@@ -29,10 +30,16 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest): Promise<NextResponse> {
   if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
 
-  const range = parseAnalyticsRange(request.nextUrl.searchParams);
+  const params = request.nextUrl.searchParams;
+  const range = parseAnalyticsRange(params);
+  const productsSort = parseRevenueRankSort(params, "productSort");
+  const categoriesSort = parseRevenueRankSort(params, "categorySort");
 
   try {
-    const overview = await new GetAnalyticsOverview(analyticsRepository).execute(range);
+    const overview = await new GetAnalyticsOverview(analyticsRepository).execute(range, {
+      productsSort,
+      categoriesSort,
+    });
     return NextResponse.json(overview);
   } catch (error) {
     return errorResponseFromException(error, "GET /api/admin/analytics failed");

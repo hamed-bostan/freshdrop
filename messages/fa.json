@@ -652,7 +652,16 @@
     "exportCsv": "خروجی CSV",
     "exportOrders": "سفارش‌ها",
     "exportProducts": "محصولات",
-    "exportCustomers": "مشتریان"
+    "exportCustomers": "مشتریان",
+    "sortLabel": "مرتب‌سازی",
+    "sortByRevenue": "بر اساس درآمد",
+    "sortByUnits": "بر اساس تعداد فروش",
+    "viewAll": "مشاهده همه",
+    "customerInsights": "بینش مشتریان",
+    "newCustomers": "مشتریان جدید",
+    "returningCustomers": "مشتریان بازگشتی",
+    "repeatPurchaseRate": "نرخ خرید مجدد",
+    "repeatRatePercent": "{percent}٪"
   },
   "dashCategories": {
     "heading": "دسته‌بندی‌ها",
