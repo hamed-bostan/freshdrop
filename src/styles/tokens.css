@@ -82,6 +82,10 @@
   --color-chart-6: #8E8E8E;
   --color-border: #E4E4E4;
   --color-ring: #51EE8F;
+  --color-wallet-primary-from: #2EC16E;
+  --color-wallet-primary-to: #0A682F;
+  --color-wallet-secondary-from: #C42E9D;
+  --color-wallet-secondary-to: #680A43;
   --text-heading-h1: 2rem;
   --text-heading-h1--line-height: 40px;
   --text-heading-h1--font-weight: 700;
@@ -182,4 +186,6 @@
   --text-label-l4--line-height: 10px;
   --text-label-l4--font-weight: 500;
   --text-label-l4--font-family: var(--font-inter), sans-serif;
+  --shadow-sheet: 0 -4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-marker: 0 2px 8px rgba(0, 0, 0, 0.25);
 }

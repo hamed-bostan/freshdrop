@@ -6,6 +6,7 @@ import { typography as typographyPrimitives } from "../tokens/primitives/typogra
 import { colors } from "../tokens/semantic/colors";
 import { radius as semanticRadius } from "../tokens/semantic/radius";
 import { typography as semanticTypography } from "../tokens/semantic/typography";
+import { shadow as semanticShadow } from "../tokens/semantic/shadow";
 
 const toKebab = (str: string) =>
   str
@@ -71,6 +72,9 @@ const themeVars = [
 
   // Semantic typography tokens
   ...buildTypographyTokens(),
+
+  // Semantic shadow tokens
+  ...createNestedVars("shadow", semanticShadow),
 ];
 
 const cssContent = `/* GENERATED FILE - DO NOT EDIT MANUALLY

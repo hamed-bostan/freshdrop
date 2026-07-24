@@ -1,4 +1,4 @@
-import { primary, secondary, neutral, success, error, warning, info, amber } from "../primitives/colors";
+import { primary, secondary, neutral, success, error, warning, info, amber, walletGradient } from "../primitives/colors";
 
 export const colors = {
   background: neutral[0],
@@ -110,4 +110,12 @@ export const colors = {
 
   border: neutral[200],
   ring: primary[300],
+
+  // Wallet card brand gradients (green / magenta), cycled per card.
+  wallet: {
+    primaryFrom: walletGradient.primaryFrom,
+    primaryTo: primary[700],
+    secondaryFrom: walletGradient.secondaryFrom,
+    secondaryTo: secondary[700],
+  },
 } as const;
