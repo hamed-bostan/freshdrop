@@ -97,6 +97,15 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       customersServerApi.listTop(TOP_CUSTOMERS_COUNT),
     ]);
 
+  // Labels for the recent-orders list, fetched for those orders' own customers —
+  // not the top-spenders list above. The two rarely overlap, and looking a recent
+  // order's customer up against "top customers" would miss almost every time,
+  // falling back to the raw (phone-derived) userId in the UI. Same pattern as the
+  // orders list page: a page of orders needs at most that many customers.
+  const recentOrderCustomers = await customersServerApi.listByIds([
+    ...new Set(recentOrders.items.map((order) => order.userId)),
+  ]);
+
   return (
     <DashboardOverviewScreen
       analytics={analytics}
@@ -108,6 +117,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       productSort={productSort}
       categorySort={categorySort}
       recentOrders={recentOrders.items}
+      recentOrderCustomers={recentOrderCustomers.items}
       pendingReviews={reviews.counts.pending}
       lowStockCount={needsRestock.total}
       staleOrdersCount={staleOrders.total}

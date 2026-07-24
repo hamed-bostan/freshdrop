@@ -1,5 +1,15 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { AlertTriangle, ClipboardList, Clock, DollarSign, Receipt, Star, Truck, Users } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronRight,
+  ClipboardList,
+  Clock,
+  DollarSign,
+  Receipt,
+  Star,
+  Truck,
+  Users,
+} from "lucide-react";
 import {
   ANALYTICS_RANGE_PRESETS,
   percentChange,
@@ -13,10 +23,13 @@ import { LOW_STOCK_THRESHOLD } from "@/src/domain/entities/stock";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
+import { DataGridBody, DataGridHeader, DataTable, Icon, focusRing } from "@/src/presentation/design-system";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
+import { cn } from "@/src/lib/utils";
 import type { AttentionItem } from "./attention/AttentionItem";
 import { NeedsAttentionPanel } from "./attention/NeedsAttentionPanel";
 import { StatCard } from "./StatCard";
@@ -31,6 +44,25 @@ import { RevenueRankPanel, type RevenueRankRow } from "./analytics/RevenueRankPa
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/**
+ * Grid template shared by the recent-orders header and rows. Columns: order id,
+ * customer, status, placed, amount, and the trailing chevron affordance — same
+ * "row is a link" shape as `CustomerOrdersPanel`, which is why this is a grid
+ * rather than the orders list's `<table>` (a `<tr>` can't be one link).
+ */
+const RECENT_ORDERS_ROW_GRID =
+  "grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)_auto_minmax(0,0.9fr)_auto_auto] items-center gap-4";
+
+/**
+ * A short, human-scannable stand-in for the order id on this compact list — the
+ * orders list and detail route show the canonical full id (it's what search and
+ * support match against), but this row has no room for 36 characters and no need
+ * for a lookup key, only something a glance can tell apart from its neighbours.
+ */
+function shortOrderId(id: string): string {
+  return `#${id.slice(-8).toUpperCase()}`;
+}
+
 type DashboardOverviewScreenProps = {
   /** Every period-scoped figure on the screen, from one aggregate endpoint. */
   analytics: AnalyticsOverviewWire;
@@ -44,6 +76,8 @@ type DashboardOverviewScreenProps = {
   categorySort: RevenueRankSort;
   /** The latest few orders — a page, not the history. */
   recentOrders: Order[];
+  /** Summaries for exactly `recentOrders`' customers, to label each row with who placed it. */
+  recentOrderCustomers: CustomerOrderSummary[];
   /**
    * How many reviews await moderation. A count, not the reviews themselves: the
    * moderation endpoint reports it directly.
@@ -101,6 +135,7 @@ export async function DashboardOverviewScreen({
   productSort,
   categorySort,
   recentOrders,
+  recentOrderCustomers,
   pendingReviews,
   lowStockCount,
   staleOrdersCount,
@@ -110,6 +145,7 @@ export async function DashboardOverviewScreen({
   customers,
 }: DashboardOverviewScreenProps) {
   const t = await getTranslations("dashHome");
+  const tOrders = await getTranslations("dashOrders");
   const tAnalytics = await getTranslations("dashAnalytics");
   const locale = (await getLocale()) as Locale;
 
@@ -198,7 +234,9 @@ export async function DashboardOverviewScreen({
     },
   ];
 
-  const customersById = new Map(customers.map((customer) => [customer.userId, customer]));
+  const recentOrderCustomersById = new Map(
+    recentOrderCustomers.map((customer) => [customer.userId, customer]),
+  );
 
   // The panel's whole vocabulary: a count, what it means, and where the rows
   // behind it live. Each `href` carries the exact filter its count was drawn
@@ -380,54 +418,73 @@ export async function DashboardOverviewScreen({
         ) : null}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <section className="rounded-card-lg border border-border p-4">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-body-b5 text-foreground">{t("recentOrders")}</h2>
-            <Link href="/dashboard/orders" className="text-body-b8 text-primary hover:underline">
-              {t("viewAll")}
-            </Link>
-          </div>
+      <section className="rounded-card-lg border border-border p-4">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-body-b5 text-foreground">{t("recentOrders")}</h2>
+          <Link href="/dashboard/orders" className="text-body-b8 text-primary hover:underline">
+            {t("viewAll")}
+          </Link>
+        </div>
 
-          {recentOrders.length > 0 ? (
-            <ol className="mt-4 flex flex-col gap-2">
+        {recentOrders.length > 0 ? (
+          <DataTable className="mt-4" minWidthClassName="min-w-[40rem]">
+            <DataGridHeader template={RECENT_ORDERS_ROW_GRID}>
+              <span>{tOrders("colOrder")}</span>
+              <span>{tOrders("colCustomer")}</span>
+              <span>{tOrders("colStatus")}</span>
+              <span>{tOrders("colPlaced")}</span>
+              <span className="text-end">{tOrders("colTotal")}</span>
+              <span aria-hidden className="w-4" />
+            </DataGridHeader>
+            <DataGridBody>
               {recentOrders.map((order) => {
-                const customer = customersById.get(order.userId);
+                const customer = recentOrderCustomersById.get(order.userId);
                 return (
-                  <li key={order.id} className="flex items-center gap-3">
-                    <p className="min-w-0 flex-1 truncate text-body-b7 text-foreground">
+                  <Link
+                    key={order.id}
+                    href={`/dashboard/orders/${order.id}`}
+                    aria-label={tOrders("viewOrderAria", { id: order.id })}
+                    className={cn(
+                      RECENT_ORDERS_ROW_GRID,
+                      focusRing,
+                      "bg-background px-4 py-3 transition-colors hover:bg-surface-sunken/50",
+                    )}
+                  >
+                    <span className="truncate font-mono text-body-b6 text-foreground">
+                      {shortOrderId(order.id)}
+                    </span>
+                    <span className="truncate text-body-b7 text-foreground">
                       {customer?.name ?? order.userId}
-                    </p>
+                    </span>
                     <OrderStatusBadge status={order.status} stage={order.stage} />
-                    <p className="w-24 text-end text-body-b7 text-foreground">
+                    <span className="flex flex-col whitespace-nowrap text-body-b8 text-muted-foreground">
+                      <span className="text-foreground">{formatOrderDateShort(order.placedAt, locale)}</span>
+                      {formatOrderTime(order.placedAt, locale)}
+                    </span>
+                    <span className="whitespace-nowrap text-end text-body-b7 text-foreground">
                       {formatMoney(orderNetPaid(order), locale)}
-                    </p>
-                  </li>
+                    </span>
+                    <Icon icon={ChevronRight} size="xs" className="text-muted-foreground rtl:-scale-x-100" />
+                  </Link>
                 );
               })}
-            </ol>
-          ) : (
-            <p className="mt-4 text-body-b7 text-muted-foreground">{t("noRecentOrders")}</p>
-          )}
-        </section>
+            </DataGridBody>
+          </DataTable>
+        ) : (
+          <p className="mt-4 text-body-b7 text-muted-foreground">{t("noRecentOrders")}</p>
+        )}
 
-        {/* The exports sit here because this is where someone lands when the
-            dashboard *can't* answer their question — which is exactly when they
-            want the rows in a spreadsheet. Each link carries the current query
-            string, so they honour their own lists' filters when reached from those
-            pages; from here they export everything. */}
-        <section className="flex flex-col justify-between gap-4 rounded-card-lg border border-border p-4">
-          <div>
-            <h2 className="text-body-b5 text-foreground">{tAnalytics("exportHeading")}</h2>
-            <p className="mt-1 text-body-b8 text-muted-foreground">{tAnalytics("exportBody")}</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <ExportCsvLink resource="orders" label={tAnalytics("exportOrders")} />
-            <ExportCsvLink resource="products" label={tAnalytics("exportProducts")} />
-            <ExportCsvLink resource="customers" label={tAnalytics("exportCustomers")} />
-          </div>
-        </section>
-      </div>
+        {/* A quiet footer action, not a card competing for half a row: this is
+            where someone lands when the dashboard *can't* answer their question,
+            which is exactly when they want the rows in a spreadsheet. From here
+            each export covers everything (no list filter to carry). */}
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-3">
+          <span className="text-body-b8 text-muted-foreground">{tAnalytics("exportHeading")}</span>
+          <ExportCsvLink resource="orders" label={tAnalytics("exportOrders")} />
+          <ExportCsvLink resource="products" label={tAnalytics("exportProducts")} />
+          <ExportCsvLink resource="customers" label={tAnalytics("exportCustomers")} />
+        </div>
+      </section>
     </div>
   );
 }
