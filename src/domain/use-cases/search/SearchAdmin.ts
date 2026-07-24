@@ -27,6 +27,12 @@ const PAGE_ONE = { page: 1, pageSize: ADMIN_SEARCH_GROUP_LIMIT };
  *
  * Permission-filtered by omission: a group `permissions` doesn't cover is never
  * queried, so the search box can't leak rows the caller's nav already hides.
+ *
+ * Every group's `query` match runs as a Postgres `ILIKE %term%` (see each
+ * repository's `adminWhere`) — a sequential scan today. Deferred rather than
+ * indexed up front: fine at the current row counts, and premature to add
+ * `pg_trgm`/GIN indexes before there's a slow query to point at. Follow-up once
+ * it's measurably slow, not before.
  */
 export class SearchAdmin {
   constructor(
