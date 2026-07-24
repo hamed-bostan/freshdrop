@@ -2,6 +2,7 @@ import type {
   AnalyticsGranularity,
   AnalyticsTotals,
   DateRange,
+  OrderStateCount,
   OrderStatusCount,
   RevenuePoint,
   TopCategory,
@@ -32,10 +33,11 @@ import type {
  * orders it summarises — worth having only once the query cost demands it, and
  * then as a cache built from these queries, not as a replacement for them.
  *
- * Every method takes the same half-open `range`, and the *caller* decides what it
- * is (see `presetRange` / `previousPeriod`). None of them reads a clock, so a
- * comparison between two periods is two calls with two ranges rather than a
- * "previous" flag each adapter would have to interpret the same way.
+ * Every method that measures a *period* takes the same half-open `range`, and the
+ * *caller* decides what it is (see `presetRange` / `previousPeriod`). None of them
+ * reads a clock, so a comparison between two periods is two calls with two ranges
+ * rather than a "previous" flag each adapter would have to interpret the same way.
+ * {@link orderStateCounts} is the one exception, and says why.
  */
 export type IAnalyticsRepository = {
   /**
@@ -105,4 +107,20 @@ export type IAnalyticsRepository = {
 
   /** The `limit` categories that earned the most in `range`, measured the same way. */
   topCategories(range: DateRange, limit: number): Promise<TopCategory[]>;
+
+  /**
+   * How many orders are in each `(status, stage)` pair right now — one `GROUP BY`
+   * behind every count the order list shows: its four summary cards and the number
+   * beside each option in its status filter.
+   *
+   * The only method here that takes no range, and the exception is the point:
+   * everything else answers "what happened in a period", while this answers "what
+   * is waiting". An order confirmed in March is still waiting today, so bounding
+   * it by a period would quietly under-report the queue — which is the one number
+   * a card like this must never do.
+   *
+   * Returns only the pairs that exist. Absent means zero; the domain fills the
+   * gaps (see `pipelineCounts`).
+   */
+  orderStateCounts(): Promise<OrderStateCount[]>;
 };

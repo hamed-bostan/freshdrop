@@ -954,7 +954,15 @@
     "bulkCancelConfirmBody": "موجودی هر سفارش بازگردانده و مبلغ آن به کیف پول مشتری واریز می‌شود. این کار برگشت‌پذیر نیست.",
     "bulkCancelConfirm": "لغو سفارش‌ها",
     "bulkPartial": "{updated} از {total} سفارش به‌روزرسانی شد — بقیه نمی‌توانستند این عملیات را بپذیرند.",
-    "bulkError": "عملیات گروهی ناموفق بود. دوباره تلاش کنید."
+    "bulkError": "عملیات گروهی ناموفق بود. دوباره تلاش کنید.",
+    "cardAllOrders": "همه سفارش‌ها",
+    "cardAllOrdersHint": "همه سفارش‌های ثبت‌شده",
+    "cardPending": "در انتظار تأیید",
+    "cardPendingHint": "هنوز کسی این‌ها را نپذیرفته است",
+    "cardOutForDelivery": "در مسیر تحویل",
+    "cardOutForDeliveryHint": "در راه رسیدن به مشتری",
+    "cardReturns": "مرجوعی‌های در انتظار بررسی",
+    "cardReturnsHint": "منتظر تصمیم شما"
   },
   "dashOrderComms": {
     "resendHeading": "ارسال دوباره اعلان",

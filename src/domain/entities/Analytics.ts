@@ -1,4 +1,5 @@
 import type { OrderStatus } from "./Order";
+import type { TrackingMilestone } from "./OrderTracking";
 
 /**
  * The analytics vocabulary: a period to measure, the shapes an aggregate query
@@ -158,6 +159,28 @@ export type OrderStatusCount = {
   orders: number;
   /** Recognized revenue for the orders in this state — 0 for `cancelled` and `refunded`. */
   revenue: number;
+};
+
+/**
+ * How many orders currently sit in one `(status, stage)` pair — the raw material
+ * the order list's pipeline counts are folded out of.
+ *
+ * Deliberately the *stored* pair rather than the pipeline stage the UI names,
+ * because it is what a `GROUP BY` can return: one query answers every count the
+ * order screen needs, and the folding (including the overlapping `in_progress`
+ * umbrella, which no group-by row can represent) happens in the domain. See
+ * `pipelineCounts`.
+ *
+ * Unlike everything else here it takes no date range: this is the state of the
+ * queue right now, not what happened in a period. "How many orders are waiting"
+ * has no meaningful "last 30 days" reading — an order confirmed in March is
+ * still waiting today.
+ */
+export type OrderStateCount = {
+  status: OrderStatus;
+  /** `null` for orders with no milestone set — the not-yet-confirmed ones. */
+  stage: TrackingMilestone | null;
+  orders: number;
 };
 
 /** A product ranked by the revenue it earned in the period. */

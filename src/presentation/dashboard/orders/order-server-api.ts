@@ -4,6 +4,8 @@ import { ApiError } from "@/src/lib/api/ApiError";
 import { pageResponseSchema } from "@/src/lib/api/page-response-schema";
 import { serverApiGet } from "@/src/lib/api/server-client";
 import { orderResponseSchema } from "@/src/presentation/orders/order-response-schema";
+import type { OrderPipelineCounts } from "@/src/domain/use-cases/orders/GetOrderPipelineCounts";
+import { orderCountsResponseSchema } from "./order-counts-response-schema";
 
 /** What `GET /api/admin/orders` promises: a page of orders plus the total behind it. */
 const orderPageResponseSchema = pageResponseSchema(orderResponseSchema);
@@ -24,6 +26,16 @@ export const ordersServerApi = {
     return serverApiGet("/admin/orders", orderPageResponseSchema, {
       params: Object.fromEntries(params),
     });
+  },
+
+  /**
+   * How many orders sit at each pipeline stage, and how many there are overall —
+   * the list's summary cards and its status-filter counts.
+   *
+   * Takes no params: these are unfiltered counts by design (see the route).
+   */
+  counts(): Promise<OrderPipelineCounts> {
+    return serverApiGet("/admin/orders/counts", orderCountsResponseSchema);
   },
 
   /** A single order by id; returns `null` for a missing order (404) so callers can `notFound()`. */

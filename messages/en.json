@@ -954,7 +954,15 @@
     "bulkCancelConfirmBody": "Each order is restocked and its total refunded to the customer’s wallet. This cannot be undone.",
     "bulkCancelConfirm": "Cancel orders",
     "bulkPartial": "{updated} of {total} orders updated — the rest could not take that action.",
-    "bulkError": "That bulk action failed. Please try again."
+    "bulkError": "That bulk action failed. Please try again.",
+    "cardAllOrders": "All orders",
+    "cardAllOrdersHint": "Everything ever placed",
+    "cardPending": "Pending",
+    "cardPendingHint": "Nobody has accepted these yet",
+    "cardOutForDelivery": "Out for delivery",
+    "cardOutForDeliveryHint": "On the way to the customer",
+    "cardReturns": "Returns to review",
+    "cardReturnsHint": "Waiting on your decision"
   },
   "dashOrderComms": {
     "resendHeading": "Resend a notification",

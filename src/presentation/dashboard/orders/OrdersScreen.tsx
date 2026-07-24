@@ -9,6 +9,7 @@ import {
 import type { Order } from "@/src/domain/entities/Order";
 import type { Page } from "@/src/domain/entities/Pagination";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
+import type { OrderPipelineCounts } from "@/src/domain/use-cases/orders/GetOrderPipelineCounts";
 import {
   ListPager,
   ListSearchInput,
@@ -20,6 +21,7 @@ import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvL
 import { BulkActionBar, BulkSelectionProvider } from "@/src/presentation/dashboard/bulk";
 import { OrderBulkActions } from "./OrderBulkActions";
 import { OrdersFilterBar } from "./OrdersFilterBar";
+import { OrdersSummaryCards } from "./OrdersSummaryCards";
 import { OrdersTable } from "./OrdersTable";
 
 type OrdersScreenProps = {
@@ -35,6 +37,11 @@ type OrdersScreenProps = {
    * dashboard access. Presentation only: the bulk endpoint checks for itself.
    */
   canFulfill: boolean;
+  /**
+   * Queue counts for the summary cards and the status filter's per-option numbers.
+   * Unfiltered — they describe the store, not this page (see `OrdersSummaryCards`).
+   */
+  counts: OrderPipelineCounts;
 };
 
 /**
@@ -53,6 +60,7 @@ export async function OrdersScreen({
   customers,
   filters,
   canFulfill,
+  counts,
 }: OrdersScreenProps) {
   const t = await getTranslations("dashOrders");
   const tList = await getTranslations("dashList");
@@ -77,6 +85,10 @@ export async function OrdersScreen({
         <p className="text-body-b6 text-muted-foreground">{t("summary", { count: orders.total })}</p>
       </div>
 
+      {/* Above the toolbar, not below it: the cards are how someone *arrives* at a
+          filtered list, so they have to sit before the controls that refine one. */}
+      <OrdersSummaryCards counts={counts} />
+
       <ListToolbar
         search={<ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} />}
         filters={
@@ -84,7 +96,7 @@ export async function OrdersScreen({
             {/* The filters are one client island: they all write query params,
                 and the labels they need are resolved inside it rather than
                 threaded through as props. */}
-            <OrdersFilterBar />
+            <OrdersFilterBar pipelineCounts={counts.counts} />
             <ListSortSelect
               label={t("sortLabel")}
               options={sortOptions}

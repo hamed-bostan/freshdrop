@@ -4,12 +4,14 @@ import {
   type AnalyticsGranularity,
   type AnalyticsTotals,
   type DateRange,
+  type OrderStateCount,
   type OrderStatusCount,
   type RevenuePoint,
   type TopCategory,
   type TopProduct,
 } from "@/src/domain/entities/Analytics";
 import { ORDER_STATUSES, type OrderStatus } from "@/src/domain/entities/Order";
+import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
 import type { IAnalyticsRepository } from "@/src/domain/repositories/IAnalyticsRepository";
 import { prisma } from "@/src/infrastructure/prisma/client";
 import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transaction";
@@ -18,12 +20,16 @@ import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transa
  * Store aggregates computed in PostgreSQL. Server-side only, bound through the
  * container.
  *
- * Raw SQL rather than Prisma's `groupBy`, and deliberately so. Every figure here
- * needs one of three things Prisma's query builder cannot express: an expression
- * over two tables (recognized revenue is an order's total minus the refunds on its
- * *items*), `date_trunc` bucketing with the empty buckets filled in, or an
- * aggregate over a computed column. Approximating any of them in the client means
- * fetching the rows — which is the exact cost this class exists to remove.
+ * Raw SQL rather than Prisma's `groupBy`, and deliberately so. Almost every figure
+ * here needs one of three things Prisma's query builder cannot express: an
+ * expression over two tables (recognized revenue is an order's total minus the
+ * refunds on its *items*), `date_trunc` bucketing with the empty buckets filled in,
+ * or an aggregate over a computed column. Approximating any of them in the client
+ * means fetching the rows — which is the exact cost this class exists to remove.
+ *
+ * {@link orderStateCounts} is the exception and stays a `groupBy`: it counts two
+ * plain columns and needs none of the above, so raw SQL would buy nothing and cost
+ * the type safety.
  *
  * ## Recognized revenue, in SQL
  *
@@ -157,6 +163,26 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
       status,
       orders: byStatus.get(status)?.orders ?? 0,
       revenue: byStatus.get(status)?.revenue ?? 0,
+    }));
+  }
+
+  async orderStateCounts(): Promise<OrderStateCount[]> {
+    // Prisma's `groupBy` rather than raw SQL, unlike its neighbours here: they
+    // need a CTE to define what "recognized revenue" means, and this needs a plain
+    // count over two columns. It reads the whole table by design — there is no
+    // range to narrow it to (see the port) — which is what the
+    // `(status, placed_at)` index is there to keep cheap.
+    const rows = await this.db.order.groupBy({
+      by: ["status", "stage"],
+      _count: { _all: true },
+    });
+
+    return rows.map((row) => ({
+      // Plain string columns holding the domain unions, narrowed the same way the
+      // order mapper does.
+      status: row.status as OrderStatus,
+      stage: (row.stage as TrackingMilestone | null) ?? null,
+      orders: row._count._all,
     }));
   }
 

@@ -22,12 +22,17 @@ export default async function DashboardOrdersPage({ searchParams }: DashboardOrd
   // row's customer label) are fetched together. The query string is forwarded to
   // the API as-is; the parsed filters only tell the screen whether an empty page
   // means "no orders" or "nothing matched".
-  const orders = await ordersServerApi.listPage(params);
-
-  // The list is a read anyone in the dashboard needs — support answers "where is
-  // my order?" from it. Whether the *selection* and its actions are drawn is the
-  // fulfilment permission, resolved here and passed down.
-  const canFulfill = await auth().then((session) => sessionHas(session, "orders.fulfill"));
+  // The page of rows, the queue counts behind the summary cards, and whether this
+  // admin may act on any of it — none depends on the others, so they go together.
+  //
+  // The list is a read anyone in the dashboard needs (support answers "where is my
+  // order?" from it); whether the *selection* and its actions are drawn is the
+  // fulfilment permission.
+  const [orders, counts, canFulfill] = await Promise.all([
+    ordersServerApi.listPage(params),
+    ordersServerApi.counts(),
+    auth().then((session) => sessionHas(session, "orders.fulfill")),
+  ]);
 
   // Customer labels are fetched for this page's orders only — a page of 20 orders
   // needs at most 20 customers, not every customer who has ever ordered.
@@ -41,6 +46,7 @@ export default async function DashboardOrdersPage({ searchParams }: DashboardOrd
       customers={customers.items}
       filters={parseAdminOrderFilters(params)}
       canFulfill={canFulfill}
+      counts={counts}
     />
   );
 }

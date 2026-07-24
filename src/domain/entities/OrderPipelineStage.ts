@@ -77,6 +77,41 @@ export function pipelinePredicate(stage: OrderPipelineStage): OrderPipelinePredi
 }
 
 /**
+ * Fold `(status, stage)` group counts into a count per pipeline stage.
+ *
+ * Done here rather than in SQL because the stages are not a partition: a
+ * `processing` order at `shipped` is counted under both `out_for_delivery` and
+ * the `in_progress` umbrella, and no `GROUP BY` row can be in two groups at once.
+ * Evaluating each stage's predicate against each group is also what keeps the
+ * counts and the filters honest — both read the same predicates, so a count can't
+ * promise a number the filter behind it then fails to show.
+ *
+ * Every stage is present, including the ones nothing is in: a filter option
+ * labelled "0" is information, while a missing one looks like a bug.
+ */
+export function pipelineCounts(
+  groups: readonly { status: OrderStatus; stage: TrackingMilestone | null; orders: number }[],
+): Record<OrderPipelineStage, number> {
+  const counts = Object.fromEntries(ORDER_PIPELINE_STAGES.map((stage) => [stage, 0])) as Record<
+    OrderPipelineStage,
+    number
+  >;
+
+  for (const group of groups) {
+    for (const stage of ORDER_PIPELINE_STAGES) {
+      const predicate = PIPELINE_PREDICATES[stage];
+      if (predicate.status !== group.status) continue;
+      // `undefined` leaves the milestone unconstrained; `null` means specifically
+      // "no milestone set" — the distinction that separates pending from confirmed.
+      if (predicate.stage !== undefined && predicate.stage !== group.stage) continue;
+      counts[stage] += group.orders;
+    }
+  }
+
+  return counts;
+}
+
+/**
  * Which pipeline stage an order presents as — a near-inverse of the predicates
  * above, for labelling a row.
  *
