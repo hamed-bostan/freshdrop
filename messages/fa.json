@@ -107,6 +107,7 @@
     "ratingStar": "{count, plural, other {# ستاره}}",
     "confirmCancel": "انصراف",
     "confirmYes": "بله",
+    "close": "بستن",
     "confirmKeep": "نگه داشتن",
     "confirmWorking": "در حال انجام…"
   },
@@ -563,7 +564,20 @@
     "tryAgain": "تلاش مجدد",
     "navPromoCodes": "کدهای تخفیف",
     "navDeliverySlots": "بازه‌های ارسال",
-    "navActivity": "فعالیت‌ها"
+    "navActivity": "فعالیت‌ها",
+    "groupOverview": "کلیات",
+    "groupCatalog": "کاتالوگ",
+    "groupSales": "فروش",
+    "groupMarketing": "بازاریابی",
+    "groupStore": "فروشگاه",
+    "openNav": "باز کردن منو",
+    "navMenuTitle": "منوی پیمایش",
+    "languageAria": "تغییر زبان",
+    "help": "راهنما",
+    "account": "منوی حساب کاربری",
+    "signOut": "خروج از حساب",
+    "signOutTitle": "خروج از حساب؟",
+    "signOutMessage": "برای بازگشت به داشبورد باید دوباره وارد شوید."
   },
   "dashHome": {
     "heading": "داشبورد",

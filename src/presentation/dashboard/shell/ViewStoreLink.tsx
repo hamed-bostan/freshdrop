@@ -1,0 +1,36 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { ExternalLink } from "lucide-react";
+import { Link } from "@/src/i18n/navigation";
+import { Icon, focusRing } from "@/src/presentation/design-system";
+import { cn } from "@/src/lib/utils";
+
+type ViewStoreLinkProps = {
+  /** Icon-only for the collapsed rail. */
+  collapsed?: boolean;
+  /** Called after the link is chosen — the drawer uses it to close itself. */
+  onNavigate?: () => void;
+};
+
+/** Escape hatch back to the storefront, pinned under the user card. */
+export function ViewStoreLink({ collapsed = false, onNavigate }: ViewStoreLinkProps) {
+  const t = useTranslations("dashboard");
+  const label = t("viewStore");
+
+  return (
+    <Link
+      href="/"
+      onClick={onNavigate}
+      title={collapsed ? label : undefined}
+      className={cn(
+        "flex items-center gap-2 border-t border-border py-4 text-body-b7 text-muted-foreground transition-colors hover:text-foreground",
+        focusRing,
+        collapsed ? "justify-center px-0" : "px-5",
+      )}
+    >
+      <Icon icon={ExternalLink} size="sm" />
+      <span className={cn(collapsed && "sr-only")}>{label}</span>
+    </Link>
+  );
+}

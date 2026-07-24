@@ -107,6 +107,7 @@
     "ratingStar": "{count, plural, one {# star} other {# stars}}",
     "confirmCancel": "Cancel",
     "confirmYes": "Yes",
+    "close": "Close",
     "confirmKeep": "Keep",
     "confirmWorking": "Working…"
   },
@@ -563,7 +564,20 @@
     "tryAgain": "Try again",
     "navPromoCodes": "Promo codes",
     "navDeliverySlots": "Delivery slots",
-    "navActivity": "Activity"
+    "navActivity": "Activity",
+    "groupOverview": "Overview",
+    "groupCatalog": "Catalog",
+    "groupSales": "Sales",
+    "groupMarketing": "Marketing",
+    "groupStore": "Store",
+    "openNav": "Open navigation",
+    "navMenuTitle": "Navigation",
+    "languageAria": "Change language",
+    "help": "Help",
+    "account": "Account menu",
+    "signOut": "Sign out",
+    "signOutTitle": "Sign out?",
+    "signOutMessage": "You'll need to sign in again to get back to the dashboard."
   },
   "dashHome": {
     "heading": "Dashboard",
