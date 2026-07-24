@@ -1,5 +1,5 @@
 import type { AdminOrderFilters, AdminOrderSort } from "../entities/AdminOrderFilters";
-import type { ItemSubstitution, Order, OrderPhase, OrderStatus } from "../entities/Order";
+import type { ItemSubstitution, Order, OrderPhase, OrderStatus, PaymentStatus } from "../entities/Order";
 import type { TrackingMilestone } from "../entities/OrderTracking";
 import type { Page, PageRequest } from "../entities/Pagination";
 import type { AuditHook } from "./AuditHook";
@@ -38,6 +38,14 @@ export type OrderStatusTransition = {
     status: OrderStatus;
     phase?: OrderPhase;
     stage?: TrackingMilestone | null;
+    /**
+     * The money's new standing, set in the same atomic write as the status. A
+     * cancel or an approved return credits the wallet and so moves payment to
+     * `refunded`; carrying it here rather than in a follow-up write is what keeps
+     * the two from disagreeing — an order can't be lifecycle-`refunded` while its
+     * payment still reads `paid`. Omitted (the common case) leaves it untouched.
+     */
+    paymentStatus?: PaymentStatus;
   };
 };
 

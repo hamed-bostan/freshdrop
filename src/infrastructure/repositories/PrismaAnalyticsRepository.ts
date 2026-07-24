@@ -169,9 +169,11 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
   async orderStateCounts(): Promise<OrderStateCount[]> {
     // Prisma's `groupBy` rather than raw SQL, unlike its neighbours here: they
     // need a CTE to define what "recognized revenue" means, and this needs a plain
-    // count over two columns. It reads the whole table by design — there is no
-    // range to narrow it to (see the port) — which is what the
-    // `(status, placed_at)` index is there to keep cheap.
+    // count over two columns. It scans the whole table by design — there is no
+    // range to narrow it to (see the port) — so it's a seq-scan + hash aggregate;
+    // no index helps a full-table group-by, and the counts are small enough per
+    // request that none needs to. If order volume ever makes this bite, the answer
+    // is a summary row updated on write, not an index.
     const rows = await this.db.order.groupBy({
       by: ["status", "stage"],
       _count: { _all: true },

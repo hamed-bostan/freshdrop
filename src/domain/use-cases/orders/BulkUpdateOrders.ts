@@ -67,10 +67,18 @@ export class BulkUpdateOrders {
     const cancel = new CancelOrder(this.orderRepo, this.uow);
     const updated: string[] = [];
 
+    // Stage advances hand their customer notification here instead of sending it
+    // inline; the sends are fired concurrently after the loop. The database work
+    // stays serial (each order is its own transaction, and running them in
+    // parallel would race for the connection pool the analytics snapshot already
+    // guards), but the SMS/email sends are independent best-effort I/O with no
+    // reason to queue behind one another.
+    const notifications: (() => Promise<void>)[] = [];
+
     for (const id of ids) {
       try {
         if (change.type === "setStage") {
-          await setStage.execute(id, change.stage, actor);
+          await setStage.execute(id, change.stage, actor, (dispatch) => notifications.push(dispatch));
         } else {
           // Cancelled *as* the customer who placed it: `CancelOrder` is
           // owner-scoped, and the refund has to land in that customer's wallet
@@ -92,6 +100,11 @@ export class BulkUpdateOrders {
         throw error;
       }
     }
+
+    // Fan the deferred notifications out at once. `allSettled` because each is
+    // already best-effort — the notifier swallows its own failures — and one
+    // customer's SMS not going out must not fail a batch whose orders all moved.
+    await Promise.allSettled(notifications.map((dispatch) => dispatch()));
 
     return updated;
   }

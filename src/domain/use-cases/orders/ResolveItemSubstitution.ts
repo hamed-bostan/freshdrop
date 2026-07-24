@@ -199,7 +199,10 @@ export class ResolveItemSubstitution {
   ): Promise<Order | null> {
     const cancelled = await orders.transitionStatus(order.id, {
       from: { status: "processing", stage: "confirmed" },
-      to: { status: "cancelled", phase: "previous", stage: null },
+      // Every line has already been refunded to the wallet during picking and the
+      // shipping goes back below, so the order is fully repaid — payment reads
+      // `refunded` to match, the same invariant `CancelOrder` upholds.
+      to: { status: "cancelled", phase: "previous", stage: null, paymentStatus: "refunded" },
     });
     if (!cancelled) return null;
 

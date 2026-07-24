@@ -47,7 +47,10 @@ export class CancelOrder {
     return this.uow.run(async ({ orders, products, wallets }) => {
       const cancelled = await orders.transitionStatus(orderId, {
         from: { status: "processing", stage: "confirmed" },
-        to: { status: "cancelled", phase: "previous", stage: null },
+        // Payment moves to `refunded` in the same write as the status: the wallet
+        // credit below is what makes that true, and setting it here rather than
+        // afterward is what stops a cancelled order from reading `paid`.
+        to: { status: "cancelled", phase: "previous", stage: null, paymentStatus: "refunded" },
       });
       // The guard didn't match: the order advanced (shipped/cancelled) between our
       // read and the write. Throwing rolls the transaction back, so bailing here

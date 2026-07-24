@@ -141,6 +141,8 @@ export class MockOrderRepository implements IOrderRepository {
   );
   /** Phase overrides written by lifecycle transitions (cancel/refund archive the order). */
   private readonly phases = new Map<string, OrderPhase>();
+  /** Payment-status overrides written by lifecycle transitions (a refund moves it to `refunded`). */
+  private readonly paymentStatuses = new Map<string, PaymentStatus>();
   /** Picker substitution resolutions, keyed `${orderId}::${productId}`. */
   private readonly substitutions = new Map<string, ItemSubstitution>();
   /** Orders placed at runtime (via checkout), newest appended last. */
@@ -225,7 +227,7 @@ export class MockOrderRepository implements IOrderRepository {
         status: this.statuses.get(seed.id) ?? seed.status,
         phase: this.phases.get(seed.id) ?? seed.phase,
         deliveryType: seed.deliveryType ?? "delivery",
-        paymentStatus: seed.paymentStatus ?? "paid",
+        paymentStatus: this.paymentStatuses.get(seed.id) ?? seed.paymentStatus ?? "paid",
         placedAt: seed.placedAt,
         location: seed.location,
         locationLabel: seed.locationLabel,
@@ -240,12 +242,14 @@ export class MockOrderRepository implements IOrderRepository {
       };
     });
 
-    // Runtime orders honour the same status/phase/stage overrides as the seeds.
-    // `stages.has` distinguishes a cleared stage (mapped to null) from no override.
+    // Runtime orders honour the same status/phase/stage/payment overrides as the
+    // seeds. `stages.has` distinguishes a cleared stage (mapped to null) from no
+    // override.
     const runtime: Order[] = this.created.map((order) => ({
       ...order,
       status: this.statuses.get(order.id) ?? order.status,
       phase: this.phases.get(order.id) ?? order.phase,
+      paymentStatus: this.paymentStatuses.get(order.id) ?? order.paymentStatus,
       stage: this.stages.has(order.id) ? (this.stages.get(order.id) ?? undefined) : order.stage,
       items: order.items.map((item) => this.withSubstitution(order.id, item)),
     }));
@@ -292,6 +296,7 @@ export class MockOrderRepository implements IOrderRepository {
     if (to.phase !== undefined) this.phases.set(orderId, to.phase);
     // `null` clears the stage; `undefined` leaves the existing override untouched.
     if (to.stage !== undefined) this.stages.set(orderId, to.stage);
+    if (to.paymentStatus !== undefined) this.paymentStatuses.set(orderId, to.paymentStatus);
 
     return this.getById(orderId);
   }

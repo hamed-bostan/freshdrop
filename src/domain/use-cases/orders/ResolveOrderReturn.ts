@@ -59,7 +59,12 @@ export class ResolveOrderReturn {
     const refunded = await this.uow.run(async ({ orders, products, wallets }) => {
       const resolved = await orders.transitionStatus(
         orderId,
-        { from: { status: "return_requested" }, to: { status: "refunded", phase: "previous" } },
+        {
+          from: { status: "return_requested" },
+          // Payment follows the wallet credit below into `refunded`, in the same
+          // atomic write — see `CancelOrder` for the same reasoning.
+          to: { status: "refunded", phase: "previous", paymentStatus: "refunded" },
+        },
         (updated) => this.entry(actor, updated, "approve", order.status),
       );
       // Lost the race — another admin already resolved it. Throwing rolls back,

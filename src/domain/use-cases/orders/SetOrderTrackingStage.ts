@@ -29,7 +29,19 @@ export class SetOrderTrackingStage {
     private readonly notifier: IOrderNotifier,
   ) {}
 
-  async execute(orderId: string, stage: TrackingMilestone, actor: ActivityActor): Promise<Order> {
+  /**
+   * `defer`, when given, receives this stage change's customer notification
+   * instead of it being sent inline. It exists for the bulk path: a hundred stage
+   * advances would otherwise each block on an SMS send, summing a hundred network
+   * round-trips into one request. The single-order caller omits it and the send
+   * happens as before — one advance, one awaited notification, no reason to defer.
+   */
+  async execute(
+    orderId: string,
+    stage: TrackingMilestone,
+    actor: ActivityActor,
+    defer?: (dispatch: () => Promise<void>) => void,
+  ): Promise<Order> {
     const order = await this.orderRepo.getById(orderId);
     if (!order) throw new NotFoundError("order", orderId);
 
@@ -63,10 +75,16 @@ export class SetOrderTrackingStage {
 
     // Notify only on a real transition into the milestone — not on an idempotent
     // re-save of the stage the order is already at.
-    if (order.stage !== stage) {
+    const dispatch = async (): Promise<void> => {
+      if (order.stage === stage) return;
       if (stage === "shipped") await this.notifier.orderOutForDelivery(updated);
       else if (stage === "arrived") await this.notifier.orderDelivered(updated);
-    }
+    };
+
+    // Inline for a single advance; handed to the caller for a batch to fan out
+    // concurrently once the serial database work is done.
+    if (defer) defer(dispatch);
+    else await dispatch();
 
     return updated;
   }

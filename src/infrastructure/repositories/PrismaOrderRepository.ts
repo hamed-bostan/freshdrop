@@ -150,6 +150,7 @@ export class PrismaOrderRepository implements IOrderRepository {
           ...(to.phase !== undefined ? { phase: to.phase } : {}),
           // `null` clears the stage; `undefined` leaves it untouched.
           ...(to.stage !== undefined ? { stage: to.stage } : {}),
+          ...(to.paymentStatus !== undefined ? { paymentStatus: to.paymentStatus } : {}),
         },
       });
 
