@@ -57,14 +57,14 @@ type StatCardProps = {
 };
 
 /**
- * Arrow and colour per direction. `flat` is deliberately muted and gets a dash
- * rather than an arrow: "no change" is information, and drawing it in a trend
- * colour makes a still metric look like a moving one.
+ * Arrow, text colour and pill tint per direction. `flat` is deliberately muted
+ * and gets a dash rather than an arrow: "no change" is information, and drawing
+ * it in a trend colour makes a still metric look like a moving one.
  */
-const DELTA_STYLES: Record<"up" | "down" | "flat", { icon: LucideIcon; className: string }> = {
-  up: { icon: TrendingUp, className: "text-success-foreground" },
-  down: { icon: TrendingDown, className: "text-error-foreground" },
-  flat: { icon: Minus, className: "text-muted-foreground" },
+const DELTA_STYLES: Record<"up" | "down" | "flat", { icon: LucideIcon; className: string; badgeClassName: string }> = {
+  up: { icon: TrendingUp, className: "text-success-foreground", badgeClassName: "bg-success text-success-foreground" },
+  down: { icon: TrendingDown, className: "text-error-foreground", badgeClassName: "bg-error text-error-foreground" },
+  flat: { icon: Minus, className: "text-muted-foreground", badgeClassName: "bg-muted text-muted-foreground" },
 };
 
 /**
@@ -95,7 +95,7 @@ export function StatCard({
         <p className="text-body-b7 text-muted-foreground">{label}</p>
         <div
           className={cn(
-            "flex size-10 shrink-0 items-center justify-center rounded-card-md",
+            "flex size-10 shrink-0 items-center justify-center rounded-full",
             TONE_STYLES[tone],
           )}
         >
@@ -105,16 +105,24 @@ export function StatCard({
       <div>
         <p className="text-heading-h2 text-foreground">{value}</p>
         {delta ? (
-          // The change and what it's measured against sit on one line: a "+12%"
-          // with no stated baseline is the most common way a dashboard misleads,
-          // because every reader supplies a different one.
-          <p className="mt-1 flex items-center gap-1 text-body-b8">
-            <Icon icon={trend.icon} size="xs" className={trend.className} />
-            <span className={trend.className}>{delta}</span>
-            {deltaLabel ? <span className="text-muted-foreground">{deltaLabel}</span> : null}
+          // The change lives in its own tinted pill so the direction reads at a
+          // glance; what it's measured against sits beside it in plain muted
+          // text — a "+12%" with no stated baseline is the most common way a
+          // dashboard misleads, because every reader supplies a different one.
+          <p className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-body-b11",
+                trend.badgeClassName,
+              )}
+            >
+              <Icon icon={trend.icon} size="xs" />
+              {delta}
+            </span>
+            {deltaLabel ? <span className="text-body-b8 text-muted-foreground">{deltaLabel}</span> : null}
           </p>
         ) : hint ? (
-          <p className="text-body-b8 text-muted-foreground">{hint}</p>
+          <p className="mt-2 text-body-b8 text-muted-foreground">{hint}</p>
         ) : null}
       </div>
     </>

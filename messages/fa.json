@@ -597,6 +597,7 @@
     "rangeFrom": "از",
     "rangeTo": "تا",
     "rangeCaption": "{from} – {to}",
+    "comparedToRange": "در مقایسه با {from} – {to}",
     "preset": {
       "7d": "۷ روز گذشته",
       "30d": "۳۰ روز گذشته",

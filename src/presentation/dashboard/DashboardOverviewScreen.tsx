@@ -146,6 +146,15 @@ export async function DashboardOverviewScreen({
               to: formatMediumDate(analytics.range.to, locale),
             })}
           </p>
+          {/* Every KPI tile below states its move as "vs previous N days" without
+              saying which days those were — this line names the baseline period
+              those percentages are actually computed against. */}
+          <p className="text-body-b8 text-muted-foreground">
+            {tAnalytics("comparedToRange", {
+              from: formatMediumDate(analytics.previousRange.from, locale),
+              to: formatMediumDate(analytics.previousRange.to, locale),
+            })}
+          </p>
         </div>
 
         <AnalyticsRangePicker

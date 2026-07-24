@@ -1,9 +1,10 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { Calendar } from "lucide-react";
 import { usePathname, useRouter } from "@/src/i18n/navigation";
 import { DEFAULT_ANALYTICS_PRESET } from "@/src/domain/entities/Analytics";
-import { Input, Select } from "@/src/presentation/design-system";
+import { Icon, Input, Select } from "@/src/presentation/design-system";
 
 /**
  * The value the preset select carries when the period is an explicit from/to.
@@ -92,20 +93,27 @@ export function AnalyticsRangePicker({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Select
-        size="sm"
-        aria-label={presetLabel}
-        value={isCustom ? CUSTOM_RANGE_VALUE : (searchParams.get("range") ?? DEFAULT_ANALYTICS_PRESET)}
-        onChange={(event) => selectPreset(event.target.value)}
-        className="w-auto"
-      >
-        {presetOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </Select>
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      <div className="relative">
+        <Icon
+          icon={Calendar}
+          size="xs"
+          className="pointer-events-none absolute start-3 top-1/2 z-10 -translate-y-1/2 text-icon-muted"
+        />
+        <Select
+          size="sm"
+          aria-label={presetLabel}
+          value={isCustom ? CUSTOM_RANGE_VALUE : (searchParams.get("range") ?? DEFAULT_ANALYTICS_PRESET)}
+          onChange={(event) => selectPreset(event.target.value)}
+          className="w-auto ps-9"
+        >
+          {presetOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </Select>
+      </div>
 
       {isCustom ? (
         <>

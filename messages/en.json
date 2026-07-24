@@ -597,6 +597,7 @@
     "rangeFrom": "From",
     "rangeTo": "To",
     "rangeCaption": "{from} – {to}",
+    "comparedToRange": "Compared to {from} – {to}",
     "preset": {
       "7d": "Last 7 days",
       "30d": "Last 30 days",
