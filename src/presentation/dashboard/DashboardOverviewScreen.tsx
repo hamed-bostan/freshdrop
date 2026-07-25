@@ -387,7 +387,7 @@ export async function DashboardOverviewScreen({
           sortLabel={tAnalytics("sortLabel")}
           sortOptions={revenueRankSortOptions}
           viewAllHref="/dashboard/products"
-          viewAllLabel={tAnalytics("viewAll")}
+          viewAllLabel={tAnalytics("viewAllProducts")}
         />
         <RevenueRankPanel
           heading={tAnalytics("topCategories")}
@@ -399,14 +399,13 @@ export async function DashboardOverviewScreen({
           sortLabel={tAnalytics("sortLabel")}
           sortOptions={revenueRankSortOptions}
           viewAllHref="/dashboard/categories"
-          viewAllLabel={tAnalytics("viewAll")}
+          viewAllLabel={tAnalytics("viewAllCategories")}
         />
         <CustomerInsightsPanel
           heading={tAnalytics("customerInsights")}
           metrics={customerMetrics}
-          comparisonLabel={comparisonLabel}
           viewAllHref="/dashboard/customers"
-          viewAllLabel={tAnalytics("viewAll")}
+          viewAllLabel={tAnalytics("viewAllCustomers")}
         />
       </div>
 

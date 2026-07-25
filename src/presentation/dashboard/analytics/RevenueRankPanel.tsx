@@ -1,11 +1,13 @@
 import Image from "next/image";
 import { getLocale } from "next-intl/server";
+import { ChevronRight, ExternalLink } from "lucide-react";
 import type { RevenueRankSort } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
-import { Thumbnail } from "@/src/presentation/design-system";
+import { Icon, Thumbnail, focusRing } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { cn } from "@/src/lib/utils";
 import { RevenueRankSortSelect } from "./RevenueRankSortSelect";
 
 /** One ranked row, flattened from either a `TopProduct` or a `TopCategory`. */
@@ -66,65 +68,74 @@ export async function RevenueRankPanel({
   viewAllLabel,
 }: RevenueRankPanelProps) {
   const locale = (await getLocale()) as Locale;
-  const leader = rows.reduce((max, row) => Math.max(max, row.revenue), 0);
 
   return (
     <section className="flex h-full flex-col rounded-card-lg border border-border p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-body-b5 text-foreground">{heading}</h2>
-        <RevenueRankSortSelect
-          paramName={sortParamName}
-          value={sort}
-          defaultValue="revenue"
-          label={sortLabel}
-          options={sortOptions}
-        />
+        <div className="flex items-center gap-2">
+          <RevenueRankSortSelect
+            paramName={sortParamName}
+            value={sort}
+            defaultValue="revenue"
+            label={sortLabel}
+            options={sortOptions}
+          />
+          <Link
+            href={viewAllHref}
+            aria-label={viewAllLabel}
+            className={cn(
+              focusRing,
+              "flex size-8 shrink-0 items-center justify-center rounded-card-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <Icon icon={ExternalLink} size="xs" />
+          </Link>
+        </div>
       </div>
 
       {rows.length > 0 ? (
         <ol className="mt-4 flex flex-1 flex-col gap-1">
-          {rows.map((row) => {
+          {rows.map((row, index) => {
+            // Only the leader gets picked out — a proportional bar on every row
+            // reads as a bar chart, but the question this panel answers is just
+            // "who's in front", which a single highlighted row already says.
+            const isLeader = index === 0;
+
             const content = (
-              <>
-                {/* The bar sits behind the row rather than beside it, so the text
-                    keeps its full width on a narrow dashboard column and the
-                    proportion is still readable at a glance. */}
-                <span
-                  aria-hidden
-                  className="absolute inset-y-0 start-0 rounded-card-md bg-accent"
-                  style={{ width: leader > 0 ? `${(row.revenue / leader) * 100}%` : "0%" }}
-                />
-                <span className="relative flex w-full items-center gap-3">
-                  {row.imageUrl ? (
-                    <Thumbnail as="span" className="size-9 shrink-0">
-                      <Image
-                        src={row.imageUrl}
-                        alt=""
-                        width={36}
-                        height={36}
-                        className="size-full object-contain"
-                      />
-                    </Thumbnail>
-                  ) : null}
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-body-b7 text-foreground">{row.label}</span>
-                    <span className="block text-body-b8 text-muted-foreground">
-                      {unitsLabel(formatNumber(row.units, locale))}
-                    </span>
-                  </span>
-                  <span className="text-body-b7 text-foreground">
-                    {formatMoney(row.revenue, locale)}
+              <span className="flex w-full items-center gap-3">
+                {row.imageUrl ? (
+                  <Thumbnail as="span" className="size-9 shrink-0">
+                    <Image
+                      src={row.imageUrl}
+                      alt=""
+                      width={36}
+                      height={36}
+                      className="size-full object-contain"
+                    />
+                  </Thumbnail>
+                ) : null}
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-body-b7 text-foreground">{row.label}</span>
+                  <span className="block text-body-b8 text-muted-foreground">
+                    {unitsLabel(formatNumber(row.units, locale))}
                   </span>
                 </span>
-              </>
+                <span className="text-body-b7 text-foreground">
+                  {formatMoney(row.revenue, locale)}
+                </span>
+              </span>
             );
 
-            const frame = "relative flex items-center overflow-hidden rounded-card-md p-2";
+            const frame = cn(
+              "flex items-center rounded-card-md p-2",
+              isLeader ? "bg-accent" : "transition-colors hover:bg-muted",
+            );
 
             return (
               <li key={row.id}>
                 {row.href ? (
-                  <Link href={row.href} className={`${frame} transition-colors hover:bg-muted`}>
+                  <Link href={row.href} className={frame}>
                     {content}
                   </Link>
                 ) : (
@@ -139,8 +150,12 @@ export async function RevenueRankPanel({
       )}
 
       <div className="mt-4 border-t border-border pt-3">
-        <Link href={viewAllHref} className="text-body-b8 text-primary hover:underline">
+        <Link
+          href={viewAllHref}
+          className="inline-flex items-center gap-1 text-body-b8 text-primary hover:underline"
+        >
           {viewAllLabel}
+          <Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" />
         </Link>
       </div>
     </section>

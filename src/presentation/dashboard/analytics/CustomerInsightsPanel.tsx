@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Minus, TrendingDown, TrendingUp } from "lucide-react";
+import { ChevronRight, Minus, TrendingDown, TrendingUp, Users } from "lucide-react";
 import { Link } from "@/src/i18n/navigation";
 import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
@@ -17,8 +17,6 @@ export type CustomerInsightMetric = {
 type CustomerInsightsPanelProps = {
   heading: string;
   metrics: CustomerInsightMetric[];
-  /** What every metric's delta is measured against, shown once rather than repeated per row. */
-  comparisonLabel: string;
   /** Where the footer's "view all" link leads — the full Customers page. */
   viewAllHref: string;
   viewAllLabel: string;
@@ -30,10 +28,10 @@ const DELTA_ICON: Record<"up" | "down" | "flat", LucideIcon> = {
   flat: Minus,
 };
 
-const DELTA_BADGE: Record<"up" | "down" | "flat", string> = {
-  up: "bg-success text-success-foreground",
-  down: "bg-error text-error-foreground",
-  flat: "bg-muted text-muted-foreground",
+const DELTA_TEXT: Record<"up" | "down" | "flat", string> = {
+  up: "text-success-foreground",
+  down: "text-error-foreground",
+  flat: "text-muted-foreground",
 };
 
 /**
@@ -51,25 +49,27 @@ const DELTA_BADGE: Record<"up" | "down" | "flat", string> = {
 export function CustomerInsightsPanel({
   heading,
   metrics,
-  comparisonLabel,
   viewAllHref,
   viewAllLabel,
 }: CustomerInsightsPanelProps) {
   return (
     <section className="flex h-full flex-col rounded-card-lg border border-border p-4">
-      <h2 className="text-body-b5 text-foreground">{heading}</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-body-b5 text-foreground">{heading}</h2>
+        <Icon icon={Users} size="sm" className="text-muted-foreground" />
+      </div>
 
       <ul className="mt-4 flex flex-1 flex-col gap-4">
         {metrics.map((metric) => (
-          <li key={metric.key} className="flex items-center justify-between gap-3">
-            <span className="text-body-b7 text-muted-foreground">{metric.label}</span>
-            <span className="flex items-center gap-2">
-              <span className="text-body-b5 text-foreground">{metric.value}</span>
+          <li key={metric.key} className="flex flex-col gap-1">
+            <span className="text-body-b8 text-muted-foreground">{metric.label}</span>
+            <span className="flex items-center justify-between gap-3">
+              <span className="text-heading-h3 text-foreground">{metric.value}</span>
               {metric.delta ? (
                 <span
                   className={cn(
-                    "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-body-b11",
-                    DELTA_BADGE[metric.deltaTone ?? "flat"],
+                    "inline-flex items-center gap-1 text-body-b8",
+                    DELTA_TEXT[metric.deltaTone ?? "flat"],
                   )}
                 >
                   <Icon icon={DELTA_ICON[metric.deltaTone ?? "flat"]} size="xs" />
@@ -81,10 +81,13 @@ export function CustomerInsightsPanel({
         ))}
       </ul>
 
-      <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
-        <p className="text-body-b8 text-muted-foreground">{comparisonLabel}</p>
-        <Link href={viewAllHref} className="text-body-b8 text-primary hover:underline">
+      <div className="mt-4 border-t border-border pt-3">
+        <Link
+          href={viewAllHref}
+          className="inline-flex items-center gap-1 text-body-b8 text-primary hover:underline"
+        >
           {viewAllLabel}
+          <Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" />
         </Link>
       </div>
     </section>
