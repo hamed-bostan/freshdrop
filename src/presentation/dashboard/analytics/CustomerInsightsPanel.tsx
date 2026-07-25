@@ -3,6 +3,7 @@ import { ArrowRight, Minus, TrendingDown, TrendingUp, Users } from "lucide-react
 import { Link } from "@/src/i18n/navigation";
 import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
+import { OVERVIEW_ROW_MIN_HEIGHT } from "./panel-row";
 
 export type CustomerInsightMetric = {
   key: string;
@@ -61,7 +62,13 @@ export function CustomerInsightsPanel({
 
       <ul className="mt-5 flex flex-1 flex-col gap-3">
         {metrics.map((metric) => (
-          <li key={metric.key} className="flex flex-col gap-1 rounded-card-lg border border-border p-4">
+          <li
+            key={metric.key}
+            className={cn(
+              "flex flex-col justify-between gap-1 rounded-card-lg border border-border p-4",
+              OVERVIEW_ROW_MIN_HEIGHT,
+            )}
+          >
             <span className="text-body-b8 text-muted-foreground">{metric.label}</span>
             <span className="flex items-center justify-between gap-3">
               <span className="text-heading-h2 text-foreground">{metric.value}</span>

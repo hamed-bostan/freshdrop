@@ -8,6 +8,7 @@ import { Icon, Thumbnail, focusRing } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
+import { OVERVIEW_ROW_MIN_HEIGHT } from "./panel-row";
 import { RevenueRankSortSelect } from "./RevenueRankSortSelect";
 
 /** One ranked row, flattened from either a `TopProduct` or a `TopCategory`. */
@@ -120,7 +121,10 @@ export async function RevenueRankPanel({
               </span>
             );
 
-            const frame = "flex items-center rounded-card-lg bg-accent p-4";
+            const frame = cn(
+              "flex items-center rounded-card-lg bg-accent p-4",
+              OVERVIEW_ROW_MIN_HEIGHT,
+            );
 
             return (
               <li key={row.id}>
