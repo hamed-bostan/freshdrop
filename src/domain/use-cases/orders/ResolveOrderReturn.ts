@@ -56,7 +56,7 @@ export class ResolveOrderReturn {
       return rejected;
     }
 
-    const refunded = await this.uow.run(async ({ orders, products, wallets }) => {
+    const refunded = await this.uow.run(async ({ orders, products, wallets, refunds }) => {
       const resolved = await orders.transitionStatus(
         orderId,
         {
@@ -79,6 +79,18 @@ export class ResolveOrderReturn {
         { reason: "restock", orderId: resolved.id },
       );
       await wallets.addFunds(resolved.userId, resolved.total, { kind: "refundReturnedOrder" });
+      // Ledger row for the credit above — the admin's approval is the actor of
+      // record, same as the activity entry above.
+      await refunds.record({
+        orderId: resolved.id,
+        userId: resolved.userId,
+        kind: "return",
+        amount: resolved.total,
+        taxAmount: resolved.taxAmount ?? 0,
+        actorId: actor.id,
+        actorName: actor.name,
+        lines: [],
+      });
 
       return resolved;
     });

@@ -225,6 +225,7 @@ export class MockOrderRepository implements IOrderRepository {
           const product = byId.get(productId);
           if (!product) return null;
           return this.withSubstitution(seed.id, {
+            id: `${seed.id}-${productId}`,
             productId,
             name: product.name,
             imageUrl: product.imageUrl,
@@ -288,10 +289,12 @@ export class MockOrderRepository implements IOrderRepository {
     // name the order); fall back to the mock's own sequence otherwise. The order
     // number is always assigned here — nothing ever supplies one, same as the
     // real DB's autoincrement default.
+    const orderId = input.id ?? `FD-${String(this.nextId++).padStart(5, "0")}`;
     const order: Order = {
       ...input,
-      id: input.id ?? `FD-${String(this.nextId++).padStart(5, "0")}`,
+      id: orderId,
       orderNumber: this.nextOrderNumber++,
+      items: input.items.map((item, index) => ({ ...item, id: `${orderId}-${index}` })),
     };
     this.created.push(order);
     return order;

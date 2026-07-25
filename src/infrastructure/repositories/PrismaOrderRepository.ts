@@ -229,6 +229,7 @@ type OrderRow = {
   deliveryWindowId: string | null;
   deliveryWindow: string | null;
   items: {
+    id: string;
     productId: string;
     name: string;
     imageUrl: string;
@@ -343,6 +344,7 @@ function toOrderCreateData(input: NewOrder): Prisma.OrderCreateInput {
 
 function toOrder(row: OrderRow): Order {
   const items: OrderItem[] = row.items.map((item) => ({
+    id: item.id,
     productId: item.productId,
     name: item.name,
     imageUrl: item.imageUrl,

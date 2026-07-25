@@ -44,7 +44,7 @@ export class CancelOrder {
       throw new ValidationError("order", "This order can no longer be cancelled.");
     }
 
-    return this.uow.run(async ({ orders, products, wallets }) => {
+    return this.uow.run(async ({ orders, products, wallets, refunds }) => {
       const cancelled = await orders.transitionStatus(orderId, {
         from: { status: "processing", stage: "confirmed" },
         // Payment moves to `refunded` in the same write as the status: the wallet
@@ -66,6 +66,16 @@ export class CancelOrder {
         { reason: "restock", orderId: cancelled.id },
       );
       await wallets.addFunds(userId, cancelled.total, { kind: "refundCancelledOrder" });
+      // Ledger row for the credit above — self-service, so there's no admin actor
+      // to record.
+      await refunds.record({
+        orderId: cancelled.id,
+        userId,
+        kind: "cancellation",
+        amount: cancelled.total,
+        taxAmount: cancelled.taxAmount ?? 0,
+        lines: [],
+      });
 
       return cancelled;
     });

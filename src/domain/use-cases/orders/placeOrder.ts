@@ -98,7 +98,7 @@ export async function placeOrder(
     throw new SlotUnavailableError("That delivery time is no longer available.");
   }
 
-  const items: OrderItem[] = cart.items.map((line) => {
+  const items: Array<Omit<OrderItem, "id">> = cart.items.map((line) => {
     const { product, quantity } = line;
     return {
       productId: product.id,

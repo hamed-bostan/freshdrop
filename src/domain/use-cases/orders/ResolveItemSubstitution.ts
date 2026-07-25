@@ -2,6 +2,7 @@ import type { ActivityActor, NewActivityEntry } from "../../entities/ActivityEnt
 import { activityValue } from "../../entities/ActivityEntry";
 import type { ItemSubstitution, Order } from "../../entities/Order";
 import { isFullyRefunded, isPicking, refundForLineValue } from "../../entities/Order";
+import { taxShareOfRefund } from "../../entities/Refund";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 import type { IUnitOfWork, TransactionalRepositories } from "../../repositories/IUnitOfWork";
@@ -79,7 +80,7 @@ export class ResolveItemSubstitution {
     }
 
     if (resolution.action === "refund") {
-      return this.refund(order, productId, item.name, item.price * item.quantity, actor);
+      return this.refund(order, item, actor);
     }
 
     return this.substitute(order, item, resolution.replacementProductId, actor);
@@ -125,20 +126,20 @@ export class ResolveItemSubstitution {
    * Drop the line and credit the customer the amount they effectively paid for it
    * — `grossLineValue` net of its pro-rata share of the order discount.
    */
-  private async refund(
-    order: Order,
-    productId: string,
-    itemName: string,
-    grossLineValue: number,
-    actor: ActivityActor,
-  ): Promise<Order> {
-    const amount = refundForLineValue(order, grossLineValue);
+  private async refund(order: Order, item: Order["items"][number], actor: ActivityActor): Promise<Order> {
+    const productId = item.productId;
+    const itemName = item.name;
+    const amount = refundForLineValue(order, item.price * item.quantity);
     const resolved: ItemSubstitution = { status: "refunded", refundAmount: amount };
+    // The line's own snapshotted tax share (already net of its pro-rata discount,
+    // see `OrderItem.taxAmount`) — the whole line is dropped, so its whole tax
+    // share is what's being refunded. `null` (tax not in effect) reads as 0.
+    const taxAmount = item.taxAmount ?? 0;
 
     // The line resolution, its refund, and the cancellation-plus-delivery-refund
     // that a last remaining line triggers are one transaction. Split apart, a
     // failure between them drops a line from the order without paying for it.
-    const { updated, cancelled } = await this.uow.run(async ({ orders, wallets }) => {
+    const { updated, cancelled } = await this.uow.run(async ({ orders, wallets, refunds }) => {
       // The entry rides inside the guarded write, so only the pick that actually
       // resolved the line records having done so.
       const saved = await orders.resolveItemSubstitution(order.id, productId, resolved, (line) =>
@@ -150,13 +151,23 @@ export class ResolveItemSubstitution {
 
       if (amount > 0) {
         await wallets.addFunds(order.userId, amount, { kind: "refundOutOfStock", item: itemName });
+        await refunds.record({
+          orderId: order.id,
+          userId: order.userId,
+          kind: "substitution",
+          amount,
+          taxAmount,
+          actorId: actor.id,
+          actorName: actor.name,
+          lines: [{ orderItemId: item.id, productId, quantity: item.quantity, amount, taxAmount }],
+        });
       }
 
       // If this refund resolved the order's last remaining line, there's nothing
       // left to deliver — cancel the order and refund the delivery fee too, rather
       // than charging for an empty delivery.
       if (isFullyRefunded(saved)) {
-        return { updated: saved, cancelled: await this.cancelEmptied(orders, wallets, saved) };
+        return { updated: saved, cancelled: await this.cancelEmptied(orders, wallets, refunds, saved) };
       }
       return { updated: saved, cancelled: null };
     });
@@ -195,6 +206,7 @@ export class ResolveItemSubstitution {
   private async cancelEmptied(
     orders: TransactionalRepositories["orders"],
     wallets: TransactionalRepositories["wallets"],
+    refunds: TransactionalRepositories["refunds"],
     order: Order,
   ): Promise<Order | null> {
     const cancelled = await orders.transitionStatus(order.id, {
@@ -208,6 +220,16 @@ export class ResolveItemSubstitution {
 
     if (cancelled.shipping > 0) {
       await wallets.addFunds(order.userId, cancelled.shipping, { kind: "refundCancelledOrderDelivery" });
+      // The delivery fee is excluded from the taxable base (phase 3), so its
+      // refund carries no VAT — no line either, it isn't tied to a product.
+      await refunds.record({
+        orderId: cancelled.id,
+        userId: order.userId,
+        kind: "substitution",
+        amount: cancelled.shipping,
+        taxAmount: 0,
+        lines: [],
+      });
     }
     return cancelled;
   }
@@ -239,7 +261,7 @@ export class ResolveItemSubstitution {
       refundAmount: saving,
     };
 
-    const updated = await this.uow.run(async ({ orders, products, wallets }) => {
+    const updated = await this.uow.run(async ({ orders, products, wallets, refunds }) => {
       // Claim a real unit of the replacement's stock first (atomic — throws
       // InsufficientStockError if it's short, so the picker picks another).
       await products.decrementStock(
@@ -261,6 +283,20 @@ export class ResolveItemSubstitution {
       // Only the wallet moves — the order total is left as charged.
       if (saving > 0) {
         await wallets.addFunds(order.userId, saving, { kind: "substitutionSaving", item: item.name });
+        // The saving is a fraction of the line's value, not the whole line, so its
+        // VAT share is derived from the order's rate rather than reused from
+        // `item.taxAmount` — and 0 outright when the line itself is exempt.
+        const taxAmount = item.taxExempt ? 0 : taxShareOfRefund(saving, order.taxRate);
+        await refunds.record({
+          orderId: order.id,
+          userId: order.userId,
+          kind: "substitution",
+          amount: saving,
+          taxAmount,
+          actorId: actor.id,
+          actorName: actor.name,
+          lines: [{ orderItemId: item.id, productId: item.productId, quantity: item.quantity, amount: saving, taxAmount }],
+        });
       }
 
       return saved;

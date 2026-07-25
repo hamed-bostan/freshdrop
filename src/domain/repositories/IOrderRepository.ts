@@ -1,5 +1,5 @@
 import type { AdminOrderFilters, AdminOrderSort } from "../entities/AdminOrderFilters";
-import type { ItemSubstitution, Order, OrderPhase, OrderStatus, PaymentStatus } from "../entities/Order";
+import type { ItemSubstitution, Order, OrderItem, OrderPhase, OrderStatus, PaymentStatus } from "../entities/Order";
 import type { TrackingMilestone } from "../entities/OrderTracking";
 import type { Page, PageRequest } from "../entities/Pagination";
 import type { AuditHook } from "./AuditHook";
@@ -23,7 +23,11 @@ export type OrderTrackingUpdate = {
  * front is what lets that attribution be real rather than backfilled — an
  * append-only ledger shouldn't need a second write to say what it always meant.
  */
-export type NewOrder = Omit<Order, "id" | "orderNumber"> & { id?: string };
+export type NewOrder = Omit<Order, "id" | "orderNumber" | "items"> & {
+  id?: string;
+  // Items don't exist yet either — the repository assigns each a row id on insert.
+  items: Array<Omit<OrderItem, "id">>;
+};
 
 /**
  * A guarded lifecycle transition. `from` (status, and optionally stage) is a

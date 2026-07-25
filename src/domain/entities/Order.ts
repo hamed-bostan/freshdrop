@@ -94,11 +94,12 @@ export type ItemSubstitution = {
     imageUrl: string;
   };
   /**
-   * The exact amount credited to the customer's wallet for this line: the line
-   * refund when `refunded`, or the price saving when `substituted` for a cheaper
-   * item (0 when the swap wasn't cheaper). Already net of the line's pro-rata
-   * discount share (see {@link refundForLineValue}). The order `total` stays the
-   * original charge; this is what makes each wallet credit visible on the receipt.
+   * A per-line display label — the amount credited to the wallet for this line
+   * (the line refund when `refunded`, or the price saving when `substituted` for
+   * a cheaper item; 0 when the swap wasn't cheaper), already net of the line's
+   * pro-rata discount share (see {@link refundForLineValue}). Kept for the order
+   * card/receipt to show next to the line. No longer the source anything sums
+   * across an order from — that's the `Refund` ledger now (see `Refund.ts`).
    */
   refundAmount: number;
 }
@@ -109,6 +110,8 @@ export type ItemSubstitution = {
  * correct basis for substitution refunds — even if the catalog changes later.
  */
 export type OrderItem = {
+  /** The underlying row's id — the target of a line-item refund (see `RefundLine.orderItemId`). */
+  id: string;
   productId: string;
   name: string;
   imageUrl: string;

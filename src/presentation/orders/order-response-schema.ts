@@ -29,6 +29,7 @@ const substitutionResponseSchema = z.object({
 });
 
 const orderItemResponseSchema = z.object({
+  id: z.string(),
   productId: z.string(),
   name: z.string(),
   imageUrl: z.string(),
