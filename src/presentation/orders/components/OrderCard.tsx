@@ -91,9 +91,14 @@ export function OrderCard({ order }: OrderCardProps) {
           )}
         </ul>
 
-        <p className="shrink-0 text-body-b9 text-foreground">
-          {formatMoney(order.total, locale)}
-        </p>
+        <div className="shrink-0 text-end">
+          <p className="text-body-b9 text-foreground">{formatMoney(order.total, locale)}</p>
+          {order.taxAmount != null && (
+            <p className="text-body-b9 text-muted-foreground">
+              {t("includesVat", { amount: formatMoney(order.taxAmount, locale) })}
+            </p>
+          )}
+        </div>
       </div>
 
       {substituted.length > 0 && (

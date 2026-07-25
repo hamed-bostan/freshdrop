@@ -222,6 +222,8 @@ type OrderRow = {
   shipping: number;
   discount: number;
   total: number;
+  taxAmount: number | null;
+  taxRate: number | null;
   stage: string | null;
   deliveryDate: string | null;
   deliveryWindowId: string | null;
@@ -238,6 +240,8 @@ type OrderRow = {
     replacementProductId: string | null;
     replacementName: string | null;
     replacementImageUrl: string | null;
+    taxExempt: boolean;
+    taxAmount: number | null;
   }[];
 };
 
@@ -315,6 +319,8 @@ function toOrderCreateData(input: NewOrder): Prisma.OrderCreateInput {
     shipping: input.shipping,
     discount: input.discount,
     total: input.total,
+    taxAmount: input.taxAmount,
+    taxRate: input.taxRate,
     stage: input.stage ?? null,
     deliveryDate: input.deliveryDate ?? null,
     deliveryWindowId: input.deliveryWindowId ?? null,
@@ -328,6 +334,8 @@ function toOrderCreateData(input: NewOrder): Prisma.OrderCreateInput {
         price: item.price,
         substitutionPreference: item.substitutionPreference,
         position: index + 1,
+        taxExempt: item.taxExempt,
+        taxAmount: item.taxAmount,
       })),
     },
   };
@@ -340,6 +348,8 @@ function toOrder(row: OrderRow): Order {
     imageUrl: item.imageUrl,
     quantity: item.quantity,
     price: item.price,
+    taxExempt: item.taxExempt,
+    taxAmount: item.taxAmount,
     // Plain string columns that only ever hold the domain union values (the app
     // validates them), narrowed here — consistent with status/phase/stage above.
     substitutionPreference: item.substitutionPreference as SubstitutionPreference,
@@ -381,6 +391,8 @@ function toOrder(row: OrderRow): Order {
     shipping: row.shipping,
     discount: row.discount,
     total: row.total,
+    taxAmount: row.taxAmount,
+    taxRate: row.taxRate,
     stage: (row.stage as TrackingMilestone | null) ?? undefined,
     deliveryDate: row.deliveryDate ?? undefined,
     deliveryWindowId: row.deliveryWindowId ?? undefined,

@@ -4,7 +4,16 @@ import { MainNav } from "@/src/presentation/layout/MainNav";
 import { CartProvider } from "@/src/presentation/cart/CartProvider";
 import { cartsServerApi } from "@/src/presentation/cart/cart-server-api";
 
-const EMPTY_CART: Cart = { items: [], subtotal: 0, shipping: 0, discount: 0, total: 0, itemCount: 0 };
+const EMPTY_CART: Cart = {
+  items: [],
+  subtotal: 0,
+  shipping: 0,
+  discount: 0,
+  total: 0,
+  itemCount: 0,
+  taxAmount: null,
+  taxRate: null,
+};
 
 /**
  * Best-effort cart read that seeds the client cart cache. Navigation must always

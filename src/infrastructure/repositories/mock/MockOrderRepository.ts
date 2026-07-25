@@ -231,6 +231,10 @@ export class MockOrderRepository implements IOrderRepository {
             quantity,
             price: product.price,
             substitutionPreference: "substitute",
+            // Seeded demo orders predate tax (phase 3) — `null` reads as "not in
+            // effect", matching every other legacy order.
+            taxExempt: product.taxExempt,
+            taxAmount: null,
           });
         })
         .filter((item): item is OrderItem => item != null);
@@ -252,6 +256,8 @@ export class MockOrderRepository implements IOrderRepository {
         shipping: 0,
         discount: 0,
         total: seed.total,
+        taxAmount: null,
+        taxRate: null,
         stage: this.stages.get(seed.id) ?? undefined,
         items,
       };

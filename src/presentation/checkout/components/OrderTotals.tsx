@@ -5,14 +5,18 @@ interface OrderTotalsProps {
   subtotal: number;
   shipping: number;
   discount: number;
+  /** VAT portion already included in the total, or `null` when tax isn't in effect. */
+  taxAmount?: number | null;
 }
 
 /**
  * The price breakdown: subtotal, delivery fee and discount (each underlined),
  * then the emphasized total payment — always displayed as the sum of the rows
  * above it (`total = subtotal + shipping - discount` is the stored invariant).
+ * When `taxAmount` is present, a note below the total clarifies it's already
+ * included — tax-inclusive pricing means it never changes what's charged.
  */
-export function OrderTotals({ subtotal, shipping, discount }: OrderTotalsProps) {
+export function OrderTotals({ subtotal, shipping, discount, taxAmount }: OrderTotalsProps) {
   const t = useTranslations("checkout");
   const locale = useLocale();
   const money = (amount: number) => formatMoney(amount, locale);
@@ -43,6 +47,12 @@ export function OrderTotals({ subtotal, shipping, discount }: OrderTotalsProps) 
         <span className="text-body-b7 text-foreground">{t("totalPayment")}</span>
         <span className="text-body-b6 text-foreground">{totalValue}</span>
       </div>
+
+      {taxAmount != null && (
+        <p className="text-end text-body-b9 text-muted-foreground">
+          {t("includesVat", { amount: money(taxAmount) })}
+        </p>
+      )}
     </div>
   );
 }

@@ -231,6 +231,11 @@ model Order {
   shipping  Float       @default(0)
   discount  Float       @default(0)
   total     Float
+  // VAT portion of `total`, snapshotted at checkout alongside the rate it was
+  // computed with — nullable, no backfill: NULL means tax wasn't in effect when
+  // the order was placed (see `taxFromGross`/phase 3), not that it was 0.
+  taxAmount Float?      @map("tax_amount")
+  taxRate   Float?      @map("tax_rate")
   // Current delivery milestone (confirmed/shipped/arrived). Null when the order
   // isn't trackable (archived or cancelled). Advanced from the admin dashboard.
   stage     String?
@@ -317,6 +322,12 @@ model OrderItem {
   replacementProductId     String? @map("replacement_product_id")
   replacementName          String? @map("replacement_name")
   replacementImageUrl      String? @map("replacement_image_url")
+  // VAT snapshot for this line (phase 3). `taxExempt` mirrors the product's flag at
+  // purchase time, defaulting true (the safe direction, matching `Product.taxExempt`).
+  // `taxAmount` is nullable, no backfill: NULL means tax wasn't in effect for this
+  // order, not that the line was exempt (that reads 0).
+  taxExempt                Boolean @default(true) @map("tax_exempt")
+  taxAmount                Float?  @map("tax_amount")
   order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])

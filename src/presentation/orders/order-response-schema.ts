@@ -36,6 +36,8 @@ const orderItemResponseSchema = z.object({
   price: z.number(),
   substitutionPreference: z.enum(["substitute", "refund"]),
   substitution: substitutionResponseSchema.optional(),
+  taxExempt: z.boolean(),
+  taxAmount: z.number().nullable(),
 });
 
 export const orderResponseSchema = z.object({
@@ -64,6 +66,8 @@ export const orderResponseSchema = z.object({
   shipping: z.number(),
   discount: z.number(),
   total: z.number(),
+  taxAmount: z.number().nullable(),
+  taxRate: z.number().nullable(),
   stage: z.enum(["confirmed", "shipped", "arrived"]).optional(),
   deliveryDate: z.string().optional(),
   deliveryWindowId: z.string().optional(),

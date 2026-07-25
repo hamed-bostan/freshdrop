@@ -268,6 +268,7 @@ export default function CheckoutScreen({
         subtotal={cart.subtotal}
         shipping={cart.shipping}
         discount={cart.discount}
+        taxAmount={cart.taxAmount}
       />
 
       {error && (

@@ -24,21 +24,29 @@ import { cartsApi } from "./cart-api";
  *
  * No promo: the optimistic path never has one to hand (it isn't in the client's
  * line state), so a discounted cart's total is the server's to correct.
+ *
+ * `taxRate` is carried over from the cart being replaced — it doesn't change
+ * between requests, and re-deriving it here would mean threading tax settings
+ * into the client store just to recompute a figure the next server response
+ * corrects anyway.
  */
-function recomputeCart(items: Cart["items"]): Cart {
-  return priceCart(items, null);
+function recomputeCart(items: Cart["items"], taxRate: number | null): Cart {
+  return priceCart(items, null, taxRate);
 }
 
 /** Apply an absolute quantity for one product to a cart snapshot (insert / update / remove). */
 function applyQuantity(cart: Cart, product: Product, quantity: number): Cart {
   if (quantity <= 0) {
-    return recomputeCart(cart.items.filter((item) => item.product.id !== product.id));
+    return recomputeCart(
+      cart.items.filter((item) => item.product.id !== product.id),
+      cart.taxRate,
+    );
   }
   const exists = cart.items.some((item) => item.product.id === product.id);
   const items = exists
     ? cart.items.map((item) => (item.product.id === product.id ? { ...item, quantity } : item))
     : [...cart.items, { product, quantity }];
-  return recomputeCart(items);
+  return recomputeCart(items, cart.taxRate);
 }
 
 type CartStore = {

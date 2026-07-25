@@ -23,4 +23,6 @@ export const cartResponseSchema = z.object({
   discount: z.number(),
   total: z.number(),
   itemCount: z.number(),
+  taxAmount: z.number().nullable(),
+  taxRate: z.number().nullable(),
 }) satisfies z.ZodType<Cart>;

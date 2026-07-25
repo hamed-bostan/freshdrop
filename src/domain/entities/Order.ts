@@ -119,6 +119,14 @@ export type OrderItem = {
   substitutionPreference: SubstitutionPreference;
   /** The picker's resolution of an out-of-stock line; `undefined` while unresolved. */
   substitution?: ItemSubstitution;
+  /** Whether this line was VAT-exempt, snapshotted from the product at purchase time. */
+  taxExempt: boolean;
+  /**
+   * VAT this line contributes to the order's {@link Order.taxAmount}, net of its
+   * pro-rata discount share. `null` when tax wasn't in effect when the order was
+   * placed (not the same as 0, which means "taxable but the line was exempt").
+   */
+  taxAmount: number | null;
 }
 
 /** A placed order shown on the "My Order" screen. */
@@ -178,6 +186,16 @@ export type Order = {
   discount: number;
   /** Amount actually charged: `subtotal + shipping - discount`. */
   total: number;
+  /**
+   * VAT portion of `total`, snapshotted at checkout (see `taxFromGross`) — never
+   * recomputed later, so a subsequent rate change can't retroactively alter a past
+   * order's reported tax. `null` means tax wasn't in effect when this order was
+   * placed, which is not the same as 0 (a taxable order where every line happened
+   * to be exempt still reads 0; a legacy order predating tax reads `null`).
+   */
+  taxAmount: number | null;
+  /** The rate `taxAmount` was computed with, so the record is self-describing. `null` alongside `taxAmount`. */
+  taxRate: number | null;
   /**
    * The delivery milestone the order is currently at — the single field an admin
    * advances from the dashboard, and what the tracking stepper is derived from.

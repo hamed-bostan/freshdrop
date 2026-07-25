@@ -1,4 +1,5 @@
 import type { Cart } from "../../entities/Cart";
+import { lineTaxAmount } from "../../entities/Cart";
 import type { DeliveryWindow } from "../../entities/DeliveryWindow";
 import { formatWindowRange } from "../../entities/DeliveryWindow";
 import type {
@@ -97,17 +98,24 @@ export async function placeOrder(
     throw new SlotUnavailableError("That delivery time is no longer available.");
   }
 
-  const items: OrderItem[] = cart.items.map(({ product, quantity }) => ({
-    productId: product.id,
-    name: product.name,
-    imageUrl: product.imageUrl,
-    quantity,
-    // Snapshot the unit price so a later substitution refund uses the amount
-    // actually charged, not today's catalog price.
-    price: product.price,
-    substitutionPreference:
-      substitutionPreferences?.[product.id] ?? DEFAULT_SUBSTITUTION_PREFERENCE,
-  }));
+  const items: OrderItem[] = cart.items.map((line) => {
+    const { product, quantity } = line;
+    return {
+      productId: product.id,
+      name: product.name,
+      imageUrl: product.imageUrl,
+      quantity,
+      // Snapshot the unit price so a later substitution refund uses the amount
+      // actually charged, not today's catalog price.
+      price: product.price,
+      substitutionPreference:
+        substitutionPreferences?.[product.id] ?? DEFAULT_SUBSTITUTION_PREFERENCE,
+      // Snapshot the product's tax exemption and this line's VAT share — both at
+      // purchase time, so a later catalog or rate change can't rewrite the record.
+      taxExempt: product.taxExempt,
+      taxAmount: lineTaxAmount(cart, line),
+    };
+  });
 
   // The order's id, minted here rather than by the repository, because the stock
   // claimed below is attributed to this order and the claim has to happen before
@@ -149,6 +157,8 @@ export async function placeOrder(
       shipping: cart.shipping,
       discount: cart.discount,
       total: cart.total,
+      taxAmount: cart.taxAmount,
+      taxRate: cart.taxRate,
       deliveryDate,
       deliveryWindowId: window.id,
       deliveryWindow: slotLabel(deliveryDate, window),

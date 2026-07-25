@@ -16,6 +16,7 @@ import {
   userRepository,
   adminNotificationRepository,
   emailSender,
+  taxSettingsRepository,
 } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
@@ -92,12 +93,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const promo = parsed.data.promo
       ? await new FindPromoCode(promoCodeRepository).execute(parsed.data.promo)
       : null;
+    const taxSettings = await taxSettingsRepository.get();
     const cart = await new GetCart(cartRepository).execute({
       userId: session.user.id,
       promo,
       // Snapshot the order in the locale the shopper is checking out in — matches
       // what they saw, and is the fallback the order-history re-resolve falls back to.
       locale: getRequestLocale(request),
+      taxRatePercent: taxSettings.enabled ? taxSettings.ratePercent : null,
     });
 
     // Collapse the per-line substitution choices into a productId→preference map

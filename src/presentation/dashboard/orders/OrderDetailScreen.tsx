@@ -181,6 +181,11 @@ export async function OrderDetailScreen({
               <span className="text-body-b7 text-muted-foreground">{t("total")}</span>
               <span className="text-body-b5 text-foreground">{formatMoney(orderNetPaid(order), locale)}</span>
             </div>
+            {order.taxAmount != null && (
+              <p className="mt-1 text-end text-body-b9 text-muted-foreground">
+                {t("includesVat", { amount: formatMoney(order.taxAmount, locale) })}
+              </p>
+            )}
           </section>
 
           {/* Under the order itself: above is what the order is now, this is every
