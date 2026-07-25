@@ -34,7 +34,7 @@ export class UpdateCategory {
 
     const updated = await this.categoryRepo.update(
       id,
-      { name, slug, iconUrl: input.iconUrl, translations: input.translations },
+      { name, slug, iconUrl: input.iconUrl, isActive: input.isActive, translations: input.translations },
       (saved) => {
         const changes = diffFields(categorySnapshot(previous), categorySnapshot(saved));
         if (changes.length === 0) return null;

@@ -1,7 +1,8 @@
 import type { Category } from "@/src/domain/entities/Category";
-import { apiDelete, apiPost, apiPut } from "@/src/lib/api/client";
+import { apiDelete, apiPatch, apiPost, apiPut } from "@/src/lib/api/client";
 import { categoryResponseSchema } from "@/src/presentation/category/category-response-schema";
 import type { CategoryFormInput } from "@/src/contracts/category-schema";
+import { bulkResultSchema, type BulkResult, type CategoryBulkAction } from "@/src/contracts/bulk-action-schema";
 
 /**
  * Typed client for the category REST *mutations*. UI components call these instead
@@ -21,5 +22,15 @@ export const categoriesApi = {
 
   remove(id: string): Promise<void> {
     return apiDelete(`/categories/${id}`);
+  },
+
+  /**
+   * Apply one change to a selection of categories — activate or deactivate.
+   * Resolves with how many categories actually changed, which can be fewer than
+   * were selected (some already held the value), so the caller reports the
+   * returned count rather than the size of its own selection.
+   */
+  bulkUpdate(ids: readonly string[], action: CategoryBulkAction): Promise<BulkResult> {
+    return apiPatch("/admin/categories/bulk", { ids, action }, bulkResultSchema);
   },
 };

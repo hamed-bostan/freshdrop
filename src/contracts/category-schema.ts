@@ -17,6 +17,9 @@ export const categoryFormSchema = z
       .max(60, "slugTooLong")
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "slugFormat"),
     iconUrl: z.string().min(1, "iconRequired").url("imageInvalid"),
+    // A new category is active by default, matching the column — an operator who
+    // wants to stage one deactivates it deliberately.
+    isActive: z.boolean().default(true),
     // Optional Persian (fa) name override; blank means "no fa translation".
     faName: z
       .string()

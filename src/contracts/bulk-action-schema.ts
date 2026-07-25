@@ -42,6 +42,24 @@ export type ProductBulkAction = z.infer<typeof productBulkActionSchema>;
 export type ProductBulkRequest = z.infer<typeof productBulkRequestSchema>;
 
 /**
+ * What to do to the selected categories: activate or deactivate. No bulk
+ * delete — deleting a category is destructive and rare enough to stay a
+ * per-row confirm, so the union has no variant for it to route around.
+ */
+export const categoryBulkActionSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("activate") }),
+  z.object({ type: z.literal("deactivate") }),
+]);
+
+export const categoryBulkRequestSchema = z.object({
+  ids: idsField,
+  action: categoryBulkActionSchema,
+});
+
+export type CategoryBulkAction = z.infer<typeof categoryBulkActionSchema>;
+export type CategoryBulkRequest = z.infer<typeof categoryBulkRequestSchema>;
+
+/**
  * Bulk review moderation. `status` matches `reviewModerationSchema` — an admin can
  * only approve or reject, since "pending" is the submission-time default and not a
  * decision anyone makes.

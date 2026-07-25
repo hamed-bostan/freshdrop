@@ -1,9 +1,14 @@
 import type { Category } from "@/src/domain/entities/Category";
 import type { CategoryTranslationInput } from "@/src/domain/repositories/ICategoryRepository";
+import { MAX_PAGE_SIZE, type Page } from "@/src/domain/entities/Pagination";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { pageResponseSchema } from "@/src/lib/api/page-response-schema";
 import { serverApiGet } from "@/src/lib/api/server-client";
 import { categoryListResponseSchema, categoryResponseSchema } from "@/src/presentation/category/category-response-schema";
 import { categoryTranslationListResponseSchema } from "./category-translation-response-schema";
+
+/** What `GET /api/admin/categories` promises: a page of categories plus the total behind it. */
+const categoryPageResponseSchema = pageResponseSchema(categoryResponseSchema);
 
 /**
  * Server-side category reads for the dashboard (BFF). Fetched during server
@@ -16,6 +21,26 @@ export const categoriesServerApi = {
     // Localized: the admin list is for reading, so it follows the active locale
     // (falling back to the base name where a category has no translation yet).
     return serverApiGet("/categories", categoryListResponseSchema);
+  },
+
+  /**
+   * The category-management list, with the search/status filters and ordering the
+   * caller's query string carries.
+   *
+   * The management screen has no pager — categories are a hand-authored, human-
+   * sized list — so `pageSize` is forced to the maximum rather than taken from
+   * `params`, and one call returns everything matching the filter.
+   *
+   * `params` is forwarded verbatim so the screen never has to know the param
+   * names — it hands over the URL it was rendered with and the route parses it
+   * back through the same contract that built it.
+   */
+  listPage(params: URLSearchParams): Promise<Page<Category>> {
+    const merged = new URLSearchParams(params);
+    merged.set("pageSize", String(MAX_PAGE_SIZE));
+    return serverApiGet("/admin/categories", categoryPageResponseSchema, {
+      params: Object.fromEntries(merged),
+    });
   },
 
   /**

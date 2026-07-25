@@ -27,7 +27,7 @@ export class CreateCategory {
 
     // The entry commits with the category — see `AuditHook`.
     return this.categoryRepo.create(
-      { name, slug, iconUrl: input.iconUrl, translations: input.translations },
+      { name, slug, iconUrl: input.iconUrl, isActive: input.isActive, translations: input.translations },
       (created) => ({
         actorId: actor.id,
         actorName: actor.name,

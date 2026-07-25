@@ -1,6 +1,10 @@
 import { Prisma } from "@prisma/client";
+import type { AdminCategoryFilters, AdminCategorySort } from "@/src/domain/entities/AdminCategoryFilters";
 import type { Category } from "@/src/domain/entities/Category";
+import { createPage, toSkipTake, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
 import type {
+  BulkCategoryChange,
+  BulkCategoryUpdate,
   CategoryTranslationInput,
   ICategoryRepository,
   NewCategory,
@@ -18,19 +22,66 @@ import { recordAudit } from "./writeActivityEntry";
 export class PrismaCategoryRepository implements ICategoryRepository {
   async getAll(locale?: string): Promise<Category[]> {
     const rows = await prisma.category.findMany({ orderBy: { createdAt: "asc" } });
-    return localizeCategories(rows.map(toCategory), locale);
+    const categories = await withProductCounts(rows.map(toCategory));
+    return localizeCategories(categories, locale);
+  }
+
+  /**
+   * One page of the category-management list.
+   *
+   * `productCount` isn't a column, so ordering by it can't be pushed into the
+   * query. Ordering by `name` also can't be pushed down once a `locale` is in
+   * play: the visible name is `localizeCategories`'s overlay, and sorting by
+   * the canonical column first would order fa results by their English name.
+   * Both cases fetch every match, sort in memory once counts (and, for `name`,
+   * translations) are attached, then slice — the category table is small
+   * enough, an operator's hand-authored taxonomy rather than a generated one,
+   * that this stays cheap.
+   *
+   * `createdAt`, and `name` with no locale (the base-locale admin view), sort
+   * on a real column with nothing overlaid afterward, so the DB does the
+   * ordering and paging directly and counts are only computed for the rows
+   * actually returned.
+   */
+  async listPage(
+    filters: AdminCategoryFilters,
+    page: PageRequest<AdminCategorySort>,
+    locale?: string,
+  ): Promise<Page<Category>> {
+    const where = adminWhere(filters);
+    const sort = page.sort ?? "name";
+    const canPushSort = sort === "createdAt" || (sort === "name" && !locale);
+
+    if (!canPushSort) {
+      const rows = await prisma.category.findMany({ where });
+      const categories = await localizeCategories(await withProductCounts(rows.map(toCategory)), locale);
+      const sorted = categories.slice().sort(adminComparator(page));
+      const { skip, take } = toSkipTake(page);
+      return createPage(sorted.slice(skip, skip + take), sorted.length, page);
+    }
+
+    const { skip, take } = toSkipTake(page);
+    const direction = page.direction === "desc" ? "desc" : "asc";
+    const [rows, total] = await Promise.all([
+      prisma.category.findMany({ where, orderBy: { [sort]: direction }, skip, take }),
+      prisma.category.count({ where }),
+    ]);
+    const categories = await localizeCategories(await withProductCounts(rows.map(toCategory)), locale);
+    return createPage(categories, total, page);
   }
 
   async getById(id: string, locale?: string): Promise<Category | null> {
     const row = await prisma.category.findUnique({ where: { id } });
     if (!row) return null;
-    return (await localizeCategories([toCategory(row)], locale))[0];
+    const [category] = await withProductCounts([toCategory(row)]);
+    return (await localizeCategories([category], locale))[0];
   }
 
   async getBySlug(slug: string, locale?: string): Promise<Category | null> {
     const row = await prisma.category.findUnique({ where: { slug } });
     if (!row) return null;
-    return (await localizeCategories([toCategory(row)], locale))[0];
+    const [category] = await withProductCounts([toCategory(row)]);
+    return (await localizeCategories([category], locale))[0];
   }
 
   async create(input: NewCategory, audit?: AuditHook<Category>): Promise<Category> {
@@ -39,11 +90,13 @@ export class PrismaCategoryRepository implements ICategoryRepository {
     try {
       const row = await prisma.$transaction(async (tx) => {
         const created = await tx.category.create({ data });
-        await recordAudit(tx, toCategory(created), audit);
+        // `productCount` is a placeholder here: the audit hook (see `categorySnapshot`)
+        // never reads it, and a fresh row has nothing referencing it yet anyway.
+        await recordAudit(tx, { ...toCategory(created), productCount: 0 }, audit);
         return created;
       });
       await replaceCategoryTranslations(row.id, translations);
-      return toCategory(row);
+      return { ...toCategory(row), productCount: 0 };
     } catch (error) {
       throw toDomainError(error);
     }
@@ -54,11 +107,13 @@ export class PrismaCategoryRepository implements ICategoryRepository {
     try {
       const row = await prisma.$transaction(async (tx) => {
         const updated = await tx.category.update({ where: { id }, data });
-        await recordAudit(tx, toCategory(updated), audit);
+        // `productCount` is a placeholder — the audit hook's `categorySnapshot` never reads it.
+        await recordAudit(tx, { ...toCategory(updated), productCount: 0 }, audit);
         return updated;
       });
       await replaceCategoryTranslations(row.id, translations);
-      return toCategory(row);
+      const [category] = await withProductCounts([toCategory(row)]);
+      return category;
     } catch (error) {
       throw toDomainError(error);
     }
@@ -83,11 +138,118 @@ export class PrismaCategoryRepository implements ICategoryRepository {
       throw toDomainError(error);
     }
   }
+
+  /** Mirrors `PrismaProductRepository.applyBulkChange` — see that method for the shape's rationale. */
+  async applyBulkChange(
+    ids: readonly string[],
+    change: BulkCategoryChange,
+    audit?: AuditHook<BulkCategoryUpdate>,
+  ): Promise<BulkCategoryUpdate[]> {
+    if (ids.length === 0) return [];
+
+    return prisma.$transaction(async (tx) => {
+      const targets = await tx.category.findMany({
+        where: { id: { in: [...ids] }, NOT: { [change.field]: change.value } },
+      });
+      if (targets.length === 0) return [];
+
+      const targetIds = targets.map((row) => row.id);
+      await tx.category.updateMany({
+        where: { id: { in: targetIds } },
+        data: { [change.field]: change.value },
+      });
+
+      const written = await tx.category.findMany({ where: { id: { in: targetIds } } });
+      const counts = await tx.product.groupBy({
+        by: ["categoryId"],
+        where: { categoryId: { in: targetIds } },
+        _count: { _all: true },
+      });
+      const countById = new Map(counts.map((row) => [row.categoryId, row._count._all]));
+      const previousById = new Map(
+        targets.map((row) => [row.id, { ...toCategory(row), productCount: countById.get(row.id) ?? 0 }]),
+      );
+
+      const updates: BulkCategoryUpdate[] = written.map((row) => ({
+        category: { ...toCategory(row), productCount: countById.get(row.id) ?? 0 },
+        previous: previousById.get(row.id)!,
+      }));
+
+      // One entry per category, inside the same transaction as the writes — so the
+      // batch is atomic and each category's own activity panel explains its state.
+      for (const update of updates) {
+        await recordAudit(tx, update, audit);
+      }
+
+      return updates;
+    });
+  }
 }
 
-/** Map a Prisma row to the domain entity (dropping DB-only timestamps). */
-function toCategory(row: { id: string; name: string; slug: string; iconUrl: string }): Category {
-  return { id: row.id, name: row.name, slug: row.slug, iconUrl: row.iconUrl };
+/**
+ * Map a Prisma row to the domain entity. `productCount` isn't a column on this
+ * row — every caller must run the result through {@link withProductCounts}
+ * (or, for a just-created row, knows it's zero) before returning it.
+ */
+function toCategory(row: {
+  id: string;
+  name: string;
+  slug: string;
+  iconUrl: string;
+  isActive: boolean;
+  createdAt: Date;
+}): Omit<Category, "productCount"> {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    iconUrl: row.iconUrl,
+    isActive: row.isActive,
+    createdAt: row.createdAt,
+  };
+}
+
+/**
+ * Attach each category's live product count. `categoryId` is a plain field,
+ * not a Prisma relation (see the schema comment — products and categories
+ * stay loosely coupled), so this is a manual `groupBy` rather than an
+ * `_count` include.
+ */
+async function withProductCounts(categories: Omit<Category, "productCount">[]): Promise<Category[]> {
+  if (categories.length === 0) return [];
+
+  const counts = await prisma.product.groupBy({
+    by: ["categoryId"],
+    where: { categoryId: { in: categories.map((c) => c.id) } },
+    _count: { _all: true },
+  });
+  const countById = new Map(counts.map((row) => [row.categoryId, row._count._all]));
+  return categories.map((category) => ({ ...category, productCount: countById.get(category.id) ?? 0 }));
+}
+
+/** `WHERE` for the management list — name search and active/inactive status, both optional. */
+function adminWhere(filters: AdminCategoryFilters): Prisma.CategoryWhereInput {
+  const and: Prisma.CategoryWhereInput[] = [];
+
+  if (filters.query) and.push({ name: { contains: filters.query, mode: "insensitive" } });
+  if (filters.status) and.push({ isActive: filters.status === "active" });
+
+  return and.length ? { AND: and } : {};
+}
+
+/** In-memory comparator for the management list's sort — see `listPage` for why this isn't a DB `ORDER BY`. */
+function adminComparator(page: PageRequest<AdminCategorySort>): (a: Category, b: Category) => number {
+  const direction = page.direction === "desc" ? -1 : 1;
+  return (a, b) => {
+    switch (page.sort) {
+      case "productCount":
+        return (a.productCount - b.productCount) * direction;
+      case "createdAt":
+        return (a.createdAt.getTime() - b.createdAt.getTime()) * direction;
+      default:
+        return a.name.localeCompare(b.name) * direction;
+    }
+  };
 }
 
 /**

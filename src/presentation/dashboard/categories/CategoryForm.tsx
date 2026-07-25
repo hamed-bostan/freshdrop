@@ -2,11 +2,11 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@/src/domain/entities/Category";
 import type { CategoryTranslationInput } from "@/src/domain/repositories/ICategoryRepository";
-import { Button, Field, FormMessage, Input, RequiredMark, Tabs, TabsContent, TabsList, TabsTrigger, TextField } from "@/src/presentation/design-system";
+import { Button, Field, FormMessage, Input, RequiredMark, Switch, Tabs, TabsContent, TabsList, TabsTrigger, TextField } from "@/src/presentation/design-system";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
@@ -54,9 +54,10 @@ export function CategoryForm(props: CategoryFormProps) {
             name: props.category.name,
             slug: props.category.slug,
             iconUrl: props.category.iconUrl,
+            isActive: props.category.isActive,
             faName: props.translations.find((translation) => translation.locale === "fa")?.name ?? "",
           }
-        : { name: "", slug: "", iconUrl: "", faName: "" },
+        : { name: "", slug: "", iconUrl: "", isActive: true, faName: "" },
   });
 
   // Mirror the name into the slug until the user edits the slug directly (and
@@ -162,6 +163,27 @@ export function CategoryForm(props: CategoryFormProps) {
       </Field>
       {/* Keeps iconUrl registered (set imperatively by IconUpload) so it's tracked + submitted. */}
       <input type="hidden" {...register("iconUrl")} />
+
+      <Controller
+        control={control}
+        name="isActive"
+        render={({ field }) => (
+          <div className="flex items-center justify-between rounded-card-md border border-border px-4 py-3">
+            <div>
+              <label htmlFor="isActive" className="text-body-b7 text-input-foreground">
+                {t("activeLabel")}
+              </label>
+              <p className="text-body-b10 text-muted-foreground">{t("activeDescription")}</p>
+            </div>
+            <Switch
+              id="isActive"
+              checked={field.value}
+              onCheckedChange={field.onChange}
+              aria-label={t("activeAria")}
+            />
+          </div>
+        )}
+      />
 
       {errors.root?.message && (
         <FormMessage size="md">{errors.root.message}</FormMessage>
