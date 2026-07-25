@@ -47,6 +47,8 @@ export const PERMISSIONS = [
   "activity.view",
   /** Grant and revoke dashboard access, and transfer ownership. Owner only. */
   "team.manage",
+  /** Change store-wide configuration — currently the VAT rate. Admin and owner. */
+  "settings.write",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -83,6 +85,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     "reviews.moderate",
     "promotions.write",
     "activity.view",
+    "settings.write",
   ],
   owner: [
     "dashboard.view",
@@ -94,6 +97,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     "promotions.write",
     "activity.view",
     "team.manage",
+    "settings.write",
   ],
 };
 

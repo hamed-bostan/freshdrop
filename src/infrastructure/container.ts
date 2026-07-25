@@ -26,6 +26,7 @@ import type { IAnalyticsRepository } from "@/src/domain/repositories/IAnalyticsR
 import type { IStockMovementLog } from "@/src/domain/repositories/IStockMovementLog";
 import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
 import type { ITeamNotifier } from "@/src/domain/repositories/ITeamNotifier";
+import type { ITaxSettingsRepository } from "@/src/domain/repositories/ITaxSettingsRepository";
 
 import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepository";
 import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
@@ -58,6 +59,7 @@ import { MockAuthRepository } from "./repositories/mock/MockAuthRepository";
 import { SmsIrAuthRepository } from "./repositories/SmsIrAuthRepository";
 import { NominatimGeocodingRepository } from "./repositories/NominatimGeocodingRepository";
 import { SupabaseImageStorageRepository } from "./repositories/SupabaseImageStorageRepository";
+import { PrismaTaxSettingsRepository } from "./repositories/PrismaTaxSettingsRepository";
 
 const SMS_IR_DEFAULT_TEMPLATE_ID = 562447;
 
@@ -176,6 +178,9 @@ export const promoCodeRepository: IPromoCodeRepository = new PrismaPromoCodeRepo
 // channel is available — no use-case changes.
 export const stockAlertRepository: IStockAlertRepository = new PrismaStockAlertRepository();
 export const stockAlertNotifier: IStockAlertNotifier = new LoggingStockAlertNotifier();
+// The store's VAT configuration — real data, PostgreSQL via Prisma. A single row,
+// created lazily with its schema defaults (rate 0, disabled) on first read.
+export const taxSettingsRepository: ITaxSettingsRepository = new PrismaTaxSettingsRepository();
 
 // Real SMS OTP when an SMS.ir key is configured; the in-memory mock otherwise so
 // local dev works without credentials (the mock surfaces the code in the UI).

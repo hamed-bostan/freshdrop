@@ -65,6 +65,9 @@
     "priceRequired": "Enter a price.",
     "productMissing": "Missing product.",
     "productRequired": "A product is required.",
+    "rateInvalid": "Enter a valid rate.",
+    "rateRange": "Enter a rate between 0 and 100.",
+    "rateRequired": "Enter a rate.",
     "ratingRequired": "Pick a rating.",
     "replacementRequired": "Pick a replacement product.",
     "returnDecisionInvalid": "Pick approve or reject.",
@@ -559,6 +562,7 @@
     "navCustomers": "Customers",
     "navAnalytics": "Analytics",
     "navTeam": "Team",
+    "navSettings": "Settings",
     "admin": "Admin",
     "viewStore": "View store",
     "errorTitle": "Something went wrong",
@@ -1294,6 +1298,17 @@
       "owner": "Owner",
       "customer": "No access"
     }
+  },
+  "dashSettings": {
+    "heading": "Settings",
+    "summary": "Store-wide configuration.",
+    "taxHeading": "Tax",
+    "taxDescription": "Displayed prices already include VAT. Set the rate to start reporting it — enabling this changes no price and no order total.",
+    "rateLabel": "VAT rate (%)",
+    "enabledLabel": "Apply VAT",
+    "save": "Save",
+    "saving": "Saving…",
+    "saveError": "Couldn't save. Please try again."
   },
   "dashPromoCodes": {
     "heading": "Promo codes",

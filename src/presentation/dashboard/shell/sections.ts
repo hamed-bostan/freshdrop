@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Package,
   PercentCircle,
+  Settings,
   ShieldCheck,
   Star,
   Tag,
@@ -43,7 +44,8 @@ export type DashboardSectionLabelKey =
   | "navPromoCodes"
   | "navDeliverySlots"
   | "navActivity"
-  | "navTeam";
+  | "navTeam"
+  | "navSettings";
 
 export type DashboardSection = {
   href: string;
@@ -84,6 +86,9 @@ const SECTIONS = [
   // owner (see `activity-visibility`), so a plain admin gets a real page rather
   // than a redirect.
   { href: "/dashboard/team", labelKey: "navTeam", icon: ShieldCheck, needs: "team.manage", group: "groupStore" },
+  // Admin and owner — configuration, not access control, so it doesn't share
+  // Team's owner-only gate.
+  { href: "/dashboard/settings", labelKey: "navSettings", icon: Settings, needs: "settings.write", group: "groupStore" },
 ] as const satisfies readonly DashboardSection[];
 
 /** The groups in sidebar order. */

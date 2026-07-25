@@ -42,6 +42,23 @@ model CategoryTranslation {
   @@map("category_translations")
 }
 
+// The store's tax configuration — a typed singleton (`id` is always the literal
+// "singleton"), not a generic key-value settings table: validation belongs at
+// the type boundary, not scattered across every reader. Single VAT rate, no
+// per-region variants (Iran VAT only). Ships with `enabled = false`; nothing
+// reads this table yet.
+model TaxSetting {
+  id          String   @id @default("singleton")
+  ratePercent Float    @default(0) @map("rate_percent")
+  enabled     Boolean  @default(false)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  // Plain reference to `users.id`, loose-coupled like the rest of the schema —
+  // who last changed the rate, for the settings screen's "last updated by" line.
+  updatedById String?  @map("updated_by_id")
+
+  @@map("tax_settings")
+}
+
 model User {
   // id is the user's normalized phone digits — the stable identifier carried on
   // the Auth.js session (and matched against ADMIN_USER_IDS), so it is supplied
