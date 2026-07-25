@@ -1,10 +1,10 @@
 import Image from "next/image";
 import { getLocale } from "next-intl/server";
-import { ChevronRight, ExternalLink } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { RevenueRankSort } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
-import { Icon, Thumbnail, focusRing } from "@/src/presentation/design-system";
+import { Icon, Thumbnail } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
@@ -73,29 +73,17 @@ export async function RevenueRankPanel({
     <section className="flex h-full flex-col rounded-card-lg border border-border p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-body-b5 text-foreground">{heading}</h2>
-        <div className="flex items-center gap-2">
-          <RevenueRankSortSelect
-            paramName={sortParamName}
-            value={sort}
-            defaultValue="revenue"
-            label={sortLabel}
-            options={sortOptions}
-          />
-          <Link
-            href={viewAllHref}
-            aria-label={viewAllLabel}
-            className={cn(
-              focusRing,
-              "flex size-8 shrink-0 items-center justify-center rounded-card-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-            )}
-          >
-            <Icon icon={ExternalLink} size="xs" />
-          </Link>
-        </div>
+        <RevenueRankSortSelect
+          paramName={sortParamName}
+          value={sort}
+          defaultValue="revenue"
+          label={sortLabel}
+          options={sortOptions}
+        />
       </div>
 
       {rows.length > 0 ? (
-        <ol className="mt-4 flex flex-1 flex-col gap-1">
+        <ol className="mt-5 flex flex-1 flex-col gap-3">
           {rows.map((row, index) => {
             // Only the leader gets picked out — a proportional bar on every row
             // reads as a bar chart, but the question this panel answers is just
@@ -105,30 +93,28 @@ export async function RevenueRankPanel({
             const content = (
               <span className="flex w-full items-center gap-3">
                 {row.imageUrl ? (
-                  <Thumbnail as="span" className="size-9 shrink-0">
+                  <Thumbnail as="span" className="size-12 shrink-0">
                     <Image
                       src={row.imageUrl}
                       alt=""
-                      width={36}
-                      height={36}
+                      width={48}
+                      height={48}
                       className="size-full object-contain"
                     />
                   </Thumbnail>
                 ) : null}
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-body-b7 text-foreground">{row.label}</span>
+                  <span className="block truncate text-body-b5 text-foreground">{row.label}</span>
                   <span className="block text-body-b8 text-muted-foreground">
                     {unitsLabel(formatNumber(row.units, locale))}
                   </span>
                 </span>
-                <span className="text-body-b7 text-foreground">
-                  {formatMoney(row.revenue, locale)}
-                </span>
+                <span className="text-body-b5 text-primary">{formatMoney(row.revenue, locale)}</span>
               </span>
             );
 
             const frame = cn(
-              "flex items-center rounded-card-md p-2",
+              "flex items-center rounded-card-lg p-4",
               isLeader ? "bg-accent" : "transition-colors hover:bg-muted",
             );
 
@@ -155,7 +141,7 @@ export async function RevenueRankPanel({
           className="inline-flex items-center gap-1 text-body-b8 text-primary hover:underline"
         >
           {viewAllLabel}
-          <Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" />
+          <Icon icon={ArrowRight} size="xs" className="rtl:-scale-x-100" />
         </Link>
       </div>
     </section>

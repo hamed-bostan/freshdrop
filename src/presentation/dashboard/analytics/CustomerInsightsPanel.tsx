@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { ChevronRight, Minus, TrendingDown, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, Minus, TrendingDown, TrendingUp, Users } from "lucide-react";
 import { Link } from "@/src/i18n/navigation";
 import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
@@ -59,16 +59,16 @@ export function CustomerInsightsPanel({
         <Icon icon={Users} size="sm" className="text-muted-foreground" />
       </div>
 
-      <ul className="mt-4 flex flex-1 flex-col gap-4">
+      <ul className="mt-5 flex flex-1 flex-col gap-3">
         {metrics.map((metric) => (
-          <li key={metric.key} className="flex flex-col gap-1">
+          <li key={metric.key} className="flex flex-col gap-1 rounded-card-lg border border-border p-4">
             <span className="text-body-b8 text-muted-foreground">{metric.label}</span>
             <span className="flex items-center justify-between gap-3">
-              <span className="text-heading-h3 text-foreground">{metric.value}</span>
+              <span className="text-heading-h2 text-foreground">{metric.value}</span>
               {metric.delta ? (
                 <span
                   className={cn(
-                    "inline-flex items-center gap-1 text-body-b8",
+                    "inline-flex items-center gap-1 text-body-b7",
                     DELTA_TEXT[metric.deltaTone ?? "flat"],
                   )}
                 >
@@ -87,7 +87,7 @@ export function CustomerInsightsPanel({
           className="inline-flex items-center gap-1 text-body-b8 text-primary hover:underline"
         >
           {viewAllLabel}
-          <Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" />
+          <Icon icon={ArrowRight} size="xs" className="rtl:-scale-x-100" />
         </Link>
       </div>
     </section>
