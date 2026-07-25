@@ -168,7 +168,10 @@ export async function DashboardOverviewScreen({
     imageUrl: product.imageUrl,
     units: product.units,
     revenue: product.revenue,
-    href: `/dashboard/products/${product.productId}/edit`,
+    // The catalog list, filtered to this product by name — same "browse, don't
+    // mutate" destination as a Top Categories row, rather than dropping the
+    // admin straight into its edit form just for glancing at a bestseller.
+    href: `/dashboard/products?q=${encodeURIComponent(product.name)}`,
   }));
 
   const topCategories: RevenueRankRow[] = analytics.topCategories.map((category) => ({
