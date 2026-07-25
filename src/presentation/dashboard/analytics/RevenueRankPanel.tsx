@@ -72,8 +72,8 @@ export async function RevenueRankPanel({
 
   return (
     <section className="flex h-full flex-col rounded-card-lg border border-border p-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-body-b5 text-foreground">{heading}</h2>
+      <div className="flex items-center justify-between gap-3 min-h-9">
+        <h2 className="text-body-b5 text-foreground ">{heading}</h2>
         <div className="flex items-center gap-2">
           <RevenueRankSortSelect
             paramName={sortParamName}
