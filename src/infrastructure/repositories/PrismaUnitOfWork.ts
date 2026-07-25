@@ -3,6 +3,7 @@ import { prisma } from "@/src/infrastructure/prisma/client";
 import { PrismaDeliverySlotRepository } from "./PrismaDeliverySlotRepository";
 import { PrismaOrderRepository } from "./PrismaOrderRepository";
 import { PrismaProductRepository } from "./PrismaProductRepository";
+import { PrismaRefundRepository } from "./PrismaRefundRepository";
 import { PrismaWalletRepository } from "./PrismaWalletRepository";
 
 /**
@@ -31,6 +32,7 @@ export class PrismaUnitOfWork implements IUnitOfWork {
         products: new PrismaProductRepository(tx),
         wallets: new PrismaWalletRepository(tx),
         slots: new PrismaDeliverySlotRepository(tx),
+        refunds: new PrismaRefundRepository(tx),
       } satisfies TransactionalRepositories),
     );
   }

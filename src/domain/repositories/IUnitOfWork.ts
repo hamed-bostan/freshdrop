@@ -1,23 +1,26 @@
 import type { IDeliverySlotRepository } from "./IDeliverySlotRepository";
 import type { IOrderRepository } from "./IOrderRepository";
 import type { IProductRepository } from "./IProductRepository";
+import type { IRefundRepository } from "./IRefundRepository";
 import type { IWalletRepository } from "./IWalletRepository";
 
 /**
  * The repositories a unit of work hands to its callback, all bound to the same
  * transaction.
  *
- * Only the four that participate in an operation claiming or releasing something
- * scarce — stock, delivery capacity, money. This isn't a registry of everything: a
- * use-case that needs one repository should keep taking that repository, because a
- * unit of work is a claim about atomicity and asking for one you don't need makes
- * that claim where it isn't true.
+ * Only the ones that participate in an operation claiming or releasing something
+ * scarce — stock, delivery capacity, money — plus `refunds`, the ledger row that
+ * makes a wallet credit auditable (see `Refund`). This isn't a registry of
+ * everything: a use-case that needs one repository should keep taking that
+ * repository, because a unit of work is a claim about atomicity and asking for
+ * one you don't need makes that claim where it isn't true.
  */
 export type TransactionalRepositories = {
   orders: IOrderRepository;
   products: IProductRepository;
   wallets: IWalletRepository;
   slots: IDeliverySlotRepository;
+  refunds: IRefundRepository;
 };
 
 /**

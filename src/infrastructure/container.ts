@@ -27,6 +27,7 @@ import type { IStockMovementLog } from "@/src/domain/repositories/IStockMovement
 import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
 import type { ITeamNotifier } from "@/src/domain/repositories/ITeamNotifier";
 import type { ITaxSettingsRepository } from "@/src/domain/repositories/ITaxSettingsRepository";
+import type { IRefundRepository } from "@/src/domain/repositories/IRefundRepository";
 
 import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepository";
 import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
@@ -60,6 +61,7 @@ import { SmsIrAuthRepository } from "./repositories/SmsIrAuthRepository";
 import { NominatimGeocodingRepository } from "./repositories/NominatimGeocodingRepository";
 import { SupabaseImageStorageRepository } from "./repositories/SupabaseImageStorageRepository";
 import { PrismaTaxSettingsRepository } from "./repositories/PrismaTaxSettingsRepository";
+import { PrismaRefundRepository } from "./repositories/PrismaRefundRepository";
 
 const SMS_IR_DEFAULT_TEMPLATE_ID = 562447;
 
@@ -181,6 +183,13 @@ export const stockAlertNotifier: IStockAlertNotifier = new LoggingStockAlertNoti
 // The store's VAT configuration — real data, PostgreSQL via Prisma. A single row,
 // created lazily with its schema defaults (rate 0, disabled) on first read.
 export const taxSettingsRepository: ITaxSettingsRepository = new PrismaTaxSettingsRepository();
+// The refund ledger — real storage from the start, PostgreSQL via Prisma. No
+// writers yet: `CancelOrder`, `ResolveOrderReturn` and the substitution flow keep
+// crediting wallets directly until phase 5 has them emit a `Refund` row alongside
+// each credit. Exported standalone (like `orderNoteRepository`) for read paths
+// outside a unit of work; `PrismaUnitOfWork` binds its own instance for writers
+// that need it in the same transaction as the order/wallet change it accompanies.
+export const refundRepository: IRefundRepository = new PrismaRefundRepository();
 
 // Real SMS OTP when an SMS.ir key is configured; the in-memory mock otherwise so
 // local dev works without credentials (the mock surfaces the code in the UI).

@@ -292,6 +292,44 @@ model OrderNote {
   @@map("order_notes")
 }
 
+// The auditable record of every wallet credit issued for an order — cancellation,
+// return, substitution, or a discretionary partial refund (phase 7). Additive:
+// existing writers (`CancelOrder`, `ResolveOrderReturn`, the substitution flow)
+// don't emit these yet (see phase 5); this table exists with no readers or
+// writers until then.
+model Refund {
+  id        String   @id @default(uuid())
+  orderId   String   @map("order_id")
+  userId    String   @map("user_id")
+  kind      String
+  // Total credited to the wallet — matches the `addFunds` amount it accompanies.
+  amount    Float
+  taxAmount Float    @default(0) @map("tax_amount")
+  reason    String?
+  actorId   String?  @map("actor_id")
+  actorName String?  @map("actor_name")
+  createdAt DateTime @default(now()) @map("created_at")
+  lines     RefundLine[]
+
+  // The only query: one order's refund history, in the order they were issued.
+  @@index([orderId, createdAt])
+  @@map("refunds")
+}
+
+model RefundLine {
+  id          String @id @default(uuid())
+  refundId    String @map("refund_id")
+  orderItemId String @map("order_item_id")
+  productId   String @map("product_id")
+  quantity    Int?
+  amount      Float
+  taxAmount   Float  @default(0) @map("tax_amount")
+  refund      Refund @relation(fields: [refundId], references: [id], onDelete: Cascade)
+
+  @@index([refundId])
+  @@map("refund_lines")
+}
+
 model OrderItem {
   id        String @id @default(uuid())
   orderId   String @map("order_id")
