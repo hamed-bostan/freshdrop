@@ -39,7 +39,7 @@ export default async function DashboardAnalyticsPage({ searchParams }: Dashboard
 
   // The one difference from the overview's own fetch of the same endpoint: this
   // page asks for a fuller ranking (up to `ANALYTICS_RANK_LIMIT` rows) to page
-  // through, rather than the overview's five-row teaser.
+  // through, rather than the overview's three-row teaser.
   const rankParams = new URLSearchParams(params);
   rankParams.set("rankLimit", String(ANALYTICS_RANK_LIMIT));
   const analytics = await analyticsServerApi.getOverview(rankParams);

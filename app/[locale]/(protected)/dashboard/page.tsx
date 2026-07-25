@@ -30,6 +30,12 @@ const COUNT_ONLY = "page=1&pageSize=1";
 /** How many of the latest orders the recent-orders mini-list shows. */
 const RECENT_ORDERS_COUNT = 5;
 
+/**
+ * How many rows the two ranked panels show — matched to Customer Insights'
+ * fixed three metrics so all three cards in that row land on the same height.
+ */
+const OVERVIEW_RANK_LIMIT = 3;
+
 type DashboardPageProps = {
   /** The period the picker writes: `range` (a preset) or `from`/`to`. */
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -70,9 +76,12 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   // filtered endpoints; the recent orders are literally the first five. The
   // overview used to start by fetching every order in the store's history — see
   // `IAnalyticsRepository`.
+  const rankParams = new URLSearchParams(params);
+  rankParams.set("rankLimit", String(OVERVIEW_RANK_LIMIT));
+
   const [analytics, recentOrders, reviews, needsRestock, staleOrders, overdueOrders] =
     await Promise.all([
-      analyticsServerApi.getOverview(params),
+      analyticsServerApi.getOverview(rankParams),
       ordersServerApi.listPage(new URLSearchParams(`page=1&pageSize=${RECENT_ORDERS_COUNT}`)),
       reviewsServerApi.listPage(new URLSearchParams(COUNT_ONLY)),
       // One read, not two: `needsRestock` is the products list's own name for "low or

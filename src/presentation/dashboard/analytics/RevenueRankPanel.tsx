@@ -1,10 +1,10 @@
 import Image from "next/image";
 import { getLocale } from "next-intl/server";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
 import type { RevenueRankSort } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
-import { Icon, Thumbnail } from "@/src/presentation/design-system";
+import { Icon, Thumbnail, focusRing } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
@@ -45,10 +45,10 @@ type RevenueRankPanelProps = {
  * the same panel with a different noun and the difference between them is one
  * optional thumbnail.
  *
- * Each row carries a proportional bar behind it, scaled to the *leader* rather than
- * to the total. Scaling to the total would make every bar in a healthy, evenly
- * spread catalog a stub, and the question this panel answers is "how far ahead is
- * the top one", which is a comparison between rows.
+ * Every row gets the same flat accent fill — a leaderboard, not a bar chart. A
+ * bar proportional to revenue answers "how far ahead is the top one", which
+ * isn't a question this panel needs to raise; it just needs to say "these are
+ * the top few, in order".
  *
  * Ranked by revenue, not units — see `IAnalyticsRepository.topProducts`. Both are
  * shown, because they disagree in the interesting cases and the disagreement is
@@ -73,23 +73,30 @@ export async function RevenueRankPanel({
     <section className="flex h-full flex-col rounded-card-lg border border-border p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-body-b5 text-foreground">{heading}</h2>
-        <RevenueRankSortSelect
-          paramName={sortParamName}
-          value={sort}
-          defaultValue="revenue"
-          label={sortLabel}
-          options={sortOptions}
-        />
+        <div className="flex items-center gap-2">
+          <RevenueRankSortSelect
+            paramName={sortParamName}
+            value={sort}
+            defaultValue="revenue"
+            label={sortLabel}
+            options={sortOptions}
+          />
+          <Link
+            href={viewAllHref}
+            aria-label={viewAllLabel}
+            className={cn(
+              focusRing,
+              "flex size-8 shrink-0 items-center justify-center rounded-card-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <Icon icon={ExternalLink} size="xs" />
+          </Link>
+        </div>
       </div>
 
       {rows.length > 0 ? (
         <ol className="mt-5 flex flex-1 flex-col gap-3">
-          {rows.map((row, index) => {
-            // Only the leader gets picked out — a proportional bar on every row
-            // reads as a bar chart, but the question this panel answers is just
-            // "who's in front", which a single highlighted row already says.
-            const isLeader = index === 0;
-
+          {rows.map((row) => {
             const content = (
               <span className="flex w-full items-center gap-3">
                 {row.imageUrl ? (
@@ -113,10 +120,7 @@ export async function RevenueRankPanel({
               </span>
             );
 
-            const frame = cn(
-              "flex items-center rounded-card-lg p-4",
-              isLeader ? "bg-accent" : "transition-colors hover:bg-muted",
-            );
+            const frame = "flex items-center rounded-card-lg bg-accent p-4";
 
             return (
               <li key={row.id}>

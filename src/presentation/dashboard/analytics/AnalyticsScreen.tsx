@@ -23,7 +23,7 @@ export const ANALYTICS_RANK_LIMIT = 60;
 export const RANK_PAGE_SIZE = 10;
 
 type AnalyticsScreenProps = {
-  /** Fetched with `rankLimit=ANALYTICS_RANK_LIMIT`, unlike the overview's five-row request. */
+  /** Fetched with `rankLimit=ANALYTICS_RANK_LIMIT`, unlike the overview's three-row request. */
   analytics: AnalyticsOverviewWire;
   from: string;
   to: string;
