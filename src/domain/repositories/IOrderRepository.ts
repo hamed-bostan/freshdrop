@@ -79,6 +79,18 @@ export type IOrderRepository = {
   getById(orderId: string): Promise<Order | null>;
 
   /**
+   * Read `orderId` with a row lock held for the rest of the current transaction,
+   * `refunds` attached — the basis a discretionary refund (phase 7) re-checks
+   * `refundableRemaining` against. Meant to be called only inside
+   * {@link IUnitOfWork.run}: a second call racing the same order blocks until the
+   * first commits, so two concurrent refunds on one order serialize instead of
+   * both reading the same "amount left" and together overrunning the cap. Called
+   * outside a unit of work it degrades to a plain read (nothing is held open to
+   * lock against). `null` when the order doesn't exist.
+   */
+  lockById(orderId: string): Promise<Order | null>;
+
+  /**
    * Persist a newly placed order, returning it with its generated id.
    *
    * `audit` is passed only when a *person other than the customer* placed it — an

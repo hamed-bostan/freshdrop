@@ -450,6 +450,7 @@
       "refundCancelledOrder": "Refund for cancelled order",
       "refundCancelledOrderDelivery": "Refund for cancelled order delivery",
       "refundReturnedOrder": "Refund for returned order",
+      "manualRefund": "Refund issued by support",
       "refundOutOfStock": "Refund for out-of-stock {item}",
       "substitutionSaving": "Substitution saving for {item}"
     }
@@ -1086,6 +1087,16 @@
     "discount": "Discount",
     "refundedToWallet": "Refunded to wallet",
     "netPaid": "Net paid",
+    "refundHeading": "Refund",
+    "refundRemaining": "Up to {amount} left to refund on this order",
+    "issueRefund": "Issue refund",
+    "refundByLine": "By item",
+    "refundByAmount": "By amount",
+    "refundAmountLabel": "Refund amount",
+    "refundReasonPlaceholder": "Reason for this refund…",
+    "refundConfirm": "Refund",
+    "refundPending": "Refunding…",
+    "refundIssueError": "Couldn't issue this refund. Please try again.",
     "viewCustomer": "View customer",
     "commsHeading": "Customer comms",
     "notesHeading": "Internal notes",
@@ -1466,6 +1477,7 @@
         "stageChanged": "{actor} changed the delivery stage of order {entity}",
         "returnResolved": "{actor} resolved the return on order {entity}",
         "itemSubstituted": "{actor} resolved an out-of-stock item on order {entity}",
+        "refundIssued": "{actor} issued a refund on order {entity}",
         "customerNotified": "{actor} messaged the customer about order {entity}",
         "placed": "{actor} placed order {entity}",
         "returnRequested": "{actor} requested a return on order {entity}"

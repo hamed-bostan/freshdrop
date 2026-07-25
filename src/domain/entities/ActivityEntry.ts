@@ -72,6 +72,7 @@ export const ACTIVITY_ACTIONS = [
   "order.stageChanged",
   "order.returnResolved",
   "order.itemSubstituted",
+  "order.refundIssued",
   // The one action here that isn't a change to anything stored — an admin sent the
   // customer a message about their order. Recorded through
   // `IActivityLog.recordEvent` rather than an audit hook, because there is no

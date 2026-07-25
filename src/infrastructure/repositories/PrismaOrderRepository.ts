@@ -117,6 +117,21 @@ export class PrismaOrderRepository implements IOrderRepository {
     return row ? attachRefund(this.db, toOrder(row)) : null;
   }
 
+  async lockById(orderId: string): Promise<Order | null> {
+    return inTransaction(this.db, async (tx) => {
+      // `SELECT ... FOR UPDATE` rather than a Prisma read: Prisma has no lock
+      // clause, and the lock — not the row it returns — is the point. A second
+      // call on the same id blocks here until this transaction commits or rolls
+      // back, which is what makes the caller's re-summed `refunds` trustworthy.
+      const locked = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM orders WHERE id = ${orderId} FOR UPDATE`;
+      if (locked.length === 0) return null;
+
+      const row = await tx.order.findUnique({ where: { id: orderId }, include: ITEMS_INCLUDE });
+      if (!row) return null;
+      return attachRefund(tx, toOrder(row));
+    });
+  }
+
   async createOrder(input: NewOrder, audit?: AuditHook<Order>): Promise<Order> {
     // Wrapped only when there's an entry to write, so checkout's create stays the
     // single statement it has always been. `inTransaction` joins the caller's

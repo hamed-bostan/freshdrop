@@ -13,6 +13,7 @@ import { productListResponseSchema } from "@/src/presentation/product/product-re
 import type { OrderTrackingStageInput } from "@/src/contracts/order-tracking-schema";
 import type { OrderReturnDecisionInput } from "@/src/contracts/order-return-schema";
 import type { OrderSubstitutionInput } from "@/src/contracts/order-substitution-schema";
+import type { IssueRefundInput } from "@/src/contracts/refund-schema";
 import {
   orderNotificationResultSchema,
   type OrderNotificationInput,
@@ -83,5 +84,13 @@ export const ordersApi = {
    */
   bulkUpdate(ids: readonly string[], action: OrderBulkAction): Promise<BulkResult> {
     return apiPatch("/admin/orders/bulk", { ids, action }, bulkResultSchema);
+  },
+
+  /**
+   * Issue a discretionary line-item or bare-amount refund (phase 7). Resolves
+   * with the updated order (its `refunds` ledger includes the new row).
+   */
+  issueRefund(orderId: string, values: IssueRefundInput): Promise<Order> {
+    return apiPost(`/admin/orders/${orderId}/refunds`, values, orderResponseSchema);
   },
 };

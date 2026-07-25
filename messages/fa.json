@@ -450,6 +450,7 @@
       "refundCancelledOrder": "بازپرداخت سفارش لغوشده",
       "refundCancelledOrderDelivery": "بازپرداخت هزینه ارسال سفارش لغوشده",
       "refundReturnedOrder": "بازپرداخت سفارش مرجوعی",
+      "manualRefund": "بازپرداخت صادرشده توسط پشتیبانی",
       "refundOutOfStock": "بازپرداخت کالای ناموجود: {item}",
       "substitutionSaving": "صرفه‌جویی جایگزینی: {item}"
     }
@@ -1086,6 +1087,16 @@
     "discount": "تخفیف",
     "refundedToWallet": "بازپرداخت به کیف پول",
     "netPaid": "پرداخت خالص",
+    "refundHeading": "بازپرداخت",
+    "refundRemaining": "تا {amount} از این سفارش قابل بازپرداخت است",
+    "issueRefund": "صدور بازپرداخت",
+    "refundByLine": "بر اساس کالا",
+    "refundByAmount": "بر اساس مبلغ",
+    "refundAmountLabel": "مبلغ بازپرداخت",
+    "refundReasonPlaceholder": "دلیل این بازپرداخت…",
+    "refundConfirm": "بازپرداخت",
+    "refundPending": "در حال بازپرداخت…",
+    "refundIssueError": "صدور بازپرداخت ممکن نشد. لطفاً دوباره تلاش کنید.",
     "viewCustomer": "مشاهده مشتری",
     "commsHeading": "ارتباط با مشتری",
     "notesHeading": "یادداشت‌های داخلی",
@@ -1466,6 +1477,7 @@
         "stageChanged": "{actor} مرحله ارسال سفارش {entity} را تغییر داد",
         "returnResolved": "{actor} درخواست مرجوعی سفارش {entity} را بررسی کرد",
         "itemSubstituted": "{actor} یک قلم ناموجود سفارش {entity} را تعیین تکلیف کرد",
+        "refundIssued": "{actor} برای سفارش {entity} بازپرداخت صادر کرد",
         "customerNotified": "{actor} درباره سفارش {entity} به مشتری پیام داد",
         "placed": "{actor} سفارش {entity} را ثبت کرد",
         "returnRequested": "{actor} برای سفارش {entity} درخواست مرجوعی داد"

@@ -49,6 +49,14 @@ export const PERMISSIONS = [
   "team.manage",
   /** Change store-wide configuration — currently the VAT rate. Admin and owner. */
   "settings.write",
+  /**
+   * Issue a discretionary refund for an arbitrary amount or set of lines
+   * (phase 7). Deliberately narrower than `orders.fulfill`: approving a *return*
+   * stays on `orders.fulfill` because it's a fixed, full-total refund at a
+   * guarded status with no operator discretion — this permission gates only the
+   * endpoint where an admin picks the amount.
+   */
+  "refunds.issue",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -86,6 +94,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     "promotions.write",
     "activity.view",
     "settings.write",
+    "refunds.issue",
   ],
   owner: [
     "dashboard.view",
@@ -98,6 +107,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     "activity.view",
     "team.manage",
     "settings.write",
+    "refunds.issue",
   ],
 };
 

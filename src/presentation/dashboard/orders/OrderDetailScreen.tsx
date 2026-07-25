@@ -14,6 +14,7 @@ import { deliverySteps, isAdvanceable, nextStage } from "./orderStages";
 import { OrderDeliveryTracker } from "./OrderDeliveryTracker";
 import { OrderStageAdvance } from "./OrderStageAdvance";
 import { OrderReturnControl } from "./OrderReturnControl";
+import { OrderRefundControl } from "./OrderRefundControl";
 import { OrderItemPickControl } from "./OrderItemPickControl";
 import { OrderCommsPanel } from "./OrderCommsPanel";
 import { OrderNotesPanel } from "./OrderNotesPanel";
@@ -38,6 +39,8 @@ type OrderDetailScreenProps = {
   notes: OrderNote[];
   /** Whether the viewer may add one. Every dashboard role can, including support. */
   canNote: boolean;
+  /** Whether the viewer may issue a discretionary refund (phase 7) — admin/owner only. */
+  canIssueRefund: boolean;
 };
 
 /**
@@ -55,6 +58,7 @@ export async function OrderDetailScreen({
   canNotify,
   notes,
   canNote,
+  canIssueRefund,
 }: OrderDetailScreenProps) {
   const t = await getTranslations("dashOrders");
   const locale = await getLocale();
@@ -187,6 +191,10 @@ export async function OrderDetailScreen({
               </p>
             )}
           </section>
+
+          {/* Below the line items, since it's what to refund is drawn from — and
+              above the activity log, which is where an issued refund then shows up. */}
+          {canIssueRefund ? <OrderRefundControl order={order} /> : null}
 
           {/* Under the order itself: above is what the order is now, this is every
               hand that has been on it — stage overrides, substitutions, returns. */}

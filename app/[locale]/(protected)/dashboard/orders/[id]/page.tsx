@@ -37,10 +37,11 @@ export default async function DashboardOrderPage({ params }: DashboardOrderPageP
 
   // Which controls the screen draws. Support reads this page in full and can write
   // only a note; the endpoints behind each control re-check regardless.
-  const [canFulfill, canNotify, canNote] = await Promise.all([
+  const [canFulfill, canNotify, canNote, canIssueRefund] = await Promise.all([
     sessionHas(session, "orders.fulfill"),
     sessionHas(session, "orders.notify"),
     sessionHas(session, "orders.note"),
+    sessionHas(session, "refunds.issue"),
   ]);
 
   return (
@@ -52,6 +53,7 @@ export default async function DashboardOrderPage({ params }: DashboardOrderPageP
       canFulfill={canFulfill}
       canNotify={canNotify}
       canNote={canNote}
+      canIssueRefund={canIssueRefund}
     />
   );
 }

@@ -286,6 +286,11 @@ export class MockOrderRepository implements IOrderRepository {
     return (await this.getAllOrders()).find((order) => order.id === orderId) ?? null;
   }
 
+  // Single-threaded JS makes every mock method atomic already — no lock to take.
+  async lockById(orderId: string): Promise<Order | null> {
+    return this.getById(orderId);
+  }
+
   async createOrder(input: NewOrder): Promise<Order> {
     // Honour a caller-minted id (checkout mints one so its stock movements can
     // name the order); fall back to the mock's own sequence otherwise. The order
