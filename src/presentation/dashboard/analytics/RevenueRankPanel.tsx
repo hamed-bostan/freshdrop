@@ -8,7 +8,7 @@ import { Icon, Thumbnail, focusRing } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
-import { OVERVIEW_ROW_MIN_HEIGHT } from "./panel-row";
+import { PanelRowCard } from "./PanelRowCard";
 import { RevenueRankSortSelect } from "./RevenueRankSortSelect";
 
 /** One ranked row, flattened from either a `TopProduct` or a `TopCategory`. */
@@ -97,47 +97,28 @@ export async function RevenueRankPanel({
 
       {rows.length > 0 ? (
         <ol className="mt-5 flex flex-1 flex-col gap-3">
-          {rows.map((row) => {
-            const content = (
-              <span className="flex w-full items-center gap-3">
-                {row.imageUrl ? (
-                  <Thumbnail as="span" className="size-12 shrink-0">
-                    <Image
-                      src={row.imageUrl}
-                      alt=""
-                      width={48}
-                      height={48}
-                      className="size-full object-contain"
-                    />
-                  </Thumbnail>
-                ) : null}
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-body-b5 text-foreground">{row.label}</span>
-                  <span className="block text-body-b8 text-muted-foreground">
-                    {unitsLabel(formatNumber(row.units, locale))}
-                  </span>
+          {rows.map((row) => (
+            <PanelRowCard key={row.id} href={row.href} surface="fill">
+              {row.imageUrl ? (
+                <Thumbnail as="span" className="size-12 shrink-0">
+                  <Image
+                    src={row.imageUrl}
+                    alt=""
+                    width={48}
+                    height={48}
+                    className="size-full object-contain"
+                  />
+                </Thumbnail>
+              ) : null}
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-body-b5 text-foreground">{row.label}</span>
+                <span className="block text-body-b8 text-muted-foreground">
+                  {unitsLabel(formatNumber(row.units, locale))}
                 </span>
-                <span className="text-body-b5 text-primary">{formatMoney(row.revenue, locale)}</span>
               </span>
-            );
-
-            const frame = cn(
-              "flex items-center rounded-card-lg bg-accent p-4",
-              OVERVIEW_ROW_MIN_HEIGHT,
-            );
-
-            return (
-              <li key={row.id}>
-                {row.href ? (
-                  <Link href={row.href} className={frame}>
-                    {content}
-                  </Link>
-                ) : (
-                  <div className={frame}>{content}</div>
-                )}
-              </li>
-            );
-          })}
+              <span className="text-body-b5 text-primary">{formatMoney(row.revenue, locale)}</span>
+            </PanelRowCard>
+          ))}
         </ol>
       ) : (
         <p className="mt-6 flex-1 pb-6 text-center text-body-b7 text-muted-foreground">{emptyLabel}</p>
