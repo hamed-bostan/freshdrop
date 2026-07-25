@@ -11,6 +11,7 @@ import { Link } from "@/src/i18n/navigation";
 import { Badge, Button, Icon, Popover, PopoverContent, PopoverTrigger, Spinner } from "@/src/presentation/design-system";
 import { activityEntityHref } from "@/src/presentation/dashboard/activity/activityLinks";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
+import { formatNumber } from "@/src/lib/formatNumber";
 import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
 import { cn } from "@/src/lib/utils";
 import { groupByDay, isSameDay, isYesterday } from "./groupByDay";
@@ -99,7 +100,9 @@ export function NotificationBell(): React.ReactElement {
           key: "pendingReviews",
           icon: Star,
           count: feed.attention.pendingReviews,
-          title: tHome("attentionPendingReviews"),
+          title: tHome("attentionPendingReviews", {
+            count: formatNumber(feed.attention.pendingReviews, locale),
+          }),
           detail: tHome("attentionPendingReviewsDetail"),
           href: "/dashboard/reviews",
         },
@@ -107,7 +110,7 @@ export function NotificationBell(): React.ReactElement {
           key: "lowStock",
           icon: AlertTriangle,
           count: feed.attention.lowStock,
-          title: tHome("attentionLowStock"),
+          title: tHome("attentionLowStock", { count: formatNumber(feed.attention.lowStock, locale) }),
           detail: tHome("attentionLowStockDetail", { threshold: LOW_STOCK_THRESHOLD }),
           href: "/dashboard/products?stock=needsRestock",
         },
@@ -115,7 +118,7 @@ export function NotificationBell(): React.ReactElement {
           key: "staleOrders",
           icon: Clock,
           count: feed.attention.staleOrders,
-          title: tHome("attentionStaleOrders"),
+          title: tHome("attentionStaleOrders", { count: formatNumber(feed.attention.staleOrders, locale) }),
           href: `/dashboard/orders?pipeline=pending&to=${encodeURIComponent(feed.attention.staleOrdersCutoff)}`,
           detail: tHome("attentionStaleOrdersDetail", { hours: PENDING_ORDER_SLA_HOURS }),
         },
@@ -123,7 +126,9 @@ export function NotificationBell(): React.ReactElement {
           key: "overdueOrders",
           icon: Truck,
           count: feed.attention.overdueOrders,
-          title: tHome("attentionOverdueOrders"),
+          title: tHome("attentionOverdueOrders", {
+            count: formatNumber(feed.attention.overdueOrders, locale),
+          }),
           href: `/dashboard/orders?pipeline=in_progress&to=${encodeURIComponent(feed.attention.overdueOrdersCutoff)}`,
           detail: tHome("attentionOverdueOrdersDetail", { hours: UNFULFILLED_ORDER_SLA_HOURS }),
         },

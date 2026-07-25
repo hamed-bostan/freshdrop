@@ -1,5 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ChevronRight } from "lucide-react";
 import { Badge, focusRing, Icon } from "@/src/presentation/design-system";
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
@@ -37,6 +37,10 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
   const locale = (await getLocale()) as Locale;
 
   const active = items.filter((item) => item.count > 0);
+  // Only shown when *some* but not all categories need a look — the columns
+  // whose count is zero don't each get their own tile (that's noise), they
+  // collapse into one reassuring summary instead.
+  const showOtherAreasClear = active.length > 0 && active.length < items.length;
 
   return (
     <section className="rounded-card-lg border border-border">
@@ -59,42 +63,39 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
               key={item.key}
               href={item.href}
               className={cn(
-                "flex flex-1 flex-col gap-3 p-4 transition-colors hover:bg-muted",
+                "flex flex-1 items-start gap-3 p-4 transition-colors hover:bg-muted",
                 focusRing,
               )}
             >
-              <div className="flex items-center gap-3">
-                <div
-                  className={cn(
-                    "flex size-10 shrink-0 items-center justify-center rounded-full",
-                    TONE_TINT[item.tone],
-                  )}
-                >
-                  <Icon icon={item.icon} size="sm" />
-                </div>
-                <p className="text-body-b7 text-foreground">{item.title}</p>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span
-                  className={cn(
-                    "inline-flex min-w-8 items-center justify-center rounded-full px-2 py-0.5 text-heading-h4",
-                    TONE_TINT[item.tone],
-                  )}
-                >
-                  {formatNumber(item.count, locale)}
-                </span>
-                <span className="text-body-b8 text-muted-foreground">{item.detail}</span>
-              </div>
-              <span
+              <div
                 className={cn(
-                  "mt-auto inline-flex w-fit items-center rounded-full px-3 py-1.5 text-body-b8",
+                  "flex size-10 shrink-0 items-center justify-center rounded-full",
                   TONE_TINT[item.tone],
                 )}
               >
-                {item.ctaLabel}
-              </span>
+                <Icon icon={item.icon} size="sm" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <p className="text-body-b6 text-foreground">{item.title}</p>
+                <p className="text-body-b8 text-muted-foreground">{item.detail}</p>
+                <span className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-success px-3 py-1.5 text-body-b8 text-success-foreground">
+                  {item.ctaLabel}
+                  <Icon icon={ChevronRight} size="xs" />
+                </span>
+              </div>
             </Link>
           ))}
+          {showOtherAreasClear ? (
+            <div className="flex flex-1 items-start gap-3 p-4">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground">
+                <Icon icon={CheckCircle2} size="sm" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <p className="text-body-b6 text-foreground">{t("attentionOtherAreasTitle")}</p>
+                <p className="text-body-b8 text-success-foreground">{t("attentionOtherAreasBody")}</p>
+              </div>
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2 p-8 text-center">

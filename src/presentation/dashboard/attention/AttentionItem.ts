@@ -19,7 +19,7 @@ export type AttentionItem = {
   tone: "warning" | "danger";
   /** How many things this row counts. A zero-count row is dropped by the panel. */
   count: number;
-  /** What the count measures, e.g. "Pending reviews". */
+  /** The count folded into a sentence, e.g. "12 reviews need moderation". */
   title: string;
   /** A short line saying what the count means or how it was drawn. */
   detail: string;
