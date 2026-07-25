@@ -261,6 +261,8 @@ export class MockOrderRepository implements IOrderRepository {
         taxRate: null,
         stage: this.stages.get(seed.id) ?? undefined,
         items,
+        // Seeded/mock orders carry no refund ledger — there's nothing behind them.
+        refunds: [],
       };
     });
 
@@ -295,6 +297,7 @@ export class MockOrderRepository implements IOrderRepository {
       id: orderId,
       orderNumber: this.nextOrderNumber++,
       items: input.items.map((item, index) => ({ ...item, id: `${orderId}-${index}` })),
+      refunds: [],
     };
     this.created.push(order);
     return order;

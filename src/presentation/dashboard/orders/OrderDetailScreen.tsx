@@ -179,7 +179,7 @@ export async function OrderDetailScreen({
 
             <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
               <span className="text-body-b7 text-muted-foreground">{t("total")}</span>
-              <span className="text-body-b5 text-foreground">{formatMoney(orderNetPaid(order), locale)}</span>
+              <span className="text-body-b5 text-foreground">{formatMoney(orderNetPaid(order, order.refunds), locale)}</span>
             </div>
             {order.taxAmount != null && (
               <p className="mt-1 text-end text-body-b9 text-muted-foreground">

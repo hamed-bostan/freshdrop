@@ -36,16 +36,12 @@ import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transa
  * ## Recognized revenue, in SQL
  *
  * The definition is the domain's `orderRecognizedRevenue`, restated once in
- * {@link recognizedOrders} and reused by every query below:
- *
- *   - a `cancelled` or `refunded` order contributes 0 — its whole total went back
- *     to the customer's wallet, so summing it would count money the store gave
- *     back;
- *   - every other order contributes its `total` minus the per-line refunds paid
- *     out during picking (`substitution_refund_amount`).
- *
- * The delivery-fee refund that `orderShippingRefunded` adds needs no clause here:
- * it is non-zero only on a `cancelled` order, which is already 0.
+ * {@link recognizedOrders} and reused by every query below: an order's `total`
+ * minus the sum of every `Refund` recorded against it (phase 6 — see
+ * `Refund.ts`). Every wallet credit is backed by a ledger row now, cancellation
+ * and return included, so there is no separate `cancelled`/`refunded` case here
+ * any more: a fully refunded order's ledger already sums to its `total`, which
+ * nets to 0 without a special case, exactly mirroring the domain function.
  *
  * Two definitions of one number is the failure this comment exists to flag. If
  * `orderRecognizedRevenue` changes, this CTE changes with it — a divergence would
@@ -346,14 +342,11 @@ function recognizedOrders(range: DateRange): Prisma.Sql {
         o.user_id,
         o.status,
         o.placed_at,
-        CASE
-          WHEN o.status IN ('cancelled', 'refunded') THEN 0
-          ELSE o.total - COALESCE(refunds.amount, 0)
-        END AS revenue
+        o.total - COALESCE(refunds.amount, 0) AS revenue
       FROM orders o
       LEFT JOIN (
-        SELECT order_id, SUM(COALESCE(substitution_refund_amount, 0)) AS amount
-        FROM order_items
+        SELECT order_id, SUM(amount) AS amount
+        FROM refunds
         GROUP BY order_id
       ) refunds ON refunds.order_id = o.id
       WHERE o.placed_at >= ${range.from} AND o.placed_at < ${range.to}

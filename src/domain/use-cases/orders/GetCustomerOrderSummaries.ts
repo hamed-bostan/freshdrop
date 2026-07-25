@@ -37,7 +37,7 @@ export class GetCustomerOrderSummaries {
     // that's their history, independent of what was refunded.
     const byUser = new Map<string, CustomerStats>();
     for (const order of orders) {
-      const spent = orderRecognizedRevenue(order);
+      const spent = orderRecognizedRevenue(order, order.refunds);
       const stats = byUser.get(order.userId);
       if (stats) {
         stats.orderCount += 1;

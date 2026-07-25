@@ -96,7 +96,7 @@ export function OrderRow({ order, customer, canFulfill }: OrderRowProps) {
       {/* Money is compared down the column, so it aligns to the end of the cell
           and never wraps. */}
       <TableCell className="whitespace-nowrap text-end text-body-b7 text-foreground">
-        {formatMoney(orderNetPaid(order), locale)}
+        {formatMoney(orderNetPaid(order, order.refunds), locale)}
       </TableCell>
 
       <TableCell>

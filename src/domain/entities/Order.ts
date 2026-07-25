@@ -1,5 +1,8 @@
 import type { GeoPoint } from "./Place";
 import type { TrackingMilestone } from "./OrderTracking";
+import type { Refund } from "./Refund";
+import { refundedSoFar } from "./Refund";
+import { round2 } from "@/src/lib/money";
 
 /**
  * Lifecycle status of an order — drives the status badge on the order card.
@@ -214,6 +217,14 @@ export type Order = {
   deliveryDate?: string;
   deliveryWindowId?: string;
   deliveryWindow?: string;
+  /**
+   * Every `Refund` recorded against this order, oldest first — the ledger, read
+   * alongside the order so the money functions below and the presentation layer
+   * both get it for free instead of each fetching it separately. `[]` for an
+   * order with no refund yet, never for "not loaded" (every read path populates
+   * it).
+   */
+  refunds: Refund[];
 }
 
 /**
@@ -278,57 +289,57 @@ export function isPicking(order: Order): boolean {
 }
 
 /**
- * The delivery fee credited back for this order, if any. Non-zero only when the
- * order was cancelled because every line was out of stock ({@link isFullyRefunded})
- * — the empty-delivery case where the standard grocery rule refunds shipping too
- * (a partial out-of-stock never refunds it, since the delivery still happens).
- * Derived, not stored: `cancelled` + fully refunded uniquely identifies that path
- * (a customer cancellation has no per-line refunds, so it isn't fully refunded).
+ * The delivery fee credited back for this order, if any — a *display* helper only
+ * (not part of the revenue chain below; see `orderRefundedTotal`). Non-zero only
+ * when the order was cancelled because every line was out of stock
+ * ({@link isFullyRefunded}) — the empty-delivery case where the standard grocery
+ * rule refunds shipping too (a partial out-of-stock never refunds it, since the
+ * delivery still happens). Derived from the order alone (no ledger needed):
+ * `cancelled` + fully refunded uniquely identifies that path (a customer
+ * cancellation has no per-line refunds, so it isn't fully refunded).
  */
 export function orderShippingRefunded(order: Order): number {
   return order.status === "cancelled" && isFullyRefunded(order) ? order.shipping : 0;
 }
 
 /**
- * Total credited back to the customer's wallet for this order — the sum of each
- * resolved line's `refundAmount`, plus the delivery fee when the whole order was
- * refunded ({@link orderShippingRefunded}). 0 when nothing was refunded. The order
- * `total` is left as the original charge; this makes the wallet credits visible as
- * an itemized adjustment (the receipt shoppers expect).
- */
-export function orderRefundedTotal(order: Order): number {
-  const lineRefunds = order.items.reduce((sum, item) => sum + (item.substitution?.refundAmount ?? 0), 0);
-  return lineRefunds + orderShippingRefunded(order);
-}
-
-/**
- * What the customer actually paid after out-of-stock refunds: the original
- * `total` minus {@link orderRefundedTotal}. Equals `total` when nothing was
- * refunded.
- */
-export function orderNetPaid(order: Order): number {
-  return order.total - orderRefundedTotal(order);
-}
-
-/**
- * What this order contributes to revenue — 0 once the whole order was handed back
- * to the customer, otherwise {@link orderNetPaid}.
+ * Total credited back to the customer's wallet for this order — the sum of every
+ * `Refund` recorded against it (see `refundedSoFar`). 0 when nothing was refunded.
+ * The order `total` is left as the original charge; this makes the wallet credits
+ * visible as an itemized adjustment (the receipt shoppers expect).
  *
- * Distinct from `orderNetPaid`, which answers "what did this customer pay for what
- * they kept" and so is what a *receipt* shows. Revenue needs the wallet-level view:
- * `cancelled` and `refunded` orders return the full `total` to the wallet
- * (`CancelOrder`, `ResolveOrderReturn`) without writing per-line `refundAmount`s, so
- * `orderNetPaid` still reports their original charge. Summing that as revenue counts
- * money the business gave back. Per-line out-of-stock refunds are already netted out
- * by `orderNetPaid` for every other status.
+ * Ledger-derived, not order-derived: every wallet credit (cancellation, return,
+ * substitution, or a future discretionary refund) is backed by a `Refund` row, so
+ * summing the ledger is the one source of truth — no separate shipping term to add,
+ * since a cancellation's ledger row already includes it.
+ */
+export function orderRefundedTotal(refunds: Refund[]): number {
+  return refundedSoFar(refunds);
+}
+
+/**
+ * What the customer actually paid after refunds: the original `total` minus
+ * {@link orderRefundedTotal}. Equals `total` when nothing was refunded.
+ */
+export function orderNetPaid(order: Order, refunds: Refund[]): number {
+  return round2(order.total - orderRefundedTotal(refunds));
+}
+
+/**
+ * What this order contributes to revenue — {@link orderNetPaid}.
+ *
+ * Kept as its own name because it answers a different question than `orderNetPaid`
+ * ("what did the store earn" vs. "what did this customer pay for what they kept"),
+ * but the two are now the same computation: a `cancelled`/`refunded` order's ledger
+ * already sums to its full `total` (see `CancelOrder`, `ResolveOrderReturn`), so
+ * `orderNetPaid` reduces to 0 for them without a special case here.
  *
  * The single definition of "revenue-recognized" — use it for any figure that
  * aggregates money *earned* (the overview KPI, per-customer spend), not for
  * displaying one order's charge.
  */
-export function orderRecognizedRevenue(order: Order): number {
-  if (order.status === "cancelled" || order.status === "refunded") return 0;
-  return orderNetPaid(order);
+export function orderRecognizedRevenue(order: Order, refunds: Refund[]): number {
+  return orderNetPaid(order, refunds);
 }
 
 /**

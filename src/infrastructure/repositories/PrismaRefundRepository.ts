@@ -52,7 +52,8 @@ export class PrismaRefundRepository implements IRefundRepository {
   }
 }
 
-type RefundRow = {
+/** Shared with `PrismaOrderRepository`, which attaches the same rows to `Order.refunds`. */
+export type RefundRow = {
   id: string;
   orderId: string;
   userId: string;
@@ -74,7 +75,7 @@ type RefundLineRow = {
   taxAmount: number;
 };
 
-function toRefund(row: RefundRow): Refund {
+export function toRefund(row: RefundRow): Refund {
   return {
     id: row.id,
     orderId: row.orderId,

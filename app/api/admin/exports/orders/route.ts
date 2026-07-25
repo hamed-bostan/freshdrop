@@ -85,9 +85,9 @@ async function* toRows(orders: AsyncIterable<Order>): AsyncGenerator<CsvValue[]>
       order.shipping,
       order.discount,
       order.total,
-      orderRefundedTotal(order),
-      orderNetPaid(order),
-      orderRecognizedRevenue(order),
+      orderRefundedTotal(order.refunds),
+      orderNetPaid(order, order.refunds),
+      orderRecognizedRevenue(order, order.refunds),
       order.deliveryWindow ?? "",
       order.location,
     ];

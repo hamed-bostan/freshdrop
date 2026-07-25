@@ -456,7 +456,7 @@ export async function DashboardOverviewScreen({
                       {formatOrderTime(order.placedAt, locale)}
                     </span>
                     <span className="whitespace-nowrap text-end text-body-b7 text-foreground">
-                      {formatMoney(orderNetPaid(order), locale)}
+                      {formatMoney(orderNetPaid(order, order.refunds), locale)}
                     </span>
                     <Icon icon={ChevronRight} size="xs" className="text-muted-foreground rtl:-scale-x-100" />
                   </Link>

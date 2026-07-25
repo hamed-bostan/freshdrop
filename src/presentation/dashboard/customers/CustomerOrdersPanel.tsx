@@ -85,7 +85,7 @@ export function CustomerOrdersPanel({ orders }: CustomerOrdersPanelProps) {
               {order.locationLabel ?? order.location}
             </span>
             <span className="text-end text-body-b8 tabular-nums text-foreground">
-              {formatMoney(orderNetPaid(order), locale)}
+              {formatMoney(orderNetPaid(order, order.refunds), locale)}
             </span>
             <Icon icon={ChevronRight} size="xs" className="text-muted-foreground rtl:-scale-x-100" />
           </Link>

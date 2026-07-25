@@ -41,6 +41,29 @@ const orderItemResponseSchema = z.object({
   taxAmount: z.number().nullable(),
 });
 
+const refundLineResponseSchema = z.object({
+  orderItemId: z.string(),
+  productId: z.string(),
+  quantity: z.number().optional(),
+  amount: z.number(),
+  taxAmount: z.number(),
+});
+
+/** One row of the order's refund ledger (phase 4/6) — see `Refund.ts`. */
+const refundResponseSchema = z.object({
+  id: z.string(),
+  orderId: z.string(),
+  userId: z.string(),
+  kind: z.enum(["cancellation", "return", "substitution", "manual"]),
+  amount: z.number(),
+  taxAmount: z.number(),
+  reason: z.string().optional(),
+  actorId: z.string().optional(),
+  actorName: z.string().optional(),
+  createdAt: z.string(),
+  lines: z.array(refundLineResponseSchema),
+});
+
 export const orderResponseSchema = z.object({
   id: z.string(),
   orderNumber: z.number().int().positive(),
@@ -73,6 +96,7 @@ export const orderResponseSchema = z.object({
   deliveryDate: z.string().optional(),
   deliveryWindowId: z.string().optional(),
   deliveryWindow: z.string().optional(),
+  refunds: z.array(refundResponseSchema),
 }) satisfies z.ZodType<Order>;
 
 export const orderListResponseSchema = z.array(orderResponseSchema);

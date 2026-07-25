@@ -9,6 +9,7 @@ import type {
   PaymentStatus,
   SubstitutionPreference,
 } from "@/src/domain/entities/Order";
+import type { Refund } from "@/src/domain/entities/Refund";
 import { pipelinePredicate } from "@/src/domain/entities/OrderPipelineStage";
 import type { AdminOrderFilters, AdminOrderSort } from "@/src/domain/entities/AdminOrderFilters";
 import { DEFAULT_ADMIN_ORDER_DIRECTION } from "@/src/domain/entities/AdminOrderFilters";
@@ -25,9 +26,38 @@ import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { prisma } from "@/src/infrastructure/prisma/client";
 import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transaction";
 import { recordAudit } from "./writeActivityEntry";
+import { toRefund } from "./PrismaRefundRepository";
 
 /** Items are always read in their authored order so the order card's thumbnails stay stable. */
 const ITEMS_INCLUDE = { items: { orderBy: { position: "asc" } } } as const;
+
+/**
+ * Attach each order's `Refund` rows in one batched query rather than one per order
+ * — the same reasoning `ITEMS_INCLUDE` follows, just not expressible as a Prisma
+ * relation (`Refund.orderId` is a loose reference, like the rest of the schema).
+ */
+async function attachRefunds(db: PrismaDb, orders: Order[]): Promise<Order[]> {
+  if (orders.length === 0) return orders;
+  const rows = await db.refund.findMany({
+    where: { orderId: { in: orders.map((order) => order.id) } },
+    include: { lines: true },
+    orderBy: { createdAt: "asc" },
+  });
+  const byOrder = new Map<string, Refund[]>();
+  for (const row of rows) {
+    const refund = toRefund(row);
+    const list = byOrder.get(refund.orderId);
+    if (list) list.push(refund);
+    else byOrder.set(refund.orderId, [refund]);
+  }
+  return orders.map((order) => ({ ...order, refunds: byOrder.get(order.id) ?? [] }));
+}
+
+/** Single-order convenience over {@link attachRefunds}. */
+async function attachRefund(db: PrismaDb, order: Order): Promise<Order> {
+  const [withRefunds] = await attachRefunds(db, [order]);
+  return withRefunds;
+}
 
 /**
  * Orders backed by PostgreSQL via Prisma. Server-side only (it opens a DB
@@ -46,7 +76,7 @@ export class PrismaOrderRepository implements IOrderRepository {
       orderBy: { placedAt: "desc" },
       include: ITEMS_INCLUDE,
     });
-    return rows.map(toOrder);
+    return attachRefunds(this.db, rows.map(toOrder));
   }
 
   async getAllOrders(): Promise<Order[]> {
@@ -54,7 +84,7 @@ export class PrismaOrderRepository implements IOrderRepository {
       orderBy: { placedAt: "desc" },
       include: ITEMS_INCLUDE,
     });
-    return rows.map(toOrder);
+    return attachRefunds(this.db, rows.map(toOrder));
   }
 
   async listPage(filters: AdminOrderFilters, page: PageRequest<AdminOrderSort>): Promise<Page<Order>> {
@@ -68,14 +98,15 @@ export class PrismaOrderRepository implements IOrderRepository {
     // One transaction so the rows and the count come from the same snapshot —
     // an order placed between two separate reads would leave the pager offering
     // a page that isn't there.
-    const [rows, total] = await inTransaction(this.db, (tx) =>
-      Promise.all([
+    const [orders, total] = await inTransaction(this.db, async (tx) => {
+      const [rows, total] = await Promise.all([
         tx.order.findMany({ where, orderBy, skip, take, include: ITEMS_INCLUDE }),
         tx.order.count({ where }),
-      ]),
-    );
+      ]);
+      return [await attachRefunds(tx, rows.map(toOrder)), total] as const;
+    });
 
-    return createPage(rows.map(toOrder), total, page);
+    return createPage(orders, total, page);
   }
 
   async getById(orderId: string): Promise<Order | null> {
@@ -83,7 +114,7 @@ export class PrismaOrderRepository implements IOrderRepository {
       where: { id: orderId },
       include: ITEMS_INCLUDE,
     });
-    return row ? toOrder(row) : null;
+    return row ? attachRefund(this.db, toOrder(row)) : null;
   }
 
   async createOrder(input: NewOrder, audit?: AuditHook<Order>): Promise<Order> {
@@ -113,16 +144,16 @@ export class PrismaOrderRepository implements IOrderRepository {
     audit?: AuditHook<Order>,
   ): Promise<Order> {
     try {
-      const row = await inTransaction(this.db, async (tx) => {
+      return await inTransaction(this.db, async (tx) => {
         const updated = await tx.order.update({
           where: { id: orderId },
           data: { stage: update.stage, status: update.status },
           include: ITEMS_INCLUDE,
         });
-        await recordAudit(tx, toOrder(updated), audit);
-        return updated;
+        const order = await attachRefund(tx, toOrder(updated));
+        await recordAudit(tx, order, audit);
+        return order;
       });
-      return toOrder(row);
     } catch (error) {
       throw toDomainError(error);
     }
@@ -163,7 +194,7 @@ export class PrismaOrderRepository implements IOrderRepository {
       const row = await tx.order.findUnique({ where: { id: orderId }, include: ITEMS_INCLUDE });
       if (!row) return null;
 
-      const order = toOrder(row);
+      const order = await attachRefund(tx, toOrder(row));
       await recordAudit(tx, order, audit);
       return order;
     });
@@ -197,7 +228,7 @@ export class PrismaOrderRepository implements IOrderRepository {
       const row = await tx.order.findUnique({ where: { id: orderId }, include: ITEMS_INCLUDE });
       if (!row) return null;
 
-      const order = toOrder(row);
+      const order = await attachRefund(tx, toOrder(row));
       await recordAudit(tx, order, audit);
       return order;
     });
@@ -400,6 +431,9 @@ function toOrder(row: OrderRow): Order {
     deliveryWindowId: row.deliveryWindowId ?? undefined,
     deliveryWindow: row.deliveryWindow ?? undefined,
     items,
+    // The correct value for a brand-new order (`createOrder`); every other caller
+    // overwrites this with the real ledger via `attachRefund`/`attachRefunds`.
+    refunds: [],
   };
 }
 

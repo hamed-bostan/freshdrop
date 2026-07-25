@@ -96,7 +96,7 @@ function summarizeLifetime(orders: readonly Order[]): CustomerLifetime {
   let lastOrderAt = orders[0].placedAt;
 
   for (const order of orders) {
-    totalSpent += orderRecognizedRevenue(order);
+    totalSpent += orderRecognizedRevenue(order, order.refunds);
     if (order.placedAt < firstOrderAt) firstOrderAt = order.placedAt;
     if (order.placedAt > lastOrderAt) lastOrderAt = order.placedAt;
   }

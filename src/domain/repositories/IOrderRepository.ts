@@ -23,7 +23,7 @@ export type OrderTrackingUpdate = {
  * front is what lets that attribution be real rather than backfilled — an
  * append-only ledger shouldn't need a second write to say what it always meant.
  */
-export type NewOrder = Omit<Order, "id" | "orderNumber" | "items"> & {
+export type NewOrder = Omit<Order, "id" | "orderNumber" | "items" | "refunds"> & {
   id?: string;
   // Items don't exist yet either — the repository assigns each a row id on insert.
   items: Array<Omit<OrderItem, "id">>;
