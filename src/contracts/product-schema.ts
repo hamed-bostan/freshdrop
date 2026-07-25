@@ -81,6 +81,7 @@ export const productFormSchema = z
     origin: optionalText,
     brand: brandField,
     dietary: dietaryField,
+    taxExempt: z.boolean(),
     // Persian (fa) content overrides — optional. A blank fa name means "no fa
     // translation" for this product (the storefront falls back to the base row).
     faName: optionalText,

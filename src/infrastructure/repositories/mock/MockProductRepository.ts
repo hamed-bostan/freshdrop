@@ -305,6 +305,9 @@ function buildProduct(seed: ProductSeed, category: Category, index: number, seri
     description: seed.description,
     nutrition: seed.nutrition,
     origin: seed.origin,
+    // Matches the column's `DEFAULT true`: the demo catalog is unprocessed
+    // groceries, exempt by default like every new product.
+    taxExempt: true,
   };
 }
 

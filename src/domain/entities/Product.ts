@@ -37,4 +37,10 @@ export type Product = {
   brand?: string;
   /** Dietary tags the product satisfies (see `DIETARY_TAGS`); drives the dietary filter. */
   dietary?: string[];
+  /**
+   * Whether this product is exempt from VAT. Defaults to `true` — most unprocessed
+   * groceries are exempt, and a store must never claim VAT it didn't collect. An
+   * operator opts a product *in* to taxation, never the other way around.
+   */
+  taxExempt: boolean;
 }

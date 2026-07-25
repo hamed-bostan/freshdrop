@@ -47,6 +47,7 @@ const FORM_FIELDS = [
   "origin",
   "brand",
   "dietary",
+  "taxExempt",
 ] as const satisfies readonly (keyof ProductFormInput)[];
 
 type ProductFormProps =
@@ -74,6 +75,9 @@ function toDefaults(product?: Product, translations?: ProductTranslationInput[])
     origin: product?.origin ?? "",
     brand: product?.brand ?? "",
     dietary: product?.dietary ?? [],
+    // A new product is exempt by default, matching the column — an operator opts a
+    // product *in* to VAT deliberately.
+    taxExempt: product?.taxExempt ?? true,
     faName: fa?.name ?? "",
     faUnit: fa?.unit ?? "",
     faDescription: fa?.description ?? "",
@@ -412,6 +416,27 @@ export function ProductForm(props: ProductFormProps) {
               checked={field.value}
               onCheckedChange={field.onChange}
               aria-label={t("publishedAria")}
+            />
+          </div>
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="taxExempt"
+        render={({ field }) => (
+          <div className="flex items-center justify-between rounded-card-md border border-border px-4 py-3">
+            <div>
+              <label htmlFor="taxExempt" className="text-body-b7 text-input-foreground">
+                {t("taxExemptLabel")}
+              </label>
+              <p className="text-body-b10 text-muted-foreground">{t("taxExemptDescription")}</p>
+            </div>
+            <Switch
+              id="taxExempt"
+              checked={field.value}
+              onCheckedChange={field.onChange}
+              aria-label={t("taxExemptAria")}
             />
           </div>
         )}

@@ -33,6 +33,7 @@ export const productResponseSchema = z.object({
   origin: z.string().optional(),
   brand: z.string().optional(),
   dietary: z.array(z.string()).optional(),
+  taxExempt: z.boolean(),
 }) satisfies z.ZodType<Product>;
 
 export const productListResponseSchema = z.array(productResponseSchema);

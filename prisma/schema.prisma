@@ -357,6 +357,11 @@ model Product {
   // filter; defaults to empty so existing writes need no change.
   brand         String?
   dietary       String[] @default([])
+  // Whether this product is exempt from VAT. Defaults to true — the safe direction
+  // for a grocer, since most unprocessed groceries are exempt and a store must
+  // never claim VAT it didn't actually collect. An operator opts a product *in* to
+  // taxation, never the other way around.
+  taxExempt     Boolean  @default(true) @map("tax_exempt")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 

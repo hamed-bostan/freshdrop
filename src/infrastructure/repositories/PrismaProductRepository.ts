@@ -626,6 +626,7 @@ type ProductRow = {
   origin: string | null;
   brand: string | null;
   dietary: string[];
+  taxExempt: boolean;
 };
 
 /**
@@ -655,6 +656,7 @@ function toProduct(row: ProductRow): Product {
     origin: row.origin ?? undefined,
     brand: row.brand ?? undefined,
     dietary: row.dietary,
+    taxExempt: row.taxExempt,
   };
 }
 
