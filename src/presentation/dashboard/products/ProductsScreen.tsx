@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import {
   ADMIN_STOCK_FILTERS,
   ADMIN_VISIBILITY_FILTERS,
@@ -73,12 +73,20 @@ export async function ProductsScreen({ products, categories, filters, canWrite }
           <p className="text-body-b6 text-muted-foreground">{t("count", { count: products.total })}</p>
         </div>
         {canWrite ? (
-          <Button asChild>
-            <Link href="/dashboard/products/create">
-              <Icon icon={Plus} size="sm" className="me-1.5" />
-              {t("newProduct")}
-            </Link>
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/products/import">
+                <Icon icon={Upload} size="sm" className="me-1.5" />
+                {t("importCsv")}
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/dashboard/products/create">
+                <Icon icon={Plus} size="sm" className="me-1.5" />
+                {t("newProduct")}
+              </Link>
+            </Button>
+          </div>
         ) : null}
       </div>
 

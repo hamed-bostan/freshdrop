@@ -23,6 +23,7 @@
     "amountRequired": "تعداد واحدها را وارد کنید.",
     "amountTooLarge": "این مبلغ بیش از حد بزرگ است.",
     "amountWhole": "تعداد را به صورت عدد صحیح وارد کنید.",
+    "booleanInvalid": "مقدار true/false، yes/no یا 1/0 وارد کنید.",
     "brandInvalid": "برند معتبری انتخاب کنید.",
     "capacityMin": "ظرفیت باید دست‌کم ۱ باشد.",
     "capacityRequired": "ظرفیت را وارد کنید.",
@@ -948,7 +949,23 @@
     "bulkUnpublish": "لغو انتشار",
     "bulkAssignCategory": "انتقال به دسته‌بندی…",
     "bulkAssignCategoryAria": "انتقال محصولات انتخاب‌شده به یک دسته‌بندی",
-    "bulkError": "به‌روزرسانی محصولات انتخاب‌شده ممکن نشد."
+    "bulkError": "به‌روزرسانی محصولات انتخاب‌شده ممکن نشد.",
+    "importCsv": "درون‌ریزی CSV"
+  },
+  "dashProductImport": {
+    "heading": "درون‌ریزی محصولات",
+    "subtitle": "یک فایل CSV بارگذاری کنید تا محصولات به‌صورت گروهی ایجاد یا به‌روزرسانی شوند. تا زمان تأیید شما چیزی ذخیره نمی‌شود.",
+    "downloadTemplate": "دریافت قالب",
+    "noFileChosen": "فایلی انتخاب نشده",
+    "chooseFile": "انتخاب فایل",
+    "validate": "بررسی",
+    "validateError": "بررسی فایل ممکن نشد. دوباره تلاش کنید.",
+    "commitError": "درون‌ریزی محصولات ممکن نشد. دوباره تلاش کنید.",
+    "validationSummary": "{total, plural, one {# ردیف} other {# ردیف}} خوانده شد — {valid, plural, one {# ردیف} other {# ردیف}} آماده درون‌ریزی، {errors, plural, =0 {بدون خطا} one {# خطا} other {# خطا}}.",
+    "commitSummary": "{created, plural, one {# محصول ایجاد شد} other {# محصول ایجاد شد}}، {updated, plural, one {# محصول به‌روزرسانی شد} other {# محصول به‌روزرسانی شد}}.",
+    "lineLabel": "ردیف {line}:",
+    "commit": "درون‌ریزی {count, plural, one {# محصول} other {# محصول}}",
+    "startOver": "شروع دوباره"
   },
   "dashInventory": {
     "heading": "موجودی",

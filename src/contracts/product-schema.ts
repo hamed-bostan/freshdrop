@@ -18,7 +18,8 @@ const BRAND_SET = new Set<string>(PRODUCT_BRANDS);
  * (see `src/lib/formErrorMessage.ts`).
  */
 
-const PRICE_PATTERN = /^\d+(\.\d{1,2})?$/;
+/** Exported for `product-import-schema.ts`, which validates the same shape from CSV cells. */
+export const PRICE_PATTERN = /^\d+(\.\d{1,2})?$/;
 
 /** Required price: a string the form emits, validated and coerced to a positive number. */
 const priceField = z
