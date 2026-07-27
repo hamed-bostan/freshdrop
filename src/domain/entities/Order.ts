@@ -273,7 +273,7 @@ export function orderDiscountRate(order: Order): number {
  */
 export function refundForLineValue(order: Order, grossLineValue: number): number {
   const net = grossLineValue * (1 - orderDiscountRate(order));
-  return Math.max(Math.round(net * 100) / 100, 0);
+  return Math.max(round2(net), 0);
 }
 
 /**
