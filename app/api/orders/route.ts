@@ -17,6 +17,7 @@ import {
   adminNotificationRepository,
   emailSender,
   taxSettingsRepository,
+  notificationTemplateRepository,
 } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
@@ -118,6 +119,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       userRepository,
       adminNotificationRepository,
       emailSender,
+      notificationTemplateRepository,
     ).execute({
       userId: session.user.id,
       location: address.address,

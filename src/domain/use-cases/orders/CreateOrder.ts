@@ -9,6 +9,7 @@ import type { IPromoCodeRepository } from "../../repositories/IPromoCodeReposito
 import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { IAdminNotificationRepository } from "../../repositories/IAdminNotificationRepository";
 import type { IEmailSender } from "../../repositories/IEmailSender";
+import type { INotificationTemplateRepository } from "../../repositories/INotificationTemplateRepository";
 import type { PromoCode } from "../../entities/PromoCode";
 import { placeOrder } from "./placeOrder";
 import { NotifyAdmins } from "../notifications/NotifyAdmins";
@@ -72,6 +73,7 @@ export class CreateOrder {
     private readonly userRepo: IUserRepository,
     private readonly adminNotifications: IAdminNotificationRepository,
     private readonly emailSender: IEmailSender,
+    private readonly templateRepo: INotificationTemplateRepository,
   ) {}
 
   async execute(input: CreateOrderInput): Promise<Order> {
@@ -104,14 +106,17 @@ export class CreateOrder {
     // Tell fulfilment the order exists — the bell's own best-effort side
     // effect, and the reason it needs a name for the customer at all.
     const customer = await this.userRepo.getById(userId);
-    await new NotifyAdmins(this.userRepo, this.adminNotifications, this.emailSender).execute("orders.fulfill", {
-      action: "order.placed",
-      entityType: "order",
-      entityId: order.id,
-      entityLabel: order.id,
-      actorId: userId,
-      actorName: customer?.name,
-    });
+    await new NotifyAdmins(this.userRepo, this.adminNotifications, this.emailSender, this.templateRepo).execute(
+      "orders.fulfill",
+      {
+        action: "order.placed",
+        entityType: "order",
+        entityId: order.id,
+        entityLabel: order.id,
+        actorId: userId,
+        actorName: customer?.name,
+      },
+    );
 
     return order;
   }

@@ -21,6 +21,7 @@ import { OrderNotesPanel } from "./OrderNotesPanel";
 import { ActivityPanel } from "@/src/presentation/dashboard/activity/ActivityPanel";
 import type { ActivityEntryWire } from "@/src/presentation/dashboard/activity/activity-response-schema";
 import type { OrderNote } from "@/src/domain/entities/OrderNote";
+import type { OrderMessageDefaultWire } from "./order-message-default-response-schema";
 
 type OrderDetailScreenProps = {
   order: Order;
@@ -41,6 +42,8 @@ type OrderDetailScreenProps = {
   canNote: boolean;
   /** Whether the viewer may issue a discretionary refund (phase 7) — admin/owner only. */
   canIssueRefund: boolean;
+  /** The ad hoc message form's starting subject/body (phase 4) — undefined when `!canNotify`. */
+  messageDefault?: OrderMessageDefaultWire;
 };
 
 /**
@@ -59,6 +62,7 @@ export async function OrderDetailScreen({
   notes,
   canNote,
   canIssueRefund,
+  messageDefault,
 }: OrderDetailScreenProps) {
   const t = await getTranslations("dashOrders");
   const locale = await getLocale();
@@ -246,7 +250,7 @@ export async function OrderDetailScreen({
               <h2 className="mb-4 text-body-b8 uppercase tracking-wide text-muted-foreground">
                 {t("commsHeading")}
               </h2>
-              <OrderCommsPanel order={order} canEmail={customer?.email != null} />
+              <OrderCommsPanel order={order} canEmail={customer?.email != null} messageDefault={messageDefault} />
             </section>
           ) : null}
         </div>

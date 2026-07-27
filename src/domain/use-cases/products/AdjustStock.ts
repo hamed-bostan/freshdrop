@@ -8,6 +8,7 @@ import type { IStockAlertNotifier } from "../../repositories/IStockAlertNotifier
 import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { IAdminNotificationRepository } from "../../repositories/IAdminNotificationRepository";
 import type { IEmailSender } from "../../repositories/IEmailSender";
+import type { INotificationTemplateRepository } from "../../repositories/INotificationTemplateRepository";
 import { ValidationError } from "../../errors/ValidationError";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { FulfillStockAlerts } from "./FulfillStockAlerts";
@@ -48,6 +49,7 @@ export class AdjustStock {
     private readonly notifier: IStockAlertNotifier,
     private readonly adminNotifications: IAdminNotificationRepository,
     private readonly emailSender: IEmailSender,
+    private readonly templateRepo: INotificationTemplateRepository,
   ) {}
 
   async execute({ productId, delta, reason, note, actorId }: AdjustStockInput): Promise<Product> {
@@ -114,7 +116,7 @@ export class AdjustStock {
     // acting admin: they just did this, they don't need telling. Best-effort,
     // like the fulfilment above: the adjustment already stands either way.
     if (existing.stockQuantity > 0 && adjusted.stockQuantity <= 0) {
-      await new NotifyAdmins(this.users, this.adminNotifications, this.emailSender).execute(
+      await new NotifyAdmins(this.users, this.adminNotifications, this.emailSender, this.templateRepo).execute(
         "catalog.write",
         {
           action: "product.stockDepleted",

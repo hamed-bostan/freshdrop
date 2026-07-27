@@ -1,14 +1,8 @@
 import type { Order } from "@/src/domain/entities/Order";
 import type { NotificationKind, NotificationMessage } from "@/src/domain/entities/Notification";
-
-/**
- * The short, human-facing order reference used in notification copy — the head of
- * the uuid, uppercased (e.g. `AB12CD`). Enough to identify the order in an SMS
- * without dumping a full uuid on the customer.
- */
-function shortRef(orderId: string): string {
-  return orderId.replace(/-/g, "").slice(0, 6).toUpperCase();
-}
+import { orderConfirmedRenderVars, shortOrderRef } from "@/src/domain/entities/NotificationTemplate";
+import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
+import { render } from "@/src/lib/renderTemplate";
 
 /**
  * Extra facts a substitution message needs — the affected line's name and, for a
@@ -23,18 +17,102 @@ export type SubstitutionContext = {
  * Map an order lifecycle event to a rendered, channel-agnostic
  * {@link NotificationMessage}. The single owner of notification copy: free-text
  * channels use `title`/`body`, template channels fill their template from
- * `params` (the same facts, named). Pure — no I/O, no channel knowledge.
+ * `params` (the same facts, named).
+ *
+ * Store-then-fallback (phase 2): if an admin-editable `NotificationTemplate`
+ * row exists for `kind`, its `title`/`body` are rendered from `renderVars` and
+ * used instead of the hardcoded copy below; a missing row falls through to
+ * the hardcoded switch unchanged. `params` — what the SMS pattern-template
+ * channel fills its own approved template from — is unaffected either way;
+ * only the free-text `title`/`body` are template-editable.
+ *
+ * `renderVars` differs from `params` for `order_confirmed`: its `WINDOW` is
+ * the whole " for delivery {window}" clause (or "" with no window), not the
+ * raw window value, because the hardcoded copy makes that clause conditional
+ * on the order having one. Reproducing that with a straight `{{VAR}}`
+ * substitution needs the conditional baked into the value, not the template.
  */
-export function buildOrderMessage(
+export async function buildOrderMessage(
   kind: NotificationKind,
   order: Order,
+  templateRepo: INotificationTemplateRepository,
   context?: SubstitutionContext,
-): NotificationMessage {
-  const ref = shortRef(order.id);
+): Promise<NotificationMessage> {
+  const ref = shortOrderRef(order.id);
   const window = order.deliveryWindow ?? "";
   const itemName = context?.itemName ?? "";
   const replacementName = context?.replacementName ?? "";
 
+  const fallback = fallbackMessage(kind, order, ref, window, itemName, replacementName);
+  const renderVars = renderVarsFor(kind, order, ref, window, itemName, replacementName);
+
+  const template = await templateRepo.get(kind);
+  if (!template) return fallback;
+
+  return {
+    ...fallback,
+    title: template.title != null ? render(template.title, renderVars) : fallback.title,
+    body: render(template.body, renderVars),
+  };
+}
+
+/** The named facts passed to `render()` for a kind's title/body template. */
+function renderVarsFor(
+  kind: NotificationKind,
+  order: Order,
+  ref: string,
+  window: string,
+  itemName: string,
+  replacementName: string,
+): Record<string, string> {
+  switch (kind) {
+    case "order_confirmed":
+      return orderConfirmedRenderVars(order);
+    case "order_out_for_delivery":
+      return { ORDER: ref, WINDOW: window };
+    case "order_delivered":
+    case "return_approved":
+    case "order_cancelled_out_of_stock":
+      return { ORDER: ref };
+    case "item_substituted":
+      return { ORDER: ref, ITEM: itemName, REPLACEMENT: replacementName };
+    case "item_refunded":
+      return { ORDER: ref, ITEM: itemName };
+  }
+}
+
+/**
+ * The ad hoc customer-message form's starting subject/body (phase 4) —
+ * `message_default`'s copy, rendered with this order's facts. Store-then-
+ * fallback like {@link buildOrderMessage}: a missing row falls back to the
+ * feature's stated first-time value (a generic subject, an empty body) so
+ * the form never fails to render, it's just unhelpfully blank.
+ */
+export async function buildCustomMessageDefault(
+  order: Order,
+  templateRepo: INotificationTemplateRepository,
+): Promise<{ subject: string; body: string }> {
+  const renderVars = orderConfirmedRenderVars(order);
+  const fallback = { subject: "Update on your order", body: "" };
+
+  const template = await templateRepo.get("message_default");
+  if (!template) return fallback;
+
+  return {
+    subject: template.subject != null ? render(template.subject, renderVars) : fallback.subject,
+    body: render(template.body, renderVars),
+  };
+}
+
+/** The hardcoded copy — the fallback used when a kind has no template row. */
+function fallbackMessage(
+  kind: NotificationKind,
+  order: Order,
+  ref: string,
+  window: string,
+  itemName: string,
+  replacementName: string,
+): NotificationMessage {
   switch (kind) {
     case "order_confirmed":
       return {

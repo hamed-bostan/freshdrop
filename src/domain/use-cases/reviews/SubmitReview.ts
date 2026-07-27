@@ -3,6 +3,7 @@ import type { IReviewRepository, NewReview } from "../../repositories/IReviewRep
 import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { IAdminNotificationRepository } from "../../repositories/IAdminNotificationRepository";
 import type { IEmailSender } from "../../repositories/IEmailSender";
+import type { INotificationTemplateRepository } from "../../repositories/INotificationTemplateRepository";
 import { NotifyAdmins } from "../notifications/NotifyAdmins";
 
 /**
@@ -16,6 +17,7 @@ export class SubmitReview {
     private readonly userRepo: IUserRepository,
     private readonly adminNotifications: IAdminNotificationRepository,
     private readonly emailSender: IEmailSender,
+    private readonly templateRepo: INotificationTemplateRepository,
   ) {}
 
   async execute(input: NewReview): Promise<Review> {
@@ -23,13 +25,16 @@ export class SubmitReview {
 
     // New reviews start `pending` — tell whoever moderates them. Best-effort:
     // the review is already recorded regardless of the fan-out's outcome.
-    await new NotifyAdmins(this.userRepo, this.adminNotifications, this.emailSender).execute("reviews.moderate", {
-      action: "review.submitted",
-      entityType: "review",
-      entityId: review.id,
-      actorId: review.authorId ?? undefined,
-      actorName: input.authorName,
-    });
+    await new NotifyAdmins(this.userRepo, this.adminNotifications, this.emailSender, this.templateRepo).execute(
+      "reviews.moderate",
+      {
+        action: "review.submitted",
+        entityType: "review",
+        entityId: review.id,
+        actorId: review.authorId ?? undefined,
+        actorName: input.authorName,
+      },
+    );
 
     return review;
   }

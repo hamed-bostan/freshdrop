@@ -23,6 +23,7 @@
     "amountRequired": "تعداد واحدها را وارد کنید.",
     "amountTooLarge": "این مبلغ بیش از حد بزرگ است.",
     "amountWhole": "تعداد را به صورت عدد صحیح وارد کنید.",
+    "bodyRequired": "وارد کردن متن پیام الزامی است.",
     "booleanInvalid": "مقدار true/false، yes/no یا 1/0 وارد کنید.",
     "brandInvalid": "برند معتبری انتخاب کنید.",
     "capacityMin": "ظرفیت باید دست‌کم ۱ باشد.",
@@ -79,10 +80,12 @@
     "stageInvalid": "مرحله ارسال معتبری انتخاب کنید.",
     "stockRequired": "موجودی را وارد کنید.",
     "stockWhole": "یک عدد صحیح (۰ یا بیشتر) وارد کنید.",
+    "subjectRequired": "وارد کردن موضوع الزامی است.",
     "timeInvalid": "ساعت معتبر وارد کنید.",
     "timeRequired": "ساعت را وارد کنید.",
     "titleRequired": "وارد کردن عنوان الزامی است.",
-    "titleTooLong": "عنوان بیش از حد طولانی است."
+    "titleTooLong": "عنوان بیش از حد طولانی است.",
+    "unknownVariable": "متغیر ناشناخته {name} — هرگز مقداردهی نمی‌شود."
   },
   "apiErrors": {
     "badRequest": "درخواست قابل پردازش نبود. دوباره تلاش کنید.",
@@ -1343,6 +1346,31 @@
     "save": "ذخیره",
     "saving": "در حال ذخیره…",
     "saveError": "ذخیره انجام نشد. دوباره تلاش کنید."
+  },
+  "dashNotificationTemplates": {
+    "heading": "قالب‌های اعلان",
+    "summary": "متن قابل ویرایش اعلان‌های چرخه سفارش، ایمیل‌های هشدار مدیر، و پیش‌فرض فرم پیام دستی.",
+    "titleLabel": "عنوان",
+    "subjectLabel": "موضوع",
+    "bodyLabel": "متن",
+    "previewHeading": "پیش‌نمایش",
+    "variablesHint": "متغیرهای موجود: {vars}",
+    "save": "ذخیره",
+    "saving": "در حال ذخیره…",
+    "saveError": "ذخیره انجام نشد. دوباره تلاش کنید.",
+    "saved": "ذخیره شد.",
+    "kindOrderConfirmed": "سفارش تأیید شد",
+    "kindOrderOutForDelivery": "در حال ارسال",
+    "kindOrderDelivered": "سفارش تحویل داده شد",
+    "kindReturnApproved": "مرجوعی تأیید شد",
+    "kindItemSubstituted": "کالا جایگزین شد",
+    "kindItemRefunded": "کالا بازپرداخت شد",
+    "kindOrderCancelledOutOfStock": "سفارش لغو شد (ناموجود بودن کالا)",
+    "kindOrderPlaced": "هشدار مدیر: ثبت سفارش",
+    "kindOrderReturnRequested": "هشدار مدیر: درخواست مرجوعی",
+    "kindReviewSubmitted": "هشدار مدیر: ثبت نظر",
+    "kindProductStockDepleted": "هشدار مدیر: اتمام موجودی کالا",
+    "kindMessageDefault": "پیش‌فرض پیام دستی به مشتری"
   },
   "dashPromoCodes": {
     "heading": "کدهای تخفیف",

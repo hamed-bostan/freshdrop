@@ -5,8 +5,10 @@ import { DASHBOARD_ROLES } from "@/src/domain/entities/User";
 import type { IAdminNotificationRepository } from "@/src/domain/repositories/IAdminNotificationRepository";
 import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
 import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
+import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
+import { render } from "@/src/lib/renderTemplate";
 
-/** Plain-English email copy per category — the same un-i18n'd, internal-ops style `TeamNotifier` already uses. */
+/** Plain-English email copy per category — the same un-i18n'd, internal-ops style `TeamNotifier` already uses. Fallback for a missing/never-seeded template row (see {@link NotifyAdmins.emailCopy}). */
 const EMAIL_COPY: Record<AdminNotificationAction, (label: string) => { subject: string; text: string }> = {
   "order.placed": (label) => ({
     subject: "New order placed",
@@ -49,6 +51,7 @@ export class NotifyAdmins {
     private readonly userRepository: IUserRepository,
     private readonly notificationRepository: IAdminNotificationRepository,
     private readonly emailSender: IEmailSender,
+    private readonly templateRepo: INotificationTemplateRepository,
   ) {}
 
   /**
@@ -66,6 +69,7 @@ export class NotifyAdmins {
       const roles = DASHBOARD_ROLES.filter((role) => roleHasPermission(role, permission));
       const recipients = await this.userRepository.listByRoles(roles);
       const label = notification.entityLabel ?? notification.entityId;
+      const { subject, text } = await this.emailCopy(notification.action, label);
 
       await Promise.all(
         recipients
@@ -77,7 +81,6 @@ export class NotifyAdmins {
             // "skip a channel it can't reach rather than fail" standing every
             // outbound notifier here has.
             if (user.email && user.notifiedCategories.includes(notification.action)) {
-              const { subject, text } = EMAIL_COPY[notification.action](label);
               await this.emailSender.send({ to: user.email, subject, text });
             }
           }),
@@ -85,5 +88,20 @@ export class NotifyAdmins {
     } catch (error) {
       console.error("[NOTIFY_ADMINS_FAILED]", permission, JSON.stringify(notification), error);
     }
+  }
+
+  /**
+   * Store-then-fallback: render the admin-editable template row for this
+   * action if one exists, else the hardcoded {@link EMAIL_COPY}. Keeps the
+   * "nothing changes until an admin edits a template" guarantee — an
+   * unedited seeded row renders to the exact same text the hardcoded copy
+   * produces.
+   */
+  private async emailCopy(action: AdminNotificationAction, label: string): Promise<{ subject: string; text: string }> {
+    const template = await this.templateRepo.get(action);
+    if (template?.subject != null) {
+      return { subject: render(template.subject, { LABEL: label }), text: render(template.body, { LABEL: label }) };
+    }
+    return EMAIL_COPY[action](label);
   }
 }

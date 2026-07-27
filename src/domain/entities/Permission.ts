@@ -57,6 +57,13 @@ export const PERMISSIONS = [
    * endpoint where an admin picks the amount.
    */
   "refunds.issue",
+  /**
+   * Edit the copy of every order-lifecycle notification, admin-alert email,
+   * and the ad hoc customer-message default. Its own permission, not folded
+   * into `settings.write`: it changes what every customer and admin is told
+   * store-wide, a different blast radius than one commercial rate.
+   */
+  "notifications.manage",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -95,6 +102,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     "activity.view",
     "settings.write",
     "refunds.issue",
+    "notifications.manage",
   ],
   owner: [
     "dashboard.view",
@@ -108,6 +116,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     "team.manage",
     "settings.write",
     "refunds.issue",
+    "notifications.manage",
   ],
 };
 

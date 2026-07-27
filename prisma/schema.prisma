@@ -187,6 +187,26 @@ model AdminNotification {
   @@map("admin_notifications")
 }
 
+// Editable copy for order-lifecycle push notifications, admin-alert emails,
+// and the ad hoc customer-message form's starting subject/body — see
+// `NotificationTemplate` for the 12 `kind` values and their `{{VAR}}`
+// allowlists. Seeded by the `add_notification_templates` migration from the
+// exact strings previously hardcoded in `messages.ts`/`NotifyAdmins.ts`, so
+// shipping this table changes no send until an admin edits a row. A missing
+// row (never happens post-seed, but guards a future manual delete) falls
+// back to that same hardcoded copy rather than sending something broken.
+model NotificationTemplate {
+  kind      String   @id
+  // Push/SMS-style copy (the 7 lifecycle kinds). Null for email-style kinds.
+  title     String?
+  // Email-style copy (the 4 admin-alert kinds + the message-default row). Null for push-style kinds.
+  subject   String?
+  body      String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("notification_templates")
+}
+
 // An order is a faithful historical record: each line snapshots the product's
 // name + image at purchase time, so the order reads correctly even if the catalog
 // changes later. `productId` is a plain reference (not a DB foreign key) — same

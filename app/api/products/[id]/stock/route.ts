@@ -9,6 +9,7 @@ import {
   userRepository,
   adminNotificationRepository,
   emailSender,
+  notificationTemplateRepository,
 } from "@/src/infrastructure/container";
 import { getSessionWith } from "@/src/lib/require-permission";
 import { stockAdjustmentSchema } from "@/src/contracts/stock-adjustment-schema";
@@ -85,6 +86,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext): Pro
       stockAlertNotifier,
       adminNotificationRepository,
       emailSender,
+      notificationTemplateRepository,
     ).execute({
       productId: id,
       ...parsed.data,

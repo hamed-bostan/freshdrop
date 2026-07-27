@@ -8,6 +8,7 @@ import {
   userRepository,
   adminNotificationRepository,
   emailSender,
+  notificationTemplateRepository,
 } from "@/src/infrastructure/container";
 import { getSessionWith } from "@/src/lib/require-permission";
 import { getUserSession } from "@/src/lib/require-auth";
@@ -44,6 +45,7 @@ export async function POST(_request: NextRequest, { params }: RouteContext): Pro
       userRepository,
       adminNotificationRepository,
       emailSender,
+      notificationTemplateRepository,
     ).execute({
       userId: session.user.id,
       orderId: id,

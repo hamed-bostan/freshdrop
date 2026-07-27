@@ -6,6 +6,7 @@ import { serverApiGet } from "@/src/lib/api/server-client";
 import { orderResponseSchema } from "@/src/presentation/orders/order-response-schema";
 import type { OrderPipelineCounts } from "@/src/domain/use-cases/orders/GetOrderPipelineCounts";
 import { orderCountsResponseSchema } from "./order-counts-response-schema";
+import { orderMessageDefaultResponseSchema, type OrderMessageDefaultWire } from "./order-message-default-response-schema";
 
 /** What `GET /api/admin/orders` promises: a page of orders plus the total behind it. */
 const orderPageResponseSchema = pageResponseSchema(orderResponseSchema);
@@ -46,5 +47,10 @@ export const ordersServerApi = {
       if (error instanceof ApiError && error.status === 404) return null;
       throw error;
     }
+  },
+
+  /** The ad hoc customer-message form's starting subject/body for this order (phase 4). */
+  messageDefault(id: string): Promise<OrderMessageDefaultWire> {
+    return serverApiGet(`/admin/orders/${id}/message-default`, orderMessageDefaultResponseSchema);
   },
 };

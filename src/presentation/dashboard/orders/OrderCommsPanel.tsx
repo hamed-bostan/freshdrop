@@ -8,11 +8,18 @@ import type { OrderNotificationInput } from "@/src/contracts/order-notification-
 import { Button, Icon, Input, Textarea } from "@/src/presentation/design-system";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { ordersApi } from "./order-api";
+import type { OrderMessageDefaultWire } from "./order-message-default-response-schema";
 
 type OrderCommsPanelProps = {
   order: Order;
   /** Whether the customer has an email address on file — a one-off note needs one. */
   canEmail: boolean;
+  /**
+   * The message form's starting subject/body (phase 4) — the `message_default`
+   * template rendered for this order. `undefined` when the viewer can't send
+   * (the page never fetches it then); still fully editable before send.
+   */
+  messageDefault?: OrderMessageDefaultWire;
 };
 
 /**
@@ -32,12 +39,15 @@ type OrderCommsPanelProps = {
  * No `router.refresh()` after a send: nothing about the order changed. The panel
  * reports what it did and leaves the page as it was.
  */
-export function OrderCommsPanel({ order, canEmail }: OrderCommsPanelProps) {
+export function OrderCommsPanel({ order, canEmail, messageDefault }: OrderCommsPanelProps) {
   const t = useTranslations("dashOrderComms");
   const tApiErrors = useTranslations("apiErrors");
 
-  const [subject, setSubject] = React.useState("");
-  const [body, setBody] = React.useState("");
+  // Pre-filled from the template default on mount, still fully editable before
+  // send — a starting point, not a locked value. `useState`'s initializer (not
+  // an effect) so it never clobbers what an admin already typed.
+  const [subject, setSubject] = React.useState(messageDefault?.subject ?? "");
+  const [body, setBody] = React.useState(messageDefault?.body ?? "");
   const [sent, setSent] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();

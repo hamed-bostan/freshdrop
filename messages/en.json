@@ -23,6 +23,7 @@
     "amountRequired": "Enter how many units.",
     "amountTooLarge": "That amount is too large.",
     "amountWhole": "Enter a whole number of units.",
+    "bodyRequired": "A message body is required.",
     "booleanInvalid": "Enter true/false, yes/no, or 1/0.",
     "brandInvalid": "Choose a valid brand.",
     "capacityMin": "Capacity must be at least 1.",
@@ -79,10 +80,12 @@
     "stageInvalid": "Pick a valid delivery stage.",
     "stockRequired": "Enter a stock quantity.",
     "stockWhole": "Enter a whole number (0 or more).",
+    "subjectRequired": "A subject is required.",
     "timeInvalid": "Enter a valid time.",
     "timeRequired": "Enter a time.",
     "titleRequired": "A title is required.",
-    "titleTooLong": "Title is too long."
+    "titleTooLong": "Title is too long.",
+    "unknownVariable": "Unknown variable {name} — it will never be filled in."
   },
   "apiErrors": {
     "badRequest": "The request couldn't be read. Please try again.",
@@ -1343,6 +1346,31 @@
     "save": "Save",
     "saving": "Saving…",
     "saveError": "Couldn't save. Please try again."
+  },
+  "dashNotificationTemplates": {
+    "heading": "Notification templates",
+    "summary": "Editable copy for order-lifecycle notifications, admin-alert emails, and the ad hoc message form's default.",
+    "titleLabel": "Title",
+    "subjectLabel": "Subject",
+    "bodyLabel": "Body",
+    "previewHeading": "Preview",
+    "variablesHint": "Available variables: {vars}",
+    "save": "Save",
+    "saving": "Saving…",
+    "saveError": "Couldn't save. Please try again.",
+    "saved": "Saved.",
+    "kindOrderConfirmed": "Order confirmed",
+    "kindOrderOutForDelivery": "Out for delivery",
+    "kindOrderDelivered": "Order delivered",
+    "kindReturnApproved": "Return approved",
+    "kindItemSubstituted": "Item substituted",
+    "kindItemRefunded": "Item refunded",
+    "kindOrderCancelledOutOfStock": "Order cancelled (out of stock)",
+    "kindOrderPlaced": "Admin alert: order placed",
+    "kindOrderReturnRequested": "Admin alert: return requested",
+    "kindReviewSubmitted": "Admin alert: review submitted",
+    "kindProductStockDepleted": "Admin alert: product out of stock",
+    "kindMessageDefault": "Ad hoc customer message default"
   },
   "dashPromoCodes": {
     "heading": "Promo codes",

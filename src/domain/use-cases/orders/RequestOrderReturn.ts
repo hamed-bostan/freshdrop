@@ -4,6 +4,7 @@ import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { IAdminNotificationRepository } from "../../repositories/IAdminNotificationRepository";
 import type { IEmailSender } from "../../repositories/IEmailSender";
+import type { INotificationTemplateRepository } from "../../repositories/INotificationTemplateRepository";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
 import { NotifyAdmins } from "../notifications/NotifyAdmins";
@@ -29,6 +30,7 @@ export class RequestOrderReturn {
     private readonly userRepo: IUserRepository,
     private readonly adminNotifications: IAdminNotificationRepository,
     private readonly emailSender: IEmailSender,
+    private readonly templateRepo: INotificationTemplateRepository,
   ) {}
 
   async execute({ userId, orderId }: RequestOrderReturnInput): Promise<Order> {
@@ -56,14 +58,17 @@ export class RequestOrderReturn {
     // Best-effort, like every other admin notification: the request already
     // stands regardless of whether the fan-out succeeds.
     const customer = await this.userRepo.getById(userId);
-    await new NotifyAdmins(this.userRepo, this.adminNotifications, this.emailSender).execute("orders.fulfill", {
-      action: "order.returnRequested",
-      entityType: "order",
-      entityId: requested.id,
-      entityLabel: requested.id,
-      actorId: userId,
-      actorName: customer?.name,
-    });
+    await new NotifyAdmins(this.userRepo, this.adminNotifications, this.emailSender, this.templateRepo).execute(
+      "orders.fulfill",
+      {
+        action: "order.returnRequested",
+        entityType: "order",
+        entityId: requested.id,
+        entityLabel: requested.id,
+        actorId: userId,
+        actorName: customer?.name,
+      },
+    );
 
     return requested;
   }

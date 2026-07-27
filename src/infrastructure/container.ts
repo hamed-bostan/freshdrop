@@ -28,6 +28,7 @@ import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
 import type { ITeamNotifier } from "@/src/domain/repositories/ITeamNotifier";
 import type { ITaxSettingsRepository } from "@/src/domain/repositories/ITaxSettingsRepository";
 import type { IRefundRepository } from "@/src/domain/repositories/IRefundRepository";
+import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
 
 import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepository";
 import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
@@ -62,6 +63,7 @@ import { NominatimGeocodingRepository } from "./repositories/NominatimGeocodingR
 import { SupabaseImageStorageRepository } from "./repositories/SupabaseImageStorageRepository";
 import { PrismaTaxSettingsRepository } from "./repositories/PrismaTaxSettingsRepository";
 import { PrismaRefundRepository } from "./repositories/PrismaRefundRepository";
+import { PrismaNotificationTemplateRepository } from "./repositories/PrismaNotificationTemplateRepository";
 
 const SMS_IR_DEFAULT_TEMPLATE_ID = 562447;
 
@@ -190,6 +192,12 @@ export const taxSettingsRepository: ITaxSettingsRepository = new PrismaTaxSettin
 // outside a unit of work; `PrismaUnitOfWork` binds its own instance for writers
 // that need it in the same transaction as the order/wallet change it accompanies.
 export const refundRepository: IRefundRepository = new PrismaRefundRepository();
+// Editable copy for order-lifecycle notifications and admin-alert emails —
+// real storage from the start, PostgreSQL via Prisma. All 12 rows are seeded
+// by the migration; `buildOrderMessage`/`NotifyAdmins` fall back to their
+// hardcoded copy if a row is ever missing (see `NotificationTemplate`).
+export const notificationTemplateRepository: INotificationTemplateRepository =
+  new PrismaNotificationTemplateRepository();
 
 // Real SMS OTP when an SMS.ir key is configured; the in-memory mock otherwise so
 // local dev works without credentials (the mock surfaces the code in the UI).
@@ -234,7 +242,11 @@ const notificationChannels: INotificationChannel[] = [
     : new LoggingNotificationChannel("sms"),
   new LoggingNotificationChannel("push"),
 ];
-export const orderNotifier: IOrderNotifier = new OrderNotifier(userRepository, notificationChannels);
+export const orderNotifier: IOrderNotifier = new OrderNotifier(
+  userRepository,
+  notificationChannels,
+  notificationTemplateRepository,
+);
 
 // Transactional email. Real SMTP when a host is configured, a logging stub
 // otherwise — the same real-or-mock switch used for `authRepository`, so local dev

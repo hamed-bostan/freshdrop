@@ -7,6 +7,7 @@ import {
   userRepository,
   adminNotificationRepository,
   emailSender,
+  notificationTemplateRepository,
 } from "@/src/infrastructure/container";
 import { getUserSession } from "@/src/lib/require-auth";
 import { reviewSubmissionSchema } from "@/src/contracts/review-schema";
@@ -69,6 +70,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       userRepository,
       adminNotificationRepository,
       emailSender,
+      notificationTemplateRepository,
     ).execute({
       productId: parsed.data.productId,
       // The identity, alongside the display snapshot below — both from the session,

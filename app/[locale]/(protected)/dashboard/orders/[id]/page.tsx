@@ -44,6 +44,10 @@ export default async function DashboardOrderPage({ params }: DashboardOrderPageP
     sessionHas(session, "refunds.issue"),
   ]);
 
+  // The ad hoc message form's starting subject/body (phase 4) — only fetched
+  // when the viewer can actually send one, matching the endpoint's own gate.
+  const messageDefault = canNotify ? await ordersServerApi.messageDefault(order.id) : undefined;
+
   return (
     <OrderDetailScreen
       order={order}
@@ -54,6 +58,7 @@ export default async function DashboardOrderPage({ params }: DashboardOrderPageP
       canNotify={canNotify}
       canNote={canNote}
       canIssueRefund={canIssueRefund}
+      messageDefault={messageDefault}
     />
   );
 }

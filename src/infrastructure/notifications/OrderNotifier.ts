@@ -3,6 +3,7 @@ import type { NotificationKind, NotificationRecipient } from "@/src/domain/entit
 import type { INotificationChannel } from "@/src/domain/repositories/INotificationChannel";
 import type { IOrderNotifier } from "@/src/domain/repositories/IOrderNotifier";
 import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
+import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
 import { buildOrderMessage, type SubstitutionContext } from "./messages";
 
 /**
@@ -20,6 +21,7 @@ export class OrderNotifier implements IOrderNotifier {
   constructor(
     private readonly userRepo: IUserRepository,
     private readonly channels: readonly INotificationChannel[],
+    private readonly templateRepo: INotificationTemplateRepository,
   ) {}
 
   orderConfirmed(order: Order): Promise<void> {
@@ -64,7 +66,7 @@ export class OrderNotifier implements IOrderNotifier {
         phone: user?.phone ?? null,
         name: user?.name ?? "",
       };
-      const message = buildOrderMessage(kind, order, context);
+      const message = await buildOrderMessage(kind, order, this.templateRepo, context);
 
       const results = await Promise.allSettled(
         this.channels.map((channel) => channel.send(recipient, message)),
