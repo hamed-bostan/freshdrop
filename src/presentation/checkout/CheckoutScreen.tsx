@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { MapPin, Clock, CreditCard, ClipboardList, Replace } from "lucide-react";
+import { MapPin, Clock, CreditCard, ClipboardList, Replace, FileText } from "lucide-react";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import type { Cart } from "@/src/domain/entities/Cart";
 import type { SubstitutionPreference } from "@/src/domain/entities/Order";
@@ -10,7 +10,7 @@ import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
 import type { SavedCard } from "@/src/domain/entities/Wallet";
-import { Button, FormMessage } from "@/src/presentation/design-system";
+import { Button, FormMessage, Textarea } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { DeliveryLocationPickerSheet } from "@/src/presentation/delivery-location/DeliveryLocationPickerSheet";
 import { DeliveryLocationSummary } from "@/src/presentation/delivery-location/components/DeliveryLocationSummary";
@@ -20,14 +20,19 @@ import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { useSessionStorageState } from "@/src/lib/hooks/useSessionStorageState";
 import {
   CheckoutSection,
+  CheckoutStepper,
   DeliverySlotPicker,
   OrderSummaryCard,
   OrderTotals,
   SubstitutionPreferenceList,
+  type CheckoutStepId,
 } from "./components";
 import type { SlotSelection } from "./components/DeliverySlotPicker";
 import { checkoutApi } from "./checkout-api";
 import { useCart } from "@/src/presentation/cart/CartProvider";
+
+/** The checkout form's own character cap on the delivery-instructions note. */
+const DELIVERY_INSTRUCTIONS_MAX = 150;
 
 interface CheckoutScreenProps {
   cart: Cart;
@@ -51,6 +56,7 @@ interface CheckoutScreenProps {
 // the server, written on change), not ephemeral checkout state.
 const SLOT_STORAGE_KEY = "freshdrop:checkout:slot";
 const SUBSTITUTIONS_STORAGE_KEY = "freshdrop:checkout:substitutions";
+const NOTES_STORAGE_KEY = "freshdrop:checkout:notes";
 
 /** The first window that can still be booked, used as the default selection. */
 function firstBookableSlot(days: DeliverySlotDay[]): SlotSelection | null {
@@ -134,8 +140,31 @@ export default function CheckoutScreen({
   const [substitutions, setSubstitutions, clearSubstitutions] = useSessionStorageState<
     Record<string, SubstitutionPreference>
   >(SUBSTITUTIONS_STORAGE_KEY, {}, reviveSubstitutions);
+  const [notes, setNotes, clearNotes] = useSessionStorageState<string>(NOTES_STORAGE_KEY, "");
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
+  // The 3-step wizard's current step. Not persisted: a reload lands back on
+  // Delivery, same as any of the selections above would still be there to
+  // move past again — worth keeping simple rather than a second storage key.
+  const [step, setStep] = React.useState<CheckoutStepId>("delivery");
+
+  const goToPayment = () => {
+    if (!selectedAddress) {
+      setError(t("errAddress"));
+      return;
+    }
+    if (!slot) {
+      setError(t("errTime"));
+      return;
+    }
+    setError(null);
+    setStep("payment");
+  };
+
+  const goToReview = () => {
+    setError(null);
+    setStep("review");
+  };
 
   const selectPayment = (id: string) => {
     const previous = paymentId;
@@ -176,6 +205,7 @@ export default function CheckoutScreen({
             productId: item.product.id,
             preference: substitutions[item.product.id] ?? "substitute",
           })),
+          deliveryInstructions: notes.trim() || undefined,
         });
         // The server cleared the cart and recorded the order — drop the ephemeral
         // selections so the next checkout starts fresh, then navigate. The payment
@@ -183,6 +213,7 @@ export default function CheckoutScreen({
         // screen re-reads from the server.
         clearSlot();
         clearSubstitutions();
+        clearNotes();
         // The order cleared the cart server-side: resync the shared cart store so
         // the nav badge empties, then navigate and refresh the confirmation RSC.
         refreshCart();
@@ -198,86 +229,129 @@ export default function CheckoutScreen({
     <form onSubmit={placeOrder} className="flex min-h-dvh flex-col gap-6 px-6 pb-28">
       <PageHeader title={t("title")} />
 
-      <CheckoutSection
-        icon={MapPin}
-        title={t("deliverTo")}
-        action={
-          selectedAddress ? (
-            <DeliveryLocationPickerSheet
-              locations={deliveryLocations}
-              trigger={
-                <button type="button" className="text-body-b8 text-primary">
-                  {t("change")}
-                </button>
-              }
-            />
-          ) : (
-            <Link href="/profile/addresses/new" className="text-body-b8 text-primary">
-              {t("addNewAddress")}
-            </Link>
-          )
-        }
-      >
-        {selectedAddress ? (
-          <div className="flex items-center rounded-card-xl border border-foreground bg-surface px-4 py-2">
-            <DeliveryLocationSummary location={selectedAddress} />
+      <CheckoutStepper current={step} onSelect={setStep} />
+
+      {step === "delivery" && (
+        <>
+          <CheckoutSection
+            icon={MapPin}
+            title={t("deliverTo")}
+            action={
+              selectedAddress ? (
+                <DeliveryLocationPickerSheet
+                  locations={deliveryLocations}
+                  trigger={
+                    <button type="button" className="text-body-b8 text-primary">
+                      {t("change")}
+                    </button>
+                  }
+                />
+              ) : (
+                <Link href="/profile/addresses/new" className="text-body-b8 text-primary">
+                  {t("addNewAddress")}
+                </Link>
+              )
+            }
+          >
+            {selectedAddress ? (
+              <div className="flex items-center rounded-card-xl border border-foreground bg-surface px-4 py-2">
+                <DeliveryLocationSummary location={selectedAddress} />
+              </div>
+            ) : (
+              <p className="text-body-b8 text-muted-foreground">{t("noAddress")}</p>
+            )}
+          </CheckoutSection>
+
+          <CheckoutSection icon={Clock} title={t("deliveryTime")}>
+            <DeliverySlotPicker days={deliverySlotDays} selected={slot} onSelect={setSlot} />
+          </CheckoutSection>
+
+          <CheckoutSection
+            icon={FileText}
+            title={t("deliveryInstructions")}
+            action={<span className="text-body-b9 text-muted-foreground">{t("deliveryInstructionsOptional")}</span>}
+          >
+            <div className="flex flex-col gap-1">
+              <Textarea
+                value={notes}
+                onChange={(event) => setNotes(event.target.value.slice(0, DELIVERY_INSTRUCTIONS_MAX))}
+                maxLength={DELIVERY_INSTRUCTIONS_MAX}
+                placeholder={t("deliveryInstructionsPlaceholder")}
+                aria-label={t("deliveryInstructions")}
+              />
+              <p className="text-end text-body-b9 text-muted-foreground">
+                {t("charCount", { count: notes.length, max: DELIVERY_INSTRUCTIONS_MAX })}
+              </p>
+            </div>
+          </CheckoutSection>
+        </>
+      )}
+
+      {step === "payment" && (
+        <CheckoutSection icon={CreditCard} title={t("paymentMethod")}>
+          <div className="flex flex-col gap-2">
+            {paymentMethods.map((method) => (
+              <PaymentMethodOption
+                key={method.id}
+                method={method}
+                selected={method.id === paymentId}
+                onSelect={selectPayment}
+              />
+            ))}
+            {savedCards.map((card) => (
+              <SavedCardOption
+                key={card.id}
+                card={card}
+                selected={card.id === paymentId}
+                onSelect={selectPayment}
+              />
+            ))}
           </div>
-        ) : (
-          <p className="text-body-b8 text-muted-foreground">{t("noAddress")}</p>
-        )}
-      </CheckoutSection>
+        </CheckoutSection>
+      )}
 
-      <CheckoutSection icon={Clock} title={t("deliveryTime")}>
-        <DeliverySlotPicker days={deliverySlotDays} selected={slot} onSelect={setSlot} />
-      </CheckoutSection>
+      {step === "review" && (
+        <>
+          <CheckoutSection icon={ClipboardList} title={t("orderSummary")}>
+            <OrderSummaryCard items={cart.items} />
+          </CheckoutSection>
 
-      <CheckoutSection icon={CreditCard} title={t("paymentMethod")}>
-        <div className="flex flex-col gap-2">
-          {paymentMethods.map((method) => (
-            <PaymentMethodOption
-              key={method.id}
-              method={method}
-              selected={method.id === paymentId}
-              onSelect={selectPayment}
+          <CheckoutSection icon={Replace} title={t("ifOutOfStock")}>
+            <SubstitutionPreferenceList
+              items={cart.items}
+              value={substitutions}
+              onChange={setSubstitution}
             />
-          ))}
-          {savedCards.map((card) => (
-            <SavedCardOption
-              key={card.id}
-              card={card}
-              selected={card.id === paymentId}
-              onSelect={selectPayment}
-            />
-          ))}
-        </div>
-      </CheckoutSection>
+          </CheckoutSection>
 
-      <CheckoutSection icon={ClipboardList} title={t("orderSummary")}>
-        <OrderSummaryCard items={cart.items} />
-      </CheckoutSection>
-
-      <CheckoutSection icon={Replace} title={t("ifOutOfStock")}>
-        <SubstitutionPreferenceList
-          items={cart.items}
-          value={substitutions}
-          onChange={setSubstitution}
-        />
-      </CheckoutSection>
-
-      <OrderTotals
-        subtotal={cart.subtotal}
-        shipping={cart.shipping}
-        discount={cart.discount}
-        taxAmount={cart.taxAmount}
-      />
+          <OrderTotals
+            subtotal={cart.subtotal}
+            shipping={cart.shipping}
+            discount={cart.discount}
+            taxAmount={cart.taxAmount}
+          />
+        </>
+      )}
 
       {error && (
         <FormMessage size="md" className="text-center">{error}</FormMessage>
       )}
 
-      <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full">
-        {pending ? t("placingOrder") : t("placeOrder")}
-      </Button>
+      {step === "delivery" && (
+        <Button type="button" size="lg" onClick={goToPayment} className="mt-auto w-full">
+          {t("continueToPayment")}
+        </Button>
+      )}
+      {step === "payment" && (
+        <Button type="button" size="lg" onClick={goToReview} className="mt-auto w-full">
+          {t("continueToReview")}
+        </Button>
+      )}
+      {step === "review" && (
+        <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full">
+          {pending ? t("placingOrder") : t("placeOrder")}
+        </Button>
+      )}
     </form>
   );
 }
