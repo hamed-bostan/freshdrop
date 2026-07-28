@@ -9,7 +9,6 @@ import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { DeliveryLocationSummary } from "@/src/presentation/delivery-location/components/DeliveryLocationSummary";
 import { CheckoutSection } from "./CheckoutSection";
-import { OrderSummaryCard } from "./OrderSummaryCard";
 import { OrderTotals } from "./OrderTotals";
 import { SubstitutionPreferenceList } from "./SubstitutionPreferenceList";
 import type { CheckoutStepId } from "./CheckoutStepper";
@@ -98,11 +97,7 @@ export function CheckoutReviewStep({
       </CheckoutSection>
 
       <CheckoutSection icon={ClipboardList} title={t("orderSummary")}>
-        <OrderSummaryCard items={items} />
-        <div className="mt-4 flex flex-col gap-2">
-          <h3 className="text-body-b8 text-muted-foreground">{t("ifOutOfStock")}</h3>
-          <SubstitutionPreferenceList items={items} value={substitutions} onChange={onSubstitutionChange} />
-        </div>
+        <SubstitutionPreferenceList items={items} value={substitutions} onChange={onSubstitutionChange} />
       </CheckoutSection>
 
       <CheckoutSection icon={FileText} title={t("deliveryInstructions")} action={editLink("delivery")}>
