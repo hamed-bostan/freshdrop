@@ -137,6 +137,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       deliveryDate: parsed.data.deliveryDate,
       deliveryWindowId: parsed.data.deliveryWindowId,
       substitutionPreferences,
+      deliveryInstructions: parsed.data.deliveryInstructions,
+      walletApplied: parsed.data.walletApplied,
     });
     return NextResponse.json(order, { status: 201 });
   } catch (error) {

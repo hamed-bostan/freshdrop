@@ -24,10 +24,17 @@ export const placeOrderSchema = z.object({
     .array(
       z.object({
         productId: z.string().trim().min(1),
-        preference: z.enum(["substitute", "refund"]),
+        preference: z.enum(["substitute", "refund", "contact"]),
       }),
     )
     .optional(),
+  // Free-text note for the courier — optional, capped to match the checkout
+  // form's own character counter.
+  deliveryInstructions: z.string().trim().max(150).optional(),
+  // How much of the order total to pay from the wallet balance. The server still
+  // re-validates it against the recomputed cart total and the actual balance —
+  // this only bounds the shape of what a caller may propose.
+  walletApplied: z.number().min(0).optional(),
 });
 
 export type PlaceOrderInput = z.infer<typeof placeOrderSchema>;

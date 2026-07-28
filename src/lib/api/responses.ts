@@ -5,6 +5,7 @@ import { ValidationError } from "@/src/domain/errors/ValidationError";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { InsufficientStockError } from "@/src/domain/errors/InsufficientStockError";
 import { SlotUnavailableError } from "@/src/domain/errors/SlotUnavailableError";
+import { InsufficientWalletBalanceError } from "@/src/domain/errors/InsufficientWalletBalanceError";
 import { ResourceInUseError } from "@/src/domain/errors/ResourceInUseError";
 import { AdminRevokeError } from "@/src/domain/errors/AdminRevokeError";
 
@@ -75,6 +76,12 @@ export function errorResponseFromException(error: unknown, context: string): Nex
   // landed. 409 Conflict — the message names the slot so the shopper can pick another.
   if (error instanceof SlotUnavailableError) {
     return errorResponse(409, { message: error.message, code: "SLOT_UNAVAILABLE" });
+  }
+
+  // The wallet balance the shopper applied at checkout no longer covers it
+  // (raced another spend, or it changed since the screen loaded). 409 Conflict.
+  if (error instanceof InsufficientWalletBalanceError) {
+    return errorResponse(409, { message: error.message, code: "INSUFFICIENT_WALLET_BALANCE" });
   }
 
   // Something still depends on the record being removed (e.g. a delivery window

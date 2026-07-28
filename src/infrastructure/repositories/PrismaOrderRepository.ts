@@ -274,6 +274,8 @@ type OrderRow = {
   deliveryDate: string | null;
   deliveryWindowId: string | null;
   deliveryWindow: string | null;
+  deliveryInstructions: string | null;
+  walletApplied: number;
   items: {
     id: string;
     productId: string;
@@ -372,6 +374,8 @@ function toOrderCreateData(input: NewOrder): Prisma.OrderCreateInput {
     deliveryDate: input.deliveryDate ?? null,
     deliveryWindowId: input.deliveryWindowId ?? null,
     deliveryWindow: input.deliveryWindow ?? null,
+    deliveryInstructions: input.deliveryInstructions ?? null,
+    walletApplied: input.walletApplied ?? 0,
     items: {
       create: input.items.map((item, index) => ({
         productId: item.productId,
@@ -445,6 +449,8 @@ function toOrder(row: OrderRow): Order {
     deliveryDate: row.deliveryDate ?? undefined,
     deliveryWindowId: row.deliveryWindowId ?? undefined,
     deliveryWindow: row.deliveryWindow ?? undefined,
+    deliveryInstructions: row.deliveryInstructions ?? undefined,
+    walletApplied: row.walletApplied,
     items,
     // The correct value for a brand-new order (`createOrder`); every other caller
     // overwrites this with the real ledger via `attachRefund`/`attachRefunds`.

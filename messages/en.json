@@ -477,6 +477,7 @@
       "refundCancelledOrderDelivery": "Refund for cancelled order delivery",
       "refundReturnedOrder": "Refund for returned order",
       "manualRefund": "Refund issued by support",
+      "appliedToOrder": "Applied to order at checkout",
       "refundOutOfStock": "Refund for out-of-stock {item}",
       "substitutionSaving": "Substitution saving for {item}"
     }

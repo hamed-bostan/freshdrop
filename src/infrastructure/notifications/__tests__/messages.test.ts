@@ -23,6 +23,7 @@ function order(overrides: Partial<Order> = {}): Order {
     taxAmount: null,
     taxRate: null,
     items: [],
+    walletApplied: 0,
     refunds: [],
     ...overrides,
   };

@@ -102,4 +102,34 @@ export class PrismaWalletRepository implements IWalletRepository {
       });
     });
   }
+
+  async deductFunds(
+    userId: string,
+    amount: number,
+    reason: WalletTransactionReason = { kind: "appliedToOrder" },
+  ): Promise<boolean> {
+    return inTransaction(this.db, async (tx) => {
+      // `balance >= amount` is folded into the WHERE clause, so the check and the
+      // decrement are one atomic statement — the same oversell guard the delivery
+      // slot claim uses. `count` is 1 only when this call actually took the funds.
+      const result = await tx.walletAccount.updateMany({
+        where: { userId, balance: { gte: amount } },
+        data: { balance: { decrement: amount } },
+      });
+      if (result.count === 0) return false;
+
+      await tx.walletTransaction.create({
+        data: {
+          userId,
+          description: describeTransaction(reason),
+          reason: reason.kind,
+          reasonItem: "item" in reason ? reason.item : null,
+          amount,
+          type: "debit",
+          date: new Date(),
+        },
+      });
+      return true;
+    });
+  }
 }

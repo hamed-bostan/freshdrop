@@ -47,6 +47,10 @@ export type CreateOrderInput = {
    * default of "replace it with something comparable".
    */
   substitutionPreferences?: Record<string, SubstitutionPreference>;
+  /** Free-text note for the courier, captured at checkout. */
+  deliveryInstructions?: string;
+  /** How much of the cart's total to pay from the customer's wallet balance. */
+  walletApplied?: number;
 };
 
 /**

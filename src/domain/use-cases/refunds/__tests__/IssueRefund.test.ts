@@ -53,6 +53,7 @@ function order(overrides: Partial<Order> & Pick<Order, "items">): Order {
     total: 105,
     taxAmount: null,
     taxRate: null,
+    walletApplied: 0,
     refunds: [],
     ...overrides,
   };

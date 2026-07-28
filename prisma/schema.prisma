@@ -267,6 +267,13 @@ model Order {
   deliveryDate     String? @map("delivery_date")
   deliveryWindowId String? @map("delivery_window_id")
   deliveryWindow   String? @map("delivery_window")
+  // Free-text courier note captured at checkout (gate code, "leave with
+  // neighbour", …). Null for legacy orders and whenever the shopper left it blank.
+  deliveryInstructions String? @map("delivery_instructions")
+  // How much of `total` was paid from the customer's wallet balance, captured at
+  // checkout; the rest was charged to the payment method on the order. Defaults
+  // to 0 so orders placed before the wallet could be used this way stay valid.
+  walletApplied Float @default(0) @map("wallet_applied")
   items     OrderItem[]
   createdAt DateTime    @default(now()) @map("created_at")
   updatedAt DateTime    @updatedAt @map("updated_at")
@@ -365,8 +372,8 @@ model OrderItem {
   // Preserves the authored line order for the thumbnails on the order card.
   position  Int
   // Grocery substitutions. `substitutionPreference` is the customer's out-of-stock
-  // pre-approval captured at checkout ("substitute" | "refund"); it defaults to
-  // "substitute" (the grocery norm) so legacy rows stay valid. The `substitution*`
+  // pre-approval captured at checkout ("substitute" | "refund" | "contact"); it
+  // defaults to "substitute" (the grocery norm) so legacy rows stay valid. The `substitution*`
   // columns record a picker's resolution and are null until a line is resolved:
   // `substitutionStatus` is "substituted" | "refunded"; the `replacement*` snapshot
   // is set only when substituted. `substitutionRefundAmount` is the exact amount

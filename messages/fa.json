@@ -477,6 +477,7 @@
       "refundCancelledOrderDelivery": "بازپرداخت هزینه ارسال سفارش لغوشده",
       "refundReturnedOrder": "بازپرداخت سفارش مرجوعی",
       "manualRefund": "بازپرداخت صادرشده توسط پشتیبانی",
+      "appliedToOrder": "استفاده‌شده در سفارش هنگام تسویه‌حساب",
       "refundOutOfStock": "بازپرداخت کالای ناموجود: {item}",
       "substitutionSaving": "صرفه‌جویی جایگزینی: {item}"
     }

@@ -261,6 +261,8 @@ export class MockOrderRepository implements IOrderRepository {
         taxRate: null,
         stage: this.stages.get(seed.id) ?? undefined,
         items,
+        // Seeded demo orders predate wallet-at-checkout — none of them used it.
+        walletApplied: 0,
         // Seeded/mock orders carry no refund ledger — there's nothing behind them.
         refunds: [],
       };

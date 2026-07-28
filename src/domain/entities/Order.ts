@@ -47,8 +47,10 @@ export type OrderPhase = "current" | "previous";
  * - `substitute` — the customer is happy to receive a comparable replacement the
  *   picker chooses; they're only ever charged the lower of the two prices.
  * - `refund` — no substitution: the line is dropped and its value refunded.
+ * - `contact` — the picker holds the line and reaches out to the customer
+ *   before either substituting or refunding it.
  */
-export type SubstitutionPreference = "substitute" | "refund";
+export type SubstitutionPreference = "substitute" | "refund" | "contact";
 
 /**
  * How the customer takes delivery of the order — the choice made at checkout.
@@ -217,6 +219,20 @@ export type Order = {
   deliveryDate?: string;
   deliveryWindowId?: string;
   deliveryWindow?: string;
+  /**
+   * A note the shopper left for the courier at checkout (gate code, "leave with
+   * neighbour", …) — free text, capped at 150 characters by the checkout form.
+   * `undefined` when none was given, including every order placed before the
+   * field existed.
+   */
+  deliveryInstructions?: string;
+  /**
+   * How much of `total` was paid from the customer's wallet balance, captured at
+   * checkout — the rest (`total - walletApplied`) was charged to the payment
+   * method on the order. 0 when no wallet balance was applied, including every
+   * order placed before the wallet could be used this way.
+   */
+  walletApplied: number;
   /**
    * Every `Refund` recorded against this order, oldest first — the ledger, read
    * alongside the order so the money functions below and the presentation layer

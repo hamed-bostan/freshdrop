@@ -35,7 +35,7 @@ const orderItemResponseSchema = z.object({
   imageUrl: z.string(),
   quantity: z.number(),
   price: z.number(),
-  substitutionPreference: z.enum(["substitute", "refund"]),
+  substitutionPreference: z.enum(["substitute", "refund", "contact"]),
   substitution: substitutionResponseSchema.optional(),
   taxExempt: z.boolean(),
   taxAmount: z.number().nullable(),
@@ -96,6 +96,8 @@ export const orderResponseSchema = z.object({
   deliveryDate: z.string().optional(),
   deliveryWindowId: z.string().optional(),
   deliveryWindow: z.string().optional(),
+  deliveryInstructions: z.string().optional(),
+  walletApplied: z.number(),
   refunds: z.array(refundResponseSchema),
 }) satisfies z.ZodType<Order>;
 

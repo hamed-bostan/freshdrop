@@ -14,6 +14,7 @@ import type { AuditHook } from "../../repositories/AuditHook";
 import type { IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
 import type { IUnitOfWork } from "../../repositories/IUnitOfWork";
 import { SlotUnavailableError } from "../../errors/SlotUnavailableError";
+import { InsufficientWalletBalanceError } from "../../errors/InsufficientWalletBalanceError";
 import { ValidationError } from "../../errors/ValidationError";
 import { SLOT_HORIZON_DAYS } from "../delivery-slots/GetDeliverySlots";
 
@@ -40,6 +41,15 @@ export type PlaceOrderInput = {
   deliveryDate: string;
   deliveryWindowId: string;
   substitutionPreferences?: Record<string, SubstitutionPreference>;
+  /** Free-text note for the courier, captured at checkout. Capped by the contract schema. */
+  deliveryInstructions?: string;
+  /**
+   * How much of the cart's total to pay from the customer's wallet balance,
+   * `0`/omitted when none is applied. Debited atomically alongside the order
+   * write; refused with {@link InsufficientWalletBalanceError} if the wallet
+   * can't cover it.
+   */
+  walletApplied?: number;
   deliveryType: DeliveryType;
   paymentStatus: PaymentStatus;
   /**
@@ -80,6 +90,8 @@ export async function placeOrder(
     deliveryDate,
     deliveryWindowId,
     substitutionPreferences,
+    deliveryInstructions,
+    walletApplied = 0,
     deliveryType,
     paymentStatus,
     audit,
@@ -87,6 +99,12 @@ export async function placeOrder(
 
   if (cart.items.length === 0) {
     throw new ValidationError("cart", "Your cart is empty.");
+  }
+
+  // The client only ever proposes an amount; it can never exceed what the order
+  // actually costs (a stale/tampered value asking to apply more than the total).
+  if (walletApplied < 0 || walletApplied > cart.total) {
+    throw new ValidationError("walletApplied", "That wallet amount doesn't match your order total.");
   }
 
   // Resolve the booked window (for its capacity + display snapshot) and confirm
@@ -129,7 +147,7 @@ export async function placeOrder(
     quantity,
   }));
 
-  return deps.uow.run(async ({ products, slots, orders }) => {
+  return deps.uow.run(async ({ products, slots, orders, wallets }) => {
     await products.decrementStock(stockLines, { reason: "sale", orderId });
 
     // One unit of the slot's capacity (atomic guard). A full window is refused
@@ -139,6 +157,14 @@ export async function placeOrder(
       // The window filled up while we were claiming stock. Throwing rolls the
       // stock decrement back with it — no release to write, and none to fail.
       throw new SlotUnavailableError(`${slotLabel(deliveryDate, window)} is fully booked.`);
+    }
+
+    if (walletApplied > 0) {
+      // Guarded decrement: the balance check and the write are atomic, so a
+      // wallet spent from two checkouts at once can never go negative. Throwing
+      // rolls back the stock and slot claims above with it.
+      const debited = await wallets.deductFunds(userId, walletApplied);
+      if (!debited) throw new InsufficientWalletBalanceError();
     }
 
     return orders.createOrder({
@@ -162,6 +188,8 @@ export async function placeOrder(
       deliveryDate,
       deliveryWindowId: window.id,
       deliveryWindow: slotLabel(deliveryDate, window),
+      deliveryInstructions,
+      walletApplied,
       items,
     }, audit);
   });
