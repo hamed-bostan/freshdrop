@@ -7,7 +7,7 @@ import { walletsServerApi } from "@/src/presentation/wallet/wallet-server-api";
 import CheckoutScreen from "@/src/presentation/checkout/CheckoutScreen";
 
 interface CheckoutPageProps {
-  searchParams: Promise<{ promo?: string }>;
+  searchParams: Promise<{ promo?: string; step?: string }>;
 }
 
 // Cart, promo, delivery locations/slots, the payment-option catalog, the caller's
@@ -15,7 +15,7 @@ interface CheckoutPageProps {
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
-  const { promo: code } = await searchParams;
+  const { promo: code, step } = await searchParams;
 
   // Carry any promo applied in the cart through to checkout so the totals match:
   // the cart is fetched with it applied, and resolved separately for the summary.
@@ -40,6 +40,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
       selectedPaymentMethodId={selectedPaymentMethodId}
       promoCode={appliedPromo?.code}
       walletBalance={wallet.balance}
+      initialStep={step === "review" ? "review" : step === "payment" ? "payment" : "delivery"}
     />
   );
 }

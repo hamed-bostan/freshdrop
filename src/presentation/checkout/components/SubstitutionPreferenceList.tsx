@@ -1,118 +1,37 @@
 "use client";
 
-import * as React from "react";
 import Image from "next/image";
-import { Check } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { ChevronDown, ShoppingBasket } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import type { CartItem } from "@/src/domain/entities/Cart";
 import type { SubstitutionPreference } from "@/src/domain/entities/Order";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  Icon,
-  Thumbnail,
-} from "@/src/presentation/design-system";
+import { formatMoney } from "@/src/lib/formatMoney";
+import { Link } from "@/src/i18n/navigation";
+import { Icon } from "@/src/presentation/design-system";
 
-type SubstitutionPreferenceListProps = {
-  items: CartItem[];
-  /** Per-product preference; a product absent from the map defaults to `substitute`. */
-  value: Record<string, SubstitutionPreference>;
-  onChange: (productId: string, preference: SubstitutionPreference) => void;
-};
+type Props = { items: CartItem[]; value: Record<string, SubstitutionPreference>; onChange: (productId: string, preference: SubstitutionPreference) => void; promoCode?: string; };
+const LABELS: Record<SubstitutionPreference, "replaceWith" | "refundIf" | "contactMe"> = { substitute: "replaceWith", refund: "refundIf", contact: "contactMe" };
 
-/** How many lines show before the list collapses behind "View all N items". */
-const COLLAPSED_COUNT = 3;
-
-const PREFERENCES: SubstitutionPreference[] = ["substitute", "refund", "contact"];
-
-const PREFERENCE_LABEL_KEYS: Record<SubstitutionPreference, "replaceWith" | "refundIf" | "contactMe"> = {
-  substitute: "replaceWith",
-  refund: "refundIf",
-  contact: "contactMe",
-};
-
-/**
- * The order's line items with each one's out-of-stock pre-approval (the
- * grocery "substitutions" choice) and a "Change" affordance to pick from the
- * three preferences. Lines beyond {@link COLLAPSED_COUNT} start hidden behind
- * a "View all N items" toggle — the order recap and its preferences used to
- * be two separate lists; this is the merged, expandable one the review step
- * mockup shows.
- */
-export function SubstitutionPreferenceList({ items, value, onChange }: SubstitutionPreferenceListProps) {
+export function SubstitutionPreferenceList({ items, value, promoCode }: Props) {
   const t = useTranslations("checkout");
-  const [expanded, setExpanded] = React.useState(false);
-  const visibleItems = expanded ? items : items.slice(0, COLLAPSED_COUNT);
-  const hiddenCount = items.length - COLLAPSED_COUNT;
+  const locale = useLocale();
+  const count = items.reduce((sum, item) => sum + item.quantity, 0);
+  const itemsHref = promoCode ? `/cart/checkout/items?promo=${encodeURIComponent(promoCode)}` : "/cart/checkout/items";
 
-  return (
-    <div className="flex w-full flex-col gap-3 rounded-card-xl bg-surface px-4 py-3">
-      <ul className="flex flex-col gap-3">
-        {visibleItems.map((item) => {
-          const preference = value[item.product.id] ?? "substitute";
-          const switchId = `substitution-${item.product.id}`;
-
-          return (
-            <li key={item.product.id} className="flex items-center gap-3">
-              <Thumbnail as="span" className="size-10">
-                <Image
-                  src={item.product.imageUrl}
-                  alt=""
-                  width={40}
-                  height={40}
-                  className="size-full object-contain"
-                />
-              </Thumbnail>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="truncate text-body-b6 text-foreground">{item.product.name}</p>
-                  <span className="shrink-0 text-body-b9 text-muted-foreground">
-                    {t("itemCount", { count: item.quantity })}
-                  </span>
-                </div>
-                <p id={switchId} className="text-body-b9 text-muted-foreground">
-                  {t(PREFERENCE_LABEL_KEYS[preference])}
-                </p>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="shrink-0 text-body-b8 text-primary"
-                    aria-labelledby={`${switchId} ${switchId}-change`}
-                  >
-                    <span id={`${switchId}-change`}>{t("change")}</span>
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {PREFERENCES.map((option) => (
-                    <DropdownMenuItem
-                      key={option}
-                      onSelect={() => onChange(item.product.id, option)}
-                      className="justify-between gap-4"
-                    >
-                      <span>{t(PREFERENCE_LABEL_KEYS[option])}</span>
-                      {preference === option && <Icon icon={Check} size="sm" className="text-primary" />}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </li>
-          );
-        })}
-      </ul>
-
-      {hiddenCount > 0 && (
-        <button
-          type="button"
-          onClick={() => setExpanded((current) => !current)}
-          className="self-start text-body-b8 text-primary"
-        >
-          {expanded ? t("showLess") : t("viewAllItems", { count: items.length })}
-        </button>
-      )}
+  return <section className="rounded-[18px] border border-border p-4 sm:rounded-[22px] sm:p-5">
+    <div className="flex items-start gap-3">
+      <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:size-16"><Icon icon={ShoppingBasket} size="md" /></span>
+      <h2 className="min-w-0 flex-1 text-lg font-semibold">{t("itemsHeading", { count })}</h2>
+      <Link href={itemsHref} className="font-medium text-primary">{t("edit")}</Link>
     </div>
-  );
+    <ul className="mt-2 sm:ms-[76px]">{items.slice(0, 3).map((item) => {
+      const preference = value[item.product.id] ?? "substitute";
+      return <li key={item.product.id} className="grid grid-cols-[72px_minmax(0,1fr)_auto] items-center gap-3 border-b border-border py-3 last:border-0">
+        <span className="flex size-[72px] items-center justify-center"><Image src={item.product.imageUrl} alt="" width={72} height={72} className="size-full object-contain" /></span>
+        <div className="min-w-0"><p className="truncate text-base font-semibold">{item.product.name}</p><p className="mt-1 text-sm text-muted-foreground">{item.product.unit ?? ""}</p><p className="mt-1 truncate text-sm font-medium text-primary">{t(LABELS[preference])}</p></div>
+        <div className="text-end"><p className="font-semibold">{formatMoney(item.product.price * item.quantity, locale)}</p><p className="mt-2 text-sm text-muted-foreground">{t("quantity", { count: item.quantity })}</p></div>
+      </li>;
+    })}</ul>
+    <Link href={itemsHref} className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-primary/50 font-medium text-primary">{t("viewAllItems", { count })}<Icon icon={ChevronDown} size="sm" /></Link>
+  </section>;
 }

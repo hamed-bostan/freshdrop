@@ -31,6 +31,7 @@ import { checkoutApi } from "./checkout-api";
 import { useCart } from "@/src/presentation/cart/CartProvider";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { useLocale } from "next-intl";
+import { NOTES_STORAGE_KEY, SLOT_STORAGE_KEY, SUBSTITUTIONS_STORAGE_KEY, reviveSubstitutions } from "./checkoutSession";
 
 /** The checkout form's own character cap on the delivery-instructions note. */
 const DELIVERY_INSTRUCTIONS_MAX = 150;
@@ -51,15 +52,13 @@ interface CheckoutScreenProps {
   promoCode?: string;
   /** The caller's current wallet balance, offered as a pay-with-wallet toggle. */
   walletBalance: number;
+  initialStep?: CheckoutStepId;
 }
 
 // Keys under which the in-progress selections are stashed in sessionStorage so they
 // survive popping out to add/edit an address and coming back (see useSessionStorageState).
 // The payment method isn't among them: it's a persisted per-user preference (read from
 // the server, written on change), not ephemeral checkout state.
-const SLOT_STORAGE_KEY = "freshdrop:checkout:slot";
-const SUBSTITUTIONS_STORAGE_KEY = "freshdrop:checkout:substitutions";
-const NOTES_STORAGE_KEY = "freshdrop:checkout:notes";
 
 /** The first window that can still be booked, used as the default selection. */
 function firstBookableSlot(days: DeliverySlotDay[]): SlotSelection | null {
@@ -83,16 +82,6 @@ function isBookable(days: DeliverySlotDay[], selection: SlotSelection): boolean 
  * it's client-writable. Drop anything that isn't a recognized preference so a
  * tampered/stale entry can't reach the order payload (the server re-validates too).
  */
-function reviveSubstitutions(
-  stored: Record<string, SubstitutionPreference>,
-): Record<string, SubstitutionPreference> {
-  if (typeof stored !== "object" || stored === null) return {};
-  const clean: Record<string, SubstitutionPreference> = {};
-  for (const [productId, preference] of Object.entries(stored)) {
-    if (preference === "substitute" || preference === "refund") clean[productId] = preference;
-  }
-  return clean;
-}
 
 /**
  * The checkout / "Place Order" step reached from the cart. Composes the existing
@@ -109,6 +98,7 @@ export default function CheckoutScreen({
   selectedPaymentMethodId,
   promoCode,
   walletBalance,
+  initialStep = "delivery",
 }: CheckoutScreenProps) {
   const t = useTranslations("checkout");
   const tPayment = useTranslations("payment");
@@ -165,7 +155,7 @@ export default function CheckoutScreen({
   // The 3-step wizard's current step. Not persisted: a reload lands back on
   // Delivery, same as any of the selections above would still be there to
   // move past again — worth keeping simple rather than a second storage key.
-  const [step, setStep] = React.useState<CheckoutStepId>("delivery");
+  const [step, setStep] = React.useState<CheckoutStepId>(initialStep);
 
   const goToPayment = () => {
     if (!selectedAddress) {
@@ -383,6 +373,7 @@ export default function CheckoutScreen({
           notes={notes}
           paymentLabel={chargeLabel}
           walletApplied={walletApplied}
+          promoCode={promoCode}
           substitutions={substitutions}
           onSubstitutionChange={setSubstitution}
           onEditStep={setStep}
@@ -412,9 +403,12 @@ export default function CheckoutScreen({
         </div>
       )}
       {step === "review" && (
-        <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full">
-          {pending ? t("placingOrder") : t("placeOrder")}
-        </Button>
+        <div className="mt-auto flex flex-col gap-4 border-t border-border bg-background pt-5">
+          <div className="flex items-center justify-between text-xl font-semibold sm:text-2xl"><span>{t("total")}</span><span>{formatMoney(cart.total, locale)}</span></div>
+          <Button type="submit" size="lg" disabled={pending} className="min-h-16 w-full text-lg sm:min-h-20 sm:text-xl">
+            <Icon icon={LockKeyhole} size="md" />{pending ? t("placingOrder") : t("placeOrderWithTotal", { amount: formatMoney(cart.total, locale) })}
+          </Button>
+        </div>
       )}
     </form>
   );
