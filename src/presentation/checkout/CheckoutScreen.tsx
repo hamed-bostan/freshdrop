@@ -14,7 +14,7 @@ import { Button, FormMessage, Textarea } from "@/src/presentation/design-system"
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { DeliveryLocationPickerSheet } from "@/src/presentation/delivery-location/DeliveryLocationPickerSheet";
 import { DeliveryLocationSummary } from "@/src/presentation/delivery-location/components/DeliveryLocationSummary";
-import { PaymentMethodOption, SavedCardOption } from "@/src/presentation/payment/components";
+import { PaymentMethodOption, SavedCardOption, paymentMethodLabel } from "@/src/presentation/payment/components";
 import { paymentMethodsApi } from "@/src/presentation/payment/payment-method-api";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { useSessionStorageState } from "@/src/lib/hooks/useSessionStorageState";
@@ -25,6 +25,7 @@ import {
   OrderSummaryCard,
   OrderTotals,
   SubstitutionPreferenceList,
+  WalletBalanceToggle,
   type CheckoutStepId,
 } from "./components";
 import type { SlotSelection } from "./components/DeliverySlotPicker";
@@ -48,6 +49,8 @@ interface CheckoutScreenProps {
   selectedPaymentMethodId: string | null;
   /** Promo code applied in the cart, forwarded so the server's totals match. */
   promoCode?: string;
+  /** The caller's current wallet balance, offered as a pay-with-wallet toggle. */
+  walletBalance: number;
 }
 
 // Keys under which the in-progress selections are stashed in sessionStorage so they
@@ -105,8 +108,10 @@ export default function CheckoutScreen({
   savedCards,
   selectedPaymentMethodId,
   promoCode,
+  walletBalance,
 }: CheckoutScreenProps) {
   const t = useTranslations("checkout");
+  const tPayment = useTranslations("payment");
   const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
   const { refresh: refreshCart } = useCart();
@@ -137,6 +142,19 @@ export default function CheckoutScreen({
   }, [paymentMethods, savedCards, selectedPaymentMethodId]);
   const [paymentId, setPaymentId] = React.useState(initialPaymentId);
   const [, startPaymentTransition] = React.useTransition();
+  // Not persisted, unlike the payment method itself: applying the wallet is a
+  // per-checkout choice, re-decided each time against that checkout's own total.
+  const [useWallet, setUseWallet] = React.useState(false);
+  const walletApplied = useWallet ? Math.min(walletBalance, cart.total) : 0;
+  // The label for "X will be charged to Y" under the wallet toggle — whichever
+  // catalog method or saved card is currently selected above it.
+  const chargeLabel = React.useMemo(() => {
+    const method = paymentMethods.find((m) => m.id === paymentId);
+    if (method) return paymentMethodLabel(method, tPayment);
+    const card = savedCards.find((c) => c.id === paymentId);
+    if (card) return `${card.brand} •••• ${card.number.replace(/\D/g, "").slice(-4)}`;
+    return "";
+  }, [paymentMethods, savedCards, paymentId, tPayment]);
   const [substitutions, setSubstitutions, clearSubstitutions] = useSessionStorageState<
     Record<string, SubstitutionPreference>
   >(SUBSTITUTIONS_STORAGE_KEY, {}, reviveSubstitutions);
@@ -206,6 +224,7 @@ export default function CheckoutScreen({
             preference: substitutions[item.product.id] ?? "substitute",
           })),
           deliveryInstructions: notes.trim() || undefined,
+          walletApplied: walletApplied > 0 ? walletApplied : undefined,
         });
         // The server cleared the cart and recorded the order — drop the ephemeral
         // selections so the next checkout starts fresh, then navigate. The payment
@@ -288,26 +307,38 @@ export default function CheckoutScreen({
       )}
 
       {step === "payment" && (
-        <CheckoutSection icon={CreditCard} title={t("paymentMethod")}>
-          <div className="flex flex-col gap-2">
-            {paymentMethods.map((method) => (
-              <PaymentMethodOption
-                key={method.id}
-                method={method}
-                selected={method.id === paymentId}
-                onSelect={selectPayment}
-              />
-            ))}
-            {savedCards.map((card) => (
-              <SavedCardOption
-                key={card.id}
-                card={card}
-                selected={card.id === paymentId}
-                onSelect={selectPayment}
-              />
-            ))}
-          </div>
-        </CheckoutSection>
+        <>
+          <CheckoutSection icon={CreditCard} title={t("paymentMethod")}>
+            <div className="flex flex-col gap-2">
+              {paymentMethods.map((method) => (
+                <PaymentMethodOption
+                  key={method.id}
+                  method={method}
+                  selected={method.id === paymentId}
+                  onSelect={selectPayment}
+                />
+              ))}
+              {savedCards.map((card) => (
+                <SavedCardOption
+                  key={card.id}
+                  card={card}
+                  selected={card.id === paymentId}
+                  onSelect={selectPayment}
+                />
+              ))}
+            </div>
+          </CheckoutSection>
+
+          {walletBalance > 0 && (
+            <WalletBalanceToggle
+              balance={walletBalance}
+              cartTotal={cart.total}
+              checked={useWallet}
+              onCheckedChange={setUseWallet}
+              chargeLabel={chargeLabel}
+            />
+          )}
+        </>
       )}
 
       {step === "review" && (

@@ -25,11 +25,20 @@ const LABEL_KEYS: Record<
   "google-pay": "methodGooglePay",
 };
 
+/**
+ * The display label for a fixed catalog payment method, localized. Exported so
+ * screens that reference a selected method outside the option list itself (the
+ * checkout wallet toggle's "charged to X" line) render the same label.
+ */
+export function paymentMethodLabel(method: PaymentMethod, t: ReturnType<typeof useTranslations<"payment">>): string {
+  const labelKey = LABEL_KEYS[method.id];
+  return labelKey ? t(labelKey) : method.label;
+}
+
 /** A single selectable payment method, rendered as a design-system radio tile. */
 export function PaymentMethodOption({ method, selected, onSelect }: PaymentMethodOptionProps) {
   const t = useTranslations("payment");
-  const labelKey = LABEL_KEYS[method.id];
-  const label = labelKey ? t(labelKey) : method.label;
+  const label = paymentMethodLabel(method, t);
 
   return (
     <SelectableTile

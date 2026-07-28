@@ -19,14 +19,14 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
   // Carry any promo applied in the cart through to checkout so the totals match:
   // the cart is fetched with it applied, and resolved separately for the summary.
-  const [cart, appliedPromo, deliveryLocations, deliverySlotDays, paymentMethods, savedCards, selectedPaymentMethodId] =
+  const [cart, appliedPromo, deliveryLocations, deliverySlotDays, paymentMethods, wallet, selectedPaymentMethodId] =
     await Promise.all([
       cartsServerApi.get({ promo: code }),
       code ? promoCodesServerApi.getByCode(code) : Promise.resolve(null),
       deliveryLocationsServerApi.list(),
       deliverySlotsServerApi.list(),
       paymentMethodsServerApi.list(),
-      walletsServerApi.listCards(),
+      walletsServerApi.get(),
       paymentMethodsServerApi.getSelectedId(),
     ]);
 
@@ -36,9 +36,10 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
       deliveryLocations={deliveryLocations}
       deliverySlotDays={deliverySlotDays}
       paymentMethods={paymentMethods}
-      savedCards={savedCards}
+      savedCards={wallet.cards}
       selectedPaymentMethodId={selectedPaymentMethodId}
       promoCode={appliedPromo?.code}
+      walletBalance={wallet.balance}
     />
   );
 }
