@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Package, Heart, MapPin, CreditCard, Settings, HelpCircle, Shield, LogOut, Pencil } from "lucide-react";
+import { Package, Heart, MapPin, CreditCard, Settings, HelpCircle, Shield, Pencil } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import type { UserProfile } from "./profile-response-schema";
 import { Avatar, Icon } from "@/src/presentation/design-system";
@@ -69,7 +69,7 @@ export default async function ProfileScreen({ user }: ProfileScreenProps) {
         <MenuRow icon={Shield} label={t("menuAboutLegal")} href="/profile/settings/about" />
       </div>
 
-      <LogoutRow icon={LogOut} />
+      <LogoutRow />
     </div>
   );
 }
