@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { MapPin, Clock, CreditCard, FileText, LockKeyhole, Building2, Check, Pencil, Phone, ShoppingBasket, Info, ChevronRight, ChevronLeft } from "lucide-react";
+import { MapPin, Clock, FileText, LockKeyhole, Building2, Check, Pencil, Phone, ShoppingBasket, Info, ChevronRight, ChevronLeft, ShieldCheck } from "lucide-react";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import type { Cart } from "@/src/domain/entities/Cart";
 import type { SubstitutionPreference } from "@/src/domain/entities/Order";
@@ -14,7 +14,7 @@ import { Button, FormMessage, Textarea } from "@/src/presentation/design-system"
 import { Icon } from "@/src/presentation/design-system";
 import { DeliveryLocationPickerSheet } from "@/src/presentation/delivery-location/DeliveryLocationPickerSheet";
 import { DeliveryLocationSummary } from "@/src/presentation/delivery-location/components/DeliveryLocationSummary";
-import { PaymentMethodOption, SavedCardOption, paymentMethodLabel } from "@/src/presentation/payment/components";
+import { AddCardRow, PaymentMethodOption, SavedCardOption, paymentMethodLabel } from "@/src/presentation/payment/components";
 import { paymentMethodsApi } from "@/src/presentation/payment/payment-method-api";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { useSessionStorageState } from "@/src/lib/hooks/useSessionStorageState";
@@ -29,6 +29,8 @@ import {
 import type { SlotSelection } from "./components/DeliverySlotPicker";
 import { checkoutApi } from "./checkout-api";
 import { useCart } from "@/src/presentation/cart/CartProvider";
+import { formatMoney } from "@/src/lib/formatMoney";
+import { useLocale } from "next-intl";
 
 /** The checkout form's own character cap on the delivery-instructions note. */
 const DELIVERY_INSTRUCTIONS_MAX = 150;
@@ -111,6 +113,7 @@ export default function CheckoutScreen({
   const t = useTranslations("checkout");
   const tPayment = useTranslations("payment");
   const tApiErrors = useTranslations("apiErrors");
+  const locale = useLocale();
   const router = useRouter();
   const { refresh: refreshCart } = useCart();
   // The delivery address isn't chosen here — the user selects it in the home sheet or
@@ -328,9 +331,21 @@ export default function CheckoutScreen({
 
       {step === "payment" && (
         <>
-          <CheckoutSection icon={CreditCard} title={t("paymentMethod")}>
-            <div className="flex flex-col gap-2">
-              {paymentMethods.map((method) => (
+          <div className="flex min-h-24 items-center gap-4 rounded-[18px] bg-primary/[0.06] p-4 sm:min-h-32 sm:rounded-[22px] sm:p-5">
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:size-20"><Icon icon={ShoppingBasket} size="lg" /></span>
+            <span className="flex-1 text-lg font-semibold sm:text-xl">{t("orderTotal")}</span>
+            <strong className="text-2xl sm:text-3xl">{formatMoney(cart.total, locale)}</strong>
+          </div>
+
+          <section className="flex flex-col gap-4 rounded-[18px] border border-border p-4 sm:gap-5 sm:rounded-[22px] sm:p-6">
+            <h2 className="text-lg font-semibold sm:text-xl">{t("choosePaymentMethod")}</h2>
+            <div className="flex flex-col gap-3">
+              {savedCards.map((card) => (
+                <SavedCardOption key={card.id} card={card} selected={card.id === paymentId} onSelect={selectPayment} />
+              ))}
+              <AddCardRow />
+              <div className="flex items-center gap-4 py-1 text-sm text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border sm:text-base">{t("otherWaysToPay")}</div>
+              {paymentMethods.filter((method) => method.id !== "wallet").map((method) => (
                 <PaymentMethodOption
                   key={method.id}
                   method={method}
@@ -338,16 +353,8 @@ export default function CheckoutScreen({
                   onSelect={selectPayment}
                 />
               ))}
-              {savedCards.map((card) => (
-                <SavedCardOption
-                  key={card.id}
-                  card={card}
-                  selected={card.id === paymentId}
-                  onSelect={selectPayment}
-                />
-              ))}
             </div>
-          </CheckoutSection>
+          </section>
 
           {walletBalance > 0 && (
             <WalletBalanceToggle
@@ -358,6 +365,11 @@ export default function CheckoutScreen({
               chargeLabel={chargeLabel}
             />
           )}
+
+          <div className="flex items-center gap-4 rounded-[18px] border border-border p-4 sm:rounded-[22px] sm:p-5">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Icon icon={ShieldCheck} size="md" /></span>
+            <div><p className="font-semibold sm:text-lg">{t("securePaymentsTitle")}</p><p className="mt-1 text-sm text-muted-foreground sm:text-base">{t("securePaymentsBody")}</p></div>
+          </div>
         </>
       )}
 
@@ -394,9 +406,10 @@ export default function CheckoutScreen({
         </div>
       )}
       {step === "payment" && (
-        <Button type="button" size="lg" onClick={goToReview} className="mt-auto w-full">
-          {t("continueToReview")}
-        </Button>
+        <div className="mt-auto flex flex-col gap-4 border-t border-border bg-background pt-5">
+          <div className="flex items-center justify-between text-xl font-semibold sm:text-2xl"><span>{t("total")}</span><span>{formatMoney(cart.total, locale)}</span></div>
+          <Button type="button" size="lg" onClick={goToReview} className="min-h-16 w-full text-lg sm:min-h-20 sm:text-xl">{t("continueToReview")}<Icon icon={ChevronRight} size="md" className="ms-auto rtl:-scale-x-100" /></Button>
+        </div>
       )}
       {step === "review" && (
         <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full">

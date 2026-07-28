@@ -1,6 +1,6 @@
 "use client";
 
-import { Wallet } from "lucide-react";
+import { Wallet, Sparkles } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Icon, Switch } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
@@ -32,29 +32,30 @@ export function WalletBalanceToggle({ balance, cartTotal, checked, onCheckedChan
   const remainder = cartTotal - applied;
 
   return (
-    <div className="flex w-full flex-col gap-2 rounded-card-xl border border-foreground bg-surface px-4 py-3">
+    <div className="flex w-full flex-col gap-4 rounded-[18px] border border-border bg-background p-4 sm:rounded-[22px] sm:p-5">
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <Icon icon={Wallet} size="sm" className="text-foreground" />
+        <div className="flex items-center gap-3">
+          <span className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary sm:size-16"><Icon icon={Wallet} size="md" /></span>
           <div className="flex flex-col">
-            <span className="text-body-b6 text-foreground">{t("useWalletBalance")}</span>
-            <span className="text-body-b8 text-muted-foreground">
-              {t("walletAvailableBalance", { amount: money(balance) })}
+            <span className="text-base font-semibold text-foreground sm:text-lg">{t("walletName")}</span>
+            <span className="text-sm font-medium text-primary sm:text-base">
+              {t("walletBalance", { amount: money(balance) })}
             </span>
           </div>
         </div>
-        <Switch
+        <label className="flex items-center gap-3 text-sm font-medium sm:text-base"><span className="hidden min-[430px]:inline">{t("useWalletBalance")}</span><Switch
           checked={checked}
           onCheckedChange={onCheckedChange}
           disabled={balance <= 0}
           aria-label={t("useWalletBalance")}
-        />
+        /></label>
       </div>
 
       {checked && (
-        <p className="text-body-b9 text-muted-foreground">
+        <p className="flex items-center gap-3 rounded-xl bg-primary/[0.07] p-3 text-sm text-muted-foreground sm:text-base">
+          <Icon icon={Sparkles} size="sm" className="shrink-0 text-primary" />
           {remainder > 0
-            ? t("walletRemainderCharged", { amount: money(remainder), method: chargeLabel })
+            ? t("walletCalculation", { total: money(cartTotal), wallet: money(applied), remainder: money(remainder), method: chargeLabel })
             : t("walletCoversTotal")}
         </p>
       )}

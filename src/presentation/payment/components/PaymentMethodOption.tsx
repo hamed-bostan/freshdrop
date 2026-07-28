@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { SelectableTile } from "@/src/presentation/design-system";
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
 import { PaymentMethodIcon } from "./PaymentMethodIcon";
+import { cn } from "@/src/lib/utils";
 
 interface PaymentMethodOptionProps {
   method: PaymentMethod;
@@ -38,6 +39,7 @@ export function paymentMethodLabel(method: PaymentMethod, t: ReturnType<typeof u
 /** A single selectable payment method, rendered as a design-system radio tile. */
 export function PaymentMethodOption({ method, selected, onSelect }: PaymentMethodOptionProps) {
   const t = useTranslations("payment");
+  const tCheckout = useTranslations("checkout");
   const label = paymentMethodLabel(method, t);
 
   return (
@@ -46,10 +48,12 @@ export function PaymentMethodOption({ method, selected, onSelect }: PaymentMetho
       value={method.id}
       selected={selected}
       onSelect={() => onSelect(method.id)}
-      size="sm"
+      size="md"
+      className={cn("min-h-[74px] gap-4 rounded-2xl border-border bg-background px-4 sm:min-h-[88px] sm:px-6", selected && "border-primary bg-primary/[0.025]")}
     >
-      <PaymentMethodIcon methodId={method.id} />
-      <span className="text-body-b6 text-foreground">{label}</span>
+      <span aria-hidden className={cn("flex size-7 shrink-0 items-center justify-center rounded-full border-2 border-muted-strong", selected && "border-primary")}>{selected && <span className="size-3.5 rounded-full bg-primary" />}</span>
+      <PaymentMethodIcon methodId={method.id} className="size-9" />
+      <span className="flex flex-col text-base font-medium text-foreground sm:text-lg">{label}{method.id === "cash-on-delivery" && <span className="text-sm font-medium text-primary sm:text-base">{tCheckout("availableForOrder")}</span>}</span>
     </SelectableTile>
   );
 }
