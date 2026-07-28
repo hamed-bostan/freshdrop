@@ -5,6 +5,7 @@ import { deliverySlotsServerApi } from "@/src/presentation/checkout/delivery-slo
 import { paymentMethodsServerApi } from "@/src/presentation/payment/payment-method-server-api";
 import { walletsServerApi } from "@/src/presentation/wallet/wallet-server-api";
 import CheckoutScreen from "@/src/presentation/checkout/CheckoutScreen";
+import { profilesServerApi } from "@/src/presentation/profile/profile-server-api";
 
 interface CheckoutPageProps {
   searchParams: Promise<{ promo?: string; step?: string }>;
@@ -19,7 +20,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
   // Carry any promo applied in the cart through to checkout so the totals match:
   // the cart is fetched with it applied, and resolved separately for the summary.
-  const [cart, appliedPromo, deliveryLocations, deliverySlotDays, paymentMethods, wallet, selectedPaymentMethodId] =
+  const [cart, appliedPromo, deliveryLocations, deliverySlotDays, paymentMethods, wallet, selectedPaymentMethodId, profile] =
     await Promise.all([
       cartsServerApi.get({ promo: code }),
       code ? promoCodesServerApi.getByCode(code) : Promise.resolve(null),
@@ -28,6 +29,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
       paymentMethodsServerApi.list(),
       walletsServerApi.get(),
       paymentMethodsServerApi.getSelectedId(),
+      profilesServerApi.getMe(),
     ]);
 
   return (
@@ -41,6 +43,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
       promoCode={appliedPromo?.code}
       walletBalance={wallet.balance}
       initialStep={step === "review" ? "review" : step === "payment" ? "payment" : "delivery"}
+      customerPhone={profile.phone}
     />
   );
 }

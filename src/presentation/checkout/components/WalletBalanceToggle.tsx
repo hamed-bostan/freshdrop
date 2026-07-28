@@ -4,6 +4,7 @@ import { Wallet, Sparkles } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Icon, Switch } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
+import { walletAmounts } from "../checkoutSession";
 
 interface WalletBalanceToggleProps {
   /** The customer's current wallet balance. */
@@ -28,8 +29,7 @@ export function WalletBalanceToggle({ balance, cartTotal, checked, onCheckedChan
   const locale = useLocale();
   const money = (amount: number) => formatMoney(amount, locale);
 
-  const applied = checked ? Math.min(balance, cartTotal) : 0;
-  const remainder = cartTotal - applied;
+  const { applied, remainder } = walletAmounts(balance, cartTotal, checked);
 
   return (
     <div className="flex w-full flex-col gap-4 rounded-[18px] border border-border bg-background p-4 sm:rounded-[22px] sm:p-5">

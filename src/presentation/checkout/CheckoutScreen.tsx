@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { MapPin, Clock, FileText, LockKeyhole, Building2, Check, Pencil, Phone, ShoppingBasket, Info, ChevronRight, ChevronLeft, ShieldCheck } from "lucide-react";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import type { Cart } from "@/src/domain/entities/Cart";
-import type { SubstitutionPreference } from "@/src/domain/entities/Order";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
@@ -17,7 +16,6 @@ import { DeliveryLocationSummary } from "@/src/presentation/delivery-location/co
 import { AddCardRow, PaymentMethodOption, SavedCardOption, paymentMethodLabel } from "@/src/presentation/payment/components";
 import { paymentMethodsApi } from "@/src/presentation/payment/payment-method-api";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
-import { useSessionStorageState } from "@/src/lib/hooks/useSessionStorageState";
 import {
   CheckoutReviewStep,
   CheckoutSection,
@@ -26,12 +24,12 @@ import {
   WalletBalanceToggle,
   type CheckoutStepId,
 } from "./components";
-import type { SlotSelection } from "./components/DeliverySlotPicker";
 import { checkoutApi } from "./checkout-api";
 import { useCart } from "@/src/presentation/cart/CartProvider";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { useLocale } from "next-intl";
-import { NOTES_STORAGE_KEY, SLOT_STORAGE_KEY, SUBSTITUTIONS_STORAGE_KEY, reviveSubstitutions } from "./checkoutSession";
+import { maskPhone, walletAmounts } from "./checkoutSession";
+import { useCheckoutDraft } from "./useCheckoutDraft";
 
 /** The checkout form's own character cap on the delivery-instructions note. */
 const DELIVERY_INSTRUCTIONS_MAX = 150;
@@ -53,6 +51,7 @@ interface CheckoutScreenProps {
   /** The caller's current wallet balance, offered as a pay-with-wallet toggle. */
   walletBalance: number;
   initialStep?: CheckoutStepId;
+  customerPhone: string;
 }
 
 // Keys under which the in-progress selections are stashed in sessionStorage so they
@@ -61,22 +60,6 @@ interface CheckoutScreenProps {
 // the server, written on change), not ephemeral checkout state.
 
 /** The first window that can still be booked, used as the default selection. */
-function firstBookableSlot(days: DeliverySlotDay[]): SlotSelection | null {
-  for (const day of days) {
-    const slot = day.slots.find((s) => s.availability.level !== "full");
-    if (slot) return { date: day.date, windowId: slot.windowId };
-  }
-  return null;
-}
-
-/** Whether a (restored) selection still points at a window that's open for booking. */
-function isBookable(days: DeliverySlotDay[], selection: SlotSelection): boolean {
-  const slot = days
-    .find((day) => day.date === selection.date)
-    ?.slots.find((s) => s.windowId === selection.windowId);
-  return slot !== undefined && slot.availability.level !== "full";
-}
-
 /**
  * Sanitize substitution preferences restored from sessionStorage — untrusted, since
  * it's client-writable. Drop anything that isn't a recognized preference so a
@@ -99,6 +82,7 @@ export default function CheckoutScreen({
   promoCode,
   walletBalance,
   initialStep = "delivery",
+  customerPhone,
 }: CheckoutScreenProps) {
   const t = useTranslations("checkout");
   const tPayment = useTranslations("payment");
@@ -113,14 +97,9 @@ export default function CheckoutScreen({
   // The slot and substitution selections persist to sessionStorage so leaving checkout
   // to manage an address (or a reload) doesn't wipe them; they clear once the order is
   // placed. The payment method is handled separately — a server-persisted preference.
-  const defaultSlot = React.useMemo(() => firstBookableSlot(deliverySlotDays), [deliverySlotDays]);
-  const [slot, setSlot, clearSlot] = useSessionStorageState<SlotSelection | null>(
-    SLOT_STORAGE_KEY,
-    defaultSlot,
+  const { slot, setSlot, substitutions, notes, setNotes, clear: clearDraft } = useCheckoutDraft(deliverySlotDays);
     // A remembered slot may have sold out or rolled off the schedule while the user
     // was away — only restore it if it's still an open window, else fall back.
-    (stored) => (stored && isBookable(deliverySlotDays, stored) ? stored : defaultSlot),
-  );
   // Payment is a persisted per-user preference (the same one the Payment Method
   // screen sets), not ephemeral checkout state. Seed the highlight from the stored
   // selection — falling back to the first catalog option when it's unset or stale
@@ -136,7 +115,7 @@ export default function CheckoutScreen({
   // Not persisted, unlike the payment method itself: applying the wallet is a
   // per-checkout choice, re-decided each time against that checkout's own total.
   const [useWallet, setUseWallet] = React.useState(false);
-  const walletApplied = useWallet ? Math.min(walletBalance, cart.total) : 0;
+  const { applied: walletApplied } = walletAmounts(walletBalance, cart.total, useWallet);
   // The label for "X will be charged to Y" under the wallet toggle — whichever
   // catalog method or saved card is currently selected above it.
   const chargeLabel = React.useMemo(() => {
@@ -146,10 +125,6 @@ export default function CheckoutScreen({
     if (card) return `${card.brand} •••• ${card.number.replace(/\D/g, "").slice(-4)}`;
     return "";
   }, [paymentMethods, savedCards, paymentId, tPayment]);
-  const [substitutions, setSubstitutions, clearSubstitutions] = useSessionStorageState<
-    Record<string, SubstitutionPreference>
-  >(SUBSTITUTIONS_STORAGE_KEY, {}, reviveSubstitutions);
-  const [notes, setNotes, clearNotes] = useSessionStorageState<string>(NOTES_STORAGE_KEY, "");
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
   // The 3-step wizard's current step. Not persisted: a reload lands back on
@@ -188,9 +163,6 @@ export default function CheckoutScreen({
     });
   };
 
-  const setSubstitution = (productId: string, preference: SubstitutionPreference) =>
-    setSubstitutions((prev) => ({ ...prev, [productId]: preference }));
-
   const placeOrder = (event: React.FormEvent) => {
     event.preventDefault();
     if (!selectedAddress) {
@@ -221,9 +193,7 @@ export default function CheckoutScreen({
         // selections so the next checkout starts fresh, then navigate. The payment
         // method is a persisted preference and intentionally kept. The confirmation
         // screen re-reads from the server.
-        clearSlot();
-        clearSubstitutions();
-        clearNotes();
+        clearDraft();
         // The order cleared the cart server-side: resync the shared cart store so
         // the nav badge empties, then navigate and refresh the confirmation RSC.
         refreshCart();
@@ -236,7 +206,7 @@ export default function CheckoutScreen({
   };
 
   return (
-    <form onSubmit={placeOrder} className="relative left-1/2 flex min-h-dvh w-[min(860px,100vw)] -translate-x-1/2 flex-col gap-4 px-4 pb-6 sm:gap-6 sm:px-8 sm:pb-8">
+    <form onSubmit={placeOrder} className="relative start-1/2 flex min-h-dvh w-[min(860px,100vw)] -translate-x-1/2 flex-col gap-4 px-4 pb-6 rtl:translate-x-1/2 sm:gap-6 sm:px-8 sm:pb-8">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center border-b border-border py-4 sm:py-5">
         <button type="button" onClick={() => router.back()} aria-label={t("goBack")}
           className="flex size-10 items-center justify-center rounded-full transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary">
@@ -275,7 +245,7 @@ export default function CheckoutScreen({
                 <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:size-20"><Icon icon={Building2} size="lg" /></span>
                 <div className="min-w-0 flex-1"><DeliveryLocationSummary location={selectedAddress} /></div>
                 <div className="flex shrink-0 flex-col items-end justify-between self-stretch text-primary">
-                  <span className="flex size-9 items-center justify-center rounded-full bg-primary text-white"><Icon icon={Check} size="sm" /></span>
+                  <span className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground"><Icon icon={Check} size="sm" /></span>
                   <Link href={`/profile/addresses/${selectedAddress.id}/edit`} aria-label={t("edit")} className="flex items-center gap-2 text-muted-foreground"><Icon icon={Pencil} size="sm" /><span className="hidden sm:inline">{t("edit")}</span></Link>
                 </div>
               </div>
@@ -312,7 +282,7 @@ export default function CheckoutScreen({
           <CheckoutSection icon={Phone} title={t("contact")}>
             <p className="-mt-3 text-sm text-muted-foreground">{t("contactHint")}</p>
             <div className="flex min-h-16 items-center justify-between rounded-2xl border border-border px-4 sm:min-h-20 sm:px-6">
-              <span className="flex items-center gap-3 text-base font-semibold sm:gap-4 sm:text-lg"><Icon icon={Phone} size="sm" className="text-primary" />+98 912 *** ****</span>
+              <span className="flex items-center gap-3 text-base font-semibold sm:gap-4 sm:text-lg"><Icon icon={Phone} size="sm" className="text-primary" />{maskPhone(customerPhone)}</span>
               <Link href="/profile/details" className="font-medium text-primary">{t("edit")}</Link>
             </div>
           </CheckoutSection>
@@ -375,7 +345,6 @@ export default function CheckoutScreen({
           walletApplied={walletApplied}
           promoCode={promoCode}
           substitutions={substitutions}
-          onSubstitutionChange={setSubstitution}
           onEditStep={setStep}
         />
       )}
