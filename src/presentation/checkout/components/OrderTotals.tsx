@@ -7,6 +7,8 @@ interface OrderTotalsProps {
   discount: number;
   /** VAT portion already included in the total, or `null` when tax isn't in effect. */
   taxAmount?: number | null;
+  /** Amount paid from the wallet balance, deducted from what's shown as due. */
+  walletApplied?: number;
 }
 
 /**
@@ -14,9 +16,11 @@ interface OrderTotalsProps {
  * then the emphasized total payment — always displayed as the sum of the rows
  * above it (`total = subtotal + shipping - discount` is the stored invariant).
  * When `taxAmount` is present, a note below the total clarifies it's already
- * included — tax-inclusive pricing means it never changes what's charged.
+ * included — tax-inclusive pricing means it never changes what's charged. When
+ * `walletApplied` is set, an extra row deducts it and the emphasized total
+ * becomes what's actually charged to the selected payment method.
  */
-export function OrderTotals({ subtotal, shipping, discount, taxAmount }: OrderTotalsProps) {
+export function OrderTotals({ subtotal, shipping, discount, taxAmount, walletApplied = 0 }: OrderTotalsProps) {
   const t = useTranslations("checkout");
   const locale = useLocale();
   const money = (amount: number) => formatMoney(amount, locale);
@@ -24,10 +28,11 @@ export function OrderTotals({ subtotal, shipping, discount, taxAmount }: OrderTo
     { label: t("subtotal"), value: money(subtotal) },
     { label: t("deliveryFee"), value: money(shipping) },
     { label: t("discount"), value: money(discount) },
+    ...(walletApplied > 0 ? [{ label: t("walletDeduction"), value: `-${money(walletApplied)}` }] : []),
   ];
   // Derived from the displayed (rounded) rows rather than `total`, so the visible
   // arithmetic always adds up under fa's whole-Toman rounding.
-  const totalValue = formatMoneySum([subtotal, shipping, -discount], locale);
+  const totalValue = formatMoneySum([subtotal, shipping, -discount, -walletApplied], locale);
 
   return (
     <div className="flex w-full flex-col gap-2 px-4 py-2">

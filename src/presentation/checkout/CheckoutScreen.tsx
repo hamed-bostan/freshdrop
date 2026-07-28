@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { MapPin, Clock, CreditCard, ClipboardList, Replace, FileText } from "lucide-react";
+import { MapPin, Clock, CreditCard, FileText } from "lucide-react";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import type { Cart } from "@/src/domain/entities/Cart";
 import type { SubstitutionPreference } from "@/src/domain/entities/Order";
@@ -19,12 +19,10 @@ import { paymentMethodsApi } from "@/src/presentation/payment/payment-method-api
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { useSessionStorageState } from "@/src/lib/hooks/useSessionStorageState";
 import {
+  CheckoutReviewStep,
   CheckoutSection,
   CheckoutStepper,
   DeliverySlotPicker,
-  OrderSummaryCard,
-  OrderTotals,
-  SubstitutionPreferenceList,
   WalletBalanceToggle,
   type CheckoutStepId,
 } from "./components";
@@ -342,26 +340,19 @@ export default function CheckoutScreen({
       )}
 
       {step === "review" && (
-        <>
-          <CheckoutSection icon={ClipboardList} title={t("orderSummary")}>
-            <OrderSummaryCard items={cart.items} />
-          </CheckoutSection>
-
-          <CheckoutSection icon={Replace} title={t("ifOutOfStock")}>
-            <SubstitutionPreferenceList
-              items={cart.items}
-              value={substitutions}
-              onChange={setSubstitution}
-            />
-          </CheckoutSection>
-
-          <OrderTotals
-            subtotal={cart.subtotal}
-            shipping={cart.shipping}
-            discount={cart.discount}
-            taxAmount={cart.taxAmount}
-          />
-        </>
+        <CheckoutReviewStep
+          cart={cart}
+          items={cart.items}
+          selectedAddress={selectedAddress}
+          slot={slot}
+          deliverySlotDays={deliverySlotDays}
+          notes={notes}
+          paymentLabel={chargeLabel}
+          walletApplied={walletApplied}
+          substitutions={substitutions}
+          onSubstitutionChange={setSubstitution}
+          onEditStep={setStep}
+        />
       )}
 
       {error && (
