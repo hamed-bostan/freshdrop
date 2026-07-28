@@ -248,6 +248,13 @@
   },
   "checkout": {
     "title": "تسویه حساب",
+    "secure": "امن",
+    "goBack": "بازگشت",
+    "deliveryAddress": "آدرس تحویل",
+    "trackingHint": "می‌توانید سفارش خود را به‌صورت لحظه‌ای پیگیری کنید",
+    "contact": "تماس",
+    "contactHint": "ممکن است درباره سفارش با شما تماس بگیریم",
+    "itemTotal": "{count} کالا  •  ${amount, number, ::.00}",
     "stepDelivery": "ارسال",
     "stepPayment": "پرداخت",
     "stepReview": "بازبینی",

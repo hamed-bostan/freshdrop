@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { MapPin, Clock, CreditCard, FileText } from "lucide-react";
+import { MapPin, Clock, CreditCard, FileText, LockKeyhole, Building2, Check, Pencil, Phone, ShoppingBasket, Info, ChevronRight, ChevronLeft } from "lucide-react";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import type { Cart } from "@/src/domain/entities/Cart";
 import type { SubstitutionPreference } from "@/src/domain/entities/Order";
@@ -11,7 +11,7 @@ import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
 import type { SavedCard } from "@/src/domain/entities/Wallet";
 import { Button, FormMessage, Textarea } from "@/src/presentation/design-system";
-import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { Icon } from "@/src/presentation/design-system";
 import { DeliveryLocationPickerSheet } from "@/src/presentation/delivery-location/DeliveryLocationPickerSheet";
 import { DeliveryLocationSummary } from "@/src/presentation/delivery-location/components/DeliveryLocationSummary";
 import { PaymentMethodOption, SavedCardOption, paymentMethodLabel } from "@/src/presentation/payment/components";
@@ -243,8 +243,15 @@ export default function CheckoutScreen({
   };
 
   return (
-    <form onSubmit={placeOrder} className="flex min-h-dvh flex-col gap-6 px-6 pb-28">
-      <PageHeader title={t("title")} />
+    <form onSubmit={placeOrder} className="relative left-1/2 flex min-h-dvh w-[min(860px,100vw)] -translate-x-1/2 flex-col gap-4 px-4 pb-6 sm:gap-6 sm:px-8 sm:pb-8">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center border-b border-border py-4 sm:py-5">
+        <button type="button" onClick={() => router.back()} aria-label={t("goBack")}
+          className="flex size-10 items-center justify-center rounded-full transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary">
+          <Icon icon={ChevronLeft} size="md" className="rtl:-scale-x-100" />
+        </button>
+        <h1 className="text-xl font-semibold text-foreground sm:text-2xl">{t("title")}</h1>
+        <span className="flex items-center justify-self-end gap-1.5 text-sm text-muted-foreground sm:gap-2 sm:text-base"><Icon icon={LockKeyhole} size="sm" /><span className="hidden min-[360px]:inline">{t("secure")}</span></span>
+      </div>
 
       <CheckoutStepper current={step} onSelect={setStep} />
 
@@ -252,14 +259,14 @@ export default function CheckoutScreen({
         <>
           <CheckoutSection
             icon={MapPin}
-            title={t("deliverTo")}
+            title={t("deliveryAddress")}
             action={
               selectedAddress ? (
                 <DeliveryLocationPickerSheet
                   locations={deliveryLocations}
                   trigger={
-                    <button type="button" className="text-body-b8 text-primary">
-                      {t("change")}
+                    <button type="button" className="text-base font-medium text-primary">
+                      + {t("addNewAddress")}
                     </button>
                   }
                 />
@@ -271,8 +278,13 @@ export default function CheckoutScreen({
             }
           >
             {selectedAddress ? (
-              <div className="flex items-center rounded-card-xl border border-foreground bg-surface px-4 py-2">
-                <DeliveryLocationSummary location={selectedAddress} />
+              <div className="flex items-center gap-3 rounded-2xl border border-primary bg-primary/[0.025] p-4 sm:gap-5 sm:p-5">
+                <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:size-20"><Icon icon={Building2} size="lg" /></span>
+                <div className="min-w-0 flex-1"><DeliveryLocationSummary location={selectedAddress} /></div>
+                <div className="flex shrink-0 flex-col items-end justify-between self-stretch text-primary">
+                  <span className="flex size-9 items-center justify-center rounded-full bg-primary text-white"><Icon icon={Check} size="sm" /></span>
+                  <Link href={`/profile/addresses/${selectedAddress.id}/edit`} aria-label={t("edit")} className="flex items-center gap-2 text-muted-foreground"><Icon icon={Pencil} size="sm" /><span className="hidden sm:inline">{t("edit")}</span></Link>
+                </div>
               </div>
             ) : (
               <p className="text-body-b8 text-muted-foreground">{t("noAddress")}</p>
@@ -281,6 +293,7 @@ export default function CheckoutScreen({
 
           <CheckoutSection icon={Clock} title={t("deliveryTime")}>
             <DeliverySlotPicker days={deliverySlotDays} selected={slot} onSelect={setSlot} />
+            <p className="flex items-center gap-2 text-sm text-muted-foreground"><Icon icon={Info} size="sm" />{t("trackingHint")}</p>
           </CheckoutSection>
 
           <CheckoutSection
@@ -290,6 +303,7 @@ export default function CheckoutScreen({
           >
             <div className="flex flex-col gap-1">
               <Textarea
+                className="min-h-36 rounded-2xl text-base"
                 value={notes}
                 onChange={(event) => setNotes(event.target.value.slice(0, DELIVERY_INSTRUCTIONS_MAX))}
                 maxLength={DELIVERY_INSTRUCTIONS_MAX}
@@ -299,6 +313,14 @@ export default function CheckoutScreen({
               <p className="text-end text-body-b9 text-muted-foreground">
                 {t("charCount", { count: notes.length, max: DELIVERY_INSTRUCTIONS_MAX })}
               </p>
+            </div>
+          </CheckoutSection>
+
+          <CheckoutSection icon={Phone} title={t("contact")}>
+            <p className="-mt-3 text-sm text-muted-foreground">{t("contactHint")}</p>
+            <div className="flex min-h-16 items-center justify-between rounded-2xl border border-border px-4 sm:min-h-20 sm:px-6">
+              <span className="flex items-center gap-3 text-base font-semibold sm:gap-4 sm:text-lg"><Icon icon={Phone} size="sm" className="text-primary" />+98 912 *** ****</span>
+              <Link href="/profile/details" className="font-medium text-primary">{t("edit")}</Link>
             </div>
           </CheckoutSection>
         </>
@@ -360,9 +382,16 @@ export default function CheckoutScreen({
       )}
 
       {step === "delivery" && (
-        <Button type="button" size="lg" onClick={goToPayment} className="mt-auto w-full">
-          {t("continueToPayment")}
-        </Button>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-3 rounded-2xl bg-primary/[0.06] p-4 sm:gap-5 sm:p-5">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:size-16"><Icon icon={ShoppingBasket} size="md" /></span>
+            <div className="min-w-0 flex-1"><p className="text-base font-semibold sm:text-lg">{t("itemTotal", { count: cart.itemCount, amount: cart.total })}</p><p className="mt-1 text-sm text-muted-foreground sm:text-base">{t("includesVat", { amount: cart.taxAmount ?? 0 })}</p></div>
+            <Icon icon={Info} size="sm" className="text-muted-foreground" />
+          </div>
+          <Button type="button" size="lg" onClick={goToPayment} className="min-h-16 w-full text-lg sm:min-h-20 sm:text-xl">
+            {t("continueToPayment")}<Icon icon={ChevronRight} size="md" className="ms-auto rtl:-scale-x-100" />
+          </Button>
+        </div>
       )}
       {step === "payment" && (
         <Button type="button" size="lg" onClick={goToReview} className="mt-auto w-full">

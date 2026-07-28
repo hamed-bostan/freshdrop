@@ -31,7 +31,7 @@ export function CheckoutStepper({ current, onSelect }: CheckoutStepperProps) {
   const currentIndex = CHECKOUT_STEPS.indexOf(current);
 
   return (
-    <ol className="flex w-full items-start">
+    <ol className="mx-auto flex w-full max-w-[650px] items-start px-2 py-1 sm:px-0">
       {CHECKOUT_STEPS.map((step, index) => {
         const isLast = index === CHECKOUT_STEPS.length - 1;
         const done = index < currentIndex;
@@ -39,23 +39,23 @@ export function CheckoutStepper({ current, onSelect }: CheckoutStepperProps) {
 
         return (
           <li key={step} className={cn("flex items-start", !isLast && "flex-1")}>
-            <div className="flex flex-col items-center gap-1.5">
+            <div className="flex flex-col items-center gap-2">
               <button
                 type="button"
                 disabled={!done}
                 onClick={() => onSelect(step)}
                 className={cn(
-                  "flex size-8 shrink-0 items-center justify-center rounded-full border-2 text-body-b7",
+                  "flex size-9 shrink-0 items-center justify-center rounded-full border text-sm font-semibold sm:size-11 sm:text-base",
                   done && "border-primary bg-primary text-primary-foreground",
-                  isCurrent && "border-primary bg-background text-primary",
-                  !done && !isCurrent && "border-icon-muted bg-background text-icon-muted",
+                  isCurrent && "border-primary bg-primary text-primary-foreground",
+                  !done && !isCurrent && "border-transparent bg-muted text-muted-foreground",
                   !done && "cursor-default",
                 )}
               >
                 {done ? <Icon icon={Check} size="sm" /> : index + 1}
               </button>
               <span
-                className={cn("text-body-b9", done || isCurrent ? "text-primary" : "text-muted-foreground")}
+                className={cn("text-sm font-medium sm:text-base", done || isCurrent ? "text-primary" : "text-muted-foreground")}
               >
                 {t(STEP_LABEL_KEYS[step])}
               </span>
@@ -63,7 +63,7 @@ export function CheckoutStepper({ current, onSelect }: CheckoutStepperProps) {
             {!isLast && (
               <span
                 aria-hidden
-                className={cn("mx-2 mt-4 h-0.5 flex-1", done ? "bg-primary" : "bg-border")}
+                className={cn("mx-2 mt-[18px] h-px flex-1 sm:mx-5 sm:mt-[22px]", done ? "bg-primary" : "bg-border")}
               />
             )}
           </li>

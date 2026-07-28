@@ -248,6 +248,13 @@
   },
   "checkout": {
     "title": "Checkout",
+    "secure": "Secure",
+    "goBack": "Go back",
+    "deliveryAddress": "Delivery Address",
+    "trackingHint": "You can track your order in real-time",
+    "contact": "Contact",
+    "contactHint": "We may contact you about your order",
+    "itemTotal": "{count, plural, one {# item} other {# items}}  •  ${amount, number, ::.00}",
     "stepDelivery": "Delivery",
     "stepPayment": "Payment",
     "stepReview": "Review",

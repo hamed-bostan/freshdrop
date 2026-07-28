@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { DeliverySlot, DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
-import { Chip, ChipGroup, SelectableTile } from "@/src/presentation/design-system";
+import { SelectableTile } from "@/src/presentation/design-system";
 import { slotDayLabel, slotName, slotTimeRange } from "../deliverySlotFormat";
 
 /** The shopper's chosen slot — a day plus a window within it. */
@@ -44,20 +44,19 @@ export function DeliverySlotPicker({ days, selected, onSelect }: DeliverySlotPic
 
   return (
     <div className="flex flex-col gap-4">
-      <ChipGroup
-        aria-label={t("dayAria")}
-        value={activeDay.date}
-        onValueChange={setActiveDate}
-        className="flex-nowrap overflow-x-auto"
-      >
+      <div role="tablist" aria-label={t("dayAria")} className="scrollbar-hide -mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:grid sm:grid-cols-5 sm:gap-3 sm:overflow-visible sm:px-0">
         {days.map((day) => (
-          <Chip key={day.date} value={day.date} className="shrink-0">
+          <button key={day.date} type="button" role="tab" aria-selected={day.date === activeDay.date}
+            onClick={() => setActiveDate(day.date)}
+            className={day.date === activeDay.date
+              ? "min-h-20 w-[92px] shrink-0 snap-start rounded-xl border border-primary bg-primary/5 px-2 py-3 text-center text-sm font-semibold text-primary sm:min-h-24 sm:w-auto sm:rounded-2xl sm:px-3 sm:py-4 sm:text-base"
+              : "min-h-20 w-[92px] shrink-0 snap-start rounded-xl border border-border bg-background px-2 py-3 text-center text-sm font-medium text-foreground sm:min-h-24 sm:w-auto sm:rounded-2xl sm:px-3 sm:py-4 sm:text-base"}>
             {slotDayLabel(day, locale, t)}
-          </Chip>
+          </button>
         ))}
-      </ChipGroup>
+      </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         {activeDay.slots.map((slot) => (
           <SlotOption
             key={slot.windowId}
@@ -105,10 +104,11 @@ function SlotOption({ slot, selected, onSelect, disabled }: SlotOptionProps) {
       onSelect={onSelect}
       disabled={disabled}
       align="between"
+      className={selected ? "min-h-24 border-primary bg-primary/5 px-4 text-center sm:min-h-28 sm:px-6" : "min-h-24 border-border bg-background px-4 text-center sm:min-h-28 sm:px-6"}
     >
-      <span className="flex flex-col gap-1">
-        <span className="text-body-b6 text-foreground">{name}</span>
-        <span className="text-body-b10 text-muted-foreground">{timeRange}</span>
+      <span className="flex w-full flex-col gap-2">
+        <span className={selected ? "text-lg font-semibold text-primary" : "text-lg font-semibold text-foreground"}>{name}</span>
+        <span className="text-base text-muted-foreground">{timeRange}</span>
       </span>
 
       {availability.level === "full" ? (
