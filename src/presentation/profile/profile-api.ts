@@ -1,4 +1,4 @@
-import { apiPut } from "@/src/lib/api/client";
+import { apiDelete, apiPut } from "@/src/lib/api/client";
 import { AVATAR_IMAGE_FOLDER } from "@/src/lib/imageFolders";
 import { imagesApi } from "@/src/presentation/images/image-api";
 import { userResponseSchema, type UserProfile } from "./profile-response-schema";
@@ -22,5 +22,10 @@ export const profilesApi = {
    */
   uploadAvatar(file: File): Promise<string> {
     return imagesApi.upload(file, AVATAR_IMAGE_FOLDER);
+  },
+
+  /** Permanently delete the signed-in user's own account. */
+  remove(): Promise<void> {
+    return apiDelete("/profile");
   },
 };

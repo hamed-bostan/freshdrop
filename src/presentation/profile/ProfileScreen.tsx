@@ -1,35 +1,11 @@
 import Image from "next/image";
+import { Package, Heart, MapPin, CreditCard, Settings, HelpCircle, Shield, LogOut, Pencil } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { User } from "lucide-react";
 import type { UserProfile } from "./profile-response-schema";
 import { Avatar, Icon } from "@/src/presentation/design-system";
-import { ProfileMenuItem } from "./components/ProfileMenuItem";
-
-type ProfileMenuLabelKey =
-  | "menuYourProfile"
-  | "menuManageAddress"
-  | "menuPaymentMethods"
-  | "menuMyOrders"
-  | "menuFavorites"
-  | "menuMyWallet"
-  | "menuSupport"
-  | "menuSettings";
-
-interface ProfileMenuEntry {
-  labelKey: ProfileMenuLabelKey;
-  href: string;
-}
-
-const PROFILE_MENU: ProfileMenuEntry[] = [
-  { labelKey: "menuYourProfile", href: "/profile/details" },
-  { labelKey: "menuManageAddress", href: "/profile/addresses" },
-  { labelKey: "menuPaymentMethods", href: "/profile/payment-methods" },
-  { labelKey: "menuMyOrders", href: "/orders" },
-  { labelKey: "menuFavorites", href: "/favorites" },
-  { labelKey: "menuMyWallet", href: "/profile/wallet" },
-  { labelKey: "menuSupport", href: "/profile/support" },
-  { labelKey: "menuSettings", href: "/profile/settings" },
-];
+import { Link } from "@/src/i18n/navigation";
+import { MenuRow, SectionLabel } from "@/src/presentation/components/menu-row";
+import { LogoutRow } from "./components/LogoutRow";
 
 interface ProfileScreenProps {
   user: UserProfile;
@@ -44,34 +20,56 @@ export default async function ProfileScreen({ user }: ProfileScreenProps) {
         <h1 className="text-center text-heading-h3 text-foreground">{t("title")}</h1>
       </header>
 
-      <div className="flex flex-col items-center gap-3">
-        <Avatar
-          tone="surface"
-          className="size-24"
-          fallback={<Icon icon={User} className="size-12 text-icon-muted" />}
-        >
+      <div className="flex items-center gap-4 rounded-card-xl bg-muted p-4">
+        <Avatar name={user.name} className="size-16">
           {user.avatarUrl && (
             <Image
               src={user.avatarUrl}
               alt={t("photoAlt", { name: user.name })}
-              width={96}
-              height={96}
+              width={64}
+              height={64}
               className="size-full object-cover"
             />
           )}
         </Avatar>
 
-        <div className="flex flex-col items-center gap-0.5">
+        <div className="flex flex-1 flex-col">
           <p className="text-heading-h5 text-foreground">{user.name}</p>
           <p className="text-body-b6 text-muted-foreground">{user.phone}</p>
+          <Link href="/profile/details" className="mt-1 flex w-fit items-center gap-1 text-body-b7 text-primary">
+            <Icon icon={Pencil} size="xs" />
+            {t("editProfile")}
+          </Link>
         </div>
       </div>
 
-      <nav aria-label={t("menuAria")} className="flex flex-col gap-2">
-        {PROFILE_MENU.map((item) => (
-          <ProfileMenuItem key={item.href} label={t(item.labelKey)} href={item.href} />
-        ))}
-      </nav>
+      <MenuRow icon={Package} label={t("menuMyOrders")} subtitle={t("menuMyOrdersSubtitle")} href="/orders" />
+
+      <div className="flex flex-col gap-2">
+        <SectionLabel>{t("sectionShopping")}</SectionLabel>
+        <MenuRow icon={Heart} label={t("menuFavorites")} subtitle={t("menuFavoritesSubtitle")} href="/favorites" />
+        <MenuRow
+          icon={MapPin}
+          label={t("menuManageAddress")}
+          subtitle={t("menuManageAddressSubtitle")}
+          href="/profile/addresses"
+        />
+        <MenuRow
+          icon={CreditCard}
+          label={t("menuPaymentMethods")}
+          subtitle={t("menuPaymentMethodsSubtitle")}
+          href="/profile/payment-methods"
+        />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <SectionLabel>{t("sectionAccountSupport")}</SectionLabel>
+        <MenuRow icon={Settings} label={t("menuSettings")} href="/profile/settings" />
+        <MenuRow icon={HelpCircle} label={t("menuSupport")} href="/profile/support" />
+        <MenuRow icon={Shield} label={t("menuAboutLegal")} href="/profile/settings/about" />
+      </div>
+
+      <LogoutRow icon={LogOut} />
     </div>
   );
 }

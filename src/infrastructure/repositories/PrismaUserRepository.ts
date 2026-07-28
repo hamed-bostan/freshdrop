@@ -199,6 +199,18 @@ export class PrismaUserRepository implements IUserRepository {
       throw error;
     }
   }
+
+  async deleteAccount(userId: string): Promise<void> {
+    await prisma.$transaction([
+      prisma.deliveryLocation.deleteMany({ where: { userId } }),
+      prisma.cartItem.deleteMany({ where: { userId } }),
+      prisma.stockAlert.deleteMany({ where: { userId } }),
+      prisma.walletCard.deleteMany({ where: { userId } }),
+      prisma.walletTransaction.deleteMany({ where: { userId } }),
+      prisma.walletAccount.deleteMany({ where: { userId } }),
+      prisma.user.delete({ where: { id: userId } }),
+    ]);
+  }
 }
 
 /** Map a Prisma row to the domain entity (dropping DB-only timestamps). */

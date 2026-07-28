@@ -92,4 +92,10 @@ export type IUserRepository = {
   setLastSeenNotificationsAt(userId: string, at: Date): Promise<void>;
   /** Replace which stored-notification categories this admin also wants emailed (see `User.notifiedCategories`). */
   setNotifiedCategories(userId: string, categories: readonly AdminNotificationAction[]): Promise<void>;
+  /**
+   * Permanently remove a user's account and their personal data (addresses, cart,
+   * stock alerts, wallet). Order and review history is kept — those are the
+   * store's transactional/audit records, not the user's own data to delete.
+   */
+  deleteAccount(userId: string): Promise<void>;
 }
