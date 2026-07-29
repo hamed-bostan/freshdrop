@@ -3,6 +3,7 @@ import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 import { focusRing, Icon } from "@/src/presentation/design-system";
 import { Link } from "@/src/i18n/navigation";
 import { cn } from "@/src/lib/utils";
+import { StatSparkline } from "./StatSparkline";
 
 /**
  * Colour tone of the icon badge — one per KPI so each tile reads at a glance
@@ -54,6 +55,8 @@ type StatCardProps = {
   deltaTone?: "up" | "down" | "flat";
   /** What the delta is measured against, e.g. "vs previous 30 days". Replaces `hint` when present. */
   deltaLabel?: string;
+  /** Optional period series rendered as a compact, non-interactive trend line. */
+  trendValues?: number[];
 };
 
 /**
@@ -86,6 +89,7 @@ export function StatCard({
   delta,
   deltaTone = "flat",
   deltaLabel,
+  trendValues,
 }: StatCardProps) {
   const trend = DELTA_STYLES[deltaTone];
 
@@ -93,14 +97,14 @@ export function StatCard({
     <>
       <div className="flex items-start justify-between gap-3">
         <p className="text-body-b7 text-muted-foreground">{label}</p>
-        <div
+        {!trendValues ? <div
           className={cn(
             "flex size-10 shrink-0 items-center justify-center rounded-full",
             TONE_STYLES[tone],
           )}
         >
           <Icon icon={icon} size="sm" />
-        </div>
+        </div> : null}
       </div>
       <div>
         <p className="text-heading-h2 text-foreground">{value}</p>
@@ -124,11 +128,12 @@ export function StatCard({
         ) : hint ? (
           <p className="mt-2 text-body-b8 text-muted-foreground">{hint}</p>
         ) : null}
+        {trendValues ? <div className="mt-2"><StatSparkline values={trendValues} positive={deltaTone !== "down"} /></div> : null}
       </div>
     </>
   );
 
-  const frame = "flex h-full flex-col justify-between gap-6 rounded-card-lg border border-border p-5";
+  const frame = "flex h-full min-h-36 flex-col justify-between gap-2 rounded-card-lg border border-border p-4";
 
   if (href) {
     return (

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Bar, BarChart, Cell, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 import type { AnalyticsGranularity, RevenuePoint } from "@/src/domain/entities/Analytics";
 import { getLangDir } from "@/src/i18n/direction";
 import type { Locale } from "@/src/i18n/routing";
@@ -36,7 +36,6 @@ type ChartDatum = {
 };
 
 /** Floor point size for a non-zero bar, in pixels — so a small day is visible, not invisible. */
-const MIN_POINT_SIZE = 2;
 
 const METRIC_KEYS: Record<Metric, "metricRevenue" | "metricOrders" | "metricAov"> = {
   revenue: "metricRevenue",
@@ -170,8 +169,9 @@ export function RevenueChartClient({
       {periodPeak > 0 ? (
         <>
           <div className="mt-4" aria-hidden>
-            <ChartContainer height={200} dir={dir}>
-              <BarChart data={data} barCategoryGap="10%" margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+            <ChartContainer height={160} dir={dir}>
+              <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
                 <XAxis
                   dataKey="label"
                   axisLine={false}
@@ -217,21 +217,19 @@ export function RevenueChartClient({
                     />
                   )}
                 />
-                <Bar dataKey="current" radius={[4, 4, 0, 0]} minPointSize={MIN_POINT_SIZE} isAnimationActive={false}>
-                  {data.map((point) => (
-                    <Cell key={point.bucket} fill={point.current > 0 ? chartColor(0) : "var(--color-border)"} />
-                  ))}
-                </Bar>
+                <Line type="monotone" dataKey="current" stroke={chartColor(0)} strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} isAnimationActive={false} />
                 {compare !== "none" ? (
-                  <Bar
+                  <Line
+                    type="monotone"
                     dataKey="compare"
-                    fill="var(--color-chart-6)"
-                    radius={[4, 4, 0, 0]}
-                    minPointSize={MIN_POINT_SIZE}
+                    stroke="var(--color-chart-6)"
+                    strokeWidth={2}
+                    strokeDasharray="6 5"
+                    dot={false}
                     isAnimationActive={false}
                   />
                 ) : null}
-              </BarChart>
+              </LineChart>
             </ChartContainer>
           </div>
 

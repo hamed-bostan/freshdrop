@@ -718,6 +718,7 @@
     "heading": "Dashboard",
     "subtitle": "An overview of today's store activity.",
     "attentionHeading": "Needs attention",
+    "viewAllAlerts": "View all alerts",
     "attentionAllClearTitle": "All clear",
     "attentionAllClearBody": "Nothing needs your attention right now.",
     "attentionOtherAreasTitle": "All other areas are up to date",
@@ -738,6 +739,11 @@
     "viewAll": "View all",
     "viewFullAnalytics": "View full analytics",
     "noRecentOrders": "No orders yet."
+    ,"lowStockProducts": "Low-stock products"
+    ,"viewAllInventory": "View all inventory"
+    ,"unitsRemaining": "{count} units remaining"
+    ,"manage": "Manage"
+    ,"noLowStock": "Inventory levels look healthy."
   },
   "dashAnalytics": {
     "pageHeading": "Analytics",
@@ -778,6 +784,7 @@
     "chartEmpty": "No revenue in this period.",
     "statusBreakdown": "Orders by status",
     "ordersTotal": "{count} total",
+    "totalLabel": "Total",
     "percentOfOrders": "{percent}%",
     "noOrders": "No orders in this period.",
     "topProducts": "Top products",

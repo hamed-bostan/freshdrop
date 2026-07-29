@@ -25,9 +25,9 @@ type PanelRowCardProps = {
  */
 export function PanelRowCard({ href, surface, children }: PanelRowCardProps) {
   const frame = cn(
-    "min-h-22 rounded-card-lg p-4",
+    "min-h-13 px-1 py-2",
     surface === "fill"
-      ? "flex items-center gap-3 bg-accent"
+      ? "flex items-center gap-3 border-b border-border last:border-b-0"
       : "flex flex-col justify-between gap-1 border border-border",
   );
 

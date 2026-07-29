@@ -69,6 +69,7 @@ export async function RevenueRankPanel({
   viewAllLabel,
 }: RevenueRankPanelProps) {
   const locale = (await getLocale()) as Locale;
+  const maxRevenue = Math.max(...rows.map((row) => row.revenue), 1);
 
   return (
     <section className="flex h-full flex-col rounded-card-lg border border-border p-4">
@@ -96,27 +97,29 @@ export async function RevenueRankPanel({
       </div>
 
       {rows.length > 0 ? (
-        <ol className="mt-5 flex flex-1 flex-col gap-3">
-          {rows.map((row) => (
+        <ol className="mt-2 flex flex-1 flex-col">
+          {rows.map((row, index) => (
             <PanelRowCard key={row.id} href={row.href} surface="fill">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-label-l2 font-semibold text-primary-foreground">{formatNumber(index + 1, locale)}</span>
               {row.imageUrl ? (
-                <Thumbnail as="span" className="size-12 shrink-0">
+                <Thumbnail as="span" className="size-10 shrink-0">
                   <Image
                     src={row.imageUrl}
                     alt=""
-                    width={48}
-                    height={48}
+                    width={40}
+                    height={40}
                     className="size-full object-contain"
                   />
                 </Thumbnail>
               ) : null}
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-body-b5 text-foreground">{row.label}</span>
+                <span className="block truncate text-body-b7 font-semibold text-foreground">{row.label}</span>
                 <span className="block text-body-b8 text-muted-foreground">
                   {unitsLabel(formatNumber(row.units, locale))}
                 </span>
+                {!row.imageUrl ? <span className="mt-2 block h-2 overflow-hidden rounded-full bg-muted"><span className="block h-full rounded-full bg-primary" style={{ width: `${(row.revenue / maxRevenue) * 100}%` }} /></span> : null}
               </span>
-              <span className="text-body-b5 text-primary">{formatMoney(row.revenue, locale)}</span>
+              <span className="text-body-b7 font-semibold text-primary">{formatMoney(row.revenue, locale)}</span>
             </PanelRowCard>
           ))}
         </ol>

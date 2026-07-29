@@ -40,7 +40,6 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
   // Only shown when *some* but not all categories need a look — the columns
   // whose count is zero don't each get their own tile (that's noise), they
   // collapse into one reassuring summary instead.
-  const showOtherAreasClear = active.length > 0 && active.length < items.length;
 
   return (
     <section className="rounded-card-lg border border-border">
@@ -54,16 +53,17 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
             {formatNumber(active.length, locale)}
           </Badge>
         ) : null}
+        <Link href="/dashboard/activity" className="ms-auto inline-flex items-center gap-1 text-body-b8 text-primary hover:underline">{t("viewAllAlerts")}<Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" /></Link>
       </div>
 
       {active.length > 0 ? (
-        <div className="mt-4 flex flex-col divide-y divide-border sm:flex-row sm:divide-x sm:divide-y-0">
+        <div className="mt-2 grid divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
           {active.map((item) => (
             <Link
               key={item.key}
               href={item.href}
               className={cn(
-                "flex flex-1 items-start gap-3 p-4 transition-colors hover:bg-muted",
+                "grid grid-cols-[auto_1fr_auto] items-center gap-3 p-4 transition-colors hover:bg-muted",
                 focusRing,
               )}
             >
@@ -75,27 +75,13 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
               >
                 <Icon icon={item.icon} size="sm" />
               </div>
-              <div className="flex flex-col gap-1">
+              <div className="min-w-0">
                 <p className="text-body-b6 text-foreground">{item.title}</p>
                 <p className="text-body-b8 text-muted-foreground">{item.detail}</p>
-                <span className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-success px-3 py-1.5 text-body-b8 text-success-foreground">
-                  {item.ctaLabel}
-                  <Icon icon={ChevronRight} size="xs" />
-                </span>
               </div>
+              <span className="hidden items-center gap-1 rounded-input border border-primary px-3 py-1.5 text-body-b9 text-primary sm:inline-flex">{item.ctaLabel}<Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" /></span>
             </Link>
           ))}
-          {showOtherAreasClear ? (
-            <div className="flex flex-1 items-start gap-3 p-4">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground">
-                <Icon icon={CheckCircle2} size="sm" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <p className="text-body-b6 text-foreground">{t("attentionOtherAreasTitle")}</p>
-                <p className="text-body-b8 text-success-foreground">{t("attentionOtherAreasBody")}</p>
-              </div>
-            </div>
-          ) : null}
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2 p-8 text-center">

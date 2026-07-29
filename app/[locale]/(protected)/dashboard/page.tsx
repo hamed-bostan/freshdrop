@@ -10,6 +10,13 @@ import {
 } from "@/src/domain/entities/OrderSla";
 import { DashboardOverviewScreen } from "@/src/presentation/dashboard/DashboardOverviewScreen";
 import {
+  buildDashboardAnalyticsQuery,
+  buildLowStockQuery,
+  buildOrderQueueCountQuery,
+  buildRecentOrdersQuery,
+  buildReviewCountQuery,
+} from "@/src/presentation/dashboard/dashboard-overview-queries";
+import {
   hasCustomAnalyticsRange,
   parseAnalyticsRange,
   parseRevenueRankSort,
@@ -25,16 +32,13 @@ export const dynamic = "force-dynamic";
  * size, so the response carries the `total` the tile needs without shipping rows
  * the overview will throw away.
  */
-const COUNT_ONLY = "page=1&pageSize=1";
 
 /** How many of the latest orders the recent-orders mini-list shows. */
-const RECENT_ORDERS_COUNT = 5;
 
 /**
  * How many rows the two ranked panels show — matched to Customer Insights'
  * fixed three metrics so all three cards in that row land on the same height.
  */
-const OVERVIEW_RANK_LIMIT = 3;
 
 type DashboardPageProps = {
   /** The period the picker writes: `range` (a preset) or `from`/`to`. */
@@ -76,30 +80,25 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   // filtered endpoints; the recent orders are literally the first five. The
   // overview used to start by fetching every order in the store's history — see
   // `IAnalyticsRepository`.
-  const rankParams = new URLSearchParams(params);
-  rankParams.set("rankLimit", String(OVERVIEW_RANK_LIMIT));
+  const rankParams = buildDashboardAnalyticsQuery(params, productSort, categorySort);
 
   const [analytics, recentOrders, reviews, needsRestock, staleOrders, overdueOrders] =
     await Promise.all([
       analyticsServerApi.getOverview(rankParams),
-      ordersServerApi.listPage(new URLSearchParams(`page=1&pageSize=${RECENT_ORDERS_COUNT}`)),
-      reviewsServerApi.listPage(new URLSearchParams(COUNT_ONLY)),
+      ordersServerApi.listPage(buildRecentOrdersQuery()),
+      reviewsServerApi.listPage(buildReviewCountQuery()),
       // One read, not two: `needsRestock` is the products list's own name for "low or
       // out", and it's the filter the tile links into — so the count and the
       // destination are answered by the same query and can't disagree.
-      productsServerApi.listPage(new URLSearchParams(`${COUNT_ONLY}&stock=needsRestock`)),
+      productsServerApi.listPage(buildLowStockQuery()),
       // Orders still `pending` (unconfirmed) placed before the cutoff — the order
       // list's own `pipeline` + `to` (placed-before) filters, so this reuses the
       // existing endpoint rather than adding a new one.
-      ordersServerApi.listPage(
-        new URLSearchParams(`${COUNT_ONLY}&pipeline=pending&to=${staleOrdersCutoff}`),
-      ),
+      ordersServerApi.listPage(buildOrderQueueCountQuery("pending", staleOrdersCutoff)),
       // Any order still in flight (`in_progress` spans every live milestone)
       // placed before the wider cutoff — "hasn't arrived in a day", whichever
       // stage it's stuck at.
-      ordersServerApi.listPage(
-        new URLSearchParams(`${COUNT_ONLY}&pipeline=in_progress&to=${overdueOrdersCutoff}`),
-      ),
+      ordersServerApi.listPage(buildOrderQueueCountQuery("in_progress", overdueOrdersCutoff)),
     ]);
 
   // Labels for the recent-orders list, fetched for those orders' own customers.
@@ -123,6 +122,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       recentOrderCustomers={recentOrderCustomers.items}
       pendingReviews={reviews.counts.pending}
       lowStockCount={needsRestock.total}
+      lowStockProducts={needsRestock.items}
       staleOrdersCount={staleOrders.total}
       staleOrdersCutoff={staleOrdersCutoff}
       overdueOrdersCount={overdueOrders.total}

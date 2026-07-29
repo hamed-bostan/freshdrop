@@ -718,6 +718,7 @@
     "heading": "داشبورد",
     "subtitle": "نمای کلی از فعالیت امروز فروشگاه.",
     "attentionHeading": "نیازمند توجه",
+    "viewAllAlerts": "مشاهده همه هشدارها",
     "attentionAllClearTitle": "همه چیز مرتب است",
     "attentionAllClearBody": "در حال حاضر چیزی نیاز به توجه ندارد.",
     "attentionOtherAreasTitle": "سایر بخش‌ها به‌روز هستند",
@@ -738,6 +739,11 @@
     "viewAll": "مشاهده همه",
     "viewFullAnalytics": "مشاهده تحلیل کامل",
     "noRecentOrders": "هنوز سفارشی ثبت نشده است."
+    ,"lowStockProducts": "کالاهای کم‌موجودی"
+    ,"viewAllInventory": "مشاهده همه موجودی"
+    ,"unitsRemaining": "{count} عدد باقی‌مانده"
+    ,"manage": "مدیریت"
+    ,"noLowStock": "سطح موجودی مناسب است."
   },
   "dashAnalytics": {
     "pageHeading": "تحلیل‌ها",
@@ -778,6 +784,7 @@
     "chartEmpty": "در این بازه درآمدی ثبت نشده است.",
     "statusBreakdown": "سفارش‌ها بر اساس وضعیت",
     "ordersTotal": "{count} سفارش",
+    "totalLabel": "مجموع",
     "percentOfOrders": "{percent}٪",
     "noOrders": "در این بازه سفارشی ثبت نشده است.",
     "topProducts": "پرفروش‌ترین محصولات",

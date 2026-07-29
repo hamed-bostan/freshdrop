@@ -27,6 +27,14 @@ const STATUS_BARS: Record<OrderStatus, string> = {
   refunded: "bg-muted-foreground",
 };
 
+const STATUS_COLORS: Record<OrderStatus, string> = {
+  completed: "var(--color-primary)",
+  processing: "var(--color-info-foreground)",
+  return_requested: "var(--color-warning-foreground)",
+  cancelled: "var(--color-error-foreground)",
+  refunded: "var(--color-muted-foreground)",
+};
+
 /**
  * The pipeline stage each status corresponds to — what the row is labelled with,
  * and what its link filters the orders list to.
@@ -79,6 +87,10 @@ export async function OrderStatusBreakdown({ breakdown }: OrderStatusBreakdownPr
   // above — a legend of five rows where three read "0" is noise, and the bar is
   // already the answer to "what proportion".
   const present = breakdown.filter((slice) => slice.orders > 0);
+  const donutStops = present.reduce<{ stops: string[]; cursor: number }>((result, slice) => {
+    const end = result.cursor + (slice.orders / total) * 100;
+    return { stops: [...result.stops, `${STATUS_COLORS[slice.status]} ${result.cursor}% ${end}%`], cursor: end };
+  }, { stops: [], cursor: 0 }).stops.join(", ");
 
   return (
     <section className="rounded-card-lg border border-border p-4">
@@ -91,18 +103,11 @@ export async function OrderStatusBreakdown({ breakdown }: OrderStatusBreakdownPr
 
       {total > 0 ? (
         <>
-          <div className="mt-4 flex h-3 overflow-hidden rounded-full bg-muted">
-            {present.map((slice) => (
-              <div
-                key={slice.status}
-                className={STATUS_BARS[slice.status]}
-                style={{ width: `${(slice.orders / total) * 100}%` }}
-                title={`${tOrders(STATUS_LABEL_KEYS[slice.status])} — ${formatNumber(slice.orders, locale)}`}
-              />
-            ))}
+          <div className="relative mx-auto mt-3 flex size-28 items-center justify-center rounded-full" style={{ background: `conic-gradient(${donutStops})` }} aria-hidden>
+            <div className="flex size-20 flex-col items-center justify-center rounded-full bg-background"><strong className="text-heading-h3">{formatNumber(total, locale)}</strong><span className="text-body-b10 text-muted-foreground">{t("totalLabel")}</span></div>
           </div>
 
-          <ul className="mt-4 flex flex-col gap-2">
+          <ul className="mt-3 flex flex-col gap-1">
             {present.map((slice) => (
               <li key={slice.status}>
                 <Link
@@ -116,13 +121,13 @@ export async function OrderStatusBreakdown({ breakdown }: OrderStatusBreakdownPr
                   <span className="text-body-b8 text-muted-foreground">
                     {t("percentOfOrders", { percent: Math.round((slice.orders / total) * 100) })}
                   </span>
-                  <span className="w-20 text-end text-body-b7 text-foreground">
+                  <span className="w-10 text-end text-body-b8 text-foreground">
                     {formatNumber(slice.orders, locale)}
                   </span>
                   {/* Revenue alongside the count, because they diverge and the
                       divergence is the story: a handful of large refunds and a
                       pile of small completed orders look identical by count. */}
-                  <span className="w-24 text-end text-body-b8 text-muted-foreground">
+                  <span className="w-20 text-end text-body-b9 text-muted-foreground">
                     {formatMoney(slice.revenue, locale)}
                   </span>
                 </Link>
