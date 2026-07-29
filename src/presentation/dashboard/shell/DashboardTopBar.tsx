@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LifeBuoy, Menu, Search } from "lucide-react";
+import { CircleHelp, Menu, Search } from "lucide-react";
 import { Button, Icon } from "@/src/presentation/design-system";
 import { NotificationBell } from "@/src/presentation/dashboard/notifications/NotificationBell";
 import { LocaleToggle } from "./LocaleToggle";
@@ -25,7 +25,7 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
   const t = useTranslations("dashboard");
 
   return (
-    <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-border bg-background px-4 py-3 lg:px-8">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border bg-background px-4 lg:px-6">
       <Button variant="ghost" iconOnly size="sm" aria-label={t("openNav")} onClick={onOpenNav} className="lg:hidden">
         <Icon icon={Menu} size="sm" />
       </Button>
@@ -33,7 +33,7 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
       <button
         type="button"
         onClick={onOpenSearch}
-        className="hidden h-10 w-full max-w-sm items-center gap-2 rounded-input border border-border bg-input-filled px-3 text-start text-body-b7 text-input-placeholder transition-colors hover:bg-muted-strong lg:flex"
+        className="hidden h-9 w-full max-w-xs items-center gap-2 rounded-input border border-border bg-input-filled px-3 text-start text-body-b8 text-input-placeholder transition-colors hover:bg-muted-strong lg:flex"
       >
         <Icon icon={Search} size="sm" />
         <span className="flex-1 truncate">{t("search.trigger")}</span>
@@ -57,7 +57,7 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
 
       <Button variant="ghost" iconOnly size="sm" aria-label={t("help")} asChild>
         <a href="mailto:support@yourapp.com">
-          <Icon icon={LifeBuoy} size="sm" />
+          <Icon icon={CircleHelp} size="sm" />
         </a>
       </Button>
 

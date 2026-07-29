@@ -125,15 +125,17 @@ export function StatCard({
             </span>
             {deltaLabel ? <span className="text-body-b8 text-muted-foreground">{deltaLabel}</span> : null}
           </p>
+        ) : deltaLabel ? (
+          <p className="mt-1 text-body-b9 text-muted-foreground">{deltaLabel}</p>
         ) : hint ? (
           <p className="mt-2 text-body-b8 text-muted-foreground">{hint}</p>
         ) : null}
-        {trendValues ? <div className="mt-2"><StatSparkline values={trendValues} positive={deltaTone !== "down"} /></div> : null}
+        {trendValues ? <div className="mt-1"><StatSparkline values={trendValues} positive={deltaTone !== "down"} /></div> : null}
       </div>
     </>
   );
 
-  const frame = "flex h-full min-h-36 flex-col justify-between gap-2 rounded-card-lg border border-border p-4";
+  const frame = "flex h-full min-h-32 flex-col justify-between gap-1 rounded-card-lg border border-border p-4";
 
   if (href) {
     return (

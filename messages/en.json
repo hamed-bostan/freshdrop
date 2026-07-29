@@ -716,7 +716,8 @@
   },
   "dashHome": {
     "heading": "Dashboard",
-    "subtitle": "An overview of today's store activity.",
+    "subtitle": "Store performance and operations",
+    "comparedToPreviousPeriod": "compared with previous period",
     "attentionHeading": "Needs attention",
     "viewAllAlerts": "View all alerts",
     "attentionAllClearTitle": "All clear",

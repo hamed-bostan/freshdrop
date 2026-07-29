@@ -43,7 +43,7 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
 
   return (
     <section className="rounded-card-lg border border-border">
-      <div className="flex items-center gap-3 p-4 pb-0">
+      <div className="flex items-center gap-3 px-4 pt-3">
         <h2 className="text-body-b5 text-foreground">{t("attentionHeading")}</h2>
         {/* Counts the *categories* needing a look, not the sum of their items — "2
             things need you" is what an operator scanning the header wants, not a
@@ -57,19 +57,19 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
       </div>
 
       {active.length > 0 ? (
-        <div className="mt-2 grid divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
+        <div className="mt-1 grid divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
           {active.map((item) => (
             <Link
               key={item.key}
               href={item.href}
               className={cn(
-                "grid grid-cols-[auto_1fr_auto] items-center gap-3 p-4 transition-colors hover:bg-muted",
+                "grid grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-2.5 transition-colors hover:bg-muted",
                 focusRing,
               )}
             >
               <div
                 className={cn(
-                  "flex size-10 shrink-0 items-center justify-center rounded-full",
+                  "flex size-9 shrink-0 items-center justify-center rounded-full",
                   TONE_TINT[item.tone],
                 )}
               >

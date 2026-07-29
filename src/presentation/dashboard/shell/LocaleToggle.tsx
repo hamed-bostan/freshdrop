@@ -2,10 +2,17 @@
 
 import * as React from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { ToggleGroup } from "radix-ui";
+import { Check, ChevronDown } from "lucide-react";
 import { LOCALE_COOKIE_MAX_AGE, LOCALE_COOKIE_NAME, routing, type Locale } from "@/src/i18n/routing";
 import { cn } from "@/src/lib/utils";
-import { focusRing } from "@/src/presentation/design-system";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Icon,
+  focusRing,
+} from "@/src/presentation/design-system";
 
 // Each language is labelled with its own endonym — see `LocaleSwitcher` (the
 // settings-page counterpart this mirrors) for why it isn't routed through the
@@ -29,33 +36,41 @@ export function LocaleToggle() {
     if (!next || next === locale) return;
 
     setPending(true);
+    // Browser-owned preference; the reload lets the server render the new locale atomically.
+    // eslint-disable-next-line react-hooks/immutability
     document.cookie = `${LOCALE_COOKIE_NAME}=${next}; path=/; max-age=${LOCALE_COOKIE_MAX_AGE}; samesite=lax`;
     window.location.reload();
   }
 
   return (
-    <ToggleGroup.Root
-      type="single"
-      value={locale}
-      onValueChange={handleChange}
-      aria-label={t("languageAria")}
-      disabled={pending}
-      className="inline-flex rounded-pill bg-muted-strong p-0.5"
-    >
-      {routing.locales.map((option) => (
-        <ToggleGroup.Item
-          key={option}
-          value={option}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label={t("languageAria")}
+          disabled={pending}
           className={cn(
-            "rounded-pill px-2.5 py-1 text-body-b9 text-muted-foreground transition-colors",
+            "inline-flex h-9 min-w-24 items-center justify-between gap-2 rounded-input border border-border bg-background px-3 text-body-b9 text-foreground transition-colors hover:bg-muted",
             focusRing,
-            "data-[state=on]:bg-surface data-[state=on]:text-foreground data-[state=on]:shadow-sm",
             "disabled:cursor-not-allowed disabled:opacity-50",
           )}
         >
-          {LOCALE_NAMES[option]}
-        </ToggleGroup.Item>
-      ))}
-    </ToggleGroup.Root>
+          <span>{LOCALE_NAMES[locale as Locale]}</span>
+          <Icon icon={ChevronDown} size="xs" className="text-muted-foreground" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-32">
+        {routing.locales.map((option) => (
+          <DropdownMenuItem
+            key={option}
+            onSelect={() => handleChange(option)}
+            className="justify-between gap-4"
+          >
+            <span>{LOCALE_NAMES[option]}</span>
+            {locale === option ? <Icon icon={Check} size="xs" className="text-primary" /> : null}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

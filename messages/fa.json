@@ -716,7 +716,8 @@
   },
   "dashHome": {
     "heading": "داشبورد",
-    "subtitle": "نمای کلی از فعالیت امروز فروشگاه.",
+    "subtitle": "عملکرد و عملیات فروشگاه",
+    "comparedToPreviousPeriod": "در مقایسه با دوره قبل",
     "attentionHeading": "نیازمند توجه",
     "viewAllAlerts": "مشاهده همه هشدارها",
     "attentionAllClearTitle": "همه چیز مرتب است",

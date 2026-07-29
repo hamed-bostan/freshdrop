@@ -248,15 +248,15 @@ export async function DashboardOverviewScreen({
   ];
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
           <p className="text-body-b7 text-muted-foreground">{t("subtitle")}</p>
           {/* The days actually covered, spelled out. A dashboard headed only "Last
               30 days" makes every number on it unverifiable; this is the line that
               lets someone reconcile a tile against the orders list. */}
-          <p className="inline text-body-b8 text-muted-foreground">
+          <p className="mt-1 inline text-body-b9 text-muted-foreground">
             {tAnalytics("rangeCaption", {
               from: formatMediumDate(analytics.range.from, locale),
               to: formatMediumDate(analytics.range.to, locale),
@@ -266,21 +266,15 @@ export async function DashboardOverviewScreen({
               saying which days those were — this line names the baseline period
               those percentages are actually computed against. */}
           <p className="ms-2 inline text-body-b8 text-muted-foreground before:me-2 before:content-['•']">
-            {tAnalytics("comparedToRange", {
-              from: formatMediumDate(analytics.previousRange.from, locale),
-              to: formatMediumDate(analytics.previousRange.to, locale),
-            })}
+            {t("comparedToPreviousPeriod")}
           </p>
         </div>
 
-        <div className="flex flex-col items-start gap-2 sm:flex-row-reverse sm:items-center">
+        <div className="flex flex-wrap items-center gap-2 lg:justify-end">
           {/* The overview keeps the KPIs and the period chart; everything else
               analytics can show (the full status breakdown, exports, and the
               rankings past the top five) moved to its own page — this is the
               way there. */}
-          <Link href="/dashboard/analytics" className="text-body-b8 text-primary hover:underline">
-            {t("viewFullAnalytics")}
-          </Link>
           <AnalyticsRangePicker
             presetLabel={tAnalytics("rangeLabel")}
             presetOptions={[
@@ -296,6 +290,15 @@ export async function DashboardOverviewScreen({
             to={to}
             isCustom={isCustomRange}
           />
+          <Link
+            href="/dashboard/analytics"
+            className={cn(
+              focusRing,
+              "inline-flex h-10 items-center rounded-input border border-border px-4 text-body-b9 text-primary transition-colors hover:bg-muted",
+            )}
+          >
+            {t("viewFullAnalytics")}
+          </Link>
         </div>
       </div>
 
