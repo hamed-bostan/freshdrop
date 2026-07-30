@@ -783,7 +783,7 @@
     "tooltipOrders": "{orders, plural, other {# سفارش}}",
     "chartSummary": "{metric} در {count, plural, other {# بازه}}: مجموعاً {total}، بهترین {bestDate} با {bestAmount}.",
     "chartEmpty": "در این بازه درآمدی ثبت نشده است.",
-    "statusBreakdown": "سفارش‌ها بر اساس وضعیت",
+    "statusBreakdown": "وضعیت سفارش‌ها",
     "ordersTotal": "{count} سفارش",
     "totalLabel": "مجموع",
     "percentOfOrders": "{percent}٪",

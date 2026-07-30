@@ -5,6 +5,7 @@ import {
   ClipboardList,
   Clock,
   DollarSign,
+  ExternalLink,
   Receipt,
   Star,
   Truck,
@@ -13,7 +14,6 @@ import {
 import {
   ANALYTICS_RANGE_PRESETS,
   percentChange,
-  type RevenueRankSort,
 } from "@/src/domain/entities/Analytics";
 import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid } from "@/src/domain/entities/Order";
@@ -36,7 +36,6 @@ import { StatCard } from "./StatCard";
 import type { AnalyticsOverviewWire } from "./analytics/analytics-response-schema";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./analytics/AnalyticsRangePicker";
 import { RevenueChart } from "./analytics/RevenueChart";
-import { RevenueRankPanel, type RevenueRankRow } from "./analytics/RevenueRankPanel";
 import { OrderStatusBreakdown } from "./analytics/OrderStatusBreakdown";
 import { LowStockPanel } from "./LowStockPanel";
 import { buildDashboardOverviewViewModel } from "./dashboard-overview-view-model";
@@ -60,9 +59,6 @@ type DashboardOverviewScreenProps = {
   to: string;
   /** Whether the URL names an explicit period rather than a preset. */
   isCustomRange: boolean;
-  /** The ranking each panel's rows already arrived in — see `RevenueRankPanel`. */
-  productSort: RevenueRankSort;
-  categorySort: RevenueRankSort;
   /** The latest few orders — a page, not the history. */
   recentOrders: Order[];
   /** Summaries for exactly `recentOrders`' customers, to label each row with who placed it. */
@@ -121,8 +117,6 @@ export async function DashboardOverviewScreen({
   from,
   to,
   isCustomRange,
-  productSort,
-  categorySort,
   recentOrders,
   recentOrderCustomers,
   pendingReviews,
@@ -163,31 +157,6 @@ export async function DashboardOverviewScreen({
   }
 
   const comparisonLabel = tAnalytics("vsPrevious", { days: viewModel.comparisonDays });
-
-  const topProducts: RevenueRankRow[] = analytics.topProducts.map((product) => ({
-    id: product.productId,
-    label: product.name,
-    imageUrl: product.imageUrl,
-    units: product.units,
-    revenue: product.revenue,
-    // The catalog list, filtered to this product by name — same "browse, don't
-    // mutate" destination as a Top Categories row, rather than dropping the
-    // admin straight into its edit form just for glancing at a bestseller.
-    href: `/dashboard/products?q=${encodeURIComponent(product.name)}`,
-  }));
-
-  const topCategories: RevenueRankRow[] = analytics.topCategories.map((category) => ({
-    id: category.categoryId,
-    label: category.name,
-    units: category.units,
-    revenue: category.revenue,
-    href: `/dashboard/products?categoryId=${category.categoryId}`,
-  }));
-
-  const revenueRankSortOptions: { value: RevenueRankSort; label: string }[] = [
-    { value: "revenue", label: tAnalytics("sortByRevenue") },
-    { value: "units", label: tAnalytics("sortByUnits") },
-  ];
 
   // Repeat rate is a share, not a count, so it gets its own null-aware formatting
   // and delta rather than reusing `delta()` directly on the raw numbers — a
@@ -294,10 +263,11 @@ export async function DashboardOverviewScreen({
             href="/dashboard/analytics"
             className={cn(
               focusRing,
-              "inline-flex h-10 items-center rounded-input border border-border px-4 text-body-b9 text-primary transition-colors hover:bg-muted",
+              "inline-flex h-10 items-center rounded-input px-2 text-body-b9 text-primary transition-colors hover:bg-muted",
             )}
           >
             {t("viewFullAnalytics")}
+            <Icon icon={ExternalLink} size="xs" className="ms-1.5" />
           </Link>
         </div>
       </div>
@@ -348,8 +318,9 @@ export async function DashboardOverviewScreen({
           through a snapshot. */}
       <NeedsAttentionPanel items={attentionItems} />
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(22rem,1fr)]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(22rem,1fr)]">
         <RevenueChart
+          compact
           points={analytics.revenueSeries}
           previousPoints={analytics.previousSeries}
           previousYearPoints={analytics.previousYearSeries}
@@ -358,47 +329,21 @@ export async function DashboardOverviewScreen({
           previousRange={analytics.previousRange}
           previousYearRange={analytics.previousYearRange}
         />
-        <OrderStatusBreakdown breakdown={analytics.statusBreakdown} />
+        <OrderStatusBreakdown compact breakdown={analytics.statusBreakdown} />
       </div>
 
-      <div className="order-2 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <RevenueRankPanel
-          heading={tAnalytics("topProducts")}
-          rows={topProducts}
-          emptyLabel={tAnalytics("noSales")}
-          unitsLabel={(units) => tAnalytics("unitsSold", { units })}
-          sort={productSort}
-          sortParamName="productSort"
-          sortLabel={tAnalytics("sortLabel")}
-          sortOptions={revenueRankSortOptions}
-          viewAllHref="/dashboard/products"
-          viewAllLabel={tAnalytics("viewAllProducts")}
-        />
-        <RevenueRankPanel
-          heading={tAnalytics("topCategories")}
-          rows={topCategories}
-          emptyLabel={tAnalytics("noSales")}
-          unitsLabel={(units) => tAnalytics("unitsSold", { units })}
-          sort={categorySort}
-          sortParamName="categorySort"
-          sortLabel={tAnalytics("sortLabel")}
-          sortOptions={revenueRankSortOptions}
-          viewAllHref="/dashboard/categories"
-          viewAllLabel={tAnalytics("viewAllCategories")}
-        />
-      </div>
-
-      <div className="order-1 grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <section className="rounded-card-lg border border-border p-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-body-b5 text-foreground">{t("recentOrders")}</h2>
-          <Link href="/dashboard/orders" className="text-body-b8 text-primary hover:underline">
+          <Link href="/dashboard/orders" className="inline-flex items-center gap-1 text-body-b8 text-primary hover:underline">
             {t("viewAll")}
+            <Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" />
           </Link>
         </div>
 
         {recentOrders.length > 0 ? (
-          <DataTable className="mt-3" minWidthClassName="min-w-[34rem]">
+          <DataTable className="mt-3" minWidthClassName="min-w-[30rem]">
             <DataGridHeader template={RECENT_ORDERS_ROW_GRID}>
               <span>{tOrders("colOrder")}</span>
               <span>{tOrders("colCustomer")}</span>
@@ -427,7 +372,7 @@ export async function DashboardOverviewScreen({
                     <span className="truncate text-body-b7 text-foreground">
                       {customer?.name ?? order.userId}
                     </span>
-                    <OrderStatusBadge status={order.status} stage={order.stage} />
+                    <OrderStatusBadge status={order.status} stage={order.stage} size="sm" />
                     <span className="flex flex-col whitespace-nowrap text-body-b8 text-muted-foreground">
                       <span className="text-foreground">{formatOrderDateShort(order.placedAt, locale)}</span>
                       {formatOrderTime(order.placedAt, locale)}

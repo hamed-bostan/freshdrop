@@ -25,7 +25,7 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
   const t = useTranslations("dashboard");
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border bg-background px-4 lg:px-6">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-background px-4">
       <Button variant="ghost" iconOnly size="sm" aria-label={t("openNav")} onClick={onOpenNav} className="lg:hidden">
         <Icon icon={Menu} size="sm" />
       </Button>
@@ -33,7 +33,7 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
       <button
         type="button"
         onClick={onOpenSearch}
-        className="hidden h-9 w-full max-w-xs items-center gap-2 rounded-input border border-border bg-input-filled px-3 text-start text-body-b8 text-input-placeholder transition-colors hover:bg-muted-strong lg:flex"
+        className="hidden h-9 w-full max-w-md items-center gap-2 rounded-input border border-border bg-input-filled px-3 text-start text-body-b8 text-input-placeholder transition-colors hover:bg-muted-strong lg:flex"
       >
         <Icon icon={Search} size="sm" />
         <span className="flex-1 truncate">{t("search.trigger")}</span>

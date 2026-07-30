@@ -783,7 +783,7 @@
     "tooltipOrders": "{orders, plural, one {# order} other {# orders}}",
     "chartSummary": "{metric} across {count, plural, one {# period} other {# periods}}: total {total}, best {bestDate} at {bestAmount}.",
     "chartEmpty": "No revenue in this period.",
-    "statusBreakdown": "Orders by status",
+    "statusBreakdown": "Order status",
     "ordersTotal": "{count} total",
     "totalLabel": "Total",
     "percentOfOrders": "{percent}%",

@@ -1,5 +1,4 @@
-import { percentChange, type AnalyticsOverview, type RevenueRankSort } from "@/src/domain/entities/Analytics";
-import type { RevenueRankRow } from "./analytics/RevenueRankPanel";
+import { percentChange, type AnalyticsOverview } from "@/src/domain/entities/Analytics";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -40,21 +39,5 @@ export function buildDashboardOverviewViewModel(analytics: AnalyticsOverview) {
       analytics.previousCustomerSegments.newCustomers,
       [analytics.previousCustomerSegments.newCustomers, analytics.customerSegments.newCustomers],
     ),
-    topProducts: analytics.topProducts.map((product): RevenueRankRow => ({
-      id: product.productId,
-      label: product.name,
-      imageUrl: product.imageUrl,
-      units: product.units,
-      revenue: product.revenue,
-      href: `/dashboard/products?q=${encodeURIComponent(product.name)}`,
-    })),
-    topCategories: analytics.topCategories.map((category): RevenueRankRow => ({
-      id: category.categoryId,
-      label: category.name,
-      units: category.units,
-      revenue: category.revenue,
-      href: `/dashboard/products?categoryId=${encodeURIComponent(category.categoryId)}`,
-    })),
-    rankSortOptions: ["revenue", "units"] satisfies RevenueRankSort[],
   };
 }

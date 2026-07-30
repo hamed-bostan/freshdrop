@@ -82,9 +82,11 @@ type OrderStatusBadgeProps = {
   stage?: TrackingMilestone;
   /** Rendering context; defaults to the customer-facing storefront pill. */
   context?: BadgeContext;
+  /** Compact table rows use the small pill; detail views retain the default medium size. */
+  size?: BadgeProps["size"];
 };
 
-export function OrderStatusBadge({ status, stage, context = "storefront" }: OrderStatusBadgeProps) {
+export function OrderStatusBadge({ status, stage, context = "storefront", size = "md" }: OrderStatusBadgeProps) {
   const t = useTranslations("orders");
   const { labelKey, tone } = statusDisplay(status, stage, context);
 
@@ -93,7 +95,7 @@ export function OrderStatusBadge({ status, stage, context = "storefront" }: Orde
       variant={TONE_VARIANT[tone]}
       // The storefront pill is an outline over the tint; the admin pill is a solid tint.
       appearance={context === "storefront" ? "outline" : "solid"}
-      size="md"
+      size={size}
     >
       {t(labelKey)}
     </Badge>

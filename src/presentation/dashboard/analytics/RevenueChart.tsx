@@ -2,6 +2,7 @@ import type { AnalyticsGranularity, RevenuePoint } from "@/src/domain/entities/A
 import { RevenueChartClient } from "./RevenueChartClient";
 
 export type RevenueChartProps = {
+  compact?: boolean;
   points: RevenuePoint[];
   previousPoints: RevenuePoint[];
   previousYearPoints: RevenuePoint[];

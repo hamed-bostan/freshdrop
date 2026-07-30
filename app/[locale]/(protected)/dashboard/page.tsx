@@ -10,7 +10,6 @@ import {
 } from "@/src/domain/entities/OrderSla";
 import { DashboardOverviewScreen } from "@/src/presentation/dashboard/DashboardOverviewScreen";
 import {
-  buildDashboardAnalyticsQuery,
   buildLowStockQuery,
   buildOrderQueueCountQuery,
   buildRecentOrdersQuery,
@@ -19,26 +18,12 @@ import {
 import {
   hasCustomAnalyticsRange,
   parseAnalyticsRange,
-  parseRevenueRankSort,
   toDateParam,
   toInclusiveEndParam,
 } from "@/src/lib/api/analytics-params";
 
 // The overview is read from the REST API (BFF) per request — never cached.
 export const dynamic = "force-dynamic";
-
-/**
- * A page request that asks for a count and nothing else: page 1 at the smallest
- * size, so the response carries the `total` the tile needs without shipping rows
- * the overview will throw away.
- */
-
-/** How many of the latest orders the recent-orders mini-list shows. */
-
-/**
- * How many rows the two ranked panels show — matched to Customer Insights'
- * fixed three metrics so all three cards in that row land on the same height.
- */
 
 type DashboardPageProps = {
   /** The period the picker writes: `range` (a preset) or `from`/`to`. */
@@ -57,12 +42,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   // preset (or a malformed param) is not what the query string says. Same parser
   // on both sides, so the two answers cannot disagree.
   const range = parseAnalyticsRange(params);
-  // Resolved here, same reason as `range`: the two ranked panels' sort selects
-  // need to show which option is active, and the only source of truth for that
-  // is the query string this same request carries.
-  const productSort = parseRevenueRankSort(params, "productSort");
-  const categorySort = parseRevenueRankSort(params, "categorySort");
-
   // The same instant backs both SLA counts below and the cutoffs handed to the
   // screen for their tiles' `href`s — one `now`, so a count can never be drawn
   // against a slightly later cutoff than the link it sits behind points to.
@@ -80,11 +59,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   // filtered endpoints; the recent orders are literally the first five. The
   // overview used to start by fetching every order in the store's history — see
   // `IAnalyticsRepository`.
-  const rankParams = buildDashboardAnalyticsQuery(params, productSort, categorySort);
-
   const [analytics, recentOrders, reviews, needsRestock, staleOrders, overdueOrders] =
     await Promise.all([
-      analyticsServerApi.getOverview(rankParams),
+      analyticsServerApi.getOverview(params),
       ordersServerApi.listPage(buildRecentOrdersQuery()),
       reviewsServerApi.listPage(buildReviewCountQuery()),
       // One read, not two: `needsRestock` is the products list's own name for "low or
@@ -116,8 +93,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       // last day the period actually includes.
       to={toInclusiveEndParam(range)}
       isCustomRange={hasCustomAnalyticsRange(params)}
-      productSort={productSort}
-      categorySort={categorySort}
       recentOrders={recentOrders.items}
       recentOrderCustomers={recentOrderCustomers.items}
       pendingReviews={reviews.counts.pending}

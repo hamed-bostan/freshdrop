@@ -8,6 +8,8 @@ import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 
 type OrderStatusBreakdownProps = {
+  /** Condensed operational summary for the dashboard; Analytics retains richer figures. */
+  compact?: boolean;
   /** One row per status, including the ones no order landed in (the adapter fills them). */
   breakdown: OrderStatusCount[];
 };
@@ -77,7 +79,7 @@ const STATUS_LABEL_KEYS = {
  * the low-stock tile links to its rows: "9 cancelled" is a fact, and the nine
  * orders are the thing you can actually do something about.
  */
-export async function OrderStatusBreakdown({ breakdown }: OrderStatusBreakdownProps) {
+export async function OrderStatusBreakdown({ breakdown, compact = false }: OrderStatusBreakdownProps) {
   const t = await getTranslations("dashAnalytics");
   const tOrders = await getTranslations("dashOrders");
   const locale = (await getLocale()) as Locale;
@@ -96,18 +98,20 @@ export async function OrderStatusBreakdown({ breakdown }: OrderStatusBreakdownPr
     <section className="rounded-card-lg border border-border p-4">
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="text-body-b5 text-foreground">{t("statusBreakdown")}</h2>
-        <p className="text-body-b8 text-muted-foreground">
-          {t("ordersTotal", { count: formatNumber(total, locale) })}
-        </p>
+        {!compact ? (
+          <p className="text-body-b8 text-muted-foreground">
+            {t("ordersTotal", { count: formatNumber(total, locale) })}
+          </p>
+        ) : null}
       </div>
 
       {total > 0 ? (
-        <>
-          <div className="relative mx-auto mt-3 flex size-28 items-center justify-center rounded-full" style={{ background: `conic-gradient(${donutStops})` }} aria-hidden>
-            <div className="flex size-20 flex-col items-center justify-center rounded-full bg-background"><strong className="text-heading-h3">{formatNumber(total, locale)}</strong><span className="text-body-b10 text-muted-foreground">{t("totalLabel")}</span></div>
+        <div className="mt-3 grid items-center gap-4 sm:grid-cols-[minmax(8rem,.85fr)_minmax(10rem,1fr)]">
+          <div className="relative mx-auto flex size-32 items-center justify-center rounded-full" style={{ background: `conic-gradient(${donutStops})` }} aria-hidden>
+            <div className="flex size-[5.5rem] flex-col items-center justify-center rounded-full bg-background"><strong className="text-heading-h3">{formatNumber(total, locale)}</strong><span className="text-body-b10 text-muted-foreground">{t("totalLabel")}</span></div>
           </div>
 
-          <ul className="mt-3 flex flex-col gap-1">
+          <ul className="flex flex-col gap-1.5">
             {present.map((slice) => (
               <li key={slice.status}>
                 <Link
@@ -118,23 +122,24 @@ export async function OrderStatusBreakdown({ breakdown }: OrderStatusBreakdownPr
                   <span className="min-w-0 flex-1 truncate text-body-b7 text-foreground">
                     {tOrders(STATUS_LABEL_KEYS[slice.status])}
                   </span>
-                  <span className="text-body-b8 text-muted-foreground">
-                    {t("percentOfOrders", { percent: Math.round((slice.orders / total) * 100) })}
-                  </span>
+                  {!compact ? (
+                    <span className="text-body-b8 text-muted-foreground">
+                      {t("percentOfOrders", { percent: Math.round((slice.orders / total) * 100) })}
+                    </span>
+                  ) : null}
                   <span className="w-10 text-end text-body-b8 text-foreground">
                     {formatNumber(slice.orders, locale)}
                   </span>
-                  {/* Revenue alongside the count, because they diverge and the
-                      divergence is the story: a handful of large refunds and a
-                      pile of small completed orders look identical by count. */}
-                  <span className="w-20 text-end text-body-b9 text-muted-foreground">
-                    {formatMoney(slice.revenue, locale)}
-                  </span>
+                  {!compact ? (
+                    <span className="w-20 text-end text-body-b9 text-muted-foreground">
+                      {formatMoney(slice.revenue, locale)}
+                    </span>
+                  ) : null}
                 </Link>
               </li>
             ))}
           </ul>
-        </>
+        </div>
       ) : (
         <p className="mt-6 pb-6 text-center text-body-b7 text-muted-foreground">{t("noOrders")}</p>
       )}

@@ -12,6 +12,8 @@ import { formatNumber } from "@/src/lib/formatNumber";
 import { ChartContainer, ChartLegend, ChartTooltip, Select, chartColor } from "@/src/presentation/design-system";
 
 export type RevenueChartClientProps = {
+  /** Compact overview treatment; the full Analytics page keeps the interactive controls. */
+  compact?: boolean;
   /** Gap-filled series for the period on screen, oldest first. */
   points: RevenuePoint[];
   /** `previousSeries` — index-aligned to `points` (see `IAnalyticsRepository.compareRevenueSeries`). */
@@ -69,6 +71,7 @@ function formatMetric(metric: Metric, value: number, locale: Locale): string {
  * formatting changes with the toggles above it.
  */
 export function RevenueChartClient({
+  compact = false,
   points,
   previousPoints,
   previousYearPoints,
@@ -126,7 +129,7 @@ export function RevenueChartClient({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <h2 className="text-body-b5 text-foreground">{t("revenueChart")}</h2>
 
-          {periodPeak > 0 ? (
+          {periodPeak > 0 && !compact ? (
             <div className="flex flex-wrap items-center gap-2">
               <Select
                 size="sm"
@@ -159,17 +162,28 @@ export function RevenueChartClient({
             <p className="text-body-b7 text-foreground">
               {t("chartTotal", { amount: formatMetric(metric, total, locale) })}
             </p>
-            <p className="text-body-b8 text-muted-foreground">
-              {t("chartBestDay", { date: best.label, amount: formatMetric(metric, best.value, locale) })}
-            </p>
+            {!compact ? (
+              <p className="text-body-b8 text-muted-foreground">
+                {t("chartBestDay", { date: best.label, amount: formatMetric(metric, best.value, locale) })}
+              </p>
+            ) : null}
           </div>
         ) : null}
       </div>
 
       {periodPeak > 0 ? (
         <>
+          {compact && compare !== "none" ? (
+            <ChartLegend
+              payload={[
+                { value: currentLegendLabel, color: chartColor(0) },
+                { value: compareLegendLabel, color: "var(--color-chart-6)" },
+              ]}
+              className="mt-2 justify-start"
+            />
+          ) : null}
           <div className="mt-4" aria-hidden>
-            <ChartContainer height={160} dir={dir}>
+            <ChartContainer height={compact ? 130 : 160} dir={dir}>
               <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
                 <XAxis
@@ -233,7 +247,7 @@ export function RevenueChartClient({
             </ChartContainer>
           </div>
 
-          {compare !== "none" ? (
+          {!compact && compare !== "none" ? (
             <ChartLegend
               payload={[
                 { value: currentLegendLabel, color: chartColor(0) },

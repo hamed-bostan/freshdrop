@@ -50,7 +50,7 @@ export function DashboardShell({ permissions, viewer, initialSidebarCollapsed, c
 
       <div className="flex min-w-0 flex-1 flex-col">
         <DashboardTopBar viewer={viewer} onOpenNav={() => setNavOpen(true)} onOpenSearch={() => setSearchOpen(true)} />
-        <main className="min-w-0 flex-1 px-4 py-6 lg:px-8 lg:py-8">{children}</main>
+        <main className="min-w-0 flex-1 px-4 py-5 lg:px-5">{children}</main>
       </div>
 
       <NavDrawer open={navOpen} onOpenChange={setNavOpen} permissions={permissions} viewer={viewer} />
