@@ -35,6 +35,8 @@ type AdjustStockButtonProps = {
   /** Units on hand right now — the starting point the preview counts from. */
   stockQuantity: number;
   trigger?: "button" | "none";
+  /** Visible copy turns the compact product-list icon into an inventory workflow action. */
+  triggerLabel?: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 };
@@ -62,6 +64,7 @@ export function AdjustStockButton({
   name,
   stockQuantity,
   trigger = "button",
+  triggerLabel,
   open: controlledOpen,
   onOpenChange,
 }: AdjustStockButtonProps) {
@@ -145,13 +148,14 @@ export function AdjustStockButton({
       {trigger === "button" ? (
         <Button
           type="button"
-          variant="ghost"
+          variant={triggerLabel ? "outline" : "ghost"}
           size="sm"
-          iconOnly
+          iconOnly={!triggerLabel}
           aria-label={t("adjustAria", { name })}
           onClick={() => setOpen(true)}
         >
           <Icon icon={PackagePlus} size="sm" />
+          {triggerLabel ? <span className="ms-1.5">{triggerLabel}</span> : null}
         </Button>
       ) : null}
 

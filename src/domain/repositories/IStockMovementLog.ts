@@ -1,4 +1,9 @@
-import type { StockMovement } from "../entities/StockMovement";
+import type {
+  StockMovement,
+  StockMovementFilters,
+  StockMovementSort,
+} from "../entities/StockMovement";
+import type { Page, PageRequest } from "../entities/Pagination";
 
 /**
  * Read access to the append-only stock ledger.
@@ -17,6 +22,11 @@ import type { StockMovement } from "../entities/StockMovement";
 export type IStockMovementLog = {
   /** A product's movements, most recent first, capped by `limit`. */
   listForProduct(productId: string, limit: number): Promise<StockMovement[]>;
+  /** One filtered page of the store-wide ledger. */
+  list(
+    filters: StockMovementFilters,
+    page: PageRequest<StockMovementSort>,
+  ): Promise<Page<StockMovement>>;
   /**
    * The store's movements across every product, most recent first, capped by
    * `limit` — the inventory page's activity feed, where {@link listForProduct} is

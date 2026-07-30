@@ -1,5 +1,16 @@
-import type { StockMovement, StockMovementReason } from "@/src/domain/entities/StockMovement";
-import { STOCK_MOVEMENT_REASONS } from "@/src/domain/entities/StockMovement";
+import type { Prisma } from "@prisma/client";
+import type {
+  StockMovement,
+  StockMovementFilters,
+  StockMovementReason,
+  StockMovementSort,
+} from "@/src/domain/entities/StockMovement";
+import {
+  DEFAULT_STOCK_MOVEMENT_DIRECTION,
+  STOCK_MOVEMENT_REASONS,
+} from "@/src/domain/entities/StockMovement";
+import type { Page, PageRequest } from "@/src/domain/entities/Pagination";
+import { createPage, toSkipTake } from "@/src/domain/entities/Pagination";
 import type { IStockMovementLog } from "@/src/domain/repositories/IStockMovementLog";
 import { prisma } from "@/src/infrastructure/prisma/client";
 
@@ -28,6 +39,55 @@ export class PrismaStockMovementLog implements IStockMovementLog {
       take: limit,
     });
     return rows.map(toStockMovement);
+  }
+
+  async list(
+    filters: StockMovementFilters,
+    page: PageRequest<StockMovementSort>,
+  ): Promise<Page<StockMovement>> {
+    const where = await this.toWhere(filters);
+    const { skip, take } = toSkipTake(page);
+    const orderBy: Prisma.StockMovementOrderByWithRelationInput = {
+      createdAt: page.direction ?? DEFAULT_STOCK_MOVEMENT_DIRECTION,
+    };
+
+    const [rows, total] = await prisma.$transaction([
+      prisma.stockMovement.findMany({ where, orderBy, skip, take }),
+      prisma.stockMovement.count({ where }),
+    ]);
+    return createPage(rows.map(toStockMovement), total, page);
+  }
+
+  private async toWhere(filters: StockMovementFilters): Promise<Prisma.StockMovementWhereInput> {
+    const and: Prisma.StockMovementWhereInput[] = [];
+    if (filters.direction === "in") and.push({ delta: { gt: 0 } });
+    if (filters.direction === "out") and.push({ delta: { lt: 0 } });
+    if (filters.reason) and.push({ reason: filters.reason });
+    if (filters.occurredFrom || filters.occurredTo) {
+      and.push({
+        createdAt: {
+          ...(filters.occurredFrom ? { gte: new Date(filters.occurredFrom) } : {}),
+          ...(filters.occurredTo ? { lte: new Date(filters.occurredTo) } : {}),
+        },
+      });
+    }
+
+    if (filters.query) {
+      const matchingProducts = await prisma.product.findMany({
+        where: { name: { contains: filters.query, mode: "insensitive" } },
+        select: { id: true },
+      });
+      and.push({
+        OR: [
+          { productId: { in: matchingProducts.map(({ id }) => id) } },
+          { orderId: { contains: filters.query, mode: "insensitive" } },
+          { actorName: { contains: filters.query, mode: "insensitive" } },
+          { note: { contains: filters.query, mode: "insensitive" } },
+        ],
+      });
+    }
+
+    return and.length ? { AND: and } : {};
   }
 }
 

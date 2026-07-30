@@ -11,6 +11,8 @@ export interface DataTableProps extends React.HTMLAttributes<HTMLDivElement> {
    * source text, so a class built from a prop value at runtime is never emitted.
    */
   minWidthClassName?: string;
+  /** Optional controls attached above the scrolling table content. */
+  toolbar?: React.ReactNode;
   /** Optional controls attached below the scrolling table content. */
   footer?: React.ReactNode;
 }
@@ -25,8 +27,9 @@ export interface DataTableProps extends React.HTMLAttributes<HTMLDivElement> {
  * that outside is what this owns.
  */
 export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
-  ({ className, minWidthClassName, footer, children, ...props }, ref) => (
+  ({ className, minWidthClassName, toolbar, footer, children, ...props }, ref) => (
     <div ref={ref} className={cn("overflow-hidden rounded-card-lg border border-border", className)} {...props}>
+      {toolbar ? <DataTableToolbar>{toolbar}</DataTableToolbar> : null}
       {minWidthClassName ? (
         <div className="overflow-x-auto">
           <div className={minWidthClassName}>{children}</div>
@@ -40,6 +43,19 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
 );
 
 DataTable.displayName = "DataTable";
+
+/** Search, filters, and commands attached to a table's upper edge. */
+export const DataTableToolbar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn("border-b border-border bg-background px-4 py-3", className)}
+      {...props}
+    />
+  ),
+);
+
+DataTableToolbar.displayName = "DataTableToolbar";
 
 /** Controls and summary attached to a table's lower edge. */
 export const DataTableFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(

@@ -476,6 +476,9 @@ model StockMovement {
 
   // The history panel reads one product's entries newest-first.
   @@index([productId, createdAt])
+  // The store-wide inventory ledger reads newest-first and commonly narrows by reason.
+  @@index([createdAt])
+  @@index([reason, createdAt])
   @@map("stock_movements")
 }
 

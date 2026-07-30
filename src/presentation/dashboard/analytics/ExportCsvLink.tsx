@@ -7,7 +7,7 @@ import { cn } from "@/src/lib/utils";
 
 type ExportCsvLinkProps = {
   /** Which export endpoint to hit — the resource segment under `/api/admin/exports/`. */
-  resource: "orders" | "products" | "customers";
+  resource: "orders" | "products" | "customers" | "inventory-movements";
   label: string;
 };
 

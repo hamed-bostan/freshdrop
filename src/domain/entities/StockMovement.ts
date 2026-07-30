@@ -28,6 +28,27 @@ export type StockMovementReason = (typeof STOCK_MOVEMENT_REASONS)[number];
 export const ADMIN_STOCK_MOVEMENT_REASONS = ["restock", "shrinkage", "correction"] as const;
 export type AdminStockMovementReason = (typeof ADMIN_STOCK_MOVEMENT_REASONS)[number];
 
+/** Direction filters offered by the inventory ledger. */
+export const STOCK_MOVEMENT_DIRECTIONS = ["in", "out"] as const;
+export type StockMovementDirection = (typeof STOCK_MOVEMENT_DIRECTIONS)[number];
+
+/** The ledger is deliberately chronological; no other ordering is operationally useful. */
+export const STOCK_MOVEMENT_SORTS = ["at"] as const;
+export type StockMovementSort = (typeof STOCK_MOVEMENT_SORTS)[number];
+
+export const DEFAULT_STOCK_MOVEMENT_SORT: StockMovementSort = "at";
+export const DEFAULT_STOCK_MOVEMENT_DIRECTION = "desc";
+
+/** Query vocabulary for the store-wide, append-only inventory ledger. */
+export type StockMovementFilters = {
+  /** Product name, order reference, actor name, or operator note. */
+  query?: string;
+  direction?: StockMovementDirection;
+  reason?: StockMovementReason;
+  occurredFrom?: string;
+  occurredTo?: string;
+};
+
 /** Narrow an arbitrary string to an operator-choosable reason. */
 export function isAdminStockMovementReason(value: string): value is AdminStockMovementReason {
   return (ADMIN_STOCK_MOVEMENT_REASONS as readonly string[]).includes(value);
