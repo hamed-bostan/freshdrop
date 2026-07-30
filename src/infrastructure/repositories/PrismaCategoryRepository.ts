@@ -38,7 +38,7 @@ export class PrismaCategoryRepository implements ICategoryRepository {
    * enough, an operator's hand-authored taxonomy rather than a generated one,
    * that this stays cheap.
    *
-   * `createdAt`, and `name` with no locale (the base-locale admin view), sort
+   * `updatedAt`, and `name` with no locale (the base-locale admin view), sort
    * on a real column with nothing overlaid afterward, so the DB does the
    * ordering and paging directly and counts are only computed for the rows
    * actually returned.
@@ -50,7 +50,7 @@ export class PrismaCategoryRepository implements ICategoryRepository {
   ): Promise<Page<Category>> {
     const where = adminWhere(filters);
     const sort = page.sort ?? "name";
-    const canPushSort = sort === "createdAt" || (sort === "name" && !locale);
+    const canPushSort = sort === "updatedAt" || (sort === "name" && !locale);
 
     if (!canPushSort) {
       const rows = await prisma.category.findMany({ where });
@@ -198,6 +198,7 @@ function toCategory(row: {
   iconUrl: string;
   isActive: boolean;
   createdAt: Date;
+  updatedAt: Date;
 }): Omit<Category, "productCount"> {
   return {
     id: row.id,
@@ -206,6 +207,7 @@ function toCategory(row: {
     iconUrl: row.iconUrl,
     isActive: row.isActive,
     createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 
@@ -244,8 +246,8 @@ function adminComparator(page: PageRequest<AdminCategorySort>): (a: Category, b:
     switch (page.sort) {
       case "productCount":
         return (a.productCount - b.productCount) * direction;
-      case "createdAt":
-        return (a.createdAt.getTime() - b.createdAt.getTime()) * direction;
+      case "updatedAt":
+        return (a.updatedAt.getTime() - b.updatedAt.getTime()) * direction;
       default:
         return a.name.localeCompare(b.name) * direction;
     }

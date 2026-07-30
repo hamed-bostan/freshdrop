@@ -1,6 +1,6 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Pencil } from "lucide-react";
 import {
   DEFAULT_ADMIN_CATEGORY_DIRECTION,
   DEFAULT_ADMIN_CATEGORY_SORT,
@@ -8,9 +8,8 @@ import {
 import type { Category } from "@/src/domain/entities/Category";
 import {
   Badge,
-  Button,
   DataTable,
-  Icon,
+  DataTableFooter,
   Table,
   TableBody,
   TableCell,
@@ -24,10 +23,11 @@ import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashb
 import { formatOrderDateShort } from "@/src/lib/formatOrderDate";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { Link } from "@/src/i18n/navigation";
-import { DeleteCategoryButton } from "./DeleteCategoryButton";
+import { CategoryRowActions } from "./CategoryRowActions";
 
 type CategoriesTableProps = {
   categories: Category[];
+  footer?: ReactNode;
 };
 
 /**
@@ -39,8 +39,8 @@ const SORT_DEFAULTS = {
   defaultDirection: DEFAULT_ADMIN_CATEGORY_DIRECTION,
 } as const;
 
-/** Admin list of categories with per-row edit + delete actions. */
-export async function CategoriesTable({ categories }: CategoriesTableProps) {
+/** Admin category list optimized for scanning, with secondary details grouped by category. */
+export async function CategoriesTable({ categories, footer }: CategoriesTableProps) {
   const t = await getTranslations("dashCategories");
   const locale = await getLocale();
 
@@ -52,17 +52,15 @@ export async function CategoriesTable({ categories }: CategoriesTableProps) {
             <TableHead className="w-10">
               <BulkSelectAllCheckbox label={t("selectAllAria")} />
             </TableHead>
-            <TableHead>{t("colIcon")}</TableHead>
             <ListSortHeader sortKey="name" {...SORT_DEFAULTS}>
-              {t("colName")}
+              {t("colCategory")}
             </ListSortHeader>
-            <TableHead>{t("colSlug")}</TableHead>
             <ListSortHeader sortKey="productCount" align="end" initialDirection="desc" {...SORT_DEFAULTS}>
               {t("colProductCount")}
             </ListSortHeader>
             <TableHead>{t("colStatus")}</TableHead>
-            <ListSortHeader sortKey="createdAt" initialDirection="desc" {...SORT_DEFAULTS}>
-              {t("colCreatedAt")}
+            <ListSortHeader sortKey="updatedAt" initialDirection="desc" {...SORT_DEFAULTS}>
+              {t("colUpdatedAt")}
             </ListSortHeader>
             <TableHead className="text-end">{t("colActions")}</TableHead>
           </tr>
@@ -74,14 +72,24 @@ export async function CategoriesTable({ categories }: CategoriesTableProps) {
                 <BulkRowCheckbox id={category.id} label={t("selectRowAria", { name: category.name })} />
               </TableCell>
               <TableCell>
-                <Thumbnail className="size-10">
-                  <Image src={category.iconUrl} alt="" width={32} height={32} className="object-contain" />
-                </Thumbnail>
+                <div className="flex items-center gap-3">
+                  <Thumbnail className="size-10">
+                    <Image src={category.iconUrl} alt="" width={32} height={32} className="object-contain" />
+                  </Thumbnail>
+                  <div className="min-w-0">
+                    <p className="truncate text-body-b7 text-foreground">{category.name}</p>
+                    <p className="truncate text-body-b8 text-muted-foreground">{category.slug}</p>
+                  </div>
+                </div>
               </TableCell>
-              <TableCell className="text-body-b7 text-foreground">{category.name}</TableCell>
-              <TableCell className="text-body-b6 text-muted-foreground">{category.slug}</TableCell>
-              <TableCell className="text-end text-body-b6 text-muted-foreground">
-                {formatNumber(category.productCount, locale)}
+              <TableCell className="text-end text-body-b6">
+                <Link
+                  href={`/dashboard/products?categoryId=${encodeURIComponent(category.id)}`}
+                  className="text-primary underline-offset-4 hover:underline"
+                  aria-label={t("viewProductsAria", { name: category.name, count: category.productCount })}
+                >
+                  {formatNumber(category.productCount, locale)}
+                </Link>
               </TableCell>
               <TableCell>
                 <Badge variant={category.isActive ? "success" : "neutral"}>
@@ -89,23 +97,18 @@ export async function CategoriesTable({ categories }: CategoriesTableProps) {
                 </Badge>
               </TableCell>
               <TableCell className="text-body-b6 text-muted-foreground">
-                {formatOrderDateShort(category.createdAt.toISOString(), locale)}
+                {formatOrderDateShort(category.updatedAt.toISOString(), locale)}
               </TableCell>
               <TableCell>
-                <div className="flex items-center justify-end gap-2">
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/dashboard/categories/${category.id}/edit`}>
-                      <Icon icon={Pencil} size="sm" className="me-1.5" />
-                      {t("edit")}
-                    </Link>
-                  </Button>
-                  <DeleteCategoryButton id={category.id} name={category.name} productCount={category.productCount} />
+                <div className="flex justify-end">
+                  <CategoryRowActions id={category.id} name={category.name} productCount={category.productCount} />
                 </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      {footer ? <DataTableFooter>{footer}</DataTableFooter> : null}
     </DataTable>
   );
 }

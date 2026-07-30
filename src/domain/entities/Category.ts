@@ -7,4 +7,5 @@ export type Category = {
   /** How many products currently reference this category. Derived, not stored. */
   productCount: number;
   createdAt: Date;
+  updatedAt: Date;
 }

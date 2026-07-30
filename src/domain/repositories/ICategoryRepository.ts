@@ -15,7 +15,7 @@ export type CategoryTranslationInput = {
  * `undefined` leaves existing translations untouched, a list replaces them (locales
  * absent from it are removed, so `[]` clears all).
  */
-export type NewCategory = Omit<Category, "id" | "createdAt" | "productCount" | "isActive"> & {
+export type NewCategory = Omit<Category, "id" | "createdAt" | "updatedAt" | "productCount" | "isActive"> & {
   /** Omitted means "leave the default/current value" — see the repository impls. */
   isActive?: boolean;
   translations?: CategoryTranslationInput[];

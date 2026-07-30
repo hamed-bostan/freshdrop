@@ -38,6 +38,19 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
 
 DataTable.displayName = "DataTable";
 
+/** Controls and summary attached to a table's lower edge. */
+export const DataTableFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn("border-t border-border bg-background px-4 py-3", className)}
+      {...props}
+    />
+  ),
+);
+
+DataTableFooter.displayName = "DataTableFooter";
+
 /* -------------------------------------------------------------------------- */
 /* Semantic table                                                             */
 /* -------------------------------------------------------------------------- */

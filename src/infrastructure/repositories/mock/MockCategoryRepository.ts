@@ -18,7 +18,7 @@ const ICON_BASE =
 
 /** Every seed category is active with no products counted — this catalog is UI fixture data, not a stock/order source of truth. */
 function mockCategory(id: string, name: string, slug: string, iconUrl: string): Category {
-  return { id, name, slug, iconUrl, isActive: true, productCount: 0, createdAt: new Date(0) };
+  return { id, name, slug, iconUrl, isActive: true, productCount: 0, createdAt: new Date(0), updatedAt: new Date(0) };
 }
 
 export const MOCK_CATEGORIES: Category[] = [
@@ -60,8 +60,8 @@ export class MockCategoryRepository implements ICategoryRepository {
       switch (page.sort) {
         case "productCount":
           return (a.productCount - b.productCount) * direction;
-        case "createdAt":
-          return (a.createdAt.getTime() - b.createdAt.getTime()) * direction;
+        case "updatedAt":
+          return (a.updatedAt.getTime() - b.updatedAt.getTime()) * direction;
         default:
           return a.name.localeCompare(b.name) * direction;
       }
@@ -87,6 +87,7 @@ export class MockCategoryRepository implements ICategoryRepository {
       isActive: input.isActive ?? true,
       productCount: 0,
       createdAt: new Date(),
+      updatedAt: new Date(),
     };
     MOCK_CATEGORIES.push(category);
     return category;
@@ -101,6 +102,7 @@ export class MockCategoryRepository implements ICategoryRepository {
       ...previous,
       ...data,
       isActive: input.isActive ?? previous.isActive,
+      updatedAt: new Date(),
     };
     MOCK_CATEGORIES[index] = category;
     return category;
@@ -123,7 +125,7 @@ export class MockCategoryRepository implements ICategoryRepository {
 
     MOCK_CATEGORIES.forEach((category, index) => {
       if (!wanted.has(category.id) || category[change.field] === change.value) return;
-      const updated = { ...category, [change.field]: change.value };
+      const updated = { ...category, [change.field]: change.value, updatedAt: new Date() };
       MOCK_CATEGORIES[index] = updated;
       updates.push({ category: updated, previous: category });
     });

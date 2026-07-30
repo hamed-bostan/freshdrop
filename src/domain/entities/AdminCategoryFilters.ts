@@ -4,7 +4,7 @@
  */
 
 /** Columns the management list can be ordered by; each maps to a single column (or derived count) in the repository. */
-export const ADMIN_CATEGORY_SORTS = ["name", "productCount", "createdAt"] as const;
+export const ADMIN_CATEGORY_SORTS = ["name", "productCount", "updatedAt"] as const;
 export type AdminCategorySort = (typeof ADMIN_CATEGORY_SORTS)[number];
 
 /** Alphabetical by default — an operator scanning the category list expects the storefront's own order. */

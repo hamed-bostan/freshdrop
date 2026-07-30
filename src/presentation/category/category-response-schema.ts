@@ -24,6 +24,7 @@ export const categoryResponseSchema = z.object({
   isActive: z.boolean(),
   productCount: z.number(),
   createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 }) satisfies z.ZodType<Category>;
 
 /** Collection endpoints (`GET /categories`, `?slug=` included) always return an array. */

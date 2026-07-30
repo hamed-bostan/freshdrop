@@ -55,8 +55,11 @@ export async function CategoriesScreen({ categories, filters }: CategoriesScreen
             paramName="status"
             label={t("filterStatusLabel")}
             options={[
-              { value: "", label: t("filterStatusAll") },
-              ...ADMIN_CATEGORY_STATUSES.map((status) => ({ value: status, label: statusLabels[status] })),
+              { value: "", label: t("filterStatusOption", { status: t("filterStatusAll") }) },
+              ...ADMIN_CATEGORY_STATUSES.map((status) => ({
+                value: status,
+                label: t("filterStatusOption", { status: statusLabels[status] }),
+              })),
             ]}
           />
         }
@@ -70,8 +73,10 @@ export async function CategoriesScreen({ categories, filters }: CategoriesScreen
           <BulkActionBar>
             <CategoryBulkActions />
           </BulkActionBar>
-          <CategoriesTable categories={categories.items} />
-          <ListPager page={categories} defaultPageSize={10} pageSizeOptions={[10, 25, 50]} />
+          <CategoriesTable
+            categories={categories.items}
+            footer={<ListPager page={categories} defaultPageSize={10} pageSizeOptions={[10, 25, 50]} />}
+          />
         </BulkSelectionProvider>
       ) : (
         <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
