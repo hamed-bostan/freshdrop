@@ -29,7 +29,7 @@ type ReviewsScreenProps = {
  * page over the REST API (BFF) during server render and passes it in. The status
  * tab, search term and page all live in the URL, so changing any of them re-runs
  * this render — as does moderating a review via `router.refresh()` (see
- * ReviewStatusSelect). The server stays the single source of truth.
+ * ReviewModerationActions). The server stays the single source of truth.
  *
  * A server component now: with the tab in the URL there's no local state left,
  * and the queue no longer has to ship every review to the browser to filter and
@@ -65,8 +65,12 @@ export async function ReviewsScreen({
               <ReviewBulkActions />
             </BulkActionBar>
           ) : null}
-          <ReviewsTable reviews={reviews.items} productsById={productsById} canModerate={canModerate} />
-          <ListPager page={reviews} />
+          <ReviewsTable
+            reviews={reviews.items}
+            productsById={productsById}
+            canModerate={canModerate}
+            footer={<ListPager page={reviews} />}
+          />
         </BulkSelectionProvider>
       ) : (
         <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">

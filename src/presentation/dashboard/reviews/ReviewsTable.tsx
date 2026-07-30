@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Star } from "lucide-react";
 import type { Locale } from "@/src/i18n/routing";
@@ -20,7 +21,7 @@ import {
 } from "@/src/presentation/design-system";
 import { Link } from "@/src/i18n/navigation";
 import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
-import { ReviewStatusSelect } from "./ReviewStatusSelect";
+import { ReviewModerationActions } from "./ReviewModerationActions";
 
 type ReviewsTableProps = {
   reviews: PublicReview[];
@@ -31,6 +32,8 @@ type ReviewsTableProps = {
    * selection checkboxes — there's nothing to select for without the bulk actions.
    */
   canModerate: boolean;
+  /** Pagination attached to the table frame, matching the other dashboard lists. */
+  footer?: ReactNode;
 };
 
 // Fixed UTC formatters → deterministic output (identical on server and client), so
@@ -80,13 +83,13 @@ const STATUS_BADGE: Record<ReviewStatus, { variant: "success" | "warning" | "des
 };
 
 /** Admin moderation table: one row per review with its status and a moderation control. */
-export function ReviewsTable({ reviews, productsById, canModerate }: ReviewsTableProps) {
+export function ReviewsTable({ reviews, productsById, canModerate, footer }: ReviewsTableProps) {
   const t = useTranslations("dashReviews");
   const locale = useLocale();
 
   return (
-    <DataTable minWidthClassName="min-w-[48rem]">
-      <Table className="border-collapse">
+    <DataTable minWidthClassName="min-w-[56rem]" footer={footer}>
+      <Table className="table-fixed border-collapse">
         <TableHeader>
           <tr>
             {canModerate ? (
@@ -94,12 +97,11 @@ export function ReviewsTable({ reviews, productsById, canModerate }: ReviewsTabl
                 <BulkSelectAllCheckbox label={t("selectAllAria")} />
               </TableHead>
             ) : null}
-            <TableHead>{t("colAuthor")}</TableHead>
-            <TableHead>{t("colProduct")}</TableHead>
-            <TableHead>{t("colRating")}</TableHead>
-            <TableHead>{t("colReview")}</TableHead>
-            <TableHead>{t("colStatus")}</TableHead>
-            {canModerate ? <TableHead className="text-end">{t("colAction")}</TableHead> : null}
+            <TableHead className="w-[22%]">{t("colAuthor")}</TableHead>
+            <TableHead className="w-[32%]">{t("colReview")}</TableHead>
+            <TableHead className="w-[22%]">{t("colProduct")}</TableHead>
+            <TableHead className="w-[10%]">{t("colStatus")}</TableHead>
+            {canModerate ? <TableHead className="w-[14%] text-end">{t("colAction")}</TableHead> : null}
           </tr>
         </TableHeader>
         <TableBody>
@@ -107,7 +109,7 @@ export function ReviewsTable({ reviews, productsById, canModerate }: ReviewsTabl
             const badge = STATUS_BADGE[review.status];
             const product = productsById.get(review.productId);
             return (
-              <TableRow key={review.id} className="align-top">
+              <TableRow key={review.id}>
                 {canModerate ? (
                   <TableCell className="py-4">
                     <BulkRowCheckbox id={review.id} label={t("selectRowAria", { name: review.authorName })} />
@@ -127,7 +129,7 @@ export function ReviewsTable({ reviews, productsById, canModerate }: ReviewsTabl
                       )}
                     </Avatar>
                     <div className="flex min-w-0 flex-col">
-                      <span className="truncate text-body-b7 text-foreground">{review.authorName}</span>
+                      <span className="line-clamp-2 text-body-b7 text-foreground">{review.authorName}</span>
                       <time
                         dateTime={review.createdAt}
                         className="text-body-b10 text-muted-foreground"
@@ -135,6 +137,24 @@ export function ReviewsTable({ reviews, productsById, canModerate }: ReviewsTabl
                         {formatReviewDate(review.createdAt, locale)}
                       </time>
                     </div>
+                  </div>
+                </TableCell>
+                <TableCell className="py-4">
+                  <div className="flex items-start gap-3">
+                    <span
+                      className="inline-flex w-fit shrink-0 items-center gap-1 rounded-full bg-surface-sunken px-2 py-0.5"
+                      aria-label={t("ratingAria", { rating: formatNumber(review.rating, locale, 1) })}
+                    >
+                      <Icon icon={Star} size="xs" className="fill-rating text-rating" />
+                      <span className="text-body-b8 text-foreground">{formatNumber(review.rating, locale, 1)}</span>
+                    </span>
+                    {review.comment ? (
+                      <p className="line-clamp-3 min-w-0 text-body-b6 text-foreground">
+                        {review.comment}
+                      </p>
+                    ) : (
+                      <span className="text-body-b8 italic text-muted-foreground/70">{t("noComment")}</span>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell className="py-4">
@@ -161,26 +181,15 @@ export function ReviewsTable({ reviews, productsById, canModerate }: ReviewsTabl
                   )}
                 </TableCell>
                 <TableCell className="py-4">
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-surface-sunken px-2 py-0.5">
-                    <Icon icon={Star} size="xs" className="fill-rating text-rating" />
-                    <span className="text-body-b8 text-foreground">{formatNumber(review.rating, locale, 1)}</span>
-                  </span>
-                </TableCell>
-                <TableCell className="py-4">
-                  {review.comment ? (
-                    <p className="line-clamp-3 max-w-sm text-body-b6 text-muted-foreground">
-                      {review.comment}
-                    </p>
-                  ) : (
-                    <span className="text-body-b8 italic text-muted-foreground/70">{t("noComment")}</span>
-                  )}
-                </TableCell>
-                <TableCell className="py-4">
                   <Badge variant={badge.variant}>{t(badge.labelKey)}</Badge>
                 </TableCell>
                 {canModerate ? (
                   <TableCell className="py-4">
-                    <ReviewStatusSelect id={review.id} status={review.status} />
+                    <ReviewModerationActions
+                      id={review.id}
+                      status={review.status}
+                      authorName={review.authorName}
+                    />
                   </TableCell>
                 ) : null}
               </TableRow>
