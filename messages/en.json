@@ -887,6 +887,7 @@
     "pageOf": "Page {page} of {pages}",
     "previous": "Previous page",
     "next": "Next page",
+    "rowsPerPage": "Rows per page",
     "noResultsTitle": "No matches",
     "noResultsBody": "No rows match the current search and filters.",
     "clearFilters": "Clear filters"

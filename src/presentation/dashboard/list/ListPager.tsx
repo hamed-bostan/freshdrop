@@ -1,9 +1,15 @@
 "use client";
 
+import { useEffect, useId } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { pageCount, type Page } from "@/src/domain/entities/Pagination";
-import { Button, Icon } from "@/src/presentation/design-system";
+import {
+  DEFAULT_PAGE_SIZE,
+  TABLE_PAGE_SIZE_OPTIONS,
+  pageCount,
+  type Page,
+} from "@/src/domain/entities/Pagination";
+import { Button, Icon, Select } from "@/src/presentation/design-system";
 import { mergePageParams } from "@/src/lib/api/pagination-params";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { useListParams } from "./useListParams";
@@ -11,45 +17,81 @@ import { useListParams } from "./useListParams";
 type ListPagerProps = {
   /** The page currently rendered — supplies the counts, so they can't disagree with the rows. */
   page: Pick<Page<unknown>, "total" | "page" | "pageSize">;
+  defaultPageSize?: number;
+  pageSizeOptions?: readonly number[];
 };
+
+const PAGE_SIZE_STORAGE_KEY = "dashboard:table-page-size";
 
 /**
  * Page controls for an admin list: which rows are on screen, out of how many, and
  * the way to the next slice.
- *
- * Renders nothing when everything fits on one page — a pager reading "1–8 of 8"
- * with both arrows disabled is noise on a list that isn't paged in practice.
  *
  * Previous/next only, no numbered pages: the tables are sorted and filtered to
  * find rows, not browsed by ordinal, and jumping to "page 34" of a list you can
  * search is rarely what anyone wants. A jump-to-page control can be added here if
  * that turns out to be wrong.
  */
-export function ListPager({ page }: ListPagerProps) {
+export function ListPager({
+  page,
+  defaultPageSize = DEFAULT_PAGE_SIZE,
+  pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS,
+}: ListPagerProps) {
   const { searchParams, setParams } = useListParams();
   const t = useTranslations("dashList");
   const locale = useLocale();
+  const pageSizeId = useId();
 
   const totalPages = pageCount(page.total, page.pageSize);
-  if (totalPages <= 1) return null;
 
   const first = (page.page - 1) * page.pageSize + 1;
   const last = Math.min(page.total, page.page * page.pageSize);
 
   function goTo(next: number): void {
-    setParams(mergePageParams(searchParams, { page: next }));
+    setParams(mergePageParams(searchParams, { page: next }, { pageSize: defaultPageSize }));
   }
+
+  function changePageSize(pageSize: number): void {
+    window.localStorage.setItem(PAGE_SIZE_STORAGE_KEY, String(pageSize));
+    setParams(mergePageParams(searchParams, { page: 1, pageSize }, { pageSize: defaultPageSize }));
+  }
+
+  useEffect(() => {
+    if (searchParams.has("pageSize")) return;
+    const remembered = Number(window.localStorage.getItem(PAGE_SIZE_STORAGE_KEY));
+    if (!pageSizeOptions.includes(remembered) || remembered === defaultPageSize) return;
+    setParams(mergePageParams(searchParams, { page: 1, pageSize: remembered }, { pageSize: defaultPageSize }));
+  }, [defaultPageSize, pageSizeOptions, searchParams, setParams]);
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <p className="text-body-b8 text-muted-foreground">
-        {t("range", {
-          first: formatNumber(first, locale),
-          last: formatNumber(last, locale),
-          total: formatNumber(page.total, locale),
-        })}
-      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <label htmlFor={pageSizeId} className="text-body-b8 text-muted-foreground">
+          {t("rowsPerPage")}
+        </label>
+        <Select
+          id={pageSizeId}
+          size="sm"
+          value={page.pageSize}
+          onChange={(event) => changePageSize(Number(event.target.value))}
+          className="w-auto"
+        >
+          {pageSizeOptions.map((size) => (
+            <option key={size} value={size}>
+              {formatNumber(size, locale)}
+            </option>
+          ))}
+        </Select>
+        <p className="text-body-b8 text-muted-foreground">
+          {t("range", {
+            first: formatNumber(first, locale),
+            last: formatNumber(last, locale),
+            total: formatNumber(page.total, locale),
+          })}
+        </p>
+      </div>
 
+      {totalPages > 1 && (
       <div className="flex items-center gap-2">
         <p className="text-body-b8 text-muted-foreground">
           {t("pageOf", {
@@ -79,6 +121,7 @@ export function ListPager({ page }: ListPagerProps) {
           <Icon icon={ChevronRight} size="sm" className="rtl:rotate-180" />
         </Button>
       </div>
+      )}
     </div>
   );
 }

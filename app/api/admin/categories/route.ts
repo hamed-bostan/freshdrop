@@ -33,6 +33,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const page = parsePageRequest(params, ADMIN_CATEGORY_SORTS, {
     sort: DEFAULT_ADMIN_CATEGORY_SORT,
     direction: DEFAULT_ADMIN_CATEGORY_DIRECTION,
+    pageSize: 10,
   });
 
   try {

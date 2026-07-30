@@ -887,6 +887,7 @@
     "pageOf": "صفحه {page} از {pages}",
     "previous": "صفحه قبل",
     "next": "صفحه بعد",
+    "rowsPerPage": "تعداد ردیف در صفحه",
     "noResultsTitle": "نتیجه‌ای نیست",
     "noResultsBody": "هیچ ردیفی با جست‌وجو و فیلترهای فعلی مطابقت ندارد.",
     "clearFilters": "پاک کردن فیلترها"

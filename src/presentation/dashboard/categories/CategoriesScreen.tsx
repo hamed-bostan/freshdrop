@@ -4,14 +4,14 @@ import { ADMIN_CATEGORY_STATUSES, type AdminCategoryFilters } from "@/src/domain
 import type { Category } from "@/src/domain/entities/Category";
 import type { Page } from "@/src/domain/entities/Pagination";
 import { Button, Icon } from "@/src/presentation/design-system";
-import { ListFilterSelect, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
+import { ListFilterSelect, ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
 import { BulkActionBar, BulkSelectionProvider } from "@/src/presentation/dashboard/bulk";
 import { Link } from "@/src/i18n/navigation";
 import { CategoriesTable } from "./CategoriesTable";
 import { CategoryBulkActions } from "./CategoryBulkActions";
 
 type CategoriesScreenProps = {
-  /** One page of categories — no pager: the list is fetched whole per filter. */
+  /** One page of categories plus the matching total. */
   categories: Page<Category>;
   /** The filters this page was fetched with, to distinguish "no categories" from "no matches". */
   filters: AdminCategoryFilters;
@@ -28,11 +28,6 @@ export async function CategoriesScreen({ categories, filters }: CategoriesScreen
   const t = await getTranslations("dashCategories");
   const tList = await getTranslations("dashList");
   const isFiltered = filters.query != null || filters.status != null;
-  // The list has no pager — one request is expected to return everything
-  // matching the filter — so if the server had to cap the page at MAX_PAGE_SIZE
-  // rows, say so instead of silently showing a partial list as if it were whole.
-  const isTruncated = categories.items.length < categories.total;
-
   const statusLabels: Record<(typeof ADMIN_CATEGORY_STATUSES)[number], string> = {
     active: t("filterStatusActive"),
     inactive: t("filterStatusInactive"),
@@ -67,12 +62,6 @@ export async function CategoriesScreen({ categories, filters }: CategoriesScreen
         }
       />
 
-      {isTruncated && (
-        <p className="text-body-b6 text-muted-foreground">
-          {t("truncated", { shown: categories.items.length, total: categories.total })}
-        </p>
-      )}
-
       {categories.items.length > 0 ? (
         // The provider wraps both the bar and the table so a row's checkbox and
         // the actions above it share one selection. The rows stay server-
@@ -82,6 +71,7 @@ export async function CategoriesScreen({ categories, filters }: CategoriesScreen
             <CategoryBulkActions />
           </BulkActionBar>
           <CategoriesTable categories={categories.items} />
+          <ListPager page={categories} defaultPageSize={10} pageSizeOptions={[10, 25, 50]} />
         </BulkSelectionProvider>
       ) : (
         <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">

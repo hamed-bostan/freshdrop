@@ -12,7 +12,10 @@
  */
 
 /** Rows per page when the caller doesn't say. */
-export const DEFAULT_PAGE_SIZE = 20;
+export const DEFAULT_PAGE_SIZE = 25;
+
+/** Page sizes offered by full management tables. */
+export const TABLE_PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
 
 /**
  * Hard ceiling on rows per page. The page size arrives from the query string, so
