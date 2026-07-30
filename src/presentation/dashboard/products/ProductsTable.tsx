@@ -1,6 +1,6 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Pencil } from "lucide-react";
 import type { Product } from "@/src/domain/entities/Product";
 import {
   DEFAULT_ADMIN_PRODUCT_DIRECTION,
@@ -9,9 +9,7 @@ import {
 import { getStockStatus } from "@/src/domain/entities/stock";
 import {
   Badge,
-  Button,
   DataTable,
-  Icon,
   Table,
   TableBody,
   TableCell,
@@ -25,38 +23,28 @@ import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashb
 import { Link } from "@/src/i18n/navigation";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
-import { AdjustStockButton } from "./AdjustStockButton";
-import { DeleteProductButton } from "./DeleteProductButton";
+import { ProductRowActions } from "./ProductRowActions";
 
 type ProductsTableProps = {
-  /** The rows of the current page; the screen owns the page/total and the pager. */
   products: Product[];
-  /** Category id → display name, for the Category column. */
+  /** Category id to localized display name. */
   categoryNames: Map<string, string>;
-  /**
-   * Whether the viewer may change the catalog. Drops the row actions *and* the
-   * selection checkboxes — there's nothing to select for when every bulk action is
-   * unavailable. Presentation only; the endpoints behind them check for themselves.
-   */
   canWrite: boolean;
+  footer?: ReactNode;
 };
 
-/**
- * The list's own default ordering, passed to every sortable header so an
- * untouched table leaves `sort`/`dir` out of the URL entirely.
- */
 const SORT_DEFAULTS = {
   defaultSort: DEFAULT_ADMIN_PRODUCT_SORT,
   defaultDirection: DEFAULT_ADMIN_PRODUCT_DIRECTION,
 } as const;
 
-/** Admin list of products with per-row edit + delete actions. */
-export async function ProductsTable({ products, categoryNames, canWrite }: ProductsTableProps) {
+/** Product management list with explicit inventory and publication state. */
+export async function ProductsTable({ products, categoryNames, canWrite, footer }: ProductsTableProps) {
   const t = await getTranslations("dashProducts");
   const locale = await getLocale();
 
   return (
-    <DataTable>
+    <DataTable footer={footer}>
       <Table>
         <TableHeader>
           <tr>
@@ -65,88 +53,102 @@ export async function ProductsTable({ products, categoryNames, canWrite }: Produ
                 <BulkSelectAllCheckbox label={t("selectAllAria")} />
               </TableHead>
             ) : null}
-            <TableHead>{t("colImage")}</TableHead>
             <ListSortHeader sortKey="name" {...SORT_DEFAULTS}>
-              {t("colName")}
+              {t("colProduct")}
             </ListSortHeader>
-            {/* Category is a filter, not a sort: ordering by a foreign key would
-                group rows under ids nobody recognises. */}
             <TableHead>{t("colCategory")}</TableHead>
             <ListSortHeader sortKey="price" align="end" initialDirection="desc" {...SORT_DEFAULTS}>
               {t("colPrice")}
             </ListSortHeader>
-            {/* Status shows featured + stock badges; only stock is orderable, and
-                ascending first so a click surfaces what needs restocking. */}
             <ListSortHeader sortKey="stock" initialDirection="asc" {...SORT_DEFAULTS}>
-              {t("colStatus")}
+              {t("colInventory")}
             </ListSortHeader>
+            <TableHead>{t("colVisibility")}</TableHead>
             {canWrite ? <TableHead className="text-end">{t("colActions")}</TableHead> : null}
           </tr>
         </TableHeader>
+
         <TableBody>
           {products.map((product) => {
             const stock = getStockStatus(product.stockQuantity);
+            const categoryName = categoryNames.get(product.categoryId);
+
             return (
-            <TableRow key={product.id}>
-              {canWrite ? (
+              <TableRow key={product.id}>
+                {canWrite ? (
+                  <TableCell>
+                    <BulkRowCheckbox id={product.id} label={t("selectRowAria", { name: product.name })} />
+                  </TableCell>
+                ) : null}
+
                 <TableCell>
-                  <BulkRowCheckbox id={product.id} label={t("selectRowAria", { name: product.name })} />
-                </TableCell>
-              ) : null}
-              <TableCell>
-                <Thumbnail className="size-10">
-                  <Image src={product.imageUrl} alt="" width={40} height={40} className="size-full object-cover" />
-                </Thumbnail>
-              </TableCell>
-              <TableCell>
-                <span className="text-body-b7 text-foreground">{product.name}</span>
-                {product.unit && <span className="block text-body-b10 text-muted-foreground">{product.unit}</span>}
-              </TableCell>
-              <TableCell className="text-body-b6 text-muted-foreground">
-                {categoryNames.get(product.categoryId) ?? "—"}
-              </TableCell>
-              <TableCell className="text-end">
-                <span className="text-body-b7 text-foreground">{formatMoney(product.price, locale)}</span>
-                {product.originalPrice != null && (
-                  <span className="block text-body-b10 text-muted-foreground line-through">
-                    {formatMoney(product.originalPrice, locale)}
-                  </span>
-                )}
-              </TableCell>
-              <TableCell>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {/* First in the row: an unpublished product isn't for sale, which
-                      changes what every other badge beside it means. */}
-                  {!product.isPublished && <Badge variant="neutral">{t("unpublishedBadge")}</Badge>}
-                  {product.isFeatured && <Badge variant="success">{t("featuredBadge")}</Badge>}
-                  {stock.level === "out" && <Badge variant="destructive">{t("outOfStock")}</Badge>}
-                  {stock.level === "low" && (
-                    <Badge variant="warning">{t("lowStock", { count: formatNumber(stock.quantity, locale) })}</Badge>
-                  )}
-                </div>
-              </TableCell>
-              {canWrite ? (
-                <TableCell>
-                  <div className="flex items-center justify-end gap-2">
-                    {/* Stock adjust sits first among the actions: it's the one an
-                        operator reaches for repeatedly (a delivery arrives, a crate
-                        is damaged), where editing a product is occasional. */}
-                    <AdjustStockButton
-                      id={product.id}
-                      name={product.name}
-                      stockQuantity={product.stockQuantity}
-                    />
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/dashboard/products/${product.id}/edit`}>
-                        <Icon icon={Pencil} size="sm" className="me-1.5" />
-                        {t("edit")}
-                      </Link>
-                    </Button>
-                    <DeleteProductButton id={product.id} name={product.name} />
+                  <div className="flex items-center gap-3">
+                    <Thumbnail className="size-10">
+                      <Image src={product.imageUrl} alt="" width={40} height={40} className="size-full object-cover" />
+                    </Thumbnail>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="truncate text-body-b7 text-foreground">{product.name}</span>
+                        {product.isFeatured ? <Badge variant="success">{t("featuredBadge")}</Badge> : null}
+                      </div>
+                      {product.unit ? (
+                        <span className="block truncate text-body-b10 text-muted-foreground">{product.unit}</span>
+                      ) : null}
+                    </div>
                   </div>
                 </TableCell>
-              ) : null}
-            </TableRow>
+
+                <TableCell className="text-body-b6">
+                  {categoryName ? (
+                    <Link
+                      href={`/dashboard/products?categoryId=${encodeURIComponent(product.categoryId)}`}
+                      className="text-primary underline-offset-4 hover:underline"
+                    >
+                      {categoryName}
+                    </Link>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+
+                <TableCell className="text-end">
+                  <span className="text-body-b7 text-foreground">{formatMoney(product.price, locale)}</span>
+                  {product.originalPrice != null ? (
+                    <span className="block text-body-b10 text-muted-foreground line-through">
+                      {formatMoney(product.originalPrice, locale)}
+                    </span>
+                  ) : null}
+                </TableCell>
+
+                <TableCell>
+                  {stock.level === "out" ? (
+                    <Badge variant="destructive">{t("outOfStockCount", { count: formatNumber(0, locale) })}</Badge>
+                  ) : stock.level === "low" ? (
+                    <Badge variant="warning">{t("lowStock", { count: formatNumber(stock.quantity, locale) })}</Badge>
+                  ) : (
+                    <Badge variant="success">{t("inStock", { count: formatNumber(stock.quantity, locale) })}</Badge>
+                  )}
+                </TableCell>
+
+                <TableCell>
+                  <Badge variant={product.isPublished ? "success" : "neutral"}>
+                    {product.isPublished ? t("publishedBadge") : t("unpublishedBadge")}
+                  </Badge>
+                </TableCell>
+
+                {canWrite ? (
+                  <TableCell>
+                    <div className="flex justify-end">
+                      <ProductRowActions
+                        id={product.id}
+                        name={product.name}
+                        stockQuantity={product.stockQuantity}
+                        isPublished={product.isPublished}
+                      />
+                    </div>
+                  </TableCell>
+                ) : null}
+              </TableRow>
             );
           })}
         </TableBody>

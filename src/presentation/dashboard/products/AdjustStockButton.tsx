@@ -34,6 +34,9 @@ type AdjustStockButtonProps = {
   name: string;
   /** Units on hand right now — the starting point the preview counts from. */
   stockQuantity: number;
+  trigger?: "button" | "none";
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 /** Fields the API can return targeted `fieldErrors` for. */
@@ -54,13 +57,21 @@ const FORM_FIELDS = ["amount", "reason", "note"] as const;
  * re-send every field of a product nobody is editing, and clobber a change someone
  * else saved in the meantime.
  */
-export function AdjustStockButton({ id, name, stockQuantity }: AdjustStockButtonProps) {
+export function AdjustStockButton({
+  id,
+  name,
+  stockQuantity,
+  trigger = "button",
+  open: controlledOpen,
+  onOpenChange,
+}: AdjustStockButtonProps) {
   const t = useTranslations("dashProducts");
   const tApiErrors = useTranslations("apiErrors");
   const tFormErrors = useTranslations("formErrors");
   const locale = useLocale() as Locale;
   const router = useRouter();
-  const [open, setOpen] = React.useState(false);
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  const open = controlledOpen ?? internalOpen;
 
   const fieldError = (message?: string): string | undefined => formErrorMessage(tFormErrors, message);
 
@@ -124,18 +135,25 @@ export function AdjustStockButton({ id, name, stockQuantity }: AdjustStockButton
     if (!next) reset();
   }
 
+  function setOpen(next: boolean): void {
+    if (controlledOpen === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  }
+
   return (
     <>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        iconOnly
-        aria-label={t("adjustAria", { name })}
-        onClick={() => setOpen(true)}
-      >
-        <Icon icon={PackagePlus} size="sm" />
-      </Button>
+      {trigger === "button" ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          iconOnly
+          aria-label={t("adjustAria", { name })}
+          onClick={() => setOpen(true)}
+        >
+          <Icon icon={PackagePlus} size="sm" />
+        </Button>
+      ) : null}
 
       <Modal open={open} onOpenChange={handleOpenChange}>
         <ModalContent title={t("adjustTitle")} description={t("adjustDescription", { name })}>

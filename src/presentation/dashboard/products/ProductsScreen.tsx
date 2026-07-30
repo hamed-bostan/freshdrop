@@ -98,16 +98,22 @@ export async function ProductsScreen({ products, categories, filters, canWrite }
               paramName="categoryId"
               label={t("filterCategoryLabel")}
               options={[
-                { value: "", label: t("filterCategoryAll") },
-                ...categories.map((category) => ({ value: category.id, label: category.name })),
+                { value: "", label: t("filterCategoryOption", { category: t("filterCategoryAll") }) },
+                ...categories.map((category) => ({
+                  value: category.id,
+                  label: t("filterCategoryOption", { category: category.name }),
+                })),
               ]}
             />
             <ListFilterSelect
               paramName="stock"
               label={t("filterStockLabel")}
               options={[
-                { value: "", label: t("filterStockAll") },
-                ...ADMIN_STOCK_FILTERS.map((level) => ({ value: level, label: stockLabels[level] })),
+                { value: "", label: t("filterStockOption", { stock: t("filterStockAll") }) },
+                ...ADMIN_STOCK_FILTERS.map((level) => ({
+                  value: level,
+                  label: t("filterStockOption", { stock: stockLabels[level] }),
+                })),
               ]}
             />
             <ListFilterSelect
@@ -116,8 +122,11 @@ export async function ProductsScreen({ products, categories, filters, canWrite }
               options={[
                 // "All" is the default and shows withdrawn products alongside live
                 // ones — the dashboard is where you go to find them again.
-                { value: "", label: t("filterVisibilityAll") },
-                ...ADMIN_VISIBILITY_FILTERS.map((value) => ({ value, label: visibilityLabels[value] })),
+                { value: "", label: t("filterVisibilityOption", { visibility: t("filterVisibilityAll") }) },
+                ...ADMIN_VISIBILITY_FILTERS.map((value) => ({
+                  value,
+                  label: t("filterVisibilityOption", { visibility: visibilityLabels[value] }),
+                })),
               ]}
             />
             {/* Carries the current query string, so `?stock=needsRestock` exports
@@ -137,8 +146,12 @@ export async function ProductsScreen({ products, categories, filters, canWrite }
               <ProductBulkActions categories={categories} />
             </BulkActionBar>
           ) : null}
-          <ProductsTable products={products.items} categoryNames={categoryNames} canWrite={canWrite} />
-          <ListPager page={products} />
+          <ProductsTable
+            products={products.items}
+            categoryNames={categoryNames}
+            canWrite={canWrite}
+            footer={<ListPager page={products} />}
+          />
         </BulkSelectionProvider>
       ) : (
         <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">

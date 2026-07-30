@@ -11,14 +11,24 @@ import { productsApi } from "./product-api";
 type DeleteProductButtonProps = {
   id: string;
   name: string;
+  trigger?: "button" | "none";
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 /** Trash action that confirms via the DS ConfirmSheet, then deletes over the API. */
-export function DeleteProductButton({ id, name }: DeleteProductButtonProps) {
+export function DeleteProductButton({
+  id,
+  name,
+  trigger = "button",
+  open: controlledOpen,
+  onOpenChange,
+}: DeleteProductButtonProps) {
   const t = useTranslations("dashProducts");
   const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
-  const [open, setOpen] = React.useState(false);
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  const open = controlledOpen ?? internalOpen;
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
 
@@ -46,20 +56,27 @@ export function DeleteProductButton({ id, name }: DeleteProductButtonProps) {
     if (!next) setError(null); // Drop a stale error once the sheet is dismissed.
   }
 
+  function setOpen(next: boolean): void {
+    if (controlledOpen === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  }
+
   return (
     <>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        iconOnly
-        aria-label={t("deleteAria", { name })}
-        onClick={() => setOpen(true)}
-        disabled={pending}
-        className="text-destructive"
-      >
-        <Icon icon={Trash2} size="sm" />
-      </Button>
+      {trigger === "button" ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          iconOnly
+          aria-label={t("deleteAria", { name })}
+          onClick={() => setOpen(true)}
+          disabled={pending}
+          className="text-destructive"
+        >
+          <Icon icon={Trash2} size="sm" />
+        </Button>
+      ) : null}
 
       <ConfirmSheet
         open={open}

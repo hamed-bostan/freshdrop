@@ -9,7 +9,6 @@ import type { Category } from "@/src/domain/entities/Category";
 import {
   Badge,
   DataTable,
-  DataTableFooter,
   Table,
   TableBody,
   TableCell,
@@ -45,7 +44,7 @@ export async function CategoriesTable({ categories, footer }: CategoriesTablePro
   const locale = await getLocale();
 
   return (
-    <DataTable>
+    <DataTable footer={footer}>
       <Table>
         <TableHeader>
           <tr>
@@ -108,7 +107,6 @@ export async function CategoriesTable({ categories, footer }: CategoriesTablePro
           ))}
         </TableBody>
       </Table>
-      {footer ? <DataTableFooter>{footer}</DataTableFooter> : null}
     </DataTable>
   );
 }

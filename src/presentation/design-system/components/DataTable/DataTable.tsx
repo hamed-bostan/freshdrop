@@ -11,6 +11,8 @@ export interface DataTableProps extends React.HTMLAttributes<HTMLDivElement> {
    * source text, so a class built from a prop value at runtime is never emitted.
    */
   minWidthClassName?: string;
+  /** Optional controls attached below the scrolling table content. */
+  footer?: React.ReactNode;
 }
 
 /**
@@ -23,7 +25,7 @@ export interface DataTableProps extends React.HTMLAttributes<HTMLDivElement> {
  * that outside is what this owns.
  */
 export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
-  ({ className, minWidthClassName, children, ...props }, ref) => (
+  ({ className, minWidthClassName, footer, children, ...props }, ref) => (
     <div ref={ref} className={cn("overflow-hidden rounded-card-lg border border-border", className)} {...props}>
       {minWidthClassName ? (
         <div className="overflow-x-auto">
@@ -32,6 +34,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
       ) : (
         children
       )}
+      {footer ? <DataTableFooter>{footer}</DataTableFooter> : null}
     </div>
   ),
 );
