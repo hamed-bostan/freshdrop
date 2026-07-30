@@ -5,15 +5,12 @@ import { cn } from "@/src/lib/utils";
 import { DashboardNav } from "./DashboardNav";
 import { SidebarBrand } from "./SidebarBrand";
 import { SidebarCollapseToggle } from "./SidebarCollapseToggle";
-import { UserCard } from "./UserCard";
 import { ViewStoreLink } from "./ViewStoreLink";
-import type { DashboardViewer } from "./viewer";
 
 type DashboardSidebarProps = {
   /** What the viewer may do — decides which sections are offered. */
   permissions: readonly Permission[];
   /** Who's signed in — the user card at the bottom of the rail. */
-  viewer: DashboardViewer;
   /** Whether the `xl`+ rail is showing its icon-only ("tablet") look. */
   collapsed: boolean;
   /** Flips `collapsed` — the toggle only appears at `xl`+, next to the brand. */
@@ -33,7 +30,7 @@ type DashboardSidebarProps = {
  * Both looks render the same brand/nav/user-card/view-store pieces, so there is
  * exactly one source for the section list and its active state either way.
  */
-export function DashboardSidebar({ permissions, viewer, collapsed, onToggleCollapsed }: DashboardSidebarProps) {
+export function DashboardSidebar({ permissions, collapsed, onToggleCollapsed }: DashboardSidebarProps) {
   return (
     <aside
       className={cn(
@@ -47,7 +44,6 @@ export function DashboardSidebar({ permissions, viewer, collapsed, onToggleColla
         <div className="flex-1 overflow-y-auto px-3 py-2">
           <DashboardNav permissions={permissions} collapsed />
         </div>
-        <UserCard viewer={viewer} collapsed />
         <ViewStoreLink collapsed />
       </div>
 
@@ -69,7 +65,6 @@ export function DashboardSidebar({ permissions, viewer, collapsed, onToggleColla
           <DashboardNav permissions={permissions} collapsed={collapsed} />
         </div>
 
-        <UserCard viewer={viewer} collapsed={collapsed} />
         <ViewStoreLink collapsed={collapsed} />
       </div>
     </aside>

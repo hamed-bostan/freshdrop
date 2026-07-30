@@ -43,7 +43,6 @@ export function DashboardShell({ permissions, viewer, initialSidebarCollapsed, c
     <div className="flex min-h-dvh bg-background">
       <DashboardSidebar
         permissions={permissions}
-        viewer={viewer}
         collapsed={sidebarCollapsed}
         onToggleCollapsed={toggleSidebarCollapsed}
       />
