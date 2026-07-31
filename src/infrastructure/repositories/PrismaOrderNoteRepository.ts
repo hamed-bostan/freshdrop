@@ -19,6 +19,16 @@ export class PrismaOrderNoteRepository implements IOrderNoteRepository {
     return rows.map(toOrderNote);
   }
 
+  async listForOrders(orderIds: readonly string[]): Promise<OrderNote[]> {
+    if (orderIds.length === 0) return [];
+
+    const rows = await prisma.orderNote.findMany({
+      where: { orderId: { in: [...orderIds] } },
+      orderBy: { createdAt: "desc" },
+    });
+    return rows.map(toOrderNote);
+  }
+
   async create(input: NewOrderNote): Promise<OrderNote> {
     const row = await prisma.orderNote.create({ data: input });
     return toOrderNote(row);

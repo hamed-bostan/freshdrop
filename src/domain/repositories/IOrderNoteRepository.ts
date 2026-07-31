@@ -14,6 +14,8 @@ export type NewOrderNote = Omit<OrderNote, "id" | "createdAt">;
 export type IOrderNoteRepository = {
   /** One order's notes, newest first. */
   listForOrder(orderId: string): Promise<OrderNote[]>;
+  /** Notes across a set of orders, newest first. Used by customer support views. */
+  listForOrders(orderIds: readonly string[]): Promise<OrderNote[]>;
   /** Append a note, returning it with its assigned id and timestamp. */
   create(input: NewOrderNote): Promise<OrderNote>;
 };

@@ -3,6 +3,7 @@ import type { CustomerDetail, CustomerLifetime } from "@/src/domain/entities/Cus
 import { USER_ROLES } from "@/src/domain/entities/User";
 import { deliveryLocationResponseSchema } from "@/src/presentation/delivery-location/delivery-location-response-schema";
 import { orderResponseSchema } from "@/src/presentation/orders/order-response-schema";
+import { orderNoteResponseSchema } from "@/src/contracts/order-note-schema";
 import { reviewResponseSchema } from "@/src/presentation/product/review-response-schema";
 import { walletResponseSchema } from "@/src/presentation/wallet/wallet-response-schema";
 
@@ -34,6 +35,7 @@ export const customerDetailResponseSchema = z.object({
   hasProfile: z.boolean(),
   lifetime: customerLifetimeResponseSchema,
   orders: z.array(orderResponseSchema),
+  notes: z.array(orderNoteResponseSchema),
   addresses: z.array(deliveryLocationResponseSchema),
   wallet: walletResponseSchema,
   reviews: z.array(reviewResponseSchema),

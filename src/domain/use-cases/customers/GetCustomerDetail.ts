@@ -4,6 +4,7 @@ import { toPublicReview } from "../../entities/Review";
 import { NotFoundError } from "../../errors/NotFoundError";
 import type { IDeliveryLocationRepository } from "../../repositories/IDeliveryLocationRepository";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
+import type { IOrderNoteRepository } from "../../repositories/IOrderNoteRepository";
 import type { IReviewRepository } from "../../repositories/IReviewRepository";
 import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { IWalletRepository } from "../../repositories/IWalletRepository";
@@ -32,6 +33,7 @@ export class GetCustomerDetail {
     private readonly addressRepo: IDeliveryLocationRepository,
     private readonly walletRepo: IWalletRepository,
     private readonly reviewRepo: IReviewRepository,
+    private readonly noteRepo: IOrderNoteRepository,
   ) {}
 
   async execute(userId: string): Promise<CustomerDetail> {
@@ -47,6 +49,8 @@ export class GetCustomerDetail {
       throw new NotFoundError("customer", userId);
     }
 
+    const notes = await this.noteRepo.listForOrders(orders.map((order) => order.id));
+
     return {
       userId,
       name: user?.name ?? userId,
@@ -57,6 +61,7 @@ export class GetCustomerDetail {
       hasProfile: user != null,
       lifetime: summarizeLifetime(orders),
       orders,
+      notes,
       addresses,
       wallet,
       reviews: reviews.map(toPublicReview),

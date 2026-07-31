@@ -1,5 +1,6 @@
 import type { DeliveryLocation } from "./DeliveryLocation";
 import type { Order } from "./Order";
+import type { OrderNote } from "./OrderNote";
 import type { PublicReview } from "./Review";
 import type { UserRole } from "./User";
 import type { Wallet } from "./Wallet";
@@ -52,6 +53,8 @@ export type CustomerDetail = {
   lifetime: CustomerLifetime;
   /** Their full order history, newest first. */
   orders: Order[];
+  /** Internal notes attached to any of their orders, newest first. */
+  notes: OrderNote[];
   /** Their saved delivery addresses. */
   addresses: DeliveryLocation[];
   /** Balance, saved cards and recent wallet activity. */

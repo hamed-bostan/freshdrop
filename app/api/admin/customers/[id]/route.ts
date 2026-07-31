@@ -3,6 +3,7 @@ import { GetCustomerDetail } from "@/src/domain/use-cases/customers/GetCustomerD
 import {
   deliveryLocationRepository,
   orderRepository,
+  orderNoteRepository,
   reviewRepository,
   userRepository,
   walletRepository,
@@ -40,6 +41,7 @@ export async function GET(_request: Request, { params }: RouteContext): Promise<
       deliveryLocationRepository,
       walletRepository,
       reviewRepository,
+      orderNoteRepository,
     ).execute(id);
     return NextResponse.json(detail);
   } catch (error) {
