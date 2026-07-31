@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 import {
   ArrowDown,
@@ -12,18 +11,18 @@ import {
   Star,
   UserRoundPlus,
   Users,
+  Info,
   type LucideIcon,
 } from "lucide-react";
 import { percentChange, repeatPurchaseRate, type OrderStatusCount } from "@/src/domain/entities/Analytics";
 import type { OrderStatus } from "@/src/domain/entities/Order";
 import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
-import { Icon, Thumbnail } from "@/src/presentation/design-system";
+import { Icon } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { StatSparkline } from "@/src/presentation/dashboard/StatSparkline";
 import type { AnalyticsOverviewWire } from "./analytics-response-schema";
-import type { RevenueRankRow } from "./RevenueRankPanel";
 
 type Kpi = {
   key: string;
@@ -96,22 +95,22 @@ export async function AnalyticsInsights({ analytics }: { analytics: AnalyticsOve
   return <section className="h-full rounded-card-lg border border-border bg-background p-4"><div className="flex items-center justify-between"><h2 className="flex items-center gap-2 text-body-b5"><Icon icon={Star} size="xs" className="text-info-foreground" />{t("insights")}</h2><Link href="/dashboard/analytics" className="text-body-b10 text-primary">{t("viewAll")}</Link></div><ul className="mt-4 flex flex-col gap-4">{items.map((item) => <li key={item.title} className="flex gap-3"><span className={`flex size-9 shrink-0 items-center justify-center rounded-full ${item.tone}`}><Icon icon={item.icon} size="xs" /></span><div><p className="text-body-b8 text-foreground">{item.title}</p><p className="mt-0.5 text-body-b10 text-muted-foreground">{item.body}</p></div></li>)}</ul></section>;
 }
 
-export async function CompactRankingTable({ heading, rows, nameLabel, viewAllHref }: { heading: string; rows: RevenueRankRow[]; nameLabel: string; viewAllHref: string }) {
-  const t = await getTranslations("dashAnalytics");
-  const locale = (await getLocale()) as Locale;
-  return <section className="rounded-card-lg border border-border bg-background p-4"><div className="flex items-center justify-between"><h2 className="text-body-b8">{heading}</h2><Link href={viewAllHref} className="text-body-b10 text-primary">{t("viewAll")}</Link></div>{rows.length > 0 ? <table className="mt-3 w-full text-body-b10"><thead className="bg-surface-sunken text-muted-foreground"><tr><th className="px-2 py-1.5 text-start">#</th><th className="px-2 py-1.5 text-start">{nameLabel}</th><th className="px-2 py-1.5 text-end">{t("colUnits")}</th><th className="px-2 py-1.5 text-end">{t("colRevenue")}</th></tr></thead><tbody className="divide-y divide-border">{rows.slice(0, 5).map((row, index) => <tr key={row.id}><td className="px-2 py-1 text-muted-foreground">{formatNumber(index + 1, locale)}</td><td className="max-w-40 px-2 py-1"><span className="flex items-center gap-2">{row.imageUrl ? <Thumbnail className="size-7 shrink-0"><Image src={row.imageUrl} alt="" width={28} height={28} className="size-full object-contain" /></Thumbnail> : null}<span className="truncate text-foreground">{row.label}</span></span></td><td className="px-2 py-1 text-end text-muted-foreground">{formatNumber(row.units, locale)}</td><td className="px-2 py-1 text-end text-foreground">{formatMoney(row.revenue, locale)}</td></tr>)}</tbody></table> : <p className="py-8 text-center text-body-b10 text-muted-foreground">{t("noSales")}</p>}</section>;
-}
-
 const STATUS_COLOR: Record<OrderStatus, string> = { completed: "var(--color-primary)", processing: "var(--color-info-foreground)", cancelled: "var(--color-error-foreground)", return_requested: "var(--color-warning-foreground)", refunded: "var(--color-muted-foreground)" };
 
-export async function AnalyticsMixCards({ analytics }: { analytics: AnalyticsOverviewWire }) {
+export async function CustomerMixCard({ analytics }: { analytics: AnalyticsOverviewWire }) {
   const t = await getTranslations("dashAnalytics");
   const locale = (await getLocale()) as Locale;
   const segments = analytics.customerSegments;
-  const totalOrders = analytics.statusBreakdown.reduce((sum, item) => sum + item.orders, 0);
   const customerStops = donutStops([{ value: segments.newCustomers, color: "var(--color-primary)" }, { value: segments.returningCustomers, color: "var(--color-info-foreground)" }]);
+  return <section className="flex h-full flex-col rounded-card-lg border border-border bg-background p-5"><h2 className="text-heading-h3">{t("customerMix")}</h2><div className="mt-10 flex items-center justify-center gap-8"><div className="relative flex size-36 shrink-0 items-center justify-center rounded-full" style={{ background: `conic-gradient(${customerStops})` }} aria-hidden><div className="flex size-24 flex-col items-center justify-center rounded-full bg-background"><strong className="text-heading-h2">{formatNumber(segments.totalCustomers, locale)}</strong><span className="text-body-b10 text-muted-foreground">{t("customersLabel")}</span></div></div><ul className="min-w-0 flex-1 space-y-6 text-body-b7"><MixRow color="bg-primary" label={t("newCustomers")} value={segments.newCustomers} total={segments.totalCustomers} locale={locale} /><MixRow color="bg-info-foreground" label={t("returningCustomers")} value={segments.returningCustomers} total={segments.totalCustomers} locale={locale} /></ul></div><div className="mt-auto border-t border-border pt-5"><div className="flex items-center justify-between gap-4"><span className="text-body-b7 text-muted-foreground">{t("repeatPurchaseRate")}</span><strong className="text-heading-h3">{formatPercent(repeatPurchaseRate(segments) ?? 0, locale)}</strong></div>{segments.totalCustomers < 10 ? <p className="mt-4 flex items-center gap-2 text-body-b10 text-muted-foreground"><Icon icon={Info} size="xs" />{t("lowSampleSize")}</p> : null}</div></section>;
+}
+
+export async function OrderHealthCard({ analytics }: { analytics: AnalyticsOverviewWire }) {
+  const t = await getTranslations("dashAnalytics");
+  const locale = (await getLocale()) as Locale;
+  const totalOrders = analytics.statusBreakdown.reduce((sum, item) => sum + item.orders, 0);
   const orderStops = donutStops(analytics.statusBreakdown.filter((item) => item.orders > 0).map((item) => ({ value: item.orders, color: STATUS_COLOR[item.status] })));
-  return <><section className="rounded-card-lg border border-border bg-background p-4"><h2 className="text-body-b8">{t("customerMix")}</h2><div className="mt-3 flex items-center gap-4"><Donut total={segments.totalCustomers} label={t("customersLabel")} stops={customerStops} /><ul className="min-w-0 flex-1 space-y-2 text-body-b10"><MixRow color="bg-primary" label={t("newCustomers")} value={segments.newCustomers} total={segments.totalCustomers} locale={locale} /><MixRow color="bg-info-foreground" label={t("returningCustomers")} value={segments.returningCustomers} total={segments.totalCustomers} locale={locale} /></ul></div><div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-body-b10"><span className="text-muted-foreground">{t("repeatPurchaseRate")}</span><strong>{formatPercent(repeatPurchaseRate(segments) ?? 0, locale)}</strong></div></section><section className="rounded-card-lg border border-border bg-background p-4"><h2 className="text-body-b8">{t("orderHealth")}</h2><div className="mt-3 flex items-center gap-4"><Donut total={totalOrders} label={t("ordersLabel")} stops={orderStops} /><ul className="min-w-0 flex-1 space-y-1.5 text-body-b10">{analytics.statusBreakdown.filter((item) => item.orders > 0).map((item) => <MixRow key={item.status} color={statusClass(item.status)} label={t(`status.${item.status}`)} value={item.orders} total={totalOrders} locale={locale} />)}</ul></div></section></>;
+  return <section className="rounded-card-lg border border-border bg-background p-4"><h2 className="text-body-b8">{t("orderHealth")}</h2><div className="mt-3 flex items-center gap-4"><Donut total={totalOrders} label={t("ordersLabel")} stops={orderStops} /><ul className="min-w-0 flex-1 space-y-1.5 text-body-b10">{analytics.statusBreakdown.filter((item) => item.orders > 0).map((item) => <MixRow key={item.status} color={statusClass(item.status)} label={t(`status.${item.status}`)} value={item.orders} total={totalOrders} locale={locale} />)}</ul></div></section>;
 }
 
 export async function AnalyticsSummaryCards({ analytics }: { analytics: AnalyticsOverviewWire }) {

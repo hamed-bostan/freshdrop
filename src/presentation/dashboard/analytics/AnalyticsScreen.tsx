@@ -9,12 +9,13 @@ import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./AnalyticsRangePicker
 import { ExportCsvLink } from "./ExportCsvLink";
 import { RevenueChart } from "./RevenueChart";
 import type { RevenueRankRow } from "./RevenueRankPanel";
+import { TopPerformancePanel } from "./TopPerformancePanel";
 import {
   AnalyticsInsights,
   AnalyticsKpiStrip,
-  AnalyticsMixCards,
   AnalyticsSummaryCards,
-  CompactRankingTable,
+  CustomerMixCard,
+  OrderHealthCard,
 } from "./AnalyticsOverviewPanels";
 
 export const ANALYTICS_RANK_LIMIT = 60;
@@ -86,25 +87,30 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange }: An
         <AnalyticsInsights analytics={analytics} />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-4">
-        <CompactRankingTable heading={t("topProducts")} rows={productRows} nameLabel={t("colProduct")} viewAllHref="/dashboard/products" />
-        <CompactRankingTable heading={t("topCategories")} rows={categoryRows} nameLabel={t("colCategory")} viewAllHref="/dashboard/categories" />
-        <AnalyticsMixCards analytics={analytics} />
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.8fr)_minmax(22rem,1fr)]">
+        <TopPerformancePanel products={productRows} categories={categoryRows} />
+        <CustomerMixCard analytics={analytics} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-4">
+        <OrderHealthCard analytics={analytics} />
         <AnalyticsSummaryCards analytics={analytics} />
-        <section id="reports" className="rounded-card-lg border border-border bg-background p-4">
+      </div>
+
+      <section id="reports" className="rounded-card-lg border border-border bg-background p-4">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div>
           <h2 className="flex items-center gap-2 text-body-b8"><Icon icon={Download} size="xs" />{t("exportReports")}</h2>
           <p className="mt-1 text-body-b10 text-muted-foreground">{t("exportBody")}</p>
-          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <ExportCsvLink resource="orders" label={t("exportOrdersReport")} />
-            <ExportCsvLink resource="products" label={t("exportProductsReport")} />
-            <ExportCsvLink resource="customers" label={t("exportCustomersReport")} />
-            <ExportCsvLink resource="inventory-movements" label={t("exportInventoryReport")} />
           </div>
-        </section>
-      </div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <ExportCsvLink compact resource="orders" label={t("exportOrdersReport")} />
+            <ExportCsvLink compact resource="products" label={t("exportProductsReport")} />
+            <ExportCsvLink compact resource="customers" label={t("exportCustomersReport")} />
+            <ExportCsvLink compact resource="inventory-movements" label={t("exportInventoryReport")} />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

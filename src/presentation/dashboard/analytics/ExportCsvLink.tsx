@@ -9,6 +9,8 @@ type ExportCsvLinkProps = {
   /** Which export endpoint to hit — the resource segment under `/api/admin/exports/`. */
   resource: "orders" | "products" | "customers" | "inventory-movements";
   label: string;
+  /** Denser report-card treatment; the default remains suitable for list toolbars. */
+  compact?: boolean;
 };
 
 /**
@@ -28,7 +30,7 @@ type ExportCsvLinkProps = {
  * precisely what the paged screen can't show you. The sort is kept, so the file
  * arrives in the order the admin arranged.
  */
-export function ExportCsvLink({ resource, label }: ExportCsvLinkProps) {
+export function ExportCsvLink({ resource, label, compact = false }: ExportCsvLinkProps) {
   const searchParams = useSearchParams();
 
   const params = new URLSearchParams(searchParams);
@@ -43,7 +45,10 @@ export function ExportCsvLink({ resource, label }: ExportCsvLinkProps) {
       // the file (and dates it). Present so the intent is visible in the markup.
       download
       className={cn(
-        "flex h-9 items-center gap-2 rounded-button border border-border px-3 text-body-b7 text-foreground",
+        "flex items-center gap-2 border border-border text-foreground",
+        compact
+          ? "h-9 min-w-0 justify-start whitespace-nowrap rounded-card-md px-3 text-body-b10"
+          : "h-9 rounded-button px-3 text-body-b7",
         "transition-colors hover:bg-muted",
         focusRing,
       )}
