@@ -183,7 +183,7 @@ export function RevenueChartClient({
             />
           ) : null}
           <div className="mt-4" aria-hidden>
-            <ChartContainer height={compact ? 130 : 220} dir={dir}>
+            <ChartContainer height={compact ? 130 : 115} dir={dir}>
               <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
                 <XAxis

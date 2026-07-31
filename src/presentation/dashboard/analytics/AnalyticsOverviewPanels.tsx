@@ -2,13 +2,17 @@ import { getLocale, getTranslations } from "next-intl/server";
 import {
   ArrowDown,
   ArrowUp,
+  BarChart3,
+  ChevronRight,
   CircleDollarSign,
   ClipboardList,
+  Download,
   PackageCheck,
   Receipt,
   RefreshCcw,
   ShoppingBag,
   Star,
+  Truck,
   UserRoundPlus,
   Users,
   Info,
@@ -18,9 +22,10 @@ import { percentChange, repeatPurchaseRate, type OrderStatusCount } from "@/src/
 import type { OrderStatus } from "@/src/domain/entities/Order";
 import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
-import { Icon } from "@/src/presentation/design-system";
+import { Icon, focusRing } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { cn } from "@/src/lib/utils";
 import { StatSparkline } from "@/src/presentation/dashboard/StatSparkline";
 import type { AnalyticsOverviewWire } from "./analytics-response-schema";
 
@@ -92,7 +97,7 @@ export async function AnalyticsInsights({ analytics }: { analytics: AnalyticsOve
     ...(top ? [{ icon: Star, tone: "bg-muted text-secondary", title: t("insightTopSeller", { name: top.name }), body: t("insightTopSellerBody", { revenue: formatMoney(top.revenue, locale), units: top.units }) }] : []),
   ];
 
-  return <section className="h-full rounded-card-lg border border-border bg-background p-4"><div className="flex items-center justify-between"><h2 className="flex items-center gap-2 text-body-b5"><Icon icon={Star} size="xs" className="text-info-foreground" />{t("insights")}</h2><Link href="/dashboard/analytics" className="text-body-b10 text-primary">{t("viewAll")}</Link></div><ul className="mt-4 flex flex-col gap-4">{items.map((item) => <li key={item.title} className="flex gap-3"><span className={`flex size-9 shrink-0 items-center justify-center rounded-full ${item.tone}`}><Icon icon={item.icon} size="xs" /></span><div><p className="text-body-b8 text-foreground">{item.title}</p><p className="mt-0.5 text-body-b10 text-muted-foreground">{item.body}</p></div></li>)}</ul></section>;
+  return <section className="h-full rounded-card-lg border border-border bg-background p-4"><div className="flex items-center justify-between"><h2 className="flex items-center gap-2 text-body-b5"><Icon icon={Star} size="xs" className="text-info-foreground" />{t("insights")}</h2><Link href="/dashboard/analytics" className="text-body-b10 text-primary">{t("viewAll")}</Link></div><ul className="mt-3 flex flex-col gap-2.5">{items.map((item) => <li key={item.title} className="flex gap-2.5"><span className={`flex size-8 shrink-0 items-center justify-center rounded-full ${item.tone}`}><Icon icon={item.icon} size="xs" /></span><div className="min-w-0"><p className="truncate text-body-b10 font-semibold text-foreground">{item.title}</p><p className="mt-0.5 line-clamp-1 text-body-b10 text-muted-foreground">{item.body}</p></div></li>)}</ul></section>;
 }
 
 const STATUS_COLOR: Record<OrderStatus, string> = { completed: "var(--color-primary)", processing: "var(--color-info-foreground)", cancelled: "var(--color-error-foreground)", return_requested: "var(--color-warning-foreground)", refunded: "var(--color-muted-foreground)" };
@@ -102,7 +107,92 @@ export async function CustomerMixCard({ analytics }: { analytics: AnalyticsOverv
   const locale = (await getLocale()) as Locale;
   const segments = analytics.customerSegments;
   const customerStops = donutStops([{ value: segments.newCustomers, color: "var(--color-primary)" }, { value: segments.returningCustomers, color: "var(--color-info-foreground)" }]);
-  return <section className="flex h-full flex-col rounded-card-lg border border-border bg-background p-5"><h2 className="text-heading-h3">{t("customerMix")}</h2><div className="mt-10 flex items-center justify-center gap-8"><div className="relative flex size-36 shrink-0 items-center justify-center rounded-full" style={{ background: `conic-gradient(${customerStops})` }} aria-hidden><div className="flex size-24 flex-col items-center justify-center rounded-full bg-background"><strong className="text-heading-h2">{formatNumber(segments.totalCustomers, locale)}</strong><span className="text-body-b10 text-muted-foreground">{t("customersLabel")}</span></div></div><ul className="min-w-0 flex-1 space-y-6 text-body-b7"><MixRow color="bg-primary" label={t("newCustomers")} value={segments.newCustomers} total={segments.totalCustomers} locale={locale} /><MixRow color="bg-info-foreground" label={t("returningCustomers")} value={segments.returningCustomers} total={segments.totalCustomers} locale={locale} /></ul></div><div className="mt-auto border-t border-border pt-5"><div className="flex items-center justify-between gap-4"><span className="text-body-b7 text-muted-foreground">{t("repeatPurchaseRate")}</span><strong className="text-heading-h3">{formatPercent(repeatPurchaseRate(segments) ?? 0, locale)}</strong></div>{segments.totalCustomers < 10 ? <p className="mt-4 flex items-center gap-2 text-body-b10 text-muted-foreground"><Icon icon={Info} size="xs" />{t("lowSampleSize")}</p> : null}</div></section>;
+  return <section className="flex h-full min-w-0 flex-col rounded-card-lg border border-border bg-background p-4"><h2 className="text-body-b5">{t("customerMix")}</h2><div className="mt-5 flex min-w-0 items-center justify-center gap-4"><div className="relative flex size-24 shrink-0 items-center justify-center rounded-full" style={{ background: `conic-gradient(${customerStops})` }} aria-hidden><div className="flex size-[68px] flex-col items-center justify-center rounded-full bg-background"><strong className="text-heading-h3">{formatNumber(segments.totalCustomers, locale)}</strong><span className="text-label-l4 text-muted-foreground">{t("customersLabel")}</span></div></div><ul className="min-w-0 flex-1 space-y-3 text-body-b10"><MixRow color="bg-primary" label={t("newCustomers")} value={segments.newCustomers} total={segments.totalCustomers} locale={locale} /><MixRow color="bg-info-foreground" label={t("returningCustomers")} value={segments.returningCustomers} total={segments.totalCustomers} locale={locale} /></ul></div><div className="mt-auto rounded-card-md border border-primary/20 bg-accent p-3"><div className="flex items-center justify-between gap-3"><span className="text-body-b10 text-muted-foreground">{t("repeatPurchaseRate")}</span><strong className="text-heading-h3 text-primary">{formatPercent(repeatPurchaseRate(segments) ?? 0, locale)}</strong></div>{segments.totalCustomers < 10 ? <p className="mt-2 flex items-center gap-2 text-label-l4 text-muted-foreground"><Icon icon={Info} size="xs" />{t("lowSampleSize")}</p> : null}</div></section>;
+}
+
+type HealthTone = "positive" | "negative" | "warning";
+
+/** Compact, decision-oriented summary of the same period metrics shown above. */
+export async function BusinessHealthCard({ analytics }: { analytics: AnalyticsOverviewWire }) {
+  const t = await getTranslations("dashAnalytics");
+  const healthRow = (label: string, change: number | null) => {
+    if (change === null) return { label, status: t("healthMonitor"), tone: "warning" as const, icon: Info };
+    if (change >= 0) return { label, status: t("healthGrowing"), tone: "positive" as const, icon: ArrowUp };
+    return { label, status: t("healthDeclining"), tone: "negative" as const, icon: ArrowDown };
+  };
+  const revenueChange = percentChange(analytics.totals.revenue, analytics.previousTotals.revenue);
+  const ordersChange = percentChange(analytics.totals.orders, analytics.previousTotals.orders);
+  const aovChange = percentChange(analytics.totals.averageOrderValue, analytics.previousTotals.averageOrderValue);
+  const totalOrders = analytics.statusBreakdown.reduce((sum, item) => sum + item.orders, 0);
+  const completedOrders = countStatus(analytics.statusBreakdown, "completed");
+  const deliveryRate = totalOrders > 0 ? completedOrders / totalOrders : null;
+  const rows: { label: string; status: string; tone: HealthTone; icon: LucideIcon }[] = [
+    healthRow(t("kpiNetRevenue"), revenueChange),
+    healthRow(t("kpiOrders"), ordersChange),
+    healthRow(t("kpiAverageOrder"), aovChange),
+    { label: t("kpiRefundRate"), status: t("healthMonitor"), tone: "warning", icon: Info },
+    {
+      label: t("deliveryPerformance"),
+      status: deliveryRate === null ? t("healthMonitor") : deliveryRate >= 0.8 ? t("healthGood") : t("healthMonitor"),
+      tone: deliveryRate !== null && deliveryRate >= 0.8 ? "positive" : "warning",
+      icon: deliveryRate !== null && deliveryRate >= 0.8 ? ArrowUp : Info,
+    },
+  ];
+
+  return (
+    <section className="flex h-full min-w-0 flex-col rounded-card-lg border border-border bg-background p-4">
+      <h2 className="text-body-b5 text-foreground">{t("businessHealth")}</h2>
+      <ul className="mt-3 divide-y divide-border">
+        {rows.map((row) => (
+          <li key={row.label} className="flex min-w-0 items-center justify-between gap-2 py-1 text-body-b10">
+            <span className="truncate text-muted-foreground">{row.label}</span>
+            <span className={cn("inline-flex shrink-0 items-center gap-1 rounded-pill px-2 py-1 font-semibold", healthToneClass(row.tone))}>
+              <Icon icon={row.icon} size="xs" />
+              {row.status}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <Link href="/dashboard/analytics" className={cn(focusRing, "mt-auto inline-flex items-center gap-1 pt-3 text-body-b10 font-semibold text-primary hover:underline")}>
+        {t("viewHealthReport")}
+        <Icon icon={ChevronRight} size="xs" className="rtl:rotate-180" />
+      </Link>
+    </section>
+  );
+}
+
+/** Stable routes to the operational reports most often opened from analytics. */
+export async function QuickAccessCard() {
+  const t = await getTranslations("dashAnalytics");
+  const items = [
+    { label: t("salesReport"), href: "/dashboard/orders", icon: BarChart3 },
+    { label: t("refundsReturns"), href: "/dashboard/orders?pipeline=return_requested", icon: RefreshCcw },
+    { label: t("deliveryPerformance"), href: "/dashboard/orders?pipeline=out_for_delivery", icon: Truck },
+    { label: t("customerInsights"), href: "/dashboard/customers", icon: Users },
+  ] as const;
+
+  return (
+    <section className="flex h-full min-w-0 flex-col rounded-card-lg border border-border bg-background p-4">
+      <h2 className="text-body-b5 text-foreground">{t("quickAccess")}</h2>
+      <nav className="mt-3 flex flex-col" aria-label={t("quickAccess")}>
+        {items.map((item) => (
+          <Link key={item.label} href={item.href} className={cn(focusRing, "flex min-w-0 items-center gap-2 rounded-card-md px-1 py-1 text-body-b10 text-foreground hover:bg-muted")}>
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-card-md bg-muted text-muted-foreground"><Icon icon={item.icon} size="xs" /></span>
+            <span className="min-w-0 flex-1 truncate">{item.label}</span>
+            <Icon icon={ChevronRight} size="xs" className="text-muted-foreground rtl:rotate-180" />
+          </Link>
+        ))}
+        <a href="/api/admin/exports/orders" download className={cn(focusRing, "flex min-w-0 items-center gap-2 rounded-card-md px-1 py-1 text-body-b10 text-foreground hover:bg-muted")}>
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-card-md bg-muted text-muted-foreground"><Icon icon={Download} size="xs" /></span>
+          <span className="min-w-0 flex-1 truncate">{t("exportCenter")}</span>
+          <Icon icon={ChevronRight} size="xs" className="text-muted-foreground rtl:rotate-180" />
+        </a>
+      </nav>
+      <a href="/api/admin/exports/orders" download className={cn(focusRing, "mt-auto flex h-8 items-center justify-center rounded-input border border-primary/40 text-body-b10 font-semibold text-primary hover:bg-accent")}>
+        {t("viewAllReports")}
+      </a>
+    </section>
+  );
 }
 
 export async function OrderHealthCard({ analytics }: { analytics: AnalyticsOverviewWire }) {
@@ -130,5 +220,6 @@ function MixRow({ color, label, value, total, locale }: { color: string; label: 
 function countStatus(items: OrderStatusCount[], status: OrderStatus): number { return items.find((item) => item.status === status)?.orders ?? 0; }
 function donutStops(items: { value: number; color: string }[]): string { const total = items.reduce((sum, item) => sum + item.value, 0); if (total === 0) return "var(--color-muted) 0 100%"; let cursor = 0; return items.map((item) => { const start = cursor; cursor += item.value / total * 100; return `${item.color} ${start}% ${cursor}%`; }).join(", "); }
 function statusClass(status: OrderStatus): string { return { completed: "bg-primary", processing: "bg-info-foreground", cancelled: "bg-error-foreground", return_requested: "bg-warning-foreground", refunded: "bg-muted-foreground" }[status]; }
+function healthToneClass(tone: HealthTone): string { return { positive: "bg-success text-success-foreground", negative: "bg-error text-destructive", warning: "bg-warning text-warning-foreground" }[tone]; }
 function formatPercent(value: number, locale: Locale): string { return new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 }).format(value); }
 function formatSignedPercent(value: number, locale: Locale): string { return new Intl.NumberFormat(locale, { signDisplay: "always", maximumFractionDigits: 1 }).format(value) + "%"; }
