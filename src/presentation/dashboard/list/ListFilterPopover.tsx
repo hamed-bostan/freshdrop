@@ -14,6 +14,8 @@ type ListFilterPopoverProps = {
    * which is what makes an active filter legible without opening it.
    */
   value?: string;
+  /** Overrides whether the value represents an applied filter. */
+  isActive?: boolean;
   /** Icon shown before the label. */
   icon?: React.ReactNode;
   /** The panel's contents — the options, range fields, or nested filters. */
@@ -43,11 +45,12 @@ type ListFilterPopoverProps = {
 export function ListFilterPopover({
   label,
   value,
+  isActive,
   icon,
   children,
   contentClassName,
 }: ListFilterPopoverProps) {
-  const active = value != null;
+  const active = isActive ?? (value != null);
 
   return (
     <Popover>
@@ -65,7 +68,7 @@ export function ListFilterPopover({
       >
         {icon}
         <span>{label}</span>
-        {active ? (
+        {value != null ? (
           <>
             <span aria-hidden className="text-border">
               |

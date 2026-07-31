@@ -127,8 +127,8 @@ export async function OrdersScreen({
             orders={orders.items}
             customersById={customersById}
             canFulfill={canFulfill}
+            footer={<ListPager page={orders} />}
           />
-          <ListPager page={orders} />
         </BulkSelectionProvider>
       ) : (
         <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">

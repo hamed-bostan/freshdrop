@@ -31,6 +31,8 @@ type ListDateRangeFilterProps = {
     rangeValue: (from: string | null, to: string | null) => string;
   };
   icon?: React.ReactNode;
+  /** Text shown beside the label while no date range is active. */
+  inactiveValue?: string;
   /** Query params the two bounds are written to. */
   fromParam?: string;
   toParam?: string;
@@ -102,6 +104,7 @@ export function ListDateRangeFilter({
   label,
   labels,
   icon,
+  inactiveValue,
   fromParam = "from",
   toParam = "to",
 }: ListDateRangeFilterProps) {
@@ -131,7 +134,8 @@ export function ListDateRangeFilter({
   return (
     <ListFilterPopover
       label={label}
-      value={active ? labels.rangeValue(from, to) : undefined}
+      value={active ? labels.rangeValue(from, to) : inactiveValue}
+      isActive={active}
       icon={icon}
       contentClassName="w-64"
     >

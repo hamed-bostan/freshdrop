@@ -5,11 +5,12 @@ import { orderNetPaid } from "@/src/domain/entities/Order";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
-import { Button, TableCell, TableRow } from "@/src/presentation/design-system";
+import { TableCell, TableRow } from "@/src/presentation/design-system";
 import { BulkRowCheckbox } from "@/src/presentation/dashboard/bulk";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
+import { maskPhoneNumber } from "@/src/lib/maskPhoneNumber";
 import { OrderRowActions } from "./OrderRowActions";
 
 type OrderRowProps = {
@@ -25,9 +26,9 @@ type OrderRowProps = {
  *
  * The row used to be a single `<Link>` — which is why this table was a CSS grid
  * rather than table markup, a `<tr>` being unable to be one. It can't be any
- * more: the row now carries a View button and an actions menu, and a link
+ * more: the row now carries a selection checkbox and an actions menu, and a link
  * containing controls is neither valid HTML nor operable by keyboard (there is no
- * way to reach the button without activating the link). So the row is a real
+ * way to reach those controls without activating the link). So the row is a real
  * `<tr>` again, and the order id is the link.
  *
  * The trade is deliberate. Losing whole-row click costs a large, forgiving target;
@@ -66,7 +67,7 @@ export function OrderRow({ order, customer, canFulfill }: OrderRowProps) {
           // `dir="ltr"` because a phone number is digits and reads left-to-right
           // even in an RTL row; without it the leading zero lands on the wrong end.
           <span dir="ltr" className="block truncate text-body-b8 text-muted-foreground">
-            {customer.phone}
+            {maskPhoneNumber(customer.phone)}
           </span>
         ) : null}
       </TableCell>
@@ -100,15 +101,7 @@ export function OrderRow({ order, customer, canFulfill }: OrderRowProps) {
       </TableCell>
 
       <TableCell>
-        <div className="flex items-center justify-end gap-1">
-          <Button asChild variant="outline" size="sm">
-            <Link
-              href={`/dashboard/orders/${order.id}`}
-              aria-label={t("viewOrderAria", { id: order.orderNumber })}
-            >
-              {t("rowActionView")}
-            </Link>
-          </Button>
+        <div className="flex justify-end">
           <OrderRowActions orderId={order.id} customerId={customer?.userId} />
         </div>
       </TableCell>

@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import type { ReactNode } from "react";
 import type { Order } from "@/src/domain/entities/Order";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import {
@@ -7,7 +8,6 @@ import {
   TableBody,
   TableHead,
   TableHeader,
-  TableRow,
 } from "@/src/presentation/design-system";
 import { BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
 import { OrderRow } from "./OrderRow";
@@ -22,6 +22,8 @@ type OrdersTableProps = {
    * bar of things they'll be refused.
    */
   canFulfill: boolean;
+  /** Pagination attached to the shared table frame. */
+  footer?: ReactNode;
 };
 
 /**
@@ -29,23 +31,23 @@ type OrdersTableProps = {
  *
  * Real `<table>` markup, where this used to be a CSS grid. The grid existed for
  * one reason — a whole row could be a single link — and the row stopped being one
- * when it grew a View button and an actions menu (see `OrderRow`). With that gone,
+ * when it grew selection and an actions menu (see `OrderRow`). With that gone,
  * the semantic table is simply better: header cells are associated with their
  * columns for a screen reader, and the alignment the grid template was
  * hand-maintaining comes free.
  *
  * Scrolls horizontally rather than crushing seven columns on a narrow viewport.
  */
-export async function OrdersTable({ orders, customersById, canFulfill }: OrdersTableProps) {
+export async function OrdersTable({ orders, customersById, canFulfill, footer }: OrdersTableProps) {
   const t = await getTranslations("dashOrders");
 
   return (
-    <DataTable minWidthClassName="min-w-[64rem]">
+    <DataTable minWidthClassName="min-w-[64rem]" footer={footer}>
       <Table>
         <TableHeader>
           {/* The header is not a hoverable row; the shared `TableRow` hover would
               otherwise make it look like something to click. */}
-          <TableRow className="hover:bg-surface-sunken">
+          <tr>
             {canFulfill ? (
               <TableHead className="w-10">
                 <BulkSelectAllCheckbox label={t("selectAllAria")} />
@@ -58,7 +60,7 @@ export async function OrdersTable({ orders, customersById, canFulfill }: OrdersT
             <TableHead>{t("colPlaced")}</TableHead>
             <TableHead className="text-end">{t("colTotal")}</TableHead>
             <TableHead className="text-end">{t("colActions")}</TableHead>
-          </TableRow>
+          </tr>
         </TableHeader>
         <TableBody>
           {orders.map((order) => (

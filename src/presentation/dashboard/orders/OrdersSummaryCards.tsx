@@ -43,7 +43,6 @@ export async function OrdersSummaryCards({ counts }: OrdersSummaryCardsProps) {
     key: string;
     label: string;
     value: number;
-    hint: string;
     href: string;
     icon: LucideIcon;
     /** Tone classes for the icon medallion — the only colour that varies. */
@@ -55,7 +54,6 @@ export async function OrdersSummaryCards({ counts }: OrdersSummaryCardsProps) {
       key: "all",
       label: t("cardAllOrders"),
       value: counts.total,
-      hint: t("cardAllOrdersHint"),
       // No filter at all, not `?pipeline=`: the link should read as "the whole
       // list", and a query string that means nothing is still one to explain.
       href: "/dashboard/orders",
@@ -66,7 +64,6 @@ export async function OrdersSummaryCards({ counts }: OrdersSummaryCardsProps) {
       key: "pending",
       label: t("cardPending"),
       value: counts.counts.pending,
-      hint: t("cardPendingHint"),
       href: "/dashboard/orders?pipeline=pending",
       icon: ClipboardList,
       tone: "bg-warning text-warning-foreground",
@@ -75,7 +72,6 @@ export async function OrdersSummaryCards({ counts }: OrdersSummaryCardsProps) {
       key: "outForDelivery",
       label: t("cardOutForDelivery"),
       value: counts.counts.out_for_delivery,
-      hint: t("cardOutForDeliveryHint"),
       href: "/dashboard/orders?pipeline=out_for_delivery",
       icon: Bike,
       tone: "bg-info text-info-foreground",
@@ -84,7 +80,6 @@ export async function OrdersSummaryCards({ counts }: OrdersSummaryCardsProps) {
       key: "returns",
       label: t("cardReturns"),
       value: counts.counts.return_requested,
-      hint: t("cardReturnsHint"),
       href: "/dashboard/orders?pipeline=return_requested",
       icon: AlertCircle,
       tone: "bg-error text-error-foreground",
@@ -99,7 +94,7 @@ export async function OrdersSummaryCards({ counts }: OrdersSummaryCardsProps) {
           key={card.key}
           href={card.href}
           className={cn(
-            "group flex items-start gap-4 rounded-card-lg border p-4 transition-colors",
+            "group flex min-h-20 items-center gap-4 rounded-card-lg border px-4 py-3 transition-colors",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             // The alarming card is outlined only while it has something in it. A
             // permanent red border trains people to stop seeing it, which is the
@@ -111,7 +106,7 @@ export async function OrdersSummaryCards({ counts }: OrdersSummaryCardsProps) {
         >
           <span
             aria-hidden
-            className={cn("flex size-11 shrink-0 items-center justify-center rounded-card-md", card.tone)}
+            className={cn("flex size-10 shrink-0 items-center justify-center rounded-card-md", card.tone)}
           >
             <card.icon className="size-5" />
           </span>
@@ -121,10 +116,6 @@ export async function OrdersSummaryCards({ counts }: OrdersSummaryCardsProps) {
             <span className="block text-heading-h3 text-foreground">
               {formatNumber(card.value, locale)}
             </span>
-            {/* The hint says what the number *means*, not what the card does —
-                "orders nobody has accepted yet" is the difference between a
-                dashboard and a wall of figures. */}
-            <span className="mt-0.5 block text-body-b8 text-muted-foreground">{card.hint}</span>
           </span>
         </Link>
       ))}

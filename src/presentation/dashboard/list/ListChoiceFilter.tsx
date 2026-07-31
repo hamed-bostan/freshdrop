@@ -23,6 +23,8 @@ type ListChoiceFilterProps = {
    * cheaply, and every option renders fine without.
    */
   counts?: Record<string, number>;
+  /** Shows the unfiltered value beside the label instead of leaving it implicit. */
+  showAllValue?: boolean;
 };
 
 /**
@@ -44,6 +46,7 @@ export function ListChoiceFilter({
   options,
   icon,
   counts,
+  showAllValue = false,
 }: ListChoiceFilterProps) {
   const { searchParams, setFilter } = useListParams();
   const current = searchParams.get(paramName) ?? "";
@@ -52,7 +55,12 @@ export function ListChoiceFilter({
   const entries: ListFilterOption[] = [{ value: "", label: allLabel }, ...options];
 
   return (
-    <ListFilterPopover label={label} value={selected?.label} icon={icon}>
+    <ListFilterPopover
+      label={label}
+      value={selected?.label ?? (showAllValue ? allLabel : undefined)}
+      isActive={current !== ""}
+      icon={icon}
+    >
       <div role="group" aria-label={label} className="flex flex-col">
         {entries.map((option) => {
           const isSelected = option.value === current;

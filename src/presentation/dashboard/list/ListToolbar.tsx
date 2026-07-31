@@ -16,9 +16,9 @@ type ListToolbarProps = {
  */
 export function ListToolbar({ search, filters, className }: ListToolbarProps) {
   return (
-    <div className={cn("flex flex-col gap-3 sm:flex-row sm:items-center", className)}>
+    <div className={cn("flex flex-col gap-3 2xl:flex-row 2xl:items-center", className)}>
       {search}
-      {filters ? <div className="flex flex-wrap items-center gap-2 sm:ms-auto">{filters}</div> : null}
+      {filters ? <div className="flex flex-wrap items-center gap-1.5 2xl:ms-auto">{filters}</div> : null}
     </div>
   );
 }

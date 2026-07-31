@@ -62,11 +62,12 @@ export function OrdersFilterBar({ pipelineCounts }: OrdersFilterBarProps) {
     iso ? format.dateTime(new Date(iso), { day: "numeric", month: "short" }) : null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-1.5">
       <ListChoiceFilter
         paramName="pipeline"
         label={t("filterStatusLabel")}
         allLabel={t("filterStatusAll")}
+        showAllValue
         options={ORDER_PIPELINE_STAGES.map((stage) => ({
           value: stage,
           label: pipelineLabels[stage],
@@ -76,6 +77,7 @@ export function OrdersFilterBar({ pipelineCounts }: OrdersFilterBarProps) {
 
       <ListDateRangeFilter
         label={t("filterDateLabel")}
+        inactiveValue={t("filterDateAll")}
         icon={<CalendarDays aria-hidden className="size-4" />}
         labels={{
           today: t("filterDateToday"),
@@ -102,6 +104,7 @@ export function OrdersFilterBar({ pipelineCounts }: OrdersFilterBarProps) {
         paramName="delivery"
         label={t("filterDeliveryLabel")}
         allLabel={t("filterDeliveryAll")}
+        showAllValue
         icon={<Truck aria-hidden className="size-4" />}
         options={DELIVERY_TYPES.map((type) => ({ value: type, label: deliveryLabels[type] }))}
       />
