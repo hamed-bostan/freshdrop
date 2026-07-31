@@ -26,7 +26,6 @@ type CustomersScreenProps = {
 export async function CustomersScreen({ customers, query }: CustomersScreenProps) {
   const t = await getTranslations("dashCustomers");
   const tAnalytics = await getTranslations("dashAnalytics");
-  const rows = customers.items.map((customer) => ({ customer, rank: customer.rank }));
   const isSearching = query != null && query.length > 0;
 
   return (
@@ -43,11 +42,11 @@ export async function CustomersScreen({ customers, query }: CustomersScreenProps
         filters={<ExportCsvLink resource="customers" label={tAnalytics("exportCsv")} />}
       />
 
-      {rows.length > 0 ? (
-        <>
-          <CustomersTable rows={rows} />
-          <ListPager page={customers} />
-        </>
+      {customers.items.length > 0 ? (
+        <CustomersTable
+          customers={customers.items}
+          footer={<ListPager page={customers} />}
+        />
       ) : (
         <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
           <p className="text-body-b4 text-foreground">

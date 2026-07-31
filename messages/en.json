@@ -1356,8 +1356,8 @@
   },
   "dashCustomers": {
     "heading": "Customers",
-    "summary": "{count, plural, one {# customer} other {# customers}} · ranked by total spend",
-    "searchPlaceholder": "Search customers",
+    "summary": "{count, plural, one {# customer} other {# customers}} · customer value and order history",
+    "searchPlaceholder": "Search customers by name or phone...",
     "emptyTitle": "No customers yet",
     "emptyBody": "Customers will appear here once they start placing orders.",
     "noResultsTitle": "No matches",
@@ -1366,6 +1366,7 @@
     "colCustomer": "Customer",
     "colPhone": "Phone",
     "colOrders": "Orders",
+    "colAverageOrder": "Average order",
     "colSpent": "Total spent",
     "noPhone": "—",
     "viewCustomerAria": "View {name}"

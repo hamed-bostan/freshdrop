@@ -1356,8 +1356,8 @@
   },
   "dashCustomers": {
     "heading": "مشتریان",
-    "summary": "{count, plural, other {# مشتری}} · بر اساس مجموع خرید مرتب شده",
-    "searchPlaceholder": "جستجوی مشتریان",
+    "summary": "{count, plural, other {# مشتری}} · ارزش مشتری و سابقه سفارش‌ها",
+    "searchPlaceholder": "جست‌وجوی مشتری با نام یا شماره تلفن…",
     "emptyTitle": "هنوز مشتری‌ای نیست",
     "emptyBody": "مشتریان پس از ثبت اولین سفارش اینجا نمایش داده می‌شوند.",
     "noResultsTitle": "نتیجه‌ای یافت نشد",
@@ -1366,6 +1366,7 @@
     "colCustomer": "مشتری",
     "colPhone": "تلفن",
     "colOrders": "سفارش‌ها",
+    "colAverageOrder": "میانگین سفارش",
     "colSpent": "مجموع خرید",
     "noPhone": "—",
     "viewCustomerAria": "مشاهده {name}"

@@ -36,3 +36,15 @@ export type CustomerOrderSummary = {
    */
   rank: number;
 }
+
+/**
+ * Mean recognized spend per order for a customer summary.
+ *
+ * Kept beside the summary rather than recalculated in each table or card so the
+ * zero-order invariant has one answer everywhere. A summary normally exists
+ * because at least one order exists, but imports and future CRM-created records
+ * must not turn an empty history into `NaN` in the UI.
+ */
+export function customerAverageOrderValue(customer: CustomerOrderSummary): number {
+  return customer.orderCount > 0 ? customer.totalSpent / customer.orderCount : 0;
+}
