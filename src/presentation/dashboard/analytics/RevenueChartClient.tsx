@@ -127,7 +127,7 @@ export function RevenueChartClient({
     <section className="rounded-card-lg border border-border p-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-          <h2 className="text-body-b5 text-foreground">{t("revenueChart")}</h2>
+          <h2 className="text-body-b5 text-foreground">{t("chartOverview")}</h2>
 
           {periodPeak > 0 && !compact ? (
             <div className="flex flex-wrap items-center gap-2">
@@ -183,7 +183,7 @@ export function RevenueChartClient({
             />
           ) : null}
           <div className="mt-4" aria-hidden>
-            <ChartContainer height={compact ? 130 : 160} dir={dir}>
+            <ChartContainer height={compact ? 130 : 220} dir={dir}>
               <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
                 <XAxis
