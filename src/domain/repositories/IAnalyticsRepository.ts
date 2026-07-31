@@ -10,6 +10,7 @@ import type {
   TopCategory,
   TopProduct,
 } from "../entities/Analytics";
+import type { PaymentIssue, PaymentReportTotals } from "../entities/PaymentReport";
 
 /**
  * Read access to the store's aggregates.
@@ -162,4 +163,16 @@ export type IAnalyticsRepository = {
    * gaps (see `pipelineCounts`).
    */
   orderStateCounts(): Promise<OrderStateCount[]>;
+
+  /** Aggregate payment outcomes and funding sources for one reporting period. */
+  paymentTotals(range: DateRange): Promise<PaymentReportTotals>;
+
+  /** Gap-filled paid-revenue series for the payment report. */
+  paymentSeries(range: DateRange, granularity: AnalyticsGranularity): Promise<RevenuePoint[]>;
+
+  /** Paid-revenue comparison series aligned to the current report's buckets. */
+  comparePaymentSeries(range: DateRange, compareRange: DateRange, granularity: AnalyticsGranularity): Promise<RevenuePoint[]>;
+
+  /** Latest failed or refunded payments in the period, bounded for the report table. */
+  paymentIssues(range: DateRange, limit: number): Promise<PaymentIssue[]>;
 };

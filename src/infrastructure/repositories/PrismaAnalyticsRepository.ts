@@ -12,6 +12,7 @@ import {
   type TopCategory,
   type TopProduct,
 } from "@/src/domain/entities/Analytics";
+import type { PaymentIssue, PaymentReportTotals } from "@/src/domain/entities/PaymentReport";
 import { ORDER_STATUSES, type OrderStatus } from "@/src/domain/entities/Order";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
 import type { IAnalyticsRepository } from "@/src/domain/repositories/IAnalyticsRepository";
@@ -230,6 +231,93 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     }));
   }
 
+  async paymentTotals(range: DateRange): Promise<PaymentReportTotals> {
+    const rows = await this.db.$queryRaw<PaymentTotalsRow[]>(Prisma.sql`
+      WITH ${recognizedOrders(range)}
+      SELECT
+        COALESCE(SUM(r.revenue) FILTER (WHERE r.payment_status = 'paid'), 0)::double precision AS "paidRevenue",
+        COUNT(*) FILTER (WHERE r.payment_status = 'paid')::int AS "successfulPayments",
+        COUNT(*) FILTER (WHERE r.payment_status = 'failed')::int AS "failedPayments",
+        COUNT(*) FILTER (WHERE r.payment_status = 'pending')::int AS "pendingPayments",
+        COUNT(*) FILTER (WHERE r.payment_status = 'refunded')::int AS "refundedPayments",
+        COALESCE(SUM(LEAST(r.wallet_applied, GREATEST(r.revenue, 0))) FILTER (WHERE r.payment_status = 'paid'), 0)::double precision AS "walletAmount",
+        COALESCE(SUM(GREATEST(r.revenue - r.wallet_applied, 0)) FILTER (WHERE r.payment_status = 'paid'), 0)::double precision AS "externalAmount"
+      FROM recognized r
+    `);
+    return rows[0] ?? emptyPaymentTotals();
+  }
+
+  async paymentSeries(range: DateRange, granularity: AnalyticsGranularity): Promise<RevenuePoint[]> {
+    const unit = Prisma.raw(assertGranularity(granularity));
+    const rows = await this.db.$queryRaw<SeriesRow[]>(Prisma.sql`
+      WITH ${recognizedOrders(range)},
+      buckets AS (
+        SELECT generate_series(
+          date_trunc('${unit}', ${range.from}::timestamp),
+          ${range.to}::timestamp - interval '1 microsecond',
+          '1 ${unit}'::interval
+        ) AS bucket
+      )
+      SELECT
+        b.bucket AS bucket,
+        COALESCE(SUM(r.revenue) FILTER (WHERE r.payment_status = 'paid'), 0)::double precision AS revenue,
+        COUNT(r.id) FILTER (WHERE r.payment_status = 'paid')::int AS orders
+      FROM buckets b
+      LEFT JOIN recognized r ON date_trunc('${unit}', r.placed_at) = b.bucket
+      GROUP BY b.bucket
+      ORDER BY b.bucket
+    `);
+    return rows.map((row) => ({ bucket: row.bucket.toISOString(), revenue: row.revenue, orders: row.orders }));
+  }
+
+  async comparePaymentSeries(
+    range: DateRange,
+    compareRange: DateRange,
+    granularity: AnalyticsGranularity,
+  ): Promise<RevenuePoint[]> {
+    const unit = Prisma.raw(assertGranularity(granularity));
+    const shiftMs = range.from.getTime() - compareRange.from.getTime();
+    const rows = await this.db.$queryRaw<SeriesRow[]>(Prisma.sql`
+      WITH ${recognizedOrders(compareRange)},
+      buckets AS (
+        SELECT generate_series(
+          date_trunc('${unit}', ${range.from}::timestamp),
+          ${range.to}::timestamp - interval '1 microsecond',
+          '1 ${unit}'::interval
+        ) AS bucket
+      )
+      SELECT
+        b.bucket AS bucket,
+        COALESCE(SUM(r.revenue) FILTER (WHERE r.payment_status = 'paid'), 0)::double precision AS revenue,
+        COUNT(r.id) FILTER (WHERE r.payment_status = 'paid')::int AS orders
+      FROM buckets b
+      LEFT JOIN recognized r
+        ON date_trunc('${unit}', r.placed_at + (${shiftMs} * interval '1 millisecond')) = b.bucket
+      GROUP BY b.bucket
+      ORDER BY b.bucket
+    `);
+    return rows.map((row) => ({ bucket: row.bucket.toISOString(), revenue: row.revenue, orders: row.orders }));
+  }
+
+  async paymentIssues(range: DateRange, limit: number): Promise<PaymentIssue[]> {
+    const rows = await this.db.$queryRaw<PaymentIssueRow[]>(Prisma.sql`
+      SELECT
+        o.id AS "orderId",
+        o.order_number AS "orderNumber",
+        o.user_id AS "userId",
+        o.payment_status AS status,
+        o.total::double precision AS amount,
+        o.placed_at AS "placedAt"
+      FROM orders o
+      WHERE o.placed_at >= ${range.from}
+        AND o.placed_at < ${range.to}
+        AND o.payment_status IN ('failed', 'refunded')
+      ORDER BY o.placed_at DESC
+      LIMIT ${Math.max(1, Math.min(limit, 20))}
+    `);
+    return rows.map((row) => ({ ...row, placedAt: row.placedAt.toISOString() }));
+  }
+
   async topProducts(range: DateRange, limit: number, sort: RevenueRankSort): Promise<TopProduct[]> {
     const rows = await this.db.$queryRaw<TopProductRow[]>(Prisma.sql`
       WITH ${earningLines(range)}
@@ -341,6 +429,8 @@ function recognizedOrders(range: DateRange): Prisma.Sql {
         o.id,
         o.user_id,
         o.status,
+        o.payment_status,
+        o.wallet_applied,
         o.placed_at,
         o.total - COALESCE(refunds.amount, 0) AS revenue
       FROM orders o
@@ -422,3 +512,9 @@ type StatusRow = { status: OrderStatus; orders: number; revenue: number };
 type TopProductRow = TopProduct;
 type TopCategoryRow = TopCategory;
 type SegmentsRow = CustomerSegments;
+type PaymentTotalsRow = PaymentReportTotals;
+type PaymentIssueRow = Omit<PaymentIssue, "placedAt"> & { placedAt: Date };
+
+function emptyPaymentTotals(): PaymentReportTotals {
+  return { paidRevenue: 0, successfulPayments: 0, failedPayments: 0, pendingPayments: 0, refundedPayments: 0, walletAmount: 0, externalAmount: 0 };
+}

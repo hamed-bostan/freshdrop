@@ -65,7 +65,7 @@ export async function ReportsScreen({ from, to, isCustomRange, comparisonRange }
       key: "sales",
       title: t("sales"),
       items: [
-        { key: "payments", title: t("paymentSummary"), description: t("paymentSummaryDescription"), href: "/dashboard/orders", icon: CreditCard, tone: "green" },
+        { key: "payments", title: t("paymentSummary"), description: t("paymentSummaryDescription"), href: "/dashboard/reports/payments", icon: CreditCard, tone: "green" },
         { key: "sales-report", title: t("salesReport"), description: t("salesReportDescription"), href: "/dashboard/analytics", icon: ChartNoAxesCombined, tone: "green" },
       ],
     },
