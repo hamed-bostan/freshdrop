@@ -44,7 +44,7 @@ export function DashboardNav({ permissions, collapsed = false, onNavigate }: Das
             (collapsed ? (
               <hr className="my-2 border-border" />
             ) : (
-              <p className="mt-4 px-3 pb-1 text-body-b9 uppercase tracking-wide text-muted-foreground">
+              <p className="mt-3 px-3 pb-1 text-body-b9 uppercase tracking-wide text-muted-foreground">
                 {t(group.id)}
               </p>
             ))}
@@ -63,7 +63,7 @@ export function DashboardNav({ permissions, collapsed = false, onNavigate }: Das
                 className={cn(
                   "flex items-center gap-3 rounded-pill text-body-b7 transition-colors",
                   focusRing,
-                  collapsed ? "justify-center px-0 py-2.5" : "px-3 py-2.5",
+                  collapsed ? "justify-center px-0 py-2" : "px-3 py-2",
                   active
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-surface-sunken hover:text-foreground",

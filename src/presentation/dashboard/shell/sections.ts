@@ -5,6 +5,7 @@ import {
   History,
   LayoutDashboard,
   Package,
+  PieChart,
   PercentCircle,
   Settings,
   ShieldCheck,
@@ -29,7 +30,7 @@ import type { Permission } from "@/src/domain/entities/Permission";
  */
 
 /** A navigation group's stable id, which is also its label key under `dashboard`. */
-export type DashboardSectionGroup = "groupOverview" | "groupCatalog" | "groupSales" | "groupMarketing" | "groupStore";
+export type DashboardSectionGroup = "groupOverview" | "groupCatalog" | "groupSales" | "groupAnalytics" | "groupMarketing" | "groupStore";
 
 /** A section's label key under the `dashboard` namespace — spelled out so `t()` can check it. */
 export type DashboardSectionLabelKey =
@@ -41,6 +42,7 @@ export type DashboardSectionLabelKey =
   | "navReviews"
   | "navCustomers"
   | "navAnalytics"
+  | "navReports"
   | "navPromoCodes"
   | "navDeliverySlots"
   | "navActivity"
@@ -73,7 +75,8 @@ const SECTIONS = [
   { href: "/dashboard/orders", labelKey: "navOrders", icon: ClipboardList, needs: "dashboard.view", group: "groupSales" },
   { href: "/dashboard/reviews", labelKey: "navReviews", icon: Star, needs: "dashboard.view", group: "groupSales" },
   { href: "/dashboard/customers", labelKey: "navCustomers", icon: Users, needs: "dashboard.view", group: "groupSales" },
-  { href: "/dashboard/analytics", labelKey: "navAnalytics", icon: BarChart3, needs: "dashboard.view", group: "groupSales" },
+  { href: "/dashboard/analytics", labelKey: "navAnalytics", icon: BarChart3, needs: "dashboard.view", group: "groupAnalytics" },
+  { href: "/dashboard/reports", labelKey: "navReports", icon: PieChart, needs: "dashboard.view", group: "groupAnalytics" },
 
   { href: "/dashboard/promo-codes", labelKey: "navPromoCodes", icon: PercentCircle, needs: "promotions.write", group: "groupMarketing" },
   { href: "/dashboard/delivery-slots", labelKey: "navDeliverySlots", icon: CalendarClock, needs: "promotions.write", group: "groupMarketing" },
@@ -96,6 +99,7 @@ const GROUP_ORDER: readonly DashboardSectionGroup[] = [
   "groupOverview",
   "groupCatalog",
   "groupSales",
+  "groupAnalytics",
   "groupMarketing",
   "groupStore",
 ];
