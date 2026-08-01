@@ -1,0 +1,24 @@
+"use client";
+
+import * as React from "react";
+import Image from "next/image";
+import { ExternalLink, Search } from "lucide-react";
+import { Link } from "@/src/i18n/navigation";
+import { DataTable, Icon, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Thumbnail, focusRing } from "@/src/presentation/design-system";
+import { cn } from "@/src/lib/utils";
+
+type ReturnStatus = "return_requested" | "refunded" | "cancelled";
+export type ReturnCaseRow = { id: string; orderId: string; orderNumber: string; productName: string; productImageUrl: string | null; customer: string; reason: string; amount: string; status: ReturnStatus; statusLabel: string; date: string };
+type Labels = { heading: string; search: string; status: string; all: string; product: string; order: string; customer: string; reason: string; amount: string; received: string; action: string; view: string; empty: string };
+
+const STATUS_TONES: Record<ReturnStatus, string> = { return_requested: "bg-info text-info-foreground", refunded: "bg-accent text-primary", cancelled: "bg-error text-destructive" };
+
+export function ReturnCasesTable({ rows, labels }: { rows: ReturnCaseRow[]; labels: Labels }) {
+  const [query, setQuery] = React.useState("");
+  const [status, setStatus] = React.useState<ReturnStatus | "all">("all");
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const visibleRows = rows.filter((row) => (status === "all" || row.status === status) && (!normalizedQuery || [row.productName, row.orderNumber, row.customer, row.reason].some((value) => value.toLocaleLowerCase().includes(normalizedQuery))));
+  return <section className="min-w-0 rounded-card-lg border border-border bg-background p-4"><div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><h2 className="text-body-b5">{labels.heading}</h2><div className="flex flex-col gap-2 sm:flex-row"><label className="relative"><span className="sr-only">{labels.search}</span><Icon icon={Search} size="xs" className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={labels.search} className={cn(focusRing, "h-9 w-full rounded-input border border-border bg-background ps-9 pe-3 text-body-b10 placeholder:text-muted-foreground sm:w-60")} /></label><Select size="sm" aria-label={labels.status} value={status} onChange={(event) => setStatus(event.target.value as ReturnStatus | "all")} className="w-auto"><option value="all">{labels.all}</option>{rows.map((row) => row.status).filter((value, index, values) => values.indexOf(value) === index).map((value) => <option key={value} value={value}>{rows.find((row) => row.status === value)?.statusLabel}</option>)}</Select></div></div>
+    {visibleRows.length ? <DataTable className="mt-3"><Table><TableHeader><tr><TableHead>{labels.product}</TableHead><TableHead>{labels.order}</TableHead><TableHead>{labels.customer}</TableHead><TableHead>{labels.reason}</TableHead><TableHead>{labels.status}</TableHead><TableHead className="text-end">{labels.amount}</TableHead><TableHead>{labels.received}</TableHead><TableHead className="text-end">{labels.action}</TableHead></tr></TableHeader><TableBody>{visibleRows.map((row) => <TableRow key={row.id}><TableCell><div className="flex min-w-40 items-center gap-2">{row.productImageUrl ? <Thumbnail className="size-8 shrink-0"><Image src={row.productImageUrl} alt="" width={32} height={32} className="size-full object-contain" /></Thumbnail> : <span className="size-8 shrink-0 rounded-card-md bg-surface-sunken" />}<span className="truncate text-body-b7">{row.productName}</span></div></TableCell><TableCell><Link href={`/dashboard/orders/${row.orderId}`} className="inline-flex items-center gap-1 font-mono text-body-b10 text-primary hover:underline">{row.orderNumber}<Icon icon={ExternalLink} size="xs" /></Link></TableCell><TableCell className="text-body-b10">{row.customer}</TableCell><TableCell className="max-w-40 truncate text-body-b10 text-muted-foreground">{row.reason}</TableCell><TableCell><span className={`rounded-card-md px-2 py-1 text-label-l1 ${STATUS_TONES[row.status]}`}>{row.statusLabel}</span></TableCell><TableCell className="text-end text-body-b7">{row.amount}</TableCell><TableCell className="whitespace-nowrap text-body-b10 text-muted-foreground">{row.date}</TableCell><TableCell className="text-end"><Link href={`/dashboard/orders/${row.orderId}`} className={cn(focusRing, "inline-flex h-8 items-center rounded-input border border-primary/40 px-4 text-body-b10 font-semibold text-primary hover:bg-accent")}>{labels.view}</Link></TableCell></TableRow>)}</TableBody></Table></DataTable> : <p className="py-12 text-center text-body-b8 text-muted-foreground">{labels.empty}</p>}
+  </section>;
+}

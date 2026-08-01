@@ -1,113 +1,46 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import {
-  ChartNoAxesCombined,
-  ChevronRight,
-  ClipboardList,
-  CreditCard,
-  FileSpreadsheet,
-  MapPin,
-  PackageX,
-  RefreshCcw,
-  Truck,
-  UserRound,
-  UsersRound,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { ANALYTICS_RANGE_PRESETS } from "@/src/domain/entities/Analytics";
-import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
+import { Link } from "@/src/i18n/navigation";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
-import { Icon, focusRing } from "@/src/presentation/design-system";
-import { cn } from "@/src/lib/utils";
+import { formatMoney } from "@/src/lib/formatMoney";
+import type { AnalyticsOverviewWire } from "../analytics/analytics-response-schema";
 import { AnalyticsExportMenu } from "../analytics/AnalyticsExportMenu";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "../analytics/AnalyticsRangePicker";
-
-type ReportTone = "green" | "red" | "blue" | "violet";
-
-type ReportItem = {
-  key: string;
-  title: string;
-  description: string;
-  href: string;
-  icon: LucideIcon;
-  tone: ReportTone;
-  download?: boolean;
-};
-
-type ReportGroup = {
-  key: string;
-  title: string;
-  items: ReportItem[];
-};
+import { SalesCategoryPanel } from "./SalesCategoryPanel";
+import { SalesChannelPanel } from "./SalesChannelPanel";
+import { SalesInsightBanner } from "./SalesInsightBanner";
+import { SalesMetricGrid } from "./SalesMetricGrid";
+import { SalesTrendChart } from "./SalesTrendChart";
+import { TopSellingProductsTable } from "./TopSellingProductsTable";
 
 type ReportsScreenProps = {
+  analytics: AnalyticsOverviewWire;
   from: string;
   to: string;
   isCustomRange: boolean;
   comparisonRange: { from: string; to: string };
 };
 
-/**
- * Report directory for store operators.
- *
- * The directory is intentionally navigation rather than a second analytics
- * implementation: every card leads to the existing workflow that owns the data,
- * while the period remains URL-backed and shareable through the same control used
- * by Analytics Overview.
- */
-export async function ReportsScreen({ from, to, isCustomRange, comparisonRange }: ReportsScreenProps) {
+/** The sales report: one coherent, server-fetched snapshot of the selected period. */
+export async function ReportsScreen({ analytics, from, to, isCustomRange, comparisonRange }: ReportsScreenProps) {
   const t = await getTranslations("dashReports");
   const tAnalytics = await getTranslations("dashAnalytics");
   const locale = (await getLocale()) as Locale;
 
-  const groups: ReportGroup[] = [
-    {
-      key: "sales",
-      title: t("sales"),
-      items: [
-        { key: "payments", title: t("paymentSummary"), description: t("paymentSummaryDescription"), href: "/dashboard/reports/payments", icon: CreditCard, tone: "green" },
-        { key: "sales-report", title: t("salesReport"), description: t("salesReportDescription"), href: "/dashboard/analytics", icon: ChartNoAxesCombined, tone: "green" },
-      ],
-    },
-    {
-      key: "returns",
-      title: t("returnsRefunds"),
-      items: [
-        { key: "refunds", title: t("refundsReturns"), description: t("refundsReturnsDescription"), href: "/dashboard/reports/refunds", icon: RefreshCcw, tone: "red" },
-        { key: "return-items", title: t("returnItems"), description: t("returnItemsDescription"), href: "/dashboard/orders?pipeline=return_requested", icon: PackageX, tone: "red" },
-      ],
-    },
-    {
-      key: "delivery",
-      title: t("delivery"),
-      items: [
-        { key: "delivery-performance", title: t("deliveryPerformance"), description: t("deliveryPerformanceDescription"), href: "/dashboard/reports/delivery-performance", icon: Truck, tone: "blue" },
-        { key: "delivery-zones", title: t("deliveryZones"), description: t("deliveryZonesDescription"), href: "/dashboard/delivery-slots", icon: MapPin, tone: "blue" },
-      ],
-    },
-    {
-      key: "customers",
-      title: t("customers"),
-      items: [
-        { key: "customer-insights", title: t("customerInsights"), description: t("customerInsightsDescription"), href: "/dashboard/customers", icon: UserRound, tone: "violet" },
-        { key: "customer-segments", title: t("customerSegments"), description: t("customerSegmentsDescription"), href: "/dashboard/customers", icon: UsersRound, tone: "violet" },
-      ],
-    },
-    {
-      key: "exports",
-      title: t("exports"),
-      items: [
-        { key: "export-reports", title: t("exportReports"), description: t("exportReportsDescription"), href: "/api/admin/exports/orders", icon: FileSpreadsheet, tone: "green", download: true },
-      ],
-    },
-  ];
-
   return (
-    <div className="flex flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-4">
+      <nav aria-label={t("breadcrumbAria")} className="flex items-center gap-2 text-body-b10 text-muted-foreground">
+        <Link href="/dashboard/reports" className="hover:text-foreground">{t("heading")}</Link>
+        <ChevronRight className="size-3.5 rtl:rotate-180" aria-hidden />
+        <span className="font-medium text-foreground">{t("salesReport")}</span>
+      </nav>
+
       <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
-          <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
-          <p className="mt-1 text-body-b7 text-muted-foreground">{t("subtitle")}</p>
+          <h1 className="text-heading-h2 text-foreground">{t("salesReport")}</h1>
+          <p className="mt-1 text-body-b10 text-muted-foreground">{t("salesReportSubtitle")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 xl:justify-end">
           <AnalyticsRangePicker
@@ -133,67 +66,38 @@ export async function ReportsScreen({ from, to, isCustomRange, comparisonRange }
             reports={[
               { resource: "orders", label: tAnalytics("exportOrdersReport") },
               { resource: "products", label: tAnalytics("exportProductsReport") },
-              { resource: "customers", label: tAnalytics("exportCustomersReport") },
-              { resource: "inventory-movements", label: tAnalytics("exportInventoryReport") },
             ]}
           />
         </div>
       </header>
 
-      <div className="flex flex-col gap-4">
-        {groups.map((group) => (
-          <section key={group.key} aria-labelledby={`report-group-${group.key}`}>
-            <h2 id={`report-group-${group.key}`} className="mb-2 text-body-b5 text-foreground">{group.title}</h2>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {group.items.map((item) => <ReportCard key={item.key} item={item} fullWidth={group.items.length === 1} openAria={t("openReportAria", { report: item.title })} />)}
-            </div>
-          </section>
-        ))}
+      <SalesMetricGrid analytics={analytics} locale={locale} labels={{
+        revenue: tAnalytics("kpiNetRevenue"), orders: tAnalytics("kpiOrders"),
+        averageOrder: tAnalytics("kpiAverageOrder"), units: tAnalytics("kpiUnitsSold"),
+        comparison: tAnalytics("vsPreviousPeriod"), current: tAnalytics("currentPeriod"),
+      }} />
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(20rem,1fr)]">
+        <SalesTrendChart analytics={analytics} locale={locale} labels={{
+          heading: t("salesOverTime"), netSales: tAnalytics("kpiNetRevenue"), orders: tAnalytics("kpiOrders"),
+          daily: t("daily"), weekly: t("weekly"), monthly: t("monthly"), empty: tAnalytics("chartEmpty"),
+        }} />
+        <SalesChannelPanel revenue={analytics.totals.revenue} locale={locale} />
       </div>
 
-      <aside className="flex flex-col gap-4 rounded-card-lg border border-primary/20 bg-accent/60 p-4 sm:flex-row sm:items-center">
-        <span className="flex size-14 shrink-0 rotate-[-6deg] items-center justify-center rounded-card-lg border border-primary/20 bg-background text-primary shadow-card">
-          <Icon icon={ClipboardList} size="md" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <h2 className="text-body-b5 text-foreground">{t("needSomethingElse")}</h2>
-          <p className="mt-1 text-body-b8 text-muted-foreground">{t("requestDescription")}</p>
-        </div>
-        <a
-          href="mailto:support@yourapp.com?subject=Report%20request"
-          className={cn(focusRing, "inline-flex h-10 shrink-0 items-center justify-center rounded-input border border-primary/40 bg-background px-6 text-body-b7 font-semibold text-primary hover:bg-accent")}
-        >
-          {t("requestReport")}
-        </a>
-      </aside>
+      <SalesInsightBanner
+        currentRevenue={analytics.totals.revenue}
+        previousRevenue={analytics.previousTotals.revenue}
+        topCategory={analytics.topCategories[0]?.name}
+        locale={locale}
+      />
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(19rem,1fr)_minmax(0,2fr)]">
+        <SalesCategoryPanel categories={analytics.topCategories} totalRevenue={analytics.totals.revenue} locale={locale} />
+        <TopSellingProductsTable products={analytics.topProducts} totalRevenue={analytics.totals.revenue} locale={locale} />
+      </div>
+
+      <p className="sr-only">{t("netSalesDefinition", { amount: formatMoney(analytics.totals.revenue, locale) })}</p>
     </div>
   );
-}
-
-function ReportCard({ item, openAria, fullWidth }: { item: ReportItem; openAria: string; fullWidth: boolean }) {
-  const content = (
-    <>
-      <span className={cn("flex size-14 shrink-0 items-center justify-center rounded-card-lg", reportToneClass(item.tone))}>
-        <Icon icon={item.icon} size="md" />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-body-b5 text-foreground">{item.title}</span>
-        <span className="mt-1 block text-body-b8 text-muted-foreground">{item.description}</span>
-      </span>
-      <Icon icon={ChevronRight} size="sm" className="shrink-0 text-muted-foreground rtl:rotate-180" />
-    </>
-  );
-  const className = cn(focusRing, "group flex min-h-20 items-center gap-4 rounded-card-lg border border-border bg-background p-4 transition-colors hover:border-primary/30 hover:bg-surface-sunken/40", fullWidth && "md:col-span-2");
-
-  if (item.download) return <a href={item.href} download aria-label={openAria} className={className}>{content}</a>;
-  return <Link href={item.href} aria-label={openAria} className={className}>{content}</Link>;
-}
-
-function reportToneClass(tone: ReportTone): string {
-  return {
-    green: "bg-accent text-primary",
-    red: "bg-error text-destructive",
-    blue: "bg-info text-info-foreground",
-    violet: "bg-muted text-secondary",
-  }[tone];
 }
