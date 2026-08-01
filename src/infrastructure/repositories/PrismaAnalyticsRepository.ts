@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import {
   makeTotals,
+  previousPeriod,
   type AnalyticsGranularity,
   type AnalyticsTotals,
   type CustomerSegments,
@@ -16,6 +17,7 @@ import type { PaymentIssue, PaymentReportTotals } from "@/src/domain/entities/Pa
 import type { RefundCase, RefundReasonCount, RefundReportTotals } from "@/src/domain/entities/RefundReport";
 import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, DeliveryWindowPerformance, LateDelivery } from "@/src/domain/entities/DeliveryPerformanceReport";
 import type { CustomerGrowthPoint, PurchaseFrequency, RetentionCohort } from "@/src/domain/entities/CustomerInsightsReport";
+import type { CustomerSegmentId, CustomerSegmentPerformance } from "@/src/domain/entities/CustomerSegmentsReport";
 import type { RefundKind } from "@/src/domain/entities/Refund";
 import { ORDER_STATUSES, type OrderStatus } from "@/src/domain/entities/Order";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
@@ -606,6 +608,45 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     `);
     return rows.map((row) => ({ cohort: row.cohort.toISOString(), customers: row.customers, retention: [row.month0, row.month1, row.month2, row.month3, row.month4, row.month5] }));
   }
+
+  async customerSegmentPerformance(range: DateRange): Promise<CustomerSegmentPerformance[]> {
+    const inactivityBoundary = previousPeriod(range).from;
+    const rows = await this.db.$queryRaw<CustomerSegmentPerformanceRow[]>(Prisma.sql`
+      WITH refunds_by_order AS (
+        SELECT order_id, SUM(amount) AS amount FROM refunds GROUP BY order_id
+      ), recognized AS (
+        SELECT o.user_id, o.placed_at, GREATEST(o.total - COALESCE(r.amount, 0), 0) AS revenue
+        FROM orders o LEFT JOIN refunds_by_order r ON r.order_id = o.id
+        WHERE o.status NOT IN ('cancelled', 'refunded') AND o.placed_at < ${range.to}
+      ), stats AS (
+        SELECT user_id, COUNT(*)::int AS lifetime_orders, SUM(revenue)::double precision AS lifetime_revenue,
+          MIN(placed_at) AS first_order, MAX(placed_at) AS last_order,
+          MAX(placed_at) FILTER (WHERE placed_at < ${range.from}) AS previous_order,
+          COUNT(*) FILTER (WHERE placed_at >= ${range.from})::int AS period_orders,
+          COALESCE(SUM(revenue) FILTER (WHERE placed_at >= ${range.from}), 0)::double precision AS period_revenue
+        FROM recognized GROUP BY user_id
+      ), threshold AS (
+        SELECT COALESCE(percentile_cont(0.75) WITHIN GROUP (ORDER BY lifetime_revenue), 0)::double precision AS high_value FROM stats
+      ), classified AS (
+        SELECT s.*,
+          CASE
+            WHEN first_order >= ${range.from} THEN 'new_customers'
+            WHEN last_order < ${inactivityBoundary} THEN 'dormant'
+            WHEN last_order < ${range.from} THEN 'at_risk'
+            WHEN previous_order IS NOT NULL AND previous_order < ${inactivityBoundary} THEN 'reactivated'
+            WHEN lifetime_orders >= 3 AND lifetime_revenue >= t.high_value THEN 'high_value_loyal'
+            ELSE 'repeat_buyers'
+          END AS segment
+        FROM stats s CROSS JOIN threshold t
+      )
+      SELECT segment AS id, COUNT(*)::int AS customers,
+        COALESCE(SUM(period_revenue), 0)::double precision AS revenue,
+        COALESCE(SUM(period_orders), 0)::int AS orders,
+        COUNT(*) FILTER (WHERE lifetime_orders > 1)::int AS "repeatCustomers"
+      FROM classified GROUP BY segment
+    `);
+    return rows.map((row) => ({ ...row, id: row.id as CustomerSegmentId }));
+  }
 }
 
 /** The aggregate each {@link RevenueRankSort} orders by — see the callers' comments on why it's spelled out rather than aliased. */
@@ -716,6 +757,7 @@ type SegmentsRow = CustomerSegments;
 type CustomerGrowthRow = Omit<CustomerGrowthPoint, "bucket"> & { bucket: Date };
 type PurchaseFrequencyRow = PurchaseFrequency;
 type RetentionCohortRow = { cohort: Date; customers: number; month0: number; month1: number; month2: number; month3: number; month4: number; month5: number };
+type CustomerSegmentPerformanceRow = Omit<CustomerSegmentPerformance, "id"> & { id: string };
 type PaymentTotalsRow = PaymentReportTotals;
 type PaymentIssueRow = Omit<PaymentIssue, "placedAt"> & { placedAt: Date };
 type RefundTotalsRow = RefundReportTotals;

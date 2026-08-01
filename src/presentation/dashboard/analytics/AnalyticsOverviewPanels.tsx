@@ -182,15 +182,15 @@ export async function QuickAccessCard() {
             <Icon icon={ChevronRight} size="xs" className="text-muted-foreground rtl:rotate-180" />
           </Link>
         ))}
-        <a href="/api/admin/exports/orders" download className={cn(focusRing, "flex min-w-0 items-center gap-2 rounded-card-md px-1 py-1 text-body-b10 text-foreground hover:bg-muted")}>
+        <Link href="/dashboard/reports/exports" className={cn(focusRing, "flex min-w-0 items-center gap-2 rounded-card-md px-1 py-1 text-body-b10 text-foreground hover:bg-muted")}>
           <span className="flex size-7 shrink-0 items-center justify-center rounded-card-md bg-muted text-muted-foreground"><Icon icon={Download} size="xs" /></span>
           <span className="min-w-0 flex-1 truncate">{t("exportCenter")}</span>
           <Icon icon={ChevronRight} size="xs" className="text-muted-foreground rtl:rotate-180" />
-        </a>
+        </Link>
       </nav>
-      <a href="/api/admin/exports/orders" download className={cn(focusRing, "mt-auto flex h-8 items-center justify-center rounded-input border border-primary/40 text-body-b10 font-semibold text-primary hover:bg-accent")}>
+      <Link href="/dashboard/reports/exports" className={cn(focusRing, "mt-auto flex h-8 items-center justify-center rounded-input border border-primary/40 text-body-b10 font-semibold text-primary hover:bg-accent")}>
         {t("viewAllReports")}
-      </a>
+      </Link>
     </section>
   );
 }
