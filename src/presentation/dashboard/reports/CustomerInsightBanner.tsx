@@ -1,0 +1,14 @@
+import { Lightbulb } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "@/src/i18n/routing";
+import { formatMoney } from "@/src/lib/formatMoney";
+import { Icon } from "@/src/presentation/design-system";
+import type { CustomerInsightsWire } from "./customer-insights-response-schema";
+
+export async function CustomerInsightBanner({ report, locale }: { report: CustomerInsightsWire; locale: Locale }) {
+  const t = await getTranslations("dashCustomerInsights");
+  const returningRevenue = report.growth.reduce((sum, point) => sum + point.returningRevenue, 0);
+  const share = report.totals.revenue ? returningRevenue / report.totals.revenue : null;
+  const repeatValue = report.frequency.averageOrders;
+  return <aside className="flex items-center gap-4 rounded-card-lg border border-primary/20 bg-accent/45 px-4 py-3"><span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-background text-primary"><Icon icon={Lightbulb} size="sm" /></span><p className="text-body-b7">{share === null ? t("insightEmpty") : <><strong>{t("returningRevenueInsight", { percent: new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 }).format(share) })}</strong> {t("averageOrdersInsight", { count: new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(repeatValue), revenue: formatMoney(returningRevenue, locale) })}</>}</p></aside>;
+}

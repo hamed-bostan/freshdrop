@@ -15,6 +15,7 @@ import {
 import type { PaymentIssue, PaymentReportTotals } from "@/src/domain/entities/PaymentReport";
 import type { RefundCase, RefundReasonCount, RefundReportTotals } from "@/src/domain/entities/RefundReport";
 import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, DeliveryWindowPerformance, LateDelivery } from "@/src/domain/entities/DeliveryPerformanceReport";
+import type { CustomerGrowthPoint, PurchaseFrequency, RetentionCohort } from "@/src/domain/entities/CustomerInsightsReport";
 import type { RefundKind } from "@/src/domain/entities/Refund";
 import { ORDER_STATUSES, type OrderStatus } from "@/src/domain/entities/Order";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
@@ -521,6 +522,90 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
       repeatCustomers: row?.repeatCustomers ?? 0,
     };
   }
+
+  async customerGrowthSeries(range: DateRange, granularity: AnalyticsGranularity): Promise<CustomerGrowthPoint[]> {
+    const unit = Prisma.raw(assertGranularity(granularity));
+    const rows = await this.db.$queryRaw<CustomerGrowthRow[]>(Prisma.sql`
+      WITH buckets AS (
+        SELECT generate_series(date_trunc('${unit}', ${range.from}::timestamp), ${range.to}::timestamp - interval '1 microsecond', '1 ${unit}'::interval) AS bucket
+      ), range_customers AS (
+        SELECT DISTINCT o.user_id FROM orders o
+        WHERE o.status NOT IN ('cancelled', 'refunded') AND o.placed_at >= ${range.from} AND o.placed_at < ${range.to}
+      ), first_orders AS (
+        SELECT o.user_id, MIN(o.placed_at) AS first_order_at FROM orders o
+        WHERE o.status NOT IN ('cancelled', 'refunded') AND o.user_id IN (SELECT user_id FROM range_customers)
+        GROUP BY o.user_id
+      ), period_orders AS (
+        SELECT o.user_id, o.placed_at, o.total - COALESCE(refunds.amount, 0) AS revenue, f.first_order_at
+        FROM orders o JOIN first_orders f ON f.user_id = o.user_id
+        LEFT JOIN (SELECT order_id, SUM(amount) AS amount FROM refunds GROUP BY order_id) refunds ON refunds.order_id = o.id
+        WHERE o.status NOT IN ('cancelled', 'refunded') AND o.placed_at >= ${range.from} AND o.placed_at < ${range.to}
+      )
+      SELECT b.bucket,
+        COUNT(DISTINCT p.user_id) FILTER (WHERE date_trunc('${unit}', p.first_order_at) = b.bucket)::int AS "newCustomers",
+        COUNT(DISTINCT p.user_id) FILTER (WHERE date_trunc('${unit}', p.first_order_at) < b.bucket)::int AS "returningCustomers",
+        COALESCE(SUM(p.revenue) FILTER (WHERE date_trunc('${unit}', p.first_order_at) = b.bucket), 0)::double precision AS "newRevenue",
+        COALESCE(SUM(p.revenue) FILTER (WHERE date_trunc('${unit}', p.first_order_at) < b.bucket), 0)::double precision AS "returningRevenue"
+      FROM buckets b LEFT JOIN period_orders p ON date_trunc('${unit}', p.placed_at) = b.bucket
+      GROUP BY b.bucket ORDER BY b.bucket
+    `);
+    return rows.map((row) => ({ ...row, bucket: row.bucket.toISOString() }));
+  }
+
+  async purchaseFrequency(range: DateRange): Promise<PurchaseFrequency> {
+    const rows = await this.db.$queryRaw<PurchaseFrequencyRow[]>(Prisma.sql`
+      WITH period_orders AS (
+        SELECT o.user_id, o.placed_at,
+          LAG(o.placed_at) OVER (PARTITION BY o.user_id ORDER BY o.placed_at) AS previous_at
+        FROM orders o
+        WHERE o.status NOT IN ('cancelled', 'refunded') AND o.placed_at >= ${range.from} AND o.placed_at < ${range.to}
+      ), customer_counts AS (
+        SELECT user_id, COUNT(*)::int AS orders FROM period_orders GROUP BY user_id
+      ), cadence AS (
+        SELECT AVG(EXTRACT(EPOCH FROM (placed_at - previous_at)) / 86400)::double precision AS days
+        FROM period_orders WHERE previous_at IS NOT NULL
+      )
+      SELECT COUNT(*) FILTER (WHERE orders = 1)::int AS "oneOrder",
+        COUNT(*) FILTER (WHERE orders BETWEEN 2 AND 3)::int AS "twoToThreeOrders",
+        COUNT(*) FILTER (WHERE orders BETWEEN 4 AND 6)::int AS "fourToSixOrders",
+        COUNT(*) FILTER (WHERE orders >= 7)::int AS "sevenPlusOrders",
+        COALESCE(AVG(orders), 0)::double precision AS "averageOrders",
+        (SELECT days FROM cadence) AS "averageDaysBetweenOrders"
+      FROM customer_counts
+    `);
+    return rows[0] ?? { oneOrder: 0, twoToThreeOrders: 0, fourToSixOrders: 0, sevenPlusOrders: 0, averageOrders: 0, averageDaysBetweenOrders: null };
+  }
+
+  async retentionCohorts(range: DateRange, limit: number): Promise<RetentionCohort[]> {
+    const safeLimit = Math.max(1, Math.min(limit, 12));
+    const rows = await this.db.$queryRaw<RetentionCohortRow[]>(Prisma.sql`
+      WITH customer_months AS (
+        SELECT DISTINCT o.user_id, date_trunc('month', o.placed_at) AS activity_month
+        FROM orders o WHERE o.status NOT IN ('cancelled', 'refunded')
+      ), first_months AS (
+        SELECT user_id, MIN(activity_month) AS cohort FROM customer_months GROUP BY user_id
+      ), selected_cohorts AS (
+        SELECT DISTINCT cohort FROM first_months
+        WHERE cohort < date_trunc('month', ${range.to}::timestamp)
+        ORDER BY cohort DESC LIMIT ${safeLimit}
+      ), selected AS (
+        SELECT f.* FROM first_months f JOIN selected_cohorts c ON c.cohort = f.cohort
+      ), activity AS (
+        SELECT s.user_id, s.cohort,
+          ((EXTRACT(YEAR FROM c.activity_month) - EXTRACT(YEAR FROM s.cohort)) * 12 + EXTRACT(MONTH FROM c.activity_month) - EXTRACT(MONTH FROM s.cohort))::int AS month_index
+        FROM selected s JOIN customer_months c ON c.user_id = s.user_id
+      )
+      SELECT a.cohort, COUNT(DISTINCT a.user_id)::int AS customers,
+        COUNT(DISTINCT a.user_id) FILTER (WHERE a.month_index = 0)::double precision / NULLIF(COUNT(DISTINCT a.user_id), 0) AS month0,
+        COUNT(DISTINCT a.user_id) FILTER (WHERE a.month_index = 1)::double precision / NULLIF(COUNT(DISTINCT a.user_id), 0) AS month1,
+        COUNT(DISTINCT a.user_id) FILTER (WHERE a.month_index = 2)::double precision / NULLIF(COUNT(DISTINCT a.user_id), 0) AS month2,
+        COUNT(DISTINCT a.user_id) FILTER (WHERE a.month_index = 3)::double precision / NULLIF(COUNT(DISTINCT a.user_id), 0) AS month3,
+        COUNT(DISTINCT a.user_id) FILTER (WHERE a.month_index = 4)::double precision / NULLIF(COUNT(DISTINCT a.user_id), 0) AS month4,
+        COUNT(DISTINCT a.user_id) FILTER (WHERE a.month_index = 5)::double precision / NULLIF(COUNT(DISTINCT a.user_id), 0) AS month5
+      FROM activity a GROUP BY a.cohort ORDER BY a.cohort ASC
+    `);
+    return rows.map((row) => ({ cohort: row.cohort.toISOString(), customers: row.customers, retention: [row.month0, row.month1, row.month2, row.month3, row.month4, row.month5] }));
+  }
 }
 
 /** The aggregate each {@link RevenueRankSort} orders by — see the callers' comments on why it's spelled out rather than aliased. */
@@ -628,6 +713,9 @@ type StatusRow = { status: OrderStatus; orders: number; revenue: number };
 type TopProductRow = TopProduct;
 type TopCategoryRow = TopCategory;
 type SegmentsRow = CustomerSegments;
+type CustomerGrowthRow = Omit<CustomerGrowthPoint, "bucket"> & { bucket: Date };
+type PurchaseFrequencyRow = PurchaseFrequency;
+type RetentionCohortRow = { cohort: Date; customers: number; month0: number; month1: number; month2: number; month3: number; month4: number; month5: number };
 type PaymentTotalsRow = PaymentReportTotals;
 type PaymentIssueRow = Omit<PaymentIssue, "placedAt"> & { placedAt: Date };
 type RefundTotalsRow = RefundReportTotals;

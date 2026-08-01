@@ -13,6 +13,7 @@ import type {
 import type { PaymentIssue, PaymentReportTotals } from "../entities/PaymentReport";
 import type { RefundCase, RefundReasonCount, RefundReportTotals } from "../entities/RefundReport";
 import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, DeliveryWindowPerformance, LateDelivery } from "../entities/DeliveryPerformanceReport";
+import type { CustomerGrowthPoint, PurchaseFrequency, RetentionCohort } from "../entities/CustomerInsightsReport";
 
 /**
  * Read access to the store's aggregates.
@@ -149,6 +150,9 @@ export type IAnalyticsRepository = {
    * enough to know that.
    */
   customerSegments(range: DateRange): Promise<CustomerSegments>;
+  customerGrowthSeries(range: DateRange, granularity: AnalyticsGranularity): Promise<CustomerGrowthPoint[]>;
+  purchaseFrequency(range: DateRange): Promise<PurchaseFrequency>;
+  retentionCohorts(range: DateRange, limit: number): Promise<RetentionCohort[]>;
 
   /**
    * How many orders are in each `(status, stage)` pair right now — one `GROUP BY`

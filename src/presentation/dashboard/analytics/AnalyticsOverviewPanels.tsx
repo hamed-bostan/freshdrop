@@ -165,10 +165,10 @@ export async function BusinessHealthCard({ analytics }: { analytics: AnalyticsOv
 export async function QuickAccessCard() {
   const t = await getTranslations("dashAnalytics");
   const items = [
-    { label: t("salesReport"), href: "/dashboard/orders", icon: BarChart3 },
-    { label: t("refundsReturns"), href: "/dashboard/orders?pipeline=return_requested", icon: RefreshCcw },
-    { label: t("deliveryPerformance"), href: "/dashboard/orders?pipeline=out_for_delivery", icon: Truck },
-    { label: t("customerInsights"), href: "/dashboard/customers", icon: Users },
+    { label: t("salesReport"), href: "/dashboard/reports", icon: BarChart3 },
+    { label: t("refundsReturns"), href: "/dashboard/reports/refunds", icon: RefreshCcw },
+    { label: t("deliveryPerformance"), href: "/dashboard/reports/delivery-performance", icon: Truck },
+    { label: t("customerInsights"), href: "/dashboard/reports/customer-insights", icon: Users },
   ] as const;
 
   return (
