@@ -38,10 +38,11 @@ export async function RefundsReturnsScreen({ report, customers, from, to, isCust
     amount: formatMoney(item.amount, locale),
     status: item.status,
     statusLabel: t(`caseStatus.${item.status}`),
+    resolution: t(`resolution.${item.status}`),
     date: `${formatOrderDateShort(item.activityAt, locale)} · ${formatOrderTime(item.activityAt, locale)}`,
   }));
   const tableLabels = {
-    search: t("searchReturns"), status: t("filterStatus"), all: t("filterAll"), product: t("product"), order: t("order"), customer: t("customer"), reason: t("reason"), amount: t("amountColumn"), received: t("date"), action: t("action"), view: t("view"), empty: t("noCases"),
+    search: t("searchReturns"), filterStatus: t("filterStatus"), status: t("statusColumn"), all: t("filterAll"), product: t("product"), order: t("order"), customer: t("customer"), reason: t("reason"), amount: t("amountColumn"), resolution: t("resolutionColumn"), date: t("date"), viewAll: t("viewAll"), moreActions: t("moreActions"), empty: t("noCases"),
   };
 
   return <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-4">
@@ -50,14 +51,14 @@ export async function RefundsReturnsScreen({ report, customers, from, to, isCust
     <nav className="flex border-b border-border" aria-label={t("viewTabsLabel")}><ReportTab active={view === "overview"} href={viewHref(queryString, "overview")} label={t("overview")} /><ReportTab active={view === "items"} href={viewHref(queryString, "items")} label={t("itemsRecovery")} /></nav>
     {view === "overview" ? <>
       <RefundOverviewMetricGrid report={report} locale={locale} />
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(20rem,.85fr)]"><RefundTrendChart points={report.series} previousPoints={report.previousSeries} granularity={report.granularity} range={report.range} previousRange={report.previousRange} title={t("overviewTrend")} defaultMetric="amount" /><ReturnReasonsPanel reasons={report.reasons} total={report.totals.refundCount} locale={locale} /></div>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(17rem,.72fr)_minmax(17rem,.72fr)]"><RefundTrendChart points={report.series} previousPoints={report.previousSeries} granularity={report.granularity} range={report.range} previousRange={report.previousRange} title={t("overviewTrend")} defaultMetric="amount" /><ReturnReasonsPanel reasons={report.reasons} total={report.totals.refundCount} locale={locale} /><ReturnProcessingStatus totals={report.totals} locale={locale} /></div>
       <ReturnInsightBanner report={report} locale={locale} />
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(17rem,.7fr)]"><ReturnCasesTable rows={rows} labels={{ ...tableLabels, heading: t("recentCases") }} /><ReturnProcessingStatus totals={report.totals} locale={locale} /></div>
+      <ReturnCasesTable rows={rows} labels={{ ...tableLabels, heading: t("recentCases") }} viewAllHref={viewHref(queryString, "items")} />
     </> : <>
       <ReturnMetricGrid report={report} locale={locale} />
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(20rem,.85fr)]"><RefundTrendChart points={report.series} previousPoints={report.previousSeries} granularity={report.granularity} range={report.range} previousRange={report.previousRange} title={t("returnedItemsOverTime")} /><ReturnProcessingStatus totals={report.totals} locale={locale} /></div>
       <ReturnInsightBanner report={report} locale={locale} />
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(20rem,.8fr)]"><ReturnCasesTable rows={rows} labels={{ ...tableLabels, heading: t("returnQueue") }} /><ReturnReasonsPanel reasons={report.reasons} total={report.totals.refundCount} locale={locale} /></div>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(20rem,.8fr)]"><ReturnCasesTable rows={rows} labels={{ ...tableLabels, heading: t("returnQueue") }} viewAllHref="/dashboard/orders" /><ReturnReasonsPanel reasons={report.reasons} total={report.totals.refundCount} locale={locale} /></div>
     </>}
   </div>;
 }

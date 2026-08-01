@@ -3,6 +3,8 @@ import type { RefundKind } from "./Refund";
 
 export type RefundReportTotals = {
   refundedAmount: number;
+  /** Value of merchandise physically returned and available for recovery. */
+  recoverableValue: number;
   refundCount: number;
   returnedItems: number;
   cancelledOrders: number;

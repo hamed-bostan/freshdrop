@@ -989,12 +989,12 @@
     "returnedItemsOverTime": "Returned items over time", "intervalLabel": "Chart interval", "items": "Items", "value": "Value", "day": "Daily", "week": "Weekly", "month": "Monthly",
     "insightEmpty": "Return insights will appear once return activity is recorded.", "resolvedInsight": "{percent} of tracked return requests are resolved.", "refundedInsight": "Refunded value is {amount}.",
     "returnQueue": "Return item queue", "searchReturns": "Search product or order", "filterStatus": "Status", "filterAll": "Status: All", "processingStatus": "Processing status", "action": "Action", "view": "View",
-    "refundedAmount": "Refunded amount", "refundRate": "Refund rate", "returnedItems": "Returned items", "cancelledOrders": "Cancelled orders", "vsPreviousPeriod": "vs previous period",
+    "refundedAmount": "Refunded amount", "refundRate": "Refund rate", "returnedItems": "Returned items", "recoverableValue": "Recoverable value", "cancelledOrders": "Cancelled orders", "vsPreviousPeriod": "vs previous period",
     "refundsOverTime": "Refunds over time", "metricLabel": "Refund chart metric", "amount": "Refunded amount", "count": "Refund count", "currentValue": "This period: {value}", "previousValue": "Previous period: {value}",
-    "reasons": "Refund reasons", "noReasons": "No refund reasons in this period.", "status": "Return status", "requested": "Requested", "refunded": "Refunded", "cancelled": "Cancelled",
+    "reasons": "Refund reasons", "refundShare": "% of refunds", "noReasons": "No refund reasons in this period.", "status": "Return status", "requested": "Requested", "refunded": "Refunded", "cancelled": "Cancelled",
     "topReasonInsight": "is the leading refund reason, accounting for {percent} of refunds.", "viewReturns": "View returns", "recentCases": "Recent refund & return cases", "viewAll": "View all",
-    "order": "Order", "product": "Product", "customer": "Customer", "reason": "Reason", "amountColumn": "Refund amount", "statusColumn": "Status", "date": "Date", "notAvailable": "Not available", "noCases": "No refund or return cases in this period.",
-    "kind": { "cancellation": "Cancellation", "return": "Return", "substitution": "Substitution", "manual": "Manual adjustment" }, "caseStatus": { "return_requested": "Requested", "refunded": "Refunded", "cancelled": "Cancelled" }
+    "order": "Order", "product": "Product", "customer": "Customer", "reason": "Reason", "amountColumn": "Refund amount", "statusColumn": "Return status", "resolutionColumn": "Resolution", "moreActions": "Open case", "date": "Date", "notAvailable": "Not available", "noCases": "No refund or return cases in this period.",
+    "kind": { "cancellation": "Cancellation", "return": "Return", "substitution": "Substitution", "manual": "Manual adjustment" }, "caseStatus": { "return_requested": "Requested", "refunded": "Refunded", "cancelled": "Cancelled" }, "resolution": { "return_requested": "Pending review", "refunded": "Refunded", "cancelled": "Return rejected" }
   },
   "dashCustomerInsights": {
     "reports": "Reports", "heading": "Customer insights", "subtitle": "Understand customer growth, retention, and long-term value.", "breadcrumbAria": "Breadcrumb",

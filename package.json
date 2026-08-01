@@ -18,7 +18,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:seed:slots": "tsx scripts/seed-delivery-slots.ts"
+    "db:seed:slots": "tsx scripts/seed-delivery-slots.ts",
+    "db:seed:refunds": "tsx scripts/seed-refund-report.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

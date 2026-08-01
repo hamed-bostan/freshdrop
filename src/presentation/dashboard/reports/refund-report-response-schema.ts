@@ -1,5 +1,5 @@
 import { z } from "zod";
-const totals = z.object({ refundedAmount: z.number(), refundCount: z.number(), returnedItems: z.number(), cancelledOrders: z.number(), requestedReturns: z.number(), returnedOrders: z.number(), ordersInPeriod: z.number() });
+const totals = z.object({ refundedAmount: z.number(), recoverableValue: z.number(), refundCount: z.number(), returnedItems: z.number(), cancelledOrders: z.number(), requestedReturns: z.number(), returnedOrders: z.number(), ordersInPeriod: z.number() });
 const range = z.object({ from: z.string(), to: z.string() });
 const series = z.array(z.object({ bucket: z.string(), revenue: z.number(), orders: z.number() }));
 export const refundReportResponseSchema = z.object({

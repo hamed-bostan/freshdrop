@@ -328,6 +328,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     const rows = await this.db.$queryRaw<RefundTotalsRow[]>(Prisma.sql`
       SELECT
         COALESCE(SUM(r.amount), 0)::double precision AS "refundedAmount",
+        COALESCE(SUM(r.amount) FILTER (WHERE r.kind = 'return'), 0)::double precision AS "recoverableValue",
         COUNT(*)::int AS "refundCount",
         COALESCE(SUM(lines.units), 0)::int AS "returnedItems",
         COUNT(*) FILTER (WHERE r.kind = 'cancellation')::int AS "cancelledOrders",
@@ -816,7 +817,7 @@ function emptyPaymentTotals(): PaymentReportTotals {
   return { paidRevenue: 0, successfulPayments: 0, failedPayments: 0, pendingPayments: 0, refundedPayments: 0, walletAmount: 0, externalAmount: 0 };
 }
 
-function emptyRefundTotals(): RefundReportTotals { return { refundedAmount: 0, refundCount: 0, returnedItems: 0, cancelledOrders: 0, requestedReturns: 0, returnedOrders: 0, ordersInPeriod: 0 }; }
+function emptyRefundTotals(): RefundReportTotals { return { refundedAmount: 0, recoverableValue: 0, refundCount: 0, returnedItems: 0, cancelledOrders: 0, requestedReturns: 0, returnedOrders: 0, ordersInPeriod: 0 }; }
 function toRevenuePoint(row: SeriesRow): RevenuePoint { return { bucket: row.bucket.toISOString(), revenue: row.revenue, orders: row.orders }; }
 
 function deliveryEvents(range: DateRange): Prisma.Sql {

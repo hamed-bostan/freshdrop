@@ -982,6 +982,7 @@
     "noIssues": "در این دوره پرداخت ناموفق یا بازپرداخت‌شده‌ای وجود ندارد."
   },
   "dashRefundReport": {
+    "recoverableValue": "ارزش قابل بازیابی", "refundShare": "٪ از بازپرداخت‌ها", "resolutionColumn": "نتیجه", "moreActions": "باز کردن پرونده", "resolution": { "return_requested": "در انتظار بررسی", "refunded": "بازپرداخت‌شده", "cancelled": "مرجوعی رد شد" },
     "combinedSubtitle": "تأثیر بازپرداخت، فعالیت مرجوعی و نتایج بازیابی را پایش کنید.", "viewTabsLabel": "نمای گزارش بازپرداخت", "overview": "نمای کلی", "itemsRecovery": "اقلام و بازیابی", "overviewTrend": "بازپرداخت‌ها و مرجوعی‌ها در گذر زمان",
     "reports": "گزارش‌ها", "heading": "بازپرداخت‌ها و مرجوعی‌ها", "subtitle": "فعالیت بازپرداخت و مرجوعی را برای کاهش زیان و بهبود تجربه مشتری دنبال کنید.", "breadcrumbAria": "مسیر صفحه",
     "returnItemsHeading": "اقلام مرجوعی", "returnItemsSubtitle": "موجودی مرجوعی، فعالیت بازپرداخت و نتایج رسیدگی را دنبال کنید.",
