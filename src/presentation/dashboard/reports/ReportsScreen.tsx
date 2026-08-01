@@ -1,5 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { ChartNoAxesCombined, ClipboardList, CreditCard, FileSpreadsheet, MapPin, PackageX, RefreshCcw, Truck, UserRound, UsersRound } from "lucide-react";
+import { ChartNoAxesCombined, ClipboardList, CreditCard, FileSpreadsheet, MapPin, RefreshCcw, Truck, UserRound, UsersRound } from "lucide-react";
 import { ANALYTICS_RANGE_PRESETS } from "@/src/domain/entities/Analytics";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import type { Locale } from "@/src/i18n/routing";
@@ -21,7 +21,6 @@ export async function ReportsScreen({ from, to, isCustomRange, comparisonRange }
     ] },
     { id: "returns", title: t("returnsRefunds"), items: [
       { id: "refunds", title: t("refundsReturns"), description: t("refundsReturnsDescription"), href: "/dashboard/reports/refunds", icon: RefreshCcw, tone: "red" },
-      { id: "return-items", title: t("returnItems"), description: t("returnItemsDescription"), href: "/dashboard/reports/refunds", icon: PackageX, tone: "red" },
     ] },
     { id: "delivery", title: t("delivery"), items: [
       { id: "delivery-performance", title: t("deliveryPerformance"), description: t("deliveryPerformanceDescription"), href: "/dashboard/reports/delivery-performance", icon: Truck, tone: "blue" },

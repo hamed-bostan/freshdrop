@@ -917,7 +917,7 @@
     "noSales": "No sales in this period.",
     "netSalesDefinition": "Net sales for this period are {amount}.",
     "sales": "Sales",
-    "returnsRefunds": "Returns & refunds",
+    "returnsRefunds": "Refunds & returns",
     "delivery": "Delivery",
     "customers": "Customers",
     "exports": "Exports",
@@ -926,7 +926,7 @@
     "salesReport": "Sales report",
     "salesReportDescription": "Detailed breakdown of sales over time with filters and comparisons.",
     "refundsReturns": "Refunds & returns",
-    "refundsReturnsDescription": "View refund reasons, returned items and refund amounts.",
+    "refundsReturnsDescription": "Analyze refund trends, return reasons, item processing, and recovery outcomes.",
     "returnItems": "Return items",
     "returnItemsDescription": "See all returned products and their status.",
     "deliveryPerformance": "Delivery performance",
@@ -982,7 +982,8 @@
     "noIssues": "No failed or refunded payments in this period."
   },
   "dashRefundReport": {
-    "reports": "Reports", "heading": "Refunds & returns", "subtitle": "Track refund and return activity to reduce losses and improve customer experience.", "breadcrumbAria": "Breadcrumb",
+    "reports": "Reports", "heading": "Refunds & returns", "subtitle": "Track refund and return activity to reduce losses and improve customer experience.", "combinedSubtitle": "Monitor refund impact, return activity, and recovery outcomes.", "breadcrumbAria": "Breadcrumb",
+    "viewTabsLabel": "Refund report view", "overview": "Overview", "itemsRecovery": "Items & recovery", "overviewTrend": "Refunds & returns over time",
     "returnItemsHeading": "Return items", "returnItemsSubtitle": "Track returned inventory, refund activity, and resolution outcomes.",
     "returnRate": "Return rate", "refundedValue": "Refunded value", "openRequests": "Open requests", "currentPeriod": "Current period",
     "returnedItemsOverTime": "Returned items over time", "intervalLabel": "Chart interval", "items": "Items", "value": "Value", "day": "Daily", "week": "Weekly", "month": "Monthly",

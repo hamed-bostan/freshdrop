@@ -917,7 +917,7 @@
     "noSales": "در این بازه فروشی ثبت نشده است.",
     "netSalesDefinition": "فروش خالص این دوره {amount} است.",
     "sales": "فروش",
-    "returnsRefunds": "مرجوعی‌ها و بازپرداخت‌ها",
+    "returnsRefunds": "بازپرداخت‌ها و مرجوعی‌ها",
     "delivery": "تحویل",
     "customers": "مشتریان",
     "exports": "خروجی‌ها",
@@ -926,7 +926,7 @@
     "salesReport": "گزارش فروش",
     "salesReportDescription": "جزئیات فروش در طول زمان همراه با فیلترها و مقایسه‌ها.",
     "refundsReturns": "بازپرداخت‌ها و مرجوعی‌ها",
-    "refundsReturnsDescription": "دلایل بازپرداخت، اقلام مرجوعی و مبالغ بازپرداخت را مشاهده کنید.",
+    "refundsReturnsDescription": "روند بازپرداخت، دلایل مرجوعی، پردازش اقلام و نتایج بازیابی را تحلیل کنید.",
     "returnItems": "اقلام مرجوعی",
     "returnItemsDescription": "همه محصولات مرجوعی و وضعیت آن‌ها را مشاهده کنید.",
     "deliveryPerformance": "عملکرد تحویل",
@@ -982,6 +982,7 @@
     "noIssues": "در این دوره پرداخت ناموفق یا بازپرداخت‌شده‌ای وجود ندارد."
   },
   "dashRefundReport": {
+    "combinedSubtitle": "تأثیر بازپرداخت، فعالیت مرجوعی و نتایج بازیابی را پایش کنید.", "viewTabsLabel": "نمای گزارش بازپرداخت", "overview": "نمای کلی", "itemsRecovery": "اقلام و بازیابی", "overviewTrend": "بازپرداخت‌ها و مرجوعی‌ها در گذر زمان",
     "reports": "گزارش‌ها", "heading": "بازپرداخت‌ها و مرجوعی‌ها", "subtitle": "فعالیت بازپرداخت و مرجوعی را برای کاهش زیان و بهبود تجربه مشتری دنبال کنید.", "breadcrumbAria": "مسیر صفحه",
     "returnItemsHeading": "اقلام مرجوعی", "returnItemsSubtitle": "موجودی مرجوعی، فعالیت بازپرداخت و نتایج رسیدگی را دنبال کنید.",
     "returnRate": "نرخ مرجوعی", "refundedValue": "ارزش بازپرداخت‌شده", "openRequests": "درخواست‌های باز", "currentPeriod": "دوره جاری",
