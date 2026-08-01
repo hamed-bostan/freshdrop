@@ -25,7 +25,7 @@ export async function ReportsScreen({ from, to, isCustomRange, comparisonRange }
     ] },
     { id: "delivery", title: t("delivery"), items: [
       { id: "delivery-performance", title: t("deliveryPerformance"), description: t("deliveryPerformanceDescription"), href: "/dashboard/reports/delivery-performance", icon: Truck, tone: "blue" },
-      { id: "delivery-zones", title: t("deliveryZones"), description: t("deliveryZonesDescription"), href: "/dashboard/reports/delivery-performance", icon: MapPin, tone: "blue" },
+      { id: "delivery-zones", title: t("deliveryZones"), description: t("deliveryZonesDescription"), href: "/dashboard/reports/delivery-zones", icon: MapPin, tone: "blue" },
     ] },
     { id: "customers", title: t("customers"), items: [
       { id: "customer-insights", title: t("customerInsights"), description: t("customerInsightsDescription"), href: "/dashboard/reports/customer-insights", icon: UserRound, tone: "violet" },
