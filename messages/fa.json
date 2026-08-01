@@ -966,6 +966,7 @@
     "order": "سفارش", "product": "محصول", "customer": "مشتری", "reason": "دلیل", "amountColumn": "مبلغ بازپرداخت", "statusColumn": "وضعیت", "date": "تاریخ", "notAvailable": "ناموجود", "noCases": "در این دوره مورد بازپرداخت یا مرجوعی وجود ندارد.",
     "kind": { "cancellation": "لغو", "return": "مرجوعی", "substitution": "جایگزینی", "manual": "اصلاح دستی" }, "caseStatus": { "return_requested": "درخواست‌شده", "refunded": "بازپرداخت‌شده", "cancelled": "لغوشده" }
   },
+  "dashDeliveryReport": { "reports":"گزارش‌ها", "heading":"عملکرد تحویل", "subtitle":"کارایی تحویل و عملکرد بازه‌های زمانی سفارش‌های تکمیل‌شده را دنبال کنید.", "onTimeRate":"نرخ تحویل به‌موقع", "averageTime":"میانگین بازه تحویل", "lateDeliveries":"تحویل‌های دیرهنگام", "deliveredOrders":"سفارش‌های تحویل‌شده", "minutesValue":"{value} دقیقه", "vsPrevious":"نسبت به دوره قبل", "trend":"روند تحویل در گذر زمان", "windowPerformance":"عملکرد بازه‌های تحویل", "window":"بازه تحویل", "orders":"سفارش‌ها", "change":"نسبت به قبل", "lateOrders":"تحویل‌های دیرهنگام اخیر", "order":"سفارش", "customer":"مشتری", "delay":"تأخیر", "deliveredAt":"زمان ثبت تکمیل", "noData":"در این دوره تحویل تکمیل‌شده‌ای وجود ندارد.", "noLateOrders":"در این دوره تحویل دیرهنگامی وجود ندارد." },
   "dashCategories": {
     "heading": "دسته‌بندی‌ها",
     "count": "{count, plural, other {# دسته‌بندی}}",

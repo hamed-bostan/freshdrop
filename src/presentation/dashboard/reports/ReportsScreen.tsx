@@ -81,7 +81,7 @@ export async function ReportsScreen({ from, to, isCustomRange, comparisonRange }
       key: "delivery",
       title: t("delivery"),
       items: [
-        { key: "delivery-performance", title: t("deliveryPerformance"), description: t("deliveryPerformanceDescription"), href: "/dashboard/orders?pipeline=out_for_delivery", icon: Truck, tone: "blue" },
+        { key: "delivery-performance", title: t("deliveryPerformance"), description: t("deliveryPerformanceDescription"), href: "/dashboard/reports/delivery-performance", icon: Truck, tone: "blue" },
         { key: "delivery-zones", title: t("deliveryZones"), description: t("deliveryZonesDescription"), href: "/dashboard/delivery-slots", icon: MapPin, tone: "blue" },
       ],
     },

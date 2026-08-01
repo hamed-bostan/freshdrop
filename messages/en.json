@@ -966,6 +966,7 @@
     "order": "Order", "product": "Product", "customer": "Customer", "reason": "Reason", "amountColumn": "Refund amount", "statusColumn": "Status", "date": "Date", "notAvailable": "Not available", "noCases": "No refund or return cases in this period.",
     "kind": { "cancellation": "Cancellation", "return": "Return", "substitution": "Substitution", "manual": "Manual adjustment" }, "caseStatus": { "return_requested": "Requested", "refunded": "Refunded", "cancelled": "Cancelled" }
   },
+  "dashDeliveryReport": { "reports":"Reports", "heading":"Delivery performance", "subtitle":"Track delivery efficiency and schedule performance across completed orders.", "onTimeRate":"On-time delivery rate", "averageTime":"Average delivery window", "lateDeliveries":"Late deliveries", "deliveredOrders":"Delivered orders", "minutesValue":"{value} min", "vsPrevious":"vs previous period", "trend":"Delivery trend over time", "windowPerformance":"Delivery window performance", "window":"Delivery window", "orders":"Orders", "change":"vs previous", "lateOrders":"Recent late deliveries", "order":"Order", "customer":"Customer", "delay":"Delay", "deliveredAt":"Completion recorded", "noData":"No completed deliveries in this period.", "noLateOrders":"No late deliveries in this period." },
   "dashCategories": {
     "heading": "Categories",
     "count": "{count, plural, one {# category} other {# categories}}",

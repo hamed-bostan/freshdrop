@@ -14,6 +14,7 @@ import {
 } from "@/src/domain/entities/Analytics";
 import type { PaymentIssue, PaymentReportTotals } from "@/src/domain/entities/PaymentReport";
 import type { RefundCase, RefundReasonCount, RefundReportTotals } from "@/src/domain/entities/RefundReport";
+import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, DeliveryWindowPerformance, LateDelivery } from "@/src/domain/entities/DeliveryPerformanceReport";
 import type { RefundKind } from "@/src/domain/entities/Refund";
 import { ORDER_STATUSES, type OrderStatus } from "@/src/domain/entities/Order";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
@@ -413,6 +414,26 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     return rows.map((row) => ({ ...row, kind: row.kind as RefundKind | null, status: row.status as RefundCase["status"], activityAt: row.activityAt.toISOString() }));
   }
 
+  async deliveryTotals(range: DateRange): Promise<DeliveryPerformanceTotals> {
+    const rows = await this.db.$queryRaw<DeliveryTotalsRow[]>(Prisma.sql`SELECT COUNT(*)::int AS "deliveredOrders", COUNT(*) FILTER (WHERE due_at IS NOT NULL AND delivered_at <= due_at)::int AS "onTimeOrders", COUNT(*) FILTER (WHERE due_at IS NOT NULL AND delivered_at > due_at)::int AS "lateDeliveries", COALESCE(ROUND(AVG(window_minutes)), 0)::int AS "averageMinutes" FROM (${deliveryEvents(range)}) deliveries`);
+    return rows[0] ?? { deliveredOrders: 0, onTimeOrders: 0, lateDeliveries: 0, averageMinutes: 0 };
+  }
+
+  async deliverySeries(range: DateRange, granularity: AnalyticsGranularity): Promise<DeliveryPerformancePoint[]> {
+    const unit = Prisma.raw(assertGranularity(granularity));
+    const rows = await this.db.$queryRaw<DeliveryPointRow[]>(Prisma.sql`WITH buckets AS (SELECT generate_series(date_trunc('${unit}', ${range.from}::timestamp), ${range.to}::timestamp - interval '1 microsecond', '1 ${unit}'::interval) AS bucket), deliveries AS (${deliveryEvents(range)}) SELECT b.bucket, COUNT(d.order_id)::int AS "deliveredOrders", COALESCE(COUNT(d.order_id) FILTER (WHERE d.due_at IS NOT NULL AND d.delivered_at <= d.due_at)::double precision / NULLIF(COUNT(d.order_id) FILTER (WHERE d.due_at IS NOT NULL), 0), 0) AS "onTimeRate", COALESCE(ROUND(AVG(d.window_minutes)), 0)::int AS "averageMinutes" FROM buckets b LEFT JOIN deliveries d ON date_trunc('${unit}', d.delivered_at) = b.bucket GROUP BY b.bucket ORDER BY b.bucket`);
+    return rows.map((row) => ({ ...row, bucket: row.bucket.toISOString() }));
+  }
+
+  async deliveryWindows(range: DateRange, previousRange: DateRange, limit: number): Promise<DeliveryWindowPerformance[]> {
+    return this.db.$queryRaw<DeliveryWindowRow[]>(Prisma.sql`WITH current_deliveries AS (${deliveryEvents(range)}), previous_deliveries AS (${deliveryEvents(previousRange)}), current_stats AS (SELECT COALESCE(window_id, window_label, 'unscheduled') AS id, COALESCE(window_label, 'Unscheduled') AS label, COUNT(*)::int AS orders, COALESCE(COUNT(*) FILTER (WHERE due_at IS NOT NULL AND delivered_at <= due_at)::double precision / NULLIF(COUNT(*) FILTER (WHERE due_at IS NOT NULL), 0), 0) AS "onTimeRate", COALESCE(ROUND(AVG(window_minutes)), 0)::int AS "averageMinutes" FROM current_deliveries GROUP BY 1, 2), previous_stats AS (SELECT COALESCE(window_id, window_label, 'unscheduled') AS id, COUNT(*) FILTER (WHERE due_at IS NOT NULL AND delivered_at <= due_at)::double precision / NULLIF(COUNT(*) FILTER (WHERE due_at IS NOT NULL), 0) AS rate FROM previous_deliveries GROUP BY 1) SELECT c.id, c.label, c.orders, c."onTimeRate", c."averageMinutes", p.rate AS "previousOnTimeRate" FROM current_stats c LEFT JOIN previous_stats p USING (id) ORDER BY c.orders DESC LIMIT ${Math.max(1, Math.min(limit, 10))}`);
+  }
+
+  async lateDeliveries(range: DateRange, limit: number): Promise<LateDelivery[]> {
+    const rows = await this.db.$queryRaw<LateDeliveryRow[]>(Prisma.sql`SELECT order_id AS "orderId", order_number AS "orderNumber", user_id AS "userId", COALESCE(window_label, 'Unscheduled') AS "windowLabel", GREATEST(0, ROUND(EXTRACT(EPOCH FROM (delivered_at - due_at)) / 60))::int AS "delayMinutes", delivered_at AS "deliveredAt" FROM (${deliveryEvents(range)}) deliveries WHERE due_at IS NOT NULL AND delivered_at > due_at ORDER BY delivered_at DESC LIMIT ${Math.max(1, Math.min(limit, 20))}`);
+    return rows.map((row) => ({ ...row, deliveredAt: row.deliveredAt.toISOString() }));
+  }
+
   async topProducts(range: DateRange, limit: number, sort: RevenueRankSort): Promise<TopProduct[]> {
     const rows = await this.db.$queryRaw<TopProductRow[]>(Prisma.sql`
       WITH ${earningLines(range)}
@@ -612,6 +633,10 @@ type PaymentIssueRow = Omit<PaymentIssue, "placedAt"> & { placedAt: Date };
 type RefundTotalsRow = RefundReportTotals;
 type RefundReasonRow = Omit<RefundReasonCount, "kind"> & { kind: string };
 type RefundCaseRow = Omit<RefundCase, "kind" | "status" | "activityAt"> & { kind: string | null; status: string; activityAt: Date };
+type DeliveryTotalsRow = DeliveryPerformanceTotals;
+type DeliveryPointRow = Omit<DeliveryPerformancePoint, "bucket"> & { bucket: Date };
+type DeliveryWindowRow = DeliveryWindowPerformance;
+type LateDeliveryRow = Omit<LateDelivery, "deliveredAt"> & { deliveredAt: Date };
 
 function emptyPaymentTotals(): PaymentReportTotals {
   return { paidRevenue: 0, successfulPayments: 0, failedPayments: 0, pendingPayments: 0, refundedPayments: 0, walletAmount: 0, externalAmount: 0 };
@@ -619,3 +644,7 @@ function emptyPaymentTotals(): PaymentReportTotals {
 
 function emptyRefundTotals(): RefundReportTotals { return { refundedAmount: 0, refundCount: 0, returnedItems: 0, cancelledOrders: 0, requestedReturns: 0, returnedOrders: 0, ordersInPeriod: 0 }; }
 function toRevenuePoint(row: SeriesRow): RevenuePoint { return { bucket: row.bucket.toISOString(), revenue: row.revenue, orders: row.orders }; }
+
+function deliveryEvents(range: DateRange): Prisma.Sql {
+  return Prisma.sql`SELECT o.id AS order_id, o.order_number, o.user_id, o.placed_at, o.updated_at AS delivered_at, o.delivery_window_id AS window_id, o.delivery_window AS window_label, CASE WHEN w.end_minutes > w.start_minutes THEN w.end_minutes - w.start_minutes ELSE NULL END AS window_minutes, CASE WHEN o.delivery_date IS NOT NULL AND w.end_minutes IS NOT NULL THEN o.delivery_date::date + (w.end_minutes * interval '1 minute') ELSE NULL END AS due_at FROM orders o LEFT JOIN delivery_windows w ON w.id = o.delivery_window_id WHERE o.delivery_type = 'delivery' AND o.status = 'completed' AND o.updated_at >= ${range.from} AND o.updated_at < ${range.to}`;
+}

@@ -12,6 +12,7 @@ import type {
 } from "../entities/Analytics";
 import type { PaymentIssue, PaymentReportTotals } from "../entities/PaymentReport";
 import type { RefundCase, RefundReasonCount, RefundReportTotals } from "../entities/RefundReport";
+import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, DeliveryWindowPerformance, LateDelivery } from "../entities/DeliveryPerformanceReport";
 
 /**
  * Read access to the store's aggregates.
@@ -182,4 +183,8 @@ export type IAnalyticsRepository = {
   compareRefundSeries(range: DateRange, compareRange: DateRange, granularity: AnalyticsGranularity): Promise<RevenuePoint[]>;
   refundReasons(range: DateRange, limit: number): Promise<RefundReasonCount[]>;
   refundCases(range: DateRange, limit: number): Promise<RefundCase[]>;
+  deliveryTotals(range: DateRange): Promise<DeliveryPerformanceTotals>;
+  deliverySeries(range: DateRange, granularity: AnalyticsGranularity): Promise<DeliveryPerformancePoint[]>;
+  deliveryWindows(range: DateRange, previousRange: DateRange, limit: number): Promise<DeliveryWindowPerformance[]>;
+  lateDeliveries(range: DateRange, limit: number): Promise<LateDelivery[]>;
 };
