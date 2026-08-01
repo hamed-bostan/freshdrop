@@ -429,7 +429,51 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
   }
 
   async deliveryWindows(range: DateRange, previousRange: DateRange, limit: number): Promise<DeliveryWindowPerformance[]> {
-    return this.db.$queryRaw<DeliveryWindowRow[]>(Prisma.sql`WITH current_deliveries AS (${deliveryEvents(range)}), previous_deliveries AS (${deliveryEvents(previousRange)}), current_stats AS (SELECT COALESCE(window_id, window_label, 'unscheduled') AS id, COALESCE(window_label, 'Unscheduled') AS label, COUNT(*)::int AS orders, COALESCE(COUNT(*) FILTER (WHERE due_at IS NOT NULL AND delivered_at <= due_at)::double precision / NULLIF(COUNT(*) FILTER (WHERE due_at IS NOT NULL), 0), 0) AS "onTimeRate", COALESCE(ROUND(AVG(window_minutes)), 0)::int AS "averageMinutes" FROM current_deliveries GROUP BY 1, 2), previous_stats AS (SELECT COALESCE(window_id, window_label, 'unscheduled') AS id, COUNT(*) FILTER (WHERE due_at IS NOT NULL AND delivered_at <= due_at)::double precision / NULLIF(COUNT(*) FILTER (WHERE due_at IS NOT NULL), 0) AS rate FROM previous_deliveries GROUP BY 1) SELECT c.id, c.label, c.orders, c."onTimeRate", c."averageMinutes", p.rate AS "previousOnTimeRate" FROM current_stats c LEFT JOIN previous_stats p USING (id) ORDER BY c.orders DESC LIMIT ${Math.max(1, Math.min(limit, 10))}`);
+    return this.db.$queryRaw<DeliveryWindowRow[]>(Prisma.sql`
+      WITH
+        current_deliveries AS (${deliveryEvents(range)}),
+        previous_deliveries AS (${deliveryEvents(previousRange)}),
+        current_stats AS (
+          SELECT
+            COALESCE(window_id, window_label, 'unscheduled') AS id,
+            COALESCE(
+              (ARRAY_AGG(window_label ORDER BY delivered_at DESC)
+                FILTER (WHERE window_label IS NOT NULL))[1],
+              'Unscheduled'
+            ) AS label,
+            COUNT(*)::int AS orders,
+            COALESCE(
+              COUNT(*) FILTER (WHERE due_at IS NOT NULL AND delivered_at <= due_at)::double precision
+                / NULLIF(COUNT(*) FILTER (WHERE due_at IS NOT NULL), 0),
+              0
+            ) AS "onTimeRate",
+            COALESCE(ROUND(AVG(window_minutes)), 0)::int AS "averageMinutes"
+          FROM current_deliveries
+          -- The ID is the domain identity. Labels are snapshots on orders and may
+          -- differ after a window is renamed, so grouping by both duplicates one
+          -- logical window and produces duplicate React keys in report consumers.
+          GROUP BY 1
+        ),
+        previous_stats AS (
+          SELECT
+            COALESCE(window_id, window_label, 'unscheduled') AS id,
+            COUNT(*) FILTER (WHERE due_at IS NOT NULL AND delivered_at <= due_at)::double precision
+              / NULLIF(COUNT(*) FILTER (WHERE due_at IS NOT NULL), 0) AS rate
+          FROM previous_deliveries
+          GROUP BY 1
+        )
+      SELECT
+        c.id,
+        c.label,
+        c.orders,
+        c."onTimeRate",
+        c."averageMinutes",
+        p.rate AS "previousOnTimeRate"
+      FROM current_stats c
+      LEFT JOIN previous_stats p USING (id)
+      ORDER BY c.orders DESC
+      LIMIT ${Math.max(1, Math.min(limit, 10))}
+    `);
   }
 
   async lateDeliveries(range: DateRange, limit: number): Promise<LateDelivery[]> {
