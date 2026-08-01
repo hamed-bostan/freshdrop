@@ -957,6 +957,15 @@
     "refunded": "بازپرداخت‌شده",
     "noIssues": "در این دوره پرداخت ناموفق یا بازپرداخت‌شده‌ای وجود ندارد."
   },
+  "dashRefundReport": {
+    "reports": "گزارش‌ها", "heading": "بازپرداخت‌ها و مرجوعی‌ها", "subtitle": "فعالیت بازپرداخت و مرجوعی را برای کاهش زیان و بهبود تجربه مشتری دنبال کنید.", "breadcrumbAria": "مسیر صفحه",
+    "refundedAmount": "مبلغ بازپرداخت", "refundRate": "نرخ بازپرداخت", "returnedItems": "اقلام مرجوعی", "cancelledOrders": "سفارش‌های لغوشده", "vsPreviousPeriod": "نسبت به دوره قبل",
+    "refundsOverTime": "بازپرداخت‌ها در گذر زمان", "metricLabel": "شاخص نمودار بازپرداخت", "amount": "مبلغ بازپرداخت", "count": "تعداد بازپرداخت", "currentValue": "این دوره: {value}", "previousValue": "دوره قبل: {value}",
+    "reasons": "دلایل بازپرداخت", "noReasons": "در این دوره دلیل بازپرداختی ثبت نشده است.", "status": "وضعیت مرجوعی", "requested": "درخواست‌شده", "refunded": "بازپرداخت‌شده", "cancelled": "لغوشده",
+    "topReasonInsight": "مهم‌ترین دلیل بازپرداخت است و {percent} از بازپرداخت‌ها را شامل می‌شود.", "viewReturns": "مشاهده مرجوعی‌ها", "recentCases": "موارد اخیر بازپرداخت و مرجوعی", "viewAll": "مشاهده همه",
+    "order": "سفارش", "product": "محصول", "customer": "مشتری", "reason": "دلیل", "amountColumn": "مبلغ بازپرداخت", "statusColumn": "وضعیت", "date": "تاریخ", "notAvailable": "ناموجود", "noCases": "در این دوره مورد بازپرداخت یا مرجوعی وجود ندارد.",
+    "kind": { "cancellation": "لغو", "return": "مرجوعی", "substitution": "جایگزینی", "manual": "اصلاح دستی" }, "caseStatus": { "return_requested": "درخواست‌شده", "refunded": "بازپرداخت‌شده", "cancelled": "لغوشده" }
+  },
   "dashCategories": {
     "heading": "دسته‌بندی‌ها",
     "count": "{count, plural, other {# دسته‌بندی}}",

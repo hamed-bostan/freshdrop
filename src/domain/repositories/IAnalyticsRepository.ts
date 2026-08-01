@@ -11,6 +11,7 @@ import type {
   TopProduct,
 } from "../entities/Analytics";
 import type { PaymentIssue, PaymentReportTotals } from "../entities/PaymentReport";
+import type { RefundCase, RefundReasonCount, RefundReportTotals } from "../entities/RefundReport";
 
 /**
  * Read access to the store's aggregates.
@@ -175,4 +176,10 @@ export type IAnalyticsRepository = {
 
   /** Latest failed or refunded payments in the period, bounded for the report table. */
   paymentIssues(range: DateRange, limit: number): Promise<PaymentIssue[]>;
+
+  refundTotals(range: DateRange): Promise<RefundReportTotals>;
+  refundSeries(range: DateRange, granularity: AnalyticsGranularity): Promise<RevenuePoint[]>;
+  compareRefundSeries(range: DateRange, compareRange: DateRange, granularity: AnalyticsGranularity): Promise<RevenuePoint[]>;
+  refundReasons(range: DateRange, limit: number): Promise<RefundReasonCount[]>;
+  refundCases(range: DateRange, limit: number): Promise<RefundCase[]>;
 };

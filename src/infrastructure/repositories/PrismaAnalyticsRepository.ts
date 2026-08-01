@@ -13,6 +13,8 @@ import {
   type TopProduct,
 } from "@/src/domain/entities/Analytics";
 import type { PaymentIssue, PaymentReportTotals } from "@/src/domain/entities/PaymentReport";
+import type { RefundCase, RefundReasonCount, RefundReportTotals } from "@/src/domain/entities/RefundReport";
+import type { RefundKind } from "@/src/domain/entities/Refund";
 import { ORDER_STATUSES, type OrderStatus } from "@/src/domain/entities/Order";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
 import type { IAnalyticsRepository } from "@/src/domain/repositories/IAnalyticsRepository";
@@ -318,6 +320,99 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     return rows.map((row) => ({ ...row, placedAt: row.placedAt.toISOString() }));
   }
 
+  async refundTotals(range: DateRange): Promise<RefundReportTotals> {
+    const rows = await this.db.$queryRaw<RefundTotalsRow[]>(Prisma.sql`
+      SELECT
+        COALESCE(SUM(r.amount), 0)::double precision AS "refundedAmount",
+        COUNT(*)::int AS "refundCount",
+        COALESCE(SUM(lines.units), 0)::int AS "returnedItems",
+        COUNT(*) FILTER (WHERE r.kind = 'cancellation')::int AS "cancelledOrders",
+        (SELECT COUNT(*)::int FROM orders o WHERE o.status = 'return_requested' AND o.placed_at >= ${range.from} AND o.placed_at < ${range.to}) AS "requestedReturns",
+        COUNT(*) FILTER (WHERE r.kind = 'return')::int AS "returnedOrders",
+        (SELECT COUNT(*)::int FROM orders o WHERE o.placed_at >= ${range.from} AND o.placed_at < ${range.to}) AS "ordersInPeriod"
+      FROM refunds r
+      LEFT JOIN (
+        SELECT refund_id, SUM(COALESCE(quantity, 0))::int AS units
+        FROM refund_lines
+        GROUP BY refund_id
+      ) lines ON lines.refund_id = r.id
+      WHERE r.created_at >= ${range.from} AND r.created_at < ${range.to}
+    `);
+    return rows[0] ?? emptyRefundTotals();
+  }
+
+  async refundSeries(range: DateRange, granularity: AnalyticsGranularity): Promise<RevenuePoint[]> {
+    const unit = Prisma.raw(assertGranularity(granularity));
+    const rows = await this.db.$queryRaw<SeriesRow[]>(Prisma.sql`
+      WITH buckets AS (
+        SELECT generate_series(date_trunc('${unit}', ${range.from}::timestamp), ${range.to}::timestamp - interval '1 microsecond', '1 ${unit}'::interval) AS bucket
+      )
+      SELECT b.bucket, COALESCE(SUM(r.amount), 0)::double precision AS revenue, COUNT(r.id)::int AS orders
+      FROM buckets b
+      LEFT JOIN refunds r ON date_trunc('${unit}', r.created_at) = b.bucket
+      GROUP BY b.bucket
+      ORDER BY b.bucket
+    `);
+    return rows.map(toRevenuePoint);
+  }
+
+  async compareRefundSeries(range: DateRange, compareRange: DateRange, granularity: AnalyticsGranularity): Promise<RevenuePoint[]> {
+    const unit = Prisma.raw(assertGranularity(granularity));
+    const shiftMs = range.from.getTime() - compareRange.from.getTime();
+    const rows = await this.db.$queryRaw<SeriesRow[]>(Prisma.sql`
+      WITH buckets AS (
+        SELECT generate_series(date_trunc('${unit}', ${range.from}::timestamp), ${range.to}::timestamp - interval '1 microsecond', '1 ${unit}'::interval) AS bucket
+      )
+      SELECT b.bucket, COALESCE(SUM(r.amount), 0)::double precision AS revenue, COUNT(r.id)::int AS orders
+      FROM buckets b
+      LEFT JOIN refunds r ON date_trunc('${unit}', r.created_at + (${shiftMs} * interval '1 millisecond')) = b.bucket
+        AND r.created_at >= ${compareRange.from} AND r.created_at < ${compareRange.to}
+      GROUP BY b.bucket
+      ORDER BY b.bucket
+    `);
+    return rows.map(toRevenuePoint);
+  }
+
+  async refundReasons(range: DateRange, limit: number): Promise<RefundReasonCount[]> {
+    const rows = await this.db.$queryRaw<RefundReasonRow[]>(Prisma.sql`
+      SELECT COALESCE(NULLIF(TRIM(r.reason), ''), r.kind) AS reason, r.kind, COUNT(*)::int AS refunds, SUM(r.amount)::double precision AS amount
+      FROM refunds r
+      WHERE r.created_at >= ${range.from} AND r.created_at < ${range.to}
+      GROUP BY COALESCE(NULLIF(TRIM(r.reason), ''), r.kind), r.kind
+      ORDER BY COUNT(*) DESC, SUM(r.amount) DESC
+      LIMIT ${Math.max(1, Math.min(limit, 10))}
+    `);
+    return rows.map((row) => ({ ...row, kind: row.kind as RefundKind }));
+  }
+
+  async refundCases(range: DateRange, limit: number): Promise<RefundCase[]> {
+    const rows = await this.db.$queryRaw<RefundCaseRow[]>(Prisma.sql`
+      WITH cases AS (
+        SELECT r.id, o.id AS "orderId", o.order_number AS "orderNumber", o.user_id AS "userId",
+          product.name AS "productName", product.image_url AS "productImageUrl", r.reason, r.kind,
+          r.amount::double precision AS amount,
+          CASE WHEN r.kind = 'cancellation' THEN 'cancelled' ELSE 'refunded' END AS status,
+          r.created_at AS "activityAt"
+        FROM refunds r
+        JOIN orders o ON o.id = r.order_id
+        LEFT JOIN LATERAL (
+          SELECT oi.name, oi.image_url
+          FROM refund_lines rl JOIN order_items oi ON oi.id = rl.order_item_id
+          WHERE rl.refund_id = r.id ORDER BY rl.id LIMIT 1
+        ) product ON TRUE
+        WHERE r.created_at >= ${range.from} AND r.created_at < ${range.to}
+        UNION ALL
+        SELECT o.id, o.id, o.order_number, o.user_id, item.name, item.image_url, NULL, NULL,
+          0::double precision, 'return_requested', o.updated_at
+        FROM orders o
+        LEFT JOIN LATERAL (SELECT oi.name, oi.image_url FROM order_items oi WHERE oi.order_id = o.id ORDER BY oi.position LIMIT 1) item ON TRUE
+        WHERE o.status = 'return_requested' AND o.placed_at >= ${range.from} AND o.placed_at < ${range.to}
+      )
+      SELECT * FROM cases ORDER BY "activityAt" DESC LIMIT ${Math.max(1, Math.min(limit, 20))}
+    `);
+    return rows.map((row) => ({ ...row, kind: row.kind as RefundKind | null, status: row.status as RefundCase["status"], activityAt: row.activityAt.toISOString() }));
+  }
+
   async topProducts(range: DateRange, limit: number, sort: RevenueRankSort): Promise<TopProduct[]> {
     const rows = await this.db.$queryRaw<TopProductRow[]>(Prisma.sql`
       WITH ${earningLines(range)}
@@ -514,7 +609,13 @@ type TopCategoryRow = TopCategory;
 type SegmentsRow = CustomerSegments;
 type PaymentTotalsRow = PaymentReportTotals;
 type PaymentIssueRow = Omit<PaymentIssue, "placedAt"> & { placedAt: Date };
+type RefundTotalsRow = RefundReportTotals;
+type RefundReasonRow = Omit<RefundReasonCount, "kind"> & { kind: string };
+type RefundCaseRow = Omit<RefundCase, "kind" | "status" | "activityAt"> & { kind: string | null; status: string; activityAt: Date };
 
 function emptyPaymentTotals(): PaymentReportTotals {
   return { paidRevenue: 0, successfulPayments: 0, failedPayments: 0, pendingPayments: 0, refundedPayments: 0, walletAmount: 0, externalAmount: 0 };
 }
+
+function emptyRefundTotals(): RefundReportTotals { return { refundedAmount: 0, refundCount: 0, returnedItems: 0, cancelledOrders: 0, requestedReturns: 0, returnedOrders: 0, ordersInPeriod: 0 }; }
+function toRevenuePoint(row: SeriesRow): RevenuePoint { return { bucket: row.bucket.toISOString(), revenue: row.revenue, orders: row.orders }; }

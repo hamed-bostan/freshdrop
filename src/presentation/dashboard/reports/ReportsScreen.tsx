@@ -73,7 +73,7 @@ export async function ReportsScreen({ from, to, isCustomRange, comparisonRange }
       key: "returns",
       title: t("returnsRefunds"),
       items: [
-        { key: "refunds", title: t("refundsReturns"), description: t("refundsReturnsDescription"), href: "/dashboard/orders?pipeline=return_requested", icon: RefreshCcw, tone: "red" },
+        { key: "refunds", title: t("refundsReturns"), description: t("refundsReturnsDescription"), href: "/dashboard/reports/refunds", icon: RefreshCcw, tone: "red" },
         { key: "return-items", title: t("returnItems"), description: t("returnItemsDescription"), href: "/dashboard/orders?pipeline=return_requested", icon: PackageX, tone: "red" },
       ],
     },
