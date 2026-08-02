@@ -6,7 +6,6 @@ import type { AnalyticsOverviewWire } from "./analytics-response-schema";
 import { AnalyticsExportMenu } from "./AnalyticsExportMenu";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./AnalyticsRangePicker";
 import { RevenueChart } from "./RevenueChart";
-import type { RevenueRankRow } from "./RevenueRankPanel";
 import { TopPerformancePanel } from "./TopPerformancePanel";
 import {
   AnalyticsInsights,
@@ -30,22 +29,6 @@ type AnalyticsScreenProps = {
 export async function AnalyticsScreen({ analytics, from, to, isCustomRange }: AnalyticsScreenProps) {
   const t = await getTranslations("dashAnalytics");
   const locale = (await getLocale()) as Locale;
-  const productRows: RevenueRankRow[] = analytics.topProducts.map((product) => ({
-    id: product.productId,
-    label: product.name,
-    imageUrl: product.imageUrl,
-    units: product.units,
-    revenue: product.revenue,
-    href: `/dashboard/products/${product.productId}/edit`,
-  }));
-  const categoryRows: RevenueRankRow[] = analytics.topCategories.map((category) => ({
-    id: category.categoryId,
-    label: category.name,
-    units: category.units,
-    revenue: category.revenue,
-    href: `/dashboard/products?categoryId=${category.categoryId}`,
-  }));
-
   return (
     <div className="flex flex-col gap-4 pb-2">
       <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -94,7 +77,7 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange }: An
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <TopPerformancePanel products={productRows} categories={categoryRows} />
+        <TopPerformancePanel products={analytics.topProducts} />
         <PriorityActionsCard analytics={analytics} />
       </div>
     </div>
