@@ -9,7 +9,7 @@ import { formatShortDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { ChartContainer, ChartTooltip, Icon } from "@/src/presentation/design-system";
-import { cn } from "@/src/lib/utils";
+import { ChartSegmentedControl } from "@/src/presentation/dashboard/ChartSegmentedControl";
 
 type Metric = "revenue" | "orders";
 type Interval = "day" | "week" | "month";
@@ -34,14 +34,10 @@ export function SalesTrendChart({ analytics, locale, labels }: SalesTrendChartPr
     <section className="min-w-0 rounded-card-lg border border-border bg-background p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-1.5 text-body-b5 text-foreground">{labels.heading}<Icon icon={Info} size="xs" className="text-muted-foreground" /></h2>
-        <div className="flex rounded-card-md border border-border p-0.5" aria-label="Chart interval">
-          {availableIntervals.map((value) => <button key={value} type="button" aria-pressed={interval === value} onClick={() => setInterval(value)} className={cn("rounded-card-md px-3 py-1 text-body-b10 font-medium", interval === value ? "bg-accent text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>{value === "day" ? labels.daily : value === "week" ? labels.weekly : labels.monthly}</button>)}
-        </div>
+        <ChartSegmentedControl value={interval} options={availableIntervals} label="Chart interval" onChange={setInterval} getLabel={(value) => value === "day" ? labels.daily : value === "week" ? labels.weekly : labels.monthly} />
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-5">
-        <div className="flex rounded-card-md border border-border p-0.5">
-          {(["revenue", "orders"] as const).map((value) => <button key={value} type="button" aria-pressed={metric === value} onClick={() => setMetric(value)} className={cn("rounded-card-md px-3 py-1.5 text-body-b10 font-semibold", metric === value ? "bg-accent text-primary" : "text-muted-foreground hover:text-foreground")}>{value === "revenue" ? labels.netSales : labels.orders}</button>)}
-        </div>
+        <ChartSegmentedControl value={metric} options={["revenue", "orders"]} label={labels.heading} onChange={setMetric} getLabel={(value) => value === "revenue" ? labels.netSales : labels.orders} emphasis />
         <span className="flex items-center gap-2 text-body-b10 text-muted-foreground"><span className="h-0.5 w-5 bg-primary" />{formatShortDate(analytics.range.from, locale)} – {formatShortDate(analytics.range.to, locale)}</span>
         <span className="flex items-center gap-2 text-body-b10 text-muted-foreground"><span className="w-5 border-t border-dashed border-muted-foreground" />{formatShortDate(analytics.previousRange.from, locale)} – {formatShortDate(analytics.previousRange.to, locale)}</span>
       </div>

@@ -4,16 +4,14 @@ import type { Locale } from "@/src/i18n/routing";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import type { AnalyticsOverviewWire } from "./analytics-response-schema";
 import { AnalyticsExportMenu } from "./AnalyticsExportMenu";
-import { AnalyticsMetricGrid } from "./AnalyticsMetricGrid";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./AnalyticsRangePicker";
 import { RevenueChart } from "./RevenueChart";
 import type { RevenueRankRow } from "./RevenueRankPanel";
 import { TopPerformancePanel } from "./TopPerformancePanel";
 import {
   AnalyticsInsights,
-  BusinessHealthCard,
-  CustomerMixCard,
-  QuickAccessCard,
+  AnalyticsKpiStrip,
+  PriorityActionsCard,
 } from "./AnalyticsOverviewPanels";
 
 export const ANALYTICS_RANK_LIMIT = 60;
@@ -49,7 +47,7 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange }: An
   }));
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4 pb-2">
       <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <h1 className="text-heading-h2 text-foreground">{t("overviewHeading")}</h1>
@@ -80,9 +78,9 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange }: An
         </div>
       </header>
 
-      <AnalyticsMetricGrid analytics={analytics} />
+      <AnalyticsKpiStrip analytics={analytics} />
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(18rem,0.9fr)]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2.05fr)_minmax(20rem,0.95fr)]">
         <RevenueChart
           points={analytics.revenueSeries}
           previousPoints={analytics.previousSeries}
@@ -95,11 +93,9 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange }: An
         <AnalyticsInsights analytics={analytics} />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,.9fr)]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <TopPerformancePanel products={productRows} categories={categoryRows} />
-        <CustomerMixCard analytics={analytics} />
-        <BusinessHealthCard analytics={analytics} />
-        <QuickAccessCard />
+        <PriorityActionsCard analytics={analytics} />
       </div>
     </div>
   );
