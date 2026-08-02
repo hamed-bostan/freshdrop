@@ -426,8 +426,8 @@ function toOrder(row: OrderRow): Order {
     id: row.id,
     orderNumber: row.orderNumber,
     userId: row.userId,
-    status: row.status as OrderStatus,
-    phase: row.phase as OrderPhase,
+    status: normalizeOrderStatus(row.status),
+    phase: normalizeOrderPhase(row.phase),
     deliveryType: row.deliveryType as DeliveryType,
     paymentStatus: row.paymentStatus as PaymentStatus,
     placedAt: row.placedAt.toISOString(),
@@ -456,6 +456,20 @@ function toOrder(row: OrderRow): Order {
     // overwrites this with the real ledger via `attachRefund`/`attachRefunds`.
     refunds: [],
   };
+}
+
+/**
+ * Rows created by the first order schema used `archived` for a delivered order.
+ * Keep that persistence detail behind the repository boundary so every API emits
+ * the current canonical status vocabulary.
+ */
+function normalizeOrderStatus(status: string): OrderStatus {
+  return status === "archived" ? "completed" : status as OrderStatus;
+}
+
+/** The legacy phase named the finished state `completed`; it is now `previous`. */
+function normalizeOrderPhase(phase: string): OrderPhase {
+  return phase === "completed" ? "previous" : phase as OrderPhase;
 }
 
 /**
