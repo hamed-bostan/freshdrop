@@ -25,7 +25,7 @@ export async function SalesReportScreen({ analytics, from, to, isCustomRange, co
     <SalesMetricGrid analytics={analytics} locale={locale} labels={{ revenue: ta("kpiNetRevenue"), orders: ta("kpiOrders"), averageOrder: ta("kpiAverageOrder"), units: ta("kpiUnitsSold"), comparison: ta("vsPreviousPeriod"), current: ta("currentPeriod") }} />
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(20rem,1fr)]"><SalesTrendChart analytics={analytics} locale={locale} labels={{ heading: t("salesOverTime"), netSales: ta("kpiNetRevenue"), orders: ta("kpiOrders"), daily: t("daily"), weekly: t("weekly"), monthly: t("monthly"), empty: ta("chartEmpty") }} /><SalesChannelPanel revenue={analytics.totals.revenue} locale={locale} /></div>
     <SalesInsightBanner currentRevenue={analytics.totals.revenue} previousRevenue={analytics.previousTotals.revenue} topCategory={analytics.topCategories[0]?.name} locale={locale} />
-    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(19rem,1fr)_minmax(0,2fr)]"><SalesCategoryPanel categories={analytics.topCategories} totalRevenue={analytics.totals.revenue} locale={locale} /><TopSellingProductsTable products={analytics.topProducts} totalRevenue={analytics.totals.revenue} locale={locale} /></div>
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(25rem,1.2fr)_minmax(0,2fr)]"><SalesCategoryPanel categories={analytics.topCategories} totalRevenue={analytics.totals.revenue} locale={locale} /><TopSellingProductsTable products={analytics.topProducts} totalRevenue={analytics.totals.revenue} locale={locale} /></div>
     <p className="sr-only">{t("netSalesDefinition", { amount: formatMoney(analytics.totals.revenue, locale) })}</p>
   </div>;
 }

@@ -225,7 +225,11 @@ export type TopProduct = {
   name: string;
   imageUrl: string;
   units: number;
+  /** Distinct orders containing this product during the reporting period. */
+  orders: number;
   revenue: number;
+  /** Revenue for this product in the immediately preceding equivalent period. */
+  previousRevenue: number;
 };
 
 /** A category ranked by the revenue its products earned in the period. */

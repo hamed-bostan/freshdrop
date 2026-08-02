@@ -50,7 +50,9 @@ const topProductSchema = z.object({
   name: z.string(),
   imageUrl: z.string(),
   units: z.number(),
+  orders: z.number(),
   revenue: z.number(),
+  previousRevenue: z.number(),
 });
 
 const topCategorySchema = z.object({

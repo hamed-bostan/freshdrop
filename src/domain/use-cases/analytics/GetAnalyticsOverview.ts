@@ -72,7 +72,7 @@ export class GetAnalyticsOverview {
         analytics.compareRevenueSeries(range, previous, granularity),
         analytics.compareRevenueSeries(range, previousYear, granularity),
         analytics.statusBreakdown(range),
-        analytics.topProducts(range, rankLimit, productsSort),
+        analytics.topProducts(range, rankLimit, productsSort, previous),
         analytics.topCategories(range, rankLimit, categoriesSort),
         analytics.customerSegments(range),
         analytics.customerSegments(previous),

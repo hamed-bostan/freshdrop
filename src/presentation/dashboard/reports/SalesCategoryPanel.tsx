@@ -13,11 +13,11 @@ export async function SalesCategoryPanel({ categories, totalRevenue, locale }: {
   return (
     <section className="flex min-h-64 flex-col rounded-card-lg border border-border bg-background p-4">
       <h2 className="flex items-center gap-1.5 text-body-b5 text-foreground">{t("salesByCategory")}<Icon icon={Info} size="xs" className="text-muted-foreground" /></h2>
-      {categories.length ? <div className="mt-4 space-y-4">{categories.map((category) => {
+      {categories.length ? <div className="mt-3 space-y-3">{categories.map((category) => {
         const share = totalRevenue > 0 ? category.revenue / totalRevenue * 100 : 0;
-        return <div key={category.categoryId} className="grid grid-cols-[minmax(6rem,1fr)_minmax(6rem,1.5fr)_3rem_5rem] items-center gap-3 text-body-b10"><span className="truncate font-medium text-foreground">{category.name}</span><span className="h-1.5 overflow-hidden rounded-pill bg-surface-sunken"><span className="block h-full rounded-pill bg-primary" style={{ width: `${Math.max(category.revenue / peak * 100, 3)}%` }} /></span><span className="text-end font-medium text-foreground">{new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(share)}%</span><span className="text-end text-muted-foreground">{formatMoney(category.revenue, locale)}</span></div>;
+        return <div key={category.categoryId} className="grid min-h-7 grid-cols-[minmax(7rem,1fr)_minmax(7rem,1.5fr)_3.25rem_6rem] items-center gap-3 text-body-b10"><span className="truncate font-medium text-foreground">{category.name}</span><span className="h-1 overflow-hidden rounded-pill bg-surface-sunken"><span className="block h-full rounded-pill bg-primary" style={{ width: `${Math.max(category.revenue / peak * 100, 3)}%` }} /></span><span className="text-end font-medium text-foreground">{new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(share)}%</span><span className="whitespace-nowrap text-end text-muted-foreground">{formatMoney(category.revenue, locale)}</span></div>;
       })}</div> : <p className="flex flex-1 items-center justify-center text-body-b7 text-muted-foreground">{t("noSales")}</p>}
-      <Link href="/dashboard/analytics?categorySort=revenue" className={cn(focusRing, "mt-auto flex items-center gap-1 border-t border-border pt-3 text-body-b8 text-primary hover:text-primary-hover")}>{t("viewCategoryReport")}<Icon icon={ExternalLink} size="xs" /></Link>
+      <Link href="/dashboard/analytics?categorySort=revenue" className={cn(focusRing, "mt-auto flex items-center gap-1 border-t border-border pt-3 text-body-b10 font-medium text-primary hover:text-primary-hover")}>{t("viewCategoryReport")}<Icon icon={ExternalLink} size="xs" /></Link>
     </section>
   );
 }

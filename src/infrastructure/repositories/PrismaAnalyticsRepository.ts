@@ -482,7 +482,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     return rows.map((row) => ({ ...row, deliveredAt: row.deliveredAt.toISOString() }));
   }
 
-  async topProducts(range: DateRange, limit: number, sort: RevenueRankSort): Promise<TopProduct[]> {
+  async topProducts(range: DateRange, limit: number, sort: RevenueRankSort, comparisonRange?: DateRange): Promise<TopProduct[]> {
     const rows = await this.db.$queryRaw<TopProductRow[]>(Prisma.sql`
       WITH ${earningLines(range)}
       SELECT
@@ -493,6 +493,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
         COALESCE(MAX(p.name), MAX(l.name))                      AS name,
         COALESCE(MAX(p.image_url), MAX(l.image_url))            AS "imageUrl",
         SUM(l.quantity)::int                                    AS units,
+        COUNT(DISTINCT l.order_id)::int                         AS orders,
         SUM(l.revenue)::double precision                        AS revenue
       FROM lines l
       LEFT JOIN products p ON p.id = l.product_id
@@ -505,7 +506,16 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
       LIMIT ${limit}
     `);
 
-    return rows;
+    if (!comparisonRange || rows.length === 0) return rows.map((row) => ({ ...row, previousRevenue: 0 }));
+    const previousRows = await this.db.$queryRaw<{ productId: string; revenue: number }[]>(Prisma.sql`
+      WITH ${earningLines(comparisonRange)}
+      SELECT l.product_id AS "productId", SUM(l.revenue)::double precision AS revenue
+      FROM lines l
+      WHERE l.product_id IN (${Prisma.join(rows.map((row) => row.productId))})
+      GROUP BY l.product_id
+    `);
+    const previousByProduct = new Map(previousRows.map((row) => [row.productId, row.revenue]));
+    return rows.map((row) => ({ ...row, previousRevenue: previousByProduct.get(row.productId) ?? 0 }));
   }
 
   async topCategories(range: DateRange, limit: number, sort: RevenueRankSort): Promise<TopCategory[]> {
@@ -765,6 +775,7 @@ function earningLines(range: DateRange): Prisma.Sql {
     ),
     lines AS (
       SELECT
+        oi.order_id,
         oi.product_id,
         oi.name,
         oi.image_url,

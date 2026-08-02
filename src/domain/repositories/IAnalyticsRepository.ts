@@ -135,7 +135,7 @@ export type IAnalyticsRepository = {
    * cases, which is why the panel lets the reader flip between them rather than
    * only ever showing one.
    */
-  topProducts(range: DateRange, limit: number, sort: RevenueRankSort): Promise<TopProduct[]>;
+  topProducts(range: DateRange, limit: number, sort: RevenueRankSort, comparisonRange?: DateRange): Promise<TopProduct[]>;
 
   /** The `limit` categories that ranked highest in `range` by `sort`, measured the same way. */
   topCategories(range: DateRange, limit: number, sort: RevenueRankSort): Promise<TopCategory[]>;
