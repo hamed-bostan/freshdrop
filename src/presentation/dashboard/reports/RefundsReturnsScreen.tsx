@@ -1,20 +1,16 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { ChevronRight } from "lucide-react";
-import { ANALYTICS_RANGE_PRESETS } from "@/src/domain/entities/Analytics";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
-import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { cn } from "@/src/lib/utils";
-import { AnalyticsExportMenu } from "../analytics/AnalyticsExportMenu";
-import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "../analytics/AnalyticsRangePicker";
 import { RefundOverviewMetricGrid } from "./RefundOverviewMetricGrid";
 import { InspectionRecoveryQueue } from "./InspectionRecoveryQueue";
 import { RecoveryBreakdownPanels } from "./RecoveryBreakdownPanels";
 import { RefundTrendChart } from "./RefundTrendChart";
 import type { RefundReportWire } from "./refund-report-response-schema";
+import { ReportHeader } from "./ReportHeader";
 import { ReturnCasesTable, type ReturnCaseRow } from "./ReturnCasesTable";
 import { ReturnInsightBanner } from "./ReturnInsightBanner";
 import { ReturnMetricGrid } from "./ReturnMetricGrid";
@@ -49,8 +45,7 @@ export async function RefundsReturnsScreen({ report, customers, from, to, isCust
   const recoveryLabels = { heading: t("inspectionRecoveryQueue"), search: t("searchReturns"), allConditions: t("allConditions"), allStatuses: t("allStatuses"), viewAll: t("viewAll"), product: t("product"), order: t("order"), condition: t("condition"), received: t("received"), inspectionStatus: t("inspectionStatus"), recoveryDecision: t("recoveryDecision"), value: t("valueColumn"), action: t("action"), awaitingInspection: t("awaitingInspection"), inspected: t("inspected"), inReview: t("inReview"), pending: t("pending"), restock: t("restock"), discount: t("discount"), returnToSupplier: t("returnToSupplier"), dispose: t("dispose"), inspect: t("inspect"), confirm: t("confirm"), review: t("review"), complete: t("complete"), showing: t("showingOpenItems", { shown: "__SHOWN__", total: "__TOTAL__" }).replace("__SHOWN__", "{shown}").replace("__TOTAL__", "{total}") };
 
   return <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-4">
-    <nav aria-label={t("breadcrumbAria")} className="flex items-center gap-2 text-body-b10 text-muted-foreground"><Link href="/dashboard/reports" className="hover:text-foreground">{t("reports")}</Link><ChevronRight className="size-3.5 rtl:rotate-180" aria-hidden /><span className="font-medium text-foreground">{t("heading")}</span></nav>
-    <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between"><div><h1 className="text-heading-h2">{t("heading")}</h1><p className="mt-1 text-body-b10 text-muted-foreground">{t("combinedSubtitle")}</p></div><div className="flex flex-wrap items-center gap-2 xl:justify-end"><AnalyticsRangePicker presetLabel={ta("rangeLabel")} presetOptions={[...ANALYTICS_RANGE_PRESETS.map((preset) => ({ value: preset, label: ta(`preset.${preset}`) })), { value: CUSTOM_RANGE_VALUE, label: ta("presetCustom") }]} fromLabel={ta("rangeFrom")} toLabel={ta("rangeTo")} from={from} to={to} isCustom={isCustomRange} /><div className="flex h-10 items-center rounded-input border border-border px-4 text-body-b8 text-foreground">{ta("comparisonPeriod", { from: formatMediumDate(report.previousRange.from, locale), to: formatMediumDate(report.previousRange.to, locale) })}</div><AnalyticsExportMenu label={ta("exportHeading")} reports={[{ resource: "orders", label: ta("exportOrdersReport") }]} /></div></header>
+    <ReportHeader ariaLabel={t("breadcrumbAria")} parentLabel={t("reports")} currentLabel={t("heading")} title={t("heading")} subtitle={t("combinedSubtitle")} from={from} to={to} isCustomRange={isCustomRange} comparisonRange={report.previousRange} exportReports={[{ resource: "orders", label: ta("exportOrdersReport") }]} />
     <nav className="flex border-b border-border" aria-label={t("viewTabsLabel")}><ReportTab active={view === "overview"} href={viewHref(queryString, "overview")} label={t("overview")} /><ReportTab active={view === "items"} href={viewHref(queryString, "items")} label={t("itemsRecovery")} /></nav>
     {view === "overview" ? <>
       <RefundOverviewMetricGrid report={report} locale={locale} />
