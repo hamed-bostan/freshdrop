@@ -85,6 +85,9 @@ export const orderResponseSchema = z.object({
       longitude: z.number().min(-180).max(180),
     })
     .optional(),
+  // Settlement snapshotted at checkout — the reporting dimension delivery-zone
+  // analytics groups by. Absent from legacy orders and unresolved geocodes.
+  city: z.string().optional(),
   items: z.array(orderItemResponseSchema),
   subtotal: z.number(),
   shipping: z.number(),

@@ -27,6 +27,8 @@ export type CreateOrderInput = {
    * were saved without one) — tracking falls back to a default destination.
    */
   destination?: GeoPoint;
+  /** Settlement (city/town) of the selected location, snapshotted onto the order. */
+  city?: string;
   /** The server-computed cart (items + authoritative totals) being checked out. */
   cart: Cart;
   /**

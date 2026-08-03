@@ -130,6 +130,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         address.latitude != null && address.longitude != null
           ? { latitude: address.latitude, longitude: address.longitude }
           : undefined,
+      city: address.city ?? undefined,
       cart,
       // The code the totals above were computed from, so the redemption is counted
       // against the campaign the shopper actually checked out under.

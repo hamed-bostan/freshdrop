@@ -264,6 +264,7 @@ type OrderRow = {
   locationLabel: string | null;
   destinationLat: number | null;
   destinationLng: number | null;
+  city: string | null;
   subtotal: number;
   shipping: number;
   discount: number;
@@ -364,6 +365,7 @@ function toOrderCreateData(input: NewOrder): Prisma.OrderCreateInput {
     locationLabel: input.locationLabel ?? null,
     destinationLat: input.destination?.latitude ?? null,
     destinationLng: input.destination?.longitude ?? null,
+    city: input.city ?? null,
     subtotal: input.subtotal,
     shipping: input.shipping,
     discount: input.discount,
@@ -433,6 +435,7 @@ function toOrder(row: OrderRow): Order {
     placedAt: row.placedAt.toISOString(),
     location: row.location,
     locationLabel: row.locationLabel ?? undefined,
+    city: row.city ?? undefined,
     // Both columns are written together at checkout; a half-set pair can't describe
     // a point, so the destination only exists when both are present.
     destination:

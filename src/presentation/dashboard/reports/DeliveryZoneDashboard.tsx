@@ -1,39 +1,84 @@
-/* eslint-disable no-restricted-syntax -- SVG map colors require explicit fills and strokes. */
-import { AlertTriangle, CheckCircle2, ExternalLink, Info, MapPin, TrendingUp, Truck } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ExternalLink, Info, MapPin, TimerOff, Truck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { percentChange } from "@/src/domain/entities/Analytics";
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
-import type { DeliveryPerformanceWire } from "./delivery-performance-response-schema";
+import { DeliveryZoneMapClient } from "./DeliveryZoneMapClient";
+import type { DeliveryZonesWire } from "./delivery-zones-response-schema";
 import { SalesMetricCard } from "./SalesMetricCard";
 
-const ZONES = ["Downtown", "North", "West", "East", "Suburbs"];
-const CAPACITY = [82, 74, 76, 91, 94];
+type Props = { report: DeliveryZonesWire; locale: Locale };
 
-export async function DeliveryZoneMetrics({ report, locale }: { report: DeliveryPerformanceWire; locale: Locale }) {
-  const t = await getTranslations("dashDeliveryReport"); const rate = report.totals.deliveredOrders ? report.totals.onTimeOrders / report.totals.deliveredOrders : 0; const previousRate = report.previousTotals.deliveredOrders ? report.previousTotals.onTimeOrders / report.previousTotals.deliveredOrders : 0;
+export async function DeliveryZoneMetrics({ report, locale }: Props) {
+  const t = await getTranslations("dashDeliveryReport");
+  const rate = report.totals.deliveredOrders ? report.totals.onTimeOrders / report.totals.deliveredOrders : 0;
+  const previousRate = report.previousTotals.deliveredOrders ? report.previousTotals.onTimeOrders / report.previousTotals.deliveredOrders : 0;
   const metrics = [
-    { label: t("activeZones"), value: "12", icon: MapPin, tone: "green" as const, delta: null, values: [8, 10, 9, 11, 12], currentLabel: t("nearCapacity") },
-    { label: t("ordersDelivered"), value: formatNumber(report.totals.deliveredOrders, locale), icon: Truck, tone: "blue" as const, delta: percentChange(report.totals.deliveredOrders, report.previousTotals.deliveredOrders), values: report.series.map((point) => point.deliveredOrders), currentLabel: t("currentPeriod") },
-    { label: t("onTimeRate"), value: formatPercent(rate, locale), icon: CheckCircle2, tone: "green" as const, delta: previousRate ? (rate - previousRate) / previousRate : null, values: report.series.map((point) => point.onTimeRate), currentLabel: t("currentPeriod") },
-    { label: t("capacityUtilization"), value: "81.0%", icon: TrendingUp, tone: "orange" as const, delta: .048, values: [74, 78, 76, 82, 81], currentLabel: t("currentPeriod") },
+    { label: t("activeZones"), value: formatNumber(report.totals.zonesServed, locale), icon: MapPin, tone: "green" as const, delta: null, values: [report.totals.zonesServed, report.totals.zonesServed] },
+    { label: t("ordersDelivered"), value: formatNumber(report.totals.deliveredOrders, locale), icon: Truck, tone: "blue" as const, delta: percentChange(report.totals.deliveredOrders, report.previousTotals.deliveredOrders), values: [report.previousTotals.deliveredOrders, report.totals.deliveredOrders] },
+    { label: t("onTimeRate"), value: formatPercent(rate, locale), icon: CheckCircle2, tone: "green" as const, delta: previousRate ? (rate - previousRate) / previousRate : null, values: [previousRate, rate] },
+    { label: t("lateDeliveries"), value: formatNumber(report.totals.lateDeliveries, locale), icon: TimerOff, tone: "orange" as const, delta: percentChange(report.totals.lateDeliveries, report.previousTotals.lateDeliveries), values: [report.previousTotals.lateDeliveries, report.totals.lateDeliveries], inverse: true },
   ];
-  return <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{metrics.map(({ currentLabel, ...metric }) => <SalesMetricCard key={metric.label} {...metric} locale={locale} comparisonLabel={t("vsPrevious")} currentLabel={currentLabel} />)}</section>;
+  return <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{metrics.map((metric) => <SalesMetricCard key={metric.label} {...metric} locale={locale} comparisonLabel={t("vsPrevious")} currentLabel={t("currentPeriod")} />)}</section>;
 }
 
-export async function DeliveryZoneMap() { const t = await getTranslations("dashDeliveryReport"); return <section className="rounded-card-lg border border-border bg-background p-3"><div className="flex items-center justify-between"><h2 className="text-body-b5">{t("zoneCoverageDemand")}</h2><div className="flex rounded-card-md border border-border p-0.5 text-body-b10"><span className="rounded-card-md bg-accent px-5 py-1 text-primary">{t("map")}</span><span className="px-5 py-1 text-muted-foreground">{t("list")}</span></div></div><div className="mt-2 flex w-fit rounded-card-md border border-border p-0.5 text-body-b10"><span className="rounded-card-md bg-accent px-4 py-1 text-primary">{t("demand")}</span><span className="px-4 py-1 text-muted-foreground">{t("onTimeShort")}</span><span className="px-4 py-1 text-muted-foreground">{t("capacity")}</span></div>
-    <div className="relative mt-1 h-[245px] overflow-hidden rounded-card-md border border-border bg-[linear-gradient(30deg,transparent_48%,rgba(148,163,184,.18)_49%,rgba(148,163,184,.18)_51%,transparent_52%),linear-gradient(150deg,transparent_48%,rgba(148,163,184,.14)_49%,rgba(148,163,184,.14)_51%,transparent_52%)] bg-[length:52px_42px]"><svg viewBox="0 0 760 250" className="size-full" aria-label={t("zoneMapAria")}><Zone points="30,120 85,75 180,52 245,85 230,160 130,190 55,165" fill="#dff7f5" stroke="#0ea5a8" label="West" x="125" y="125" /><Zone points="215,42 300,15 390,32 480,20 560,65 555,105 440,130 310,105 245,82" fill="#e5efff" stroke="#2878f0" label="North" x="375" y="64" /><Zone points="235,112 310,88 415,100 500,125 485,178 345,190 260,166" fill="#e4f7e8" stroke="#16a34a" label="Downtown" x="362" y="142" /><Zone points="500,100 590,68 690,86 735,132 710,190 600,180 500,155" fill="#fff1dd" stroke="#f59e0b" label="East" x="610" y="136" /><Zone points="225,175 340,160 500,175 535,225 415,245 285,225" fill="#fee9e5" stroke="#ef4444" label="Suburbs" x="380" y="210" />{[[80,115],[130,88],[175,142],[280,73],[340,50],[420,62],[470,80],[292,135],[350,155],[425,132],[465,150],[555,125],[610,105],[665,145],[310,198],[375,218],[445,205]].map(([x,y],i)=><circle key={i} cx={x} cy={y} r="5" fill={["#0ea5a8","#2878f0","#16a34a","#f59e0b","#ef4444"][i%5]} stroke="white" strokeWidth="2" />)}</svg><div className="absolute bottom-3 start-3 flex items-center gap-2 rounded-card-md border border-border bg-background/95 px-3 py-2 text-label-l1"><span>{t("lowDemand")}</span>{["#bfdbfe","#86efac","#fde68a","#fdba74","#f87171"].map((color) => <span key={color} className="size-2 rounded-full" style={{ background: color }} />)}<span>{t("highDemand")}</span></div><div className="absolute end-2 top-2 flex flex-col gap-1"><button className="size-8 rounded-card-md border border-border bg-background text-lg">+</button><button className="size-8 rounded-card-md border border-border bg-background text-lg">−</button><button className="size-8 rounded-card-md border border-border bg-background">⌗</button></div></div></section>; }
+export async function DeliveryZoneMap({ report }: { report: DeliveryZonesWire }) {
+  const t = await getTranslations("dashDeliveryReport");
+  return <section className="rounded-card-lg border border-border bg-background p-3">
+    <div className="flex items-center justify-between"><h2 className="text-body-b5">{t("zoneCoverageDemand")}</h2></div>
+    <div className="relative mt-2 h-[245px] overflow-hidden rounded-card-md border border-border" aria-label={t("zoneMapAria")}>
+      <DeliveryZoneMapClient zones={report.zones} ordersLabel={t("orders")} onTimeLabel={t("onTimeShort")} />
+    </div>
+    <p className="mt-2 text-label-l1 text-muted-foreground">{t("zoneMapLegend")}</p>
+  </section>;
+}
 
-export async function DeliveryZonePerformance({ report, locale }: { report: DeliveryPerformanceWire; locale: Locale }) { const t = await getTranslations("dashDeliveryReport"); const rows = zoneRows(report); return <section className="flex flex-col rounded-card-lg border border-border bg-background p-4"><h2 className="text-body-b5">{t("zonePerformance")}</h2><DataTable className="mt-2 rounded-none border-x-0 border-b-0"><Table className="text-body-b10 [&_td]:px-3 [&_td]:py-2 [&_th]:px-3 [&_th]:py-2"><TableHeader><tr><TableHead>{t("zone")}</TableHead><TableHead className="text-end">{t("orders")}</TableHead><TableHead className="text-end">{t("onTimeShort")}</TableHead><TableHead className="text-end">{t("averageTimeShort")}</TableHead><TableHead>{t("capacity")} <Icon icon={Info} size="xs" className="inline" /></TableHead></tr></TableHeader><TableBody>{rows.map((row, index) => <TableRow key={row.zone}><TableCell className="font-medium">{row.zone}</TableCell><TableCell className="text-end">{row.orders}</TableCell><TableCell className="text-end">{formatPercent(row.rate, locale)}</TableCell><TableCell className="text-end">{row.minutes}m</TableCell><TableCell><div className="flex items-center gap-2"><span className="w-8 text-end">{CAPACITY[index]}%</span><span className="h-1.5 flex-1 rounded-full bg-surface-sunken"><span className={`block h-full rounded-full ${CAPACITY[index] > 92 ? "bg-destructive" : CAPACITY[index] > 88 ? "bg-warning-foreground" : "bg-primary"}`} style={{ width: `${CAPACITY[index]}%` }} /></span></div></TableCell></TableRow>)}</TableBody></Table></DataTable><Footer href="/dashboard/delivery-slots" label={t("viewAllZones")} /></section>; }
+export async function DeliveryZonePerformance({ report, locale }: Props) {
+  const t = await getTranslations("dashDeliveryReport");
+  return <section className="flex flex-col rounded-card-lg border border-border bg-background p-4">
+    <h2 className="text-body-b5">{t("zonePerformance")}</h2>
+    <DataTable className="mt-2 rounded-none border-x-0 border-b-0"><Table className="text-body-b10 [&_td]:px-3 [&_td]:py-2 [&_th]:px-3 [&_th]:py-2"><TableHeader><tr><TableHead>{t("zone")}</TableHead><TableHead className="text-end">{t("orders")}</TableHead><TableHead className="text-end">{t("onTimeShort")}</TableHead><TableHead className="text-end">{t("averageTimeShort")}</TableHead><TableHead className="text-end">{t("change")}</TableHead></tr></TableHeader><TableBody>{report.zones.map((zone) => {
+      const change = zone.previousOnTimeRate == null ? null : (zone.onTimeRate - zone.previousOnTimeRate) * 100;
+      return <TableRow key={zone.zone}><TableCell className="font-medium">{zone.zone}</TableCell><TableCell className="text-end">{formatNumber(zone.orders, locale)}</TableCell><TableCell className="text-end">{formatPercent(zone.onTimeRate, locale)}</TableCell><TableCell className="text-end">{t("compactMinutes", { value: zone.averageMinutes })}</TableCell><TableCell className={`whitespace-nowrap text-end font-semibold ${change == null ? "text-muted-foreground" : change >= 0 ? "text-primary" : "text-destructive"}`}>{change == null ? "—" : `${change >= 0 ? "↑" : "↓"} ${Math.abs(change).toFixed(1)}%`}</TableCell></TableRow>;
+    })}</TableBody></Table></DataTable>
+    <Footer href="/dashboard/delivery-slots" label={t("viewAllZones")} />
+  </section>;
+}
 
-export async function DeliveryZoneDemand({ report, locale }: { report: DeliveryPerformanceWire; locale: Locale }) { const t = await getTranslations("dashDeliveryReport"); const rows = zoneRows(report); const max = Math.max(...rows.map((row) => row.orders), 1); return <section className="rounded-card-lg border border-border bg-background p-4"><div className="flex items-center justify-between"><h2 className="flex items-center gap-1.5 text-body-b5">{t("demandCapacityByZone")}<Icon icon={Info} size="xs" /></h2><div className="flex rounded-card-md border border-border p-0.5 text-body-b10"><span className="rounded-card-md bg-accent px-4 py-1 text-primary">{t("orders")}</span><span className="px-4 py-1 text-muted-foreground">{t("utilization")}</span></div></div><div className="mt-2 flex gap-5 text-label-l1 text-muted-foreground"><span className="flex items-center gap-2"><i className="size-2 rounded-full bg-primary" />{t("orderDemand")}</span><span className="flex items-center gap-2"><i className="size-2 rounded-full bg-info-foreground/50" />{t("availableCapacity")}</span></div><div className="mt-3 space-y-3">{rows.map((row, index) => <div key={row.zone} className="grid grid-cols-[4rem_1fr] items-center gap-3 text-body-b10"><span>{row.zone}</span><div className="space-y-1"><Bar width={row.orders/max*78} label={String(row.orders)} tone="bg-primary" /><Bar width={Math.min(96, row.orders/max*78 + 16 - index*2)} label={String(Math.round(row.orders/(CAPACITY[index]/100)))} tone="bg-info-foreground/40" /></div></div>)}</div></section>; }
+export async function DeliveryZoneDemand({ report, locale }: Props) {
+  const t = await getTranslations("dashDeliveryReport");
+  const max = Math.max(...report.zones.map((zone) => zone.orders), 1);
+  return <section className="rounded-card-lg border border-border bg-background p-4">
+    <h2 className="flex items-center gap-1.5 text-body-b5">{t("ordersByZone")}<Icon icon={Info} size="xs" /></h2>
+    <div className="mt-3 space-y-3">{report.zones.map((zone) => <div key={zone.zone} className="grid grid-cols-[4rem_1fr] items-center gap-3 text-body-b10"><span className="truncate">{zone.zone}</span><Bar width={(zone.orders / max) * 96} label={formatNumber(zone.orders, locale)} /></div>)}</div>
+  </section>;
+}
 
-export async function DeliveryZoneAlerts() { const t = await getTranslations("dashDeliveryReport"); const alerts = [[t("suburbsCapacityRisk"), t("capacityDetail"), "Critical", AlertTriangle, "text-destructive bg-error"], [t("eastSlaTarget"), t("slaDetail"), "Warning", AlertTriangle, "text-warning-foreground bg-warning/15"], [t("northDemandIncreasing"), t("ordersUp"), "Monitor", TrendingUp, "text-info-foreground bg-info"], [t("downtownPerformingWell"), t("downtownRate"), "Healthy", CheckCircle2, "text-primary bg-accent"]] as const; return <section className="flex flex-col rounded-card-lg border border-border bg-background p-4"><h2 className="text-body-b5">{t("zoneAlerts")}</h2><div className="mt-2 divide-y divide-border rounded-card-md border border-border">{alerts.map(([title, detail, badge, icon, tone]) => <div key={title} className="grid grid-cols-[2rem_1fr_1fr_auto] items-center gap-3 px-3 py-2 text-body-b10"><span className={`flex size-8 items-center justify-center rounded-card-md ${tone}`}><Icon icon={icon} size="xs" /></span><span className="font-medium">{title}</span><span className="text-muted-foreground">{detail}</span><span className={`rounded-card-md border px-2 py-1 text-label-l1 ${tone}`}>{badge}</span></div>)}</div><Footer href="/dashboard/delivery-slots" label={t("viewAllAlerts")} /></section>; }
+export async function DeliveryZoneAlerts({ report, locale }: Props) {
+  const t = await getTranslations("dashDeliveryReport");
+  const strongest = report.zones.length ? [...report.zones].sort((a, b) => b.onTimeRate - a.onTimeRate)[0] : undefined;
+  const rows = [
+    ...report.alerts.map((alert) => ({
+      key: `${alert.zone}-${alert.severity}`,
+      title: t("zoneBelowTarget", { zone: alert.zone }),
+      detail: t("zoneAlertDetail", { rate: formatPercent(alert.onTimeRate, locale), count: alert.lateDeliveries }),
+      badge: alert.severity === "critical" ? t("critical") : t("warningBadge"),
+      icon: AlertTriangle,
+      tone: alert.severity === "critical" ? "text-destructive bg-error" : "text-warning-foreground bg-warning/15",
+    })),
+    ...(strongest && strongest.onTimeRate >= 0.95
+      ? [{ key: `${strongest.zone}-healthy`, title: t("zonePerformingWell", { zone: strongest.zone }), detail: t("onTimeDetail", { rate: formatPercent(strongest.onTimeRate, locale) }), badge: t("healthy"), icon: CheckCircle2, tone: "text-primary bg-accent" }]
+      : []),
+  ];
+  return <section className="flex flex-col rounded-card-lg border border-border bg-background p-4">
+    <h2 className="text-body-b5">{t("zoneAlerts")}</h2>
+    {rows.length ? <div className="mt-2 divide-y divide-border rounded-card-md border border-border">{rows.map(({ key, title, detail, badge, icon, tone }) => <div key={key} className="grid grid-cols-[2rem_1fr_1fr_auto] items-center gap-3 px-3 py-2 text-body-b10"><span className={`flex size-8 items-center justify-center rounded-card-md ${tone}`}><Icon icon={icon} size="xs" /></span><span className="font-medium">{title}</span><span className="text-muted-foreground">{detail}</span><span className={`rounded-card-md border px-2 py-1 text-label-l1 ${tone}`}>{badge}</span></div>)}</div> : <p className="py-10 text-center text-body-b8 text-muted-foreground">{t("noAlerts")}</p>}
+    <Footer href="/dashboard/delivery-slots" label={t("viewAllAlerts")} />
+  </section>;
+}
 
-function Zone({ points, fill, stroke, label, x, y }: { points: string; fill: string; stroke: string; label: string; x: string; y: string }) { return <g><polygon points={points} fill={fill} fillOpacity=".86" stroke={stroke} strokeWidth="2" /><rect x={Number(x)-38} y={Number(y)-16} width="76" height="28" rx="5" fill="white" stroke="#d1d5db" /><text x={x} y={y} textAnchor="middle" fontSize="13" fontWeight="600" fill="#111827">{label}</text></g>; }
 function Footer({ href, label }: { href: string; label: string }) { return <Link href={href} className="mt-auto flex items-center gap-2 border-t border-border pt-3 text-body-b8 font-medium text-primary">{label}<Icon icon={ExternalLink} size="xs" /></Link>; }
-function Bar({ width, label, tone }: { width: number; label: string; tone: string }) { return <div className="flex items-center gap-2"><span className={`h-1.5 rounded-full ${tone}`} style={{ width: `${Math.max(width, 4)}%` }} /><span className="text-label-l1">{label}</span></div>; }
-function zoneRows(report: DeliveryPerformanceWire) { const total = Math.max(report.totals.deliveredOrders, 1); const weights = [.33,.22,.19,.16,.1]; return ZONES.map((zone,index)=>({zone,orders:Math.max(1,Math.round(total*weights[index])),rate:Math.max(0,(report.totals.onTimeOrders/total)-index*.018),minutes:Math.round(report.totals.averageMinutes*.72+index*4)})); }
+function Bar({ width, label }: { width: number; label: string }) { return <div className="flex items-center gap-2"><span className="h-1.5 rounded-full bg-primary" style={{ width: `${Math.max(width, 4)}%` }} /><span className="text-label-l1">{label}</span></div>; }
 function formatPercent(value: number, locale: Locale) { return new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 }).format(value); }

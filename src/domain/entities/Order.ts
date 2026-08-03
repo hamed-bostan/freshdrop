@@ -179,6 +179,13 @@ export type Order = {
    * back to a default destination.
    */
   destination?: GeoPoint;
+  /**
+   * The settlement (city/town) the delivery address sits in, snapshotted from the
+   * selected location at checkout — the geographic dimension delivery-zone
+   * reporting groups by. `undefined` for legacy orders and whenever the geocoder
+   * couldn't resolve a city for the saved address.
+   */
+  city?: string;
   items: OrderItem[];
   /**
    * The order's price breakdown captured at checkout — the faithful record of what

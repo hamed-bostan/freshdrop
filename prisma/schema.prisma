@@ -237,6 +237,11 @@ model Order {
   // card can collapse the address to its label. Nullable: seeded/legacy orders
   // predate it and read as NULL (the card falls back to the address's city).
   locationLabel String? @map("location_label")
+  // The settlement (city/town) the delivery address sits in, snapshotted from the
+  // selected `DeliveryLocation.city` at checkout — the geographic dimension
+  // delivery-zone reporting groups by. Nullable: seeded/legacy orders predate it,
+  // and the geocoder doesn't always resolve a city for the saved address either.
+  city String?
   // The delivery coordinate snapshotted from the selected address at checkout, so
   // tracking can map the order to its real destination. Nullable: seeded/legacy
   // orders predate it, and a saved address may carry no coordinate — tracking then

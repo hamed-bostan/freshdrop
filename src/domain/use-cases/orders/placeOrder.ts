@@ -36,6 +36,7 @@ export type PlaceOrderInput = {
   location: string;
   locationLabel?: string;
   destination?: GeoPoint;
+  city?: string;
   /** Server-computed lines and totals (see `priceCart`) — never client-supplied amounts. */
   cart: Cart;
   deliveryDate: string;
@@ -86,6 +87,7 @@ export async function placeOrder(
     location,
     locationLabel,
     destination,
+    city,
     cart,
     deliveryDate,
     deliveryWindowId,
@@ -179,6 +181,7 @@ export async function placeOrder(
       location,
       locationLabel,
       destination,
+      city,
       subtotal: cart.subtotal,
       shipping: cart.shipping,
       discount: cart.discount,

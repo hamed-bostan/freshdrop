@@ -16,6 +16,7 @@ import {
 import type { PaymentIssue, PaymentReportTotals } from "@/src/domain/entities/PaymentReport";
 import type { RefundCase, RefundReasonCount, RefundReportTotals } from "@/src/domain/entities/RefundReport";
 import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, DeliveryWindowPerformance, LateDelivery } from "@/src/domain/entities/DeliveryPerformanceReport";
+import type { DeliveryZonePerformance } from "@/src/domain/entities/DeliveryZonesReport";
 import type { CustomerGrowthPoint, PurchaseFrequency, RetentionCohort } from "@/src/domain/entities/CustomerInsightsReport";
 import type { CustomerSegmentId, CustomerSegmentPerformance } from "@/src/domain/entities/CustomerSegmentsReport";
 import type { RefundKind } from "@/src/domain/entities/Refund";
@@ -482,6 +483,70 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     return rows.map((row) => ({ ...row, deliveredAt: row.deliveredAt.toISOString() }));
   }
 
+  /**
+   * Delivery performance grouped by the settlement (city) the order was
+   * delivered to — the real geographic dimension, snapshotted onto `orders.city`
+   * at checkout (see the `add_order_city` migration). Orders whose city wasn't
+   * resolved at checkout (legacy rows, or an unresolved geocode) group under
+   * `Unspecified` rather than being dropped, so the totals still reconcile with
+   * {@link deliveryTotals}. `centroid` is the average of the group's delivery
+   * coordinates — the only real position a city name affords — for a zone map
+   * marker; `null` when none of the group's orders carry a coordinate.
+   */
+  async deliveryZonePerformance(range: DateRange, previousRange: DateRange, limit: number): Promise<DeliveryZonePerformance[]> {
+    const rows = await this.db.$queryRaw<DeliveryZonePerformanceRow[]>(Prisma.sql`
+      WITH
+        current_deliveries AS (${deliveryEvents(range)}),
+        previous_deliveries AS (${deliveryEvents(previousRange)}),
+        current_stats AS (
+          SELECT
+            COALESCE(city, 'Unspecified') AS zone,
+            COUNT(*)::int AS orders,
+            COALESCE(
+              COUNT(*) FILTER (WHERE due_at IS NOT NULL AND delivered_at <= due_at)::double precision
+                / NULLIF(COUNT(*) FILTER (WHERE due_at IS NOT NULL), 0),
+              0
+            ) AS "onTimeRate",
+            COUNT(*) FILTER (WHERE due_at IS NOT NULL AND delivered_at > due_at)::int AS "lateDeliveries",
+            COALESCE(ROUND(AVG(window_minutes)), 0)::int AS "averageMinutes",
+            AVG(destination_lat) AS "centroidLat",
+            AVG(destination_lng) AS "centroidLng"
+          FROM current_deliveries
+          GROUP BY 1
+        ),
+        previous_stats AS (
+          SELECT
+            COALESCE(city, 'Unspecified') AS zone,
+            COUNT(*) FILTER (WHERE due_at IS NOT NULL AND delivered_at <= due_at)::double precision
+              / NULLIF(COUNT(*) FILTER (WHERE due_at IS NOT NULL), 0) AS rate
+          FROM previous_deliveries
+          GROUP BY 1
+        )
+      SELECT
+        c.zone,
+        c.orders,
+        c."onTimeRate",
+        c."lateDeliveries",
+        c."averageMinutes",
+        c."centroidLat",
+        c."centroidLng",
+        p.rate AS "previousOnTimeRate"
+      FROM current_stats c
+      LEFT JOIN previous_stats p USING (zone)
+      ORDER BY c.orders DESC
+      LIMIT ${Math.max(1, Math.min(limit, 20))}
+    `);
+    return rows.map((row) => ({
+      zone: row.zone,
+      orders: row.orders,
+      onTimeRate: row.onTimeRate,
+      previousOnTimeRate: row.previousOnTimeRate,
+      lateDeliveries: row.lateDeliveries,
+      averageMinutes: row.averageMinutes,
+      centroid: row.centroidLat != null && row.centroidLng != null ? { latitude: row.centroidLat, longitude: row.centroidLng } : null,
+    }));
+  }
+
   async topProducts(range: DateRange, limit: number, sort: RevenueRankSort, comparisonRange?: DateRange): Promise<TopProduct[]> {
     const rows = await this.db.$queryRaw<TopProductRow[]>(Prisma.sql`
       WITH ${earningLines(range)}
@@ -823,6 +888,7 @@ type DeliveryTotalsRow = DeliveryPerformanceTotals;
 type DeliveryPointRow = Omit<DeliveryPerformancePoint, "bucket"> & { bucket: Date };
 type DeliveryWindowRow = DeliveryWindowPerformance;
 type LateDeliveryRow = Omit<LateDelivery, "deliveredAt"> & { deliveredAt: Date };
+type DeliveryZonePerformanceRow = { zone: string; orders: number; onTimeRate: number; lateDeliveries: number; averageMinutes: number; centroidLat: number | null; centroidLng: number | null; previousOnTimeRate: number | null };
 
 function emptyPaymentTotals(): PaymentReportTotals {
   return { paidRevenue: 0, successfulPayments: 0, failedPayments: 0, pendingPayments: 0, refundedPayments: 0, walletAmount: 0, externalAmount: 0 };
@@ -832,5 +898,5 @@ function emptyRefundTotals(): RefundReportTotals { return { refundedAmount: 0, r
 function toRevenuePoint(row: SeriesRow): RevenuePoint { return { bucket: row.bucket.toISOString(), revenue: row.revenue, orders: row.orders }; }
 
 function deliveryEvents(range: DateRange): Prisma.Sql {
-  return Prisma.sql`SELECT o.id AS order_id, o.order_number, o.user_id, o.placed_at, o.updated_at AS delivered_at, o.delivery_window_id AS window_id, o.delivery_window AS window_label, CASE WHEN w.end_minutes > w.start_minutes THEN w.end_minutes - w.start_minutes ELSE NULL END AS window_minutes, CASE WHEN o.delivery_date IS NOT NULL AND w.end_minutes IS NOT NULL THEN o.delivery_date::date + (w.end_minutes * interval '1 minute') ELSE NULL END AS due_at FROM orders o LEFT JOIN delivery_windows w ON w.id = o.delivery_window_id WHERE o.delivery_type = 'delivery' AND o.status = 'completed' AND o.updated_at >= ${range.from} AND o.updated_at < ${range.to}`;
+  return Prisma.sql`SELECT o.id AS order_id, o.order_number, o.user_id, o.placed_at, o.updated_at AS delivered_at, o.delivery_window_id AS window_id, o.delivery_window AS window_label, o.city, o.destination_lat, o.destination_lng, CASE WHEN w.end_minutes > w.start_minutes THEN w.end_minutes - w.start_minutes ELSE NULL END AS window_minutes, CASE WHEN o.delivery_date IS NOT NULL AND w.end_minutes IS NOT NULL THEN o.delivery_date::date + (w.end_minutes * interval '1 minute') ELSE NULL END AS due_at FROM orders o LEFT JOIN delivery_windows w ON w.id = o.delivery_window_id WHERE o.delivery_type = 'delivery' AND o.status = 'completed' AND o.updated_at >= ${range.from} AND o.updated_at < ${range.to}`;
 }
