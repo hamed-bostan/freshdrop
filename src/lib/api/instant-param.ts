@@ -1,13 +1,14 @@
 import { z } from "zod";
 
 /**
- * A free-form, `Date`-parseable query param, narrowed to an ISO instant — or
- * `undefined` for anything absent or unparsable. Shared by `admin-order-params.ts`
- * and `admin-stock-movement-params.ts`, whose `from`/`to` filters both accept
- * whatever string form a date input or a hand-edited URL produces rather than one
- * strict format, unlike `analytics-params.ts`'s calendar-only `YYYY-MM-DD` params.
+ * A free-form, `Date`-parseable query param, narrowed to an ISO instant.
+ * Meant to be used as a field inside a larger `z.object({...})` filter schema
+ * (see `admin-order-params.ts`, `admin-stock-movement-params.ts`) rather than
+ * parsed standalone, so a rejected value's `ZodError` carries the field's own
+ * name (`from`, `to`) for the `fieldErrors` response — a bare top-level parse
+ * would report it as a root-level error instead.
  */
-const instantSchema = z
+export const instantParamSchema = z
   .string()
   .transform((value, ctx) => {
     const parsed = new Date(value);
@@ -17,9 +18,4 @@ const instantSchema = z
     }
     return parsed.toISOString();
   })
-  .optional()
-  .catch(undefined);
-
-export function parseInstant(value: string | null): string | undefined {
-  return instantSchema.parse(value ?? undefined);
-}
+  .optional();

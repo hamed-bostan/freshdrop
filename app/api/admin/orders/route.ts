@@ -33,13 +33,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
 
   const params = request.nextUrl.searchParams;
-  const filters = parseAdminOrderFilters(params);
-  const page = parsePageRequest(params, ADMIN_ORDER_SORTS, {
-    sort: DEFAULT_ADMIN_ORDER_SORT,
-    direction: DEFAULT_ADMIN_ORDER_DIRECTION,
-  });
 
   try {
+    const filters = parseAdminOrderFilters(params);
+    const page = parsePageRequest(params, ADMIN_ORDER_SORTS, {
+      sort: DEFAULT_ADMIN_ORDER_SORT,
+      direction: DEFAULT_ADMIN_ORDER_DIRECTION,
+    });
     const result = await new ListOrders(orderRepository, userRepository).execute(filters, page);
     return NextResponse.json(result);
   } catch (error) {

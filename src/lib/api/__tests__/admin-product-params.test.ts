@@ -18,8 +18,12 @@ describe("parseAdminProductFilters", () => {
     });
   });
 
-  it("drops blank and unrecognised values instead of erroring", () => {
-    const params = new URLSearchParams({ q: "   ", stock: "discontinued", visibility: "hidden" });
-    expect(parseAdminProductFilters(params)).toEqual({});
+  it("treats a blank query or categoryId as absent rather than an error", () => {
+    expect(parseAdminProductFilters(new URLSearchParams({ q: "   ", categoryId: "  " }))).toEqual({});
+  });
+
+  it("rejects an unrecognised stock level or visibility instead of silently dropping it", () => {
+    expect(() => parseAdminProductFilters(new URLSearchParams({ stock: "discontinued" }))).toThrow();
+    expect(() => parseAdminProductFilters(new URLSearchParams({ visibility: "hidden" }))).toThrow();
   });
 });

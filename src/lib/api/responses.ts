@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { ZodError } from "zod";
+import { ZodError } from "zod";
 import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError";
 import { ValidationError } from "@/src/domain/errors/ValidationError";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
@@ -41,6 +41,17 @@ export function unauthorizedResponse(): NextResponse {
  * and is logged server-side (its detail is never leaked to the client).
  */
 export function errorResponseFromException(error: unknown, context: string): NextResponse {
+  // A query-param or body schema rejected the request — the client's fault, not
+  // an unexpected failure, so it's a 400 with per-field detail rather than a
+  // logged 500.
+  if (error instanceof ZodError) {
+    return errorResponse(400, {
+      message: "One or more query parameters are invalid.",
+      code: "VALIDATION",
+      fieldErrors: firstFieldErrors(error),
+    });
+  }
+
   if (error instanceof UniqueConstraintError) {
     const message = error.fields.length
       ? `That ${error.fields.join(", ")} is already taken.`

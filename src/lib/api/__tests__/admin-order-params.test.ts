@@ -26,21 +26,22 @@ describe("parseAdminOrderFilters", () => {
     });
   });
 
-  it("drops blank, unknown, and malformed values instead of erroring", () => {
-    const params = new URLSearchParams({
-      q: "   ",
-      pipeline: "sideways",
-      delivery: "teleport",
-      payment: "disputed",
-      from: "not-a-date",
-      min: "",
-      max: "-5",
-    });
-
-    expect(parseAdminOrderFilters(params)).toEqual({});
+  it("treats a blank query as absent rather than an error", () => {
+    expect(parseAdminOrderFilters(new URLSearchParams({ q: "   " }))).toEqual({});
   });
 
-  it("rejects a blank amount rather than treating it as zero", () => {
+  it("rejects an unrecognised pipeline, delivery type, or payment status instead of silently dropping it", () => {
+    expect(() => parseAdminOrderFilters(new URLSearchParams({ pipeline: "sideways" }))).toThrow();
+    expect(() => parseAdminOrderFilters(new URLSearchParams({ delivery: "teleport" }))).toThrow();
+    expect(() => parseAdminOrderFilters(new URLSearchParams({ payment: "disputed" }))).toThrow();
+  });
+
+  it("rejects a malformed date or a negative amount instead of silently dropping it", () => {
+    expect(() => parseAdminOrderFilters(new URLSearchParams({ from: "not-a-date" }))).toThrow();
+    expect(() => parseAdminOrderFilters(new URLSearchParams({ max: "-5" }))).toThrow();
+  });
+
+  it("treats a blank amount as absent rather than zero", () => {
     expect(parseAdminOrderFilters(new URLSearchParams({ min: "" }))).toEqual({});
     expect(parseAdminOrderFilters(new URLSearchParams({ min: "0" }))).toEqual({ minTotal: 0 });
   });

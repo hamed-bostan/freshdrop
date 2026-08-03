@@ -31,13 +31,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
 
   const params = request.nextUrl.searchParams;
-  const filters = parseAdminProductFilters(params);
-  const page = parsePageRequest(params, ADMIN_PRODUCT_SORTS, {
-    sort: DEFAULT_ADMIN_PRODUCT_SORT,
-    direction: DEFAULT_ADMIN_PRODUCT_DIRECTION,
-  });
 
   try {
+    const filters = parseAdminProductFilters(params);
+    const page = parsePageRequest(params, ADMIN_PRODUCT_SORTS, {
+      sort: DEFAULT_ADMIN_PRODUCT_SORT,
+      direction: DEFAULT_ADMIN_PRODUCT_DIRECTION,
+    });
     const result = await new ListProducts(productRepository).execute(filters, page, getRequestLocale(request));
     return NextResponse.json(result);
   } catch (error) {

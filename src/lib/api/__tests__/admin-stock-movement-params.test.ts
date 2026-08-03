@@ -20,16 +20,18 @@ describe("parseAdminStockMovementFilters", () => {
     });
   });
 
-  it("drops blank, unknown, and malformed values instead of producing an empty trap", () => {
-    const params = new URLSearchParams({
-      q: "   ",
-      movement: "sideways",
-      reason: "warehouse",
-      from: "not-a-date",
-      to: "also-not-a-date",
-    });
+  it("treats a blank query as absent rather than an error", () => {
+    expect(parseAdminStockMovementFilters(new URLSearchParams({ q: "   " }))).toEqual({});
+  });
 
-    expect(parseAdminStockMovementFilters(params)).toEqual({});
+  it("rejects an unrecognised movement or reason instead of silently dropping it", () => {
+    expect(() => parseAdminStockMovementFilters(new URLSearchParams({ movement: "sideways" }))).toThrow();
+    expect(() => parseAdminStockMovementFilters(new URLSearchParams({ reason: "warehouse" }))).toThrow();
+  });
+
+  it("rejects a malformed date instead of silently dropping it", () => {
+    expect(() => parseAdminStockMovementFilters(new URLSearchParams({ from: "not-a-date" }))).toThrow();
+    expect(() => parseAdminStockMovementFilters(new URLSearchParams({ to: "also-not-a-date" }))).toThrow();
   });
 
   it("accepts inbound movements and operator reasons", () => {

@@ -7,7 +7,7 @@ import { orderRepository, userRepository } from "@/src/infrastructure/container"
 import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminOrderFilters } from "@/src/lib/api/admin-order-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
-import { unauthorizedResponse } from "@/src/lib/api/responses";
+import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 import { csvFilename, csvResponse, csvStream, type CsvValue } from "@/src/lib/csv";
 
 // A snapshot of live order data, per request.
@@ -31,15 +31,15 @@ export async function GET(request: NextRequest): Promise<Response> {
   if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
 
   const params = request.nextUrl.searchParams;
-  const filters = parseAdminOrderFilters(params);
-  const { sort } = parsePageRequest(params, ADMIN_ORDER_SORTS, { sort: DEFAULT_ADMIN_ORDER_SORT });
 
-  const orders = new ExportOrders(orderRepository, userRepository).execute(filters, sort);
-
-  return csvResponse(
-    csvFilename("orders"),
-    csvStream(HEADER, toRows(orders)),
-  );
+  try {
+    const filters = parseAdminOrderFilters(params);
+    const { sort } = parsePageRequest(params, ADMIN_ORDER_SORTS, { sort: DEFAULT_ADMIN_ORDER_SORT });
+    const orders = new ExportOrders(orderRepository, userRepository).execute(filters, sort);
+    return csvResponse(csvFilename("orders"), csvStream(HEADER, toRows(orders)));
+  } catch (error) {
+    return errorResponseFromException(error, "GET /api/admin/exports/orders failed");
+  }
 }
 
 /**

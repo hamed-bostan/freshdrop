@@ -2,7 +2,8 @@ import { z } from "zod";
 import type { AdminOrderFilters } from "@/src/domain/entities/AdminOrderFilters";
 import { DELIVERY_TYPES, PAYMENT_STATUSES } from "@/src/domain/entities/Order";
 import { ORDER_PIPELINE_STAGES } from "@/src/domain/entities/OrderPipelineStage";
-import { parseInstant } from "./instant-param";
+import { instantParamSchema } from "./instant-param";
+import { trimmedTextParamSchema } from "./trimmed-text-param";
 
 /**
  * The wire contract for the admin order list's filters — shared by the dashboard
@@ -12,55 +13,51 @@ import { parseInstant } from "./instant-param";
  * `min`/`max`. Paging and ordering ride in the same query string but are parsed
  * by `pagination-params.ts`.
  *
- * Every value is validated against the domain's own vocabulary and anything else
- * is dropped rather than rejected: these params come from links and a
- * hand-editable URL bar, so a stale bookmark should degrade to a wider list, not
- * a 400. The narrowing is what has to be trustworthy, not the input.
+ * `pipeline`/`delivery`/`payment` are validated against the domain's own
+ * vocabulary and `from`/`to`/`min`/`max` against their shape; a recognised-but-
+ * invalid value fails validation (see `parseAdminOrderFilters`). Only free text
+ * (`q`) and an absent field are forgiven — the toolbar's own controls can't
+ * produce anything else, so a rejected request is a hand-edited or
+ * out-of-contract one, not a stale link degrading gracefully.
  */
-
-const pipelineSchema = z.enum(ORDER_PIPELINE_STAGES).optional().catch(undefined);
-const deliverySchema = z.enum(DELIVERY_TYPES).optional().catch(undefined);
-const paymentSchema = z.enum(PAYMENT_STATUSES).optional().catch(undefined);
-const amountSchema = z
-  .preprocess((value) => (typeof value === "string" && value.trim() === "" ? undefined : value), z.coerce.number().finite().nonnegative())
-  .optional()
-  .catch(undefined);
 
 /**
  * A finite, non-negative money bound, or `undefined`.
  *
  * `Number("")` is 0, which would silently turn a cleared Min field into "at
  * least zero" — harmless here but the same trap that makes an empty Max mean
- * "at most nothing", so both are handled by rejecting a blank outright.
+ * "at most nothing", so both are handled by treating a blank as absent rather
+ * than as zero.
  */
-function parseAmount(value: string | null): number | undefined {
-  return amountSchema.parse(value ?? undefined);
-}
+const amountParamSchema = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+  z.coerce.number().finite().nonnegative().optional(),
+);
 
+export const adminOrderFiltersSchema = z.object({
+  q: trimmedTextParamSchema,
+  pipeline: z.enum(ORDER_PIPELINE_STAGES).optional(),
+  delivery: z.enum(DELIVERY_TYPES).optional(),
+  payment: z.enum(PAYMENT_STATUSES).optional(),
+  from: instantParamSchema,
+  to: instantParamSchema,
+  min: amountParamSchema,
+  max: amountParamSchema,
+});
+
+/** Parse order-list filters from a `URLSearchParams`. Throws `ZodError` for a recognised-but-invalid value. */
 export function parseAdminOrderFilters(params: URLSearchParams): AdminOrderFilters {
+  const parsed = adminOrderFiltersSchema.parse(Object.fromEntries(params));
   const filters: AdminOrderFilters = {};
 
-  const query = params.get("q")?.trim();
-  if (query) filters.query = query;
-
-  const pipeline = pipelineSchema.parse(params.get("pipeline") ?? undefined);
-  if (pipeline) filters.pipeline = pipeline;
-
-  const delivery = deliverySchema.parse(params.get("delivery") ?? undefined);
-  if (delivery) filters.deliveryType = delivery;
-
-  const payment = paymentSchema.parse(params.get("payment") ?? undefined);
-  if (payment) filters.paymentStatus = payment;
-
-  const placedFrom = parseInstant(params.get("from"));
-  if (placedFrom) filters.placedFrom = placedFrom;
-  const placedTo = parseInstant(params.get("to"));
-  if (placedTo) filters.placedTo = placedTo;
-
-  const minTotal = parseAmount(params.get("min"));
-  if (minTotal != null) filters.minTotal = minTotal;
-  const maxTotal = parseAmount(params.get("max"));
-  if (maxTotal != null) filters.maxTotal = maxTotal;
+  if (parsed.q) filters.query = parsed.q;
+  if (parsed.pipeline) filters.pipeline = parsed.pipeline;
+  if (parsed.delivery) filters.deliveryType = parsed.delivery;
+  if (parsed.payment) filters.paymentStatus = parsed.payment;
+  if (parsed.from) filters.placedFrom = parsed.from;
+  if (parsed.to) filters.placedTo = parsed.to;
+  if (parsed.min != null) filters.minTotal = parsed.min;
+  if (parsed.max != null) filters.maxTotal = parsed.max;
 
   return filters;
 }

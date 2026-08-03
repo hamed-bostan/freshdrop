@@ -4,6 +4,7 @@ import {
   ADMIN_VISIBILITY_FILTERS,
   type AdminProductFilters,
 } from "@/src/domain/entities/AdminProductFilters";
+import { trimmedTextParamSchema } from "./trimmed-text-param";
 
 /**
  * The wire contract for the catalog-management list's filters — shared by the
@@ -13,31 +14,31 @@ import {
  *
  * Query-param names: `q`, `categoryId`, `stock`, `visibility`. Paging and ordering ride in the
  * same query string but are parsed separately by `pagination-params.ts`.
+ *
+ * `q`/`categoryId` are free text: a blank value means "no filter", never an
+ * error. `stock`/`visibility` are the domain's own closed vocabulary, so an
+ * unrecognised value fails validation — the toolbar never produces one, and a
+ * request that names one is asking the repository for a state that doesn't
+ * exist (see `AdminStockFilter`), which is worth rejecting rather than
+ * silently widening the list.
  */
-
-const stockSchema = z.enum(ADMIN_STOCK_FILTERS).optional().catch(undefined);
-const visibilitySchema = z.enum(ADMIN_VISIBILITY_FILTERS).optional().catch(undefined);
-
-/** Parse management-list filters from a `URLSearchParams`, dropping blank/unrecognised values. */
-export function parseAdminProductFilters(params: URLSearchParams): AdminProductFilters {
-  const filters: AdminProductFilters = {};
-
-  const query = params.get("q")?.trim();
-  if (query) filters.query = query;
-
-  const categoryId = params.get("categoryId")?.trim();
-  if (categoryId) filters.categoryId = categoryId;
-
-  // Only a recognised stock level, so a hand-edited URL can't reach the repository
-  // with a state `getStockStatus` never produces.
-  const stock = stockSchema.parse(params.get("stock") ?? undefined);
-  if (stock) filters.stock = stock;
-
+export const adminProductFiltersSchema = z.object({
+  q: trimmedTextParamSchema,
+  categoryId: trimmedTextParamSchema,
+  stock: z.enum(ADMIN_STOCK_FILTERS).optional(),
   // Absent means both states — the management list deliberately shows withdrawn
   // products alongside live ones.
-  const visibility = visibilitySchema.parse(params.get("visibility") ?? undefined);
-  if (visibility) filters.visibility = visibility;
+  visibility: z.enum(ADMIN_VISIBILITY_FILTERS).optional(),
+});
 
+/** Parse management-list filters from a `URLSearchParams`. Throws `ZodError` for a recognised-but-invalid value. */
+export function parseAdminProductFilters(params: URLSearchParams): AdminProductFilters {
+  const parsed = adminProductFiltersSchema.parse(Object.fromEntries(params));
+  const filters: AdminProductFilters = {};
+  if (parsed.q) filters.query = parsed.q;
+  if (parsed.categoryId) filters.categoryId = parsed.categoryId;
+  if (parsed.stock) filters.stock = parsed.stock;
+  if (parsed.visibility) filters.visibility = parsed.visibility;
   return filters;
 }
 

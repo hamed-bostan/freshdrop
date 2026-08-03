@@ -9,7 +9,7 @@ import { stockMovementLog } from "@/src/infrastructure/container";
 import { parseAdminStockMovementFilters } from "@/src/lib/api/admin-stock-movement-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
 import { getSessionWith } from "@/src/lib/require-permission";
-import { unauthorizedResponse } from "@/src/lib/api/responses";
+import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 import { csvFilename, csvResponse, csvStream, type CsvValue } from "@/src/lib/csv";
 
 export const dynamic = "force-dynamic";
@@ -19,12 +19,17 @@ export async function GET(request: NextRequest): Promise<Response> {
   if (!(await getSessionWith("catalog.write"))) return unauthorizedResponse();
 
   const params = request.nextUrl.searchParams;
-  const filters = parseAdminStockMovementFilters(params);
-  const { sort, direction } = parsePageRequest(params, STOCK_MOVEMENT_SORTS, {
-    sort: DEFAULT_STOCK_MOVEMENT_SORT,
-  });
-  const movements = new ExportStockMovements(stockMovementLog).execute(filters, sort, direction);
-  return csvResponse(csvFilename("inventory-movements"), csvStream(HEADER, toRows(movements)));
+
+  try {
+    const filters = parseAdminStockMovementFilters(params);
+    const { sort, direction } = parsePageRequest(params, STOCK_MOVEMENT_SORTS, {
+      sort: DEFAULT_STOCK_MOVEMENT_SORT,
+    });
+    const movements = new ExportStockMovements(stockMovementLog).execute(filters, sort, direction);
+    return csvResponse(csvFilename("inventory-movements"), csvStream(HEADER, toRows(movements)));
+  } catch (error) {
+    return errorResponseFromException(error, "GET /api/admin/exports/inventory-movements failed");
+  }
 }
 
 const HEADER = [

@@ -16,9 +16,9 @@ export const dynamic = "force-dynamic";
  * Query params: `range` (a preset: `7d`, `30d`, `90d`, `12m`) or `from` + `to`
  * (`YYYY-MM-DD`, inclusive of both days); `productSort`/`categorySort` (`revenue`
  * or `units`) for the two ranked panels; `rankLimit` for how many rows those
- * panels return (defaults to the overview's compact size). Anything unrecognised
- * falls back to the default preset, sort or limit, the rule every list endpoint
- * here follows.
+ * panels return (defaults to the overview's compact size). Any of these left
+ * absent falls back to its default; any of them present but invalid is a 400
+ * (see `analytics-params.ts`).
  *
  * One endpoint for the whole screen, not one per tile: every figure has to describe
  * the same period, and independent fetches are independent chances for the range to
@@ -33,12 +33,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
 
   const params = request.nextUrl.searchParams;
-  const range = parseAnalyticsRange(params);
-  const productsSort = parseRevenueRankSort(params, "productSort");
-  const categoriesSort = parseRevenueRankSort(params, "categorySort");
-  const rankLimit = parseRankLimit(params, 5);
 
   try {
+    const range = parseAnalyticsRange(params);
+    const productsSort = parseRevenueRankSort(params, "productSort");
+    const categoriesSort = parseRevenueRankSort(params, "categorySort");
+    const rankLimit = parseRankLimit(params, 5);
     const overview = await new GetAnalyticsOverview(analyticsRepository).execute(range, {
       productsSort,
       categoriesSort,

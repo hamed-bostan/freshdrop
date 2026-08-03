@@ -10,7 +10,7 @@ import { productRepository } from "@/src/infrastructure/container";
 import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminProductFilters } from "@/src/lib/api/admin-product-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
-import { unauthorizedResponse } from "@/src/lib/api/responses";
+import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 import { csvFilename, csvResponse, csvStream, type CsvValue } from "@/src/lib/csv";
 
 // A snapshot of the live catalog, per request.
@@ -28,12 +28,15 @@ export async function GET(request: NextRequest): Promise<Response> {
   if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
 
   const params = request.nextUrl.searchParams;
-  const filters = parseAdminProductFilters(params);
-  const { sort } = parsePageRequest(params, ADMIN_PRODUCT_SORTS, { sort: DEFAULT_ADMIN_PRODUCT_SORT });
 
-  const products = new ExportProducts(productRepository).execute(filters, sort);
-
-  return csvResponse(csvFilename("products"), csvStream(HEADER, toRows(products)));
+  try {
+    const filters = parseAdminProductFilters(params);
+    const { sort } = parsePageRequest(params, ADMIN_PRODUCT_SORTS, { sort: DEFAULT_ADMIN_PRODUCT_SORT });
+    const products = new ExportProducts(productRepository).execute(filters, sort);
+    return csvResponse(csvFilename("products"), csvStream(HEADER, toRows(products)));
+  } catch (error) {
+    return errorResponseFromException(error, "GET /api/admin/exports/products failed");
+  }
 }
 
 /**
