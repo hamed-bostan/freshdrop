@@ -1,4 +1,4 @@
-import { CalendarDays, CheckCircle2, ChevronRight, Download, ExternalLink, MoreHorizontal, Search } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/src/i18n/navigation";
 import { Icon } from "@/src/presentation/design-system";
@@ -7,14 +7,39 @@ import { EXPORT_REPORTS } from "./export-report-catalog";
 
 export async function ExportReportsScreen() {
   const t = await getTranslations("dashExportReports");
-  return <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-4"><nav aria-label={t("breadcrumbAria")} className="flex items-center gap-2 text-body-b10 text-muted-foreground"><Link href="/dashboard/reports">{t("reports")}</Link><ChevronRight className="size-3.5" /><span className="font-medium text-foreground">{t("heading")}</span></nav><header><h1 className="text-heading-h2">{t("heading")}</h1><p className="mt-1 text-body-b10 text-muted-foreground">{t("subtitle")}</p></header>
-    <section><h2 className="text-body-b7">{t("quickHeading")}</h2><div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">{EXPORT_REPORTS.map((report, index) => <article key={report.id} className="flex items-center gap-3 rounded-card-lg border border-border bg-background p-4"><span className={`flex size-11 shrink-0 items-center justify-center rounded-card-md ${["bg-accent text-primary","bg-info text-info-foreground","bg-muted text-secondary","bg-error text-destructive"][index]}`}><Icon icon={report.icon} size="md" /></span><div className="min-w-0 flex-1"><h3 className="text-body-b8 font-semibold">{t(`report.${report.id}.name`)}</h3><p className="mt-1 text-body-b10 text-muted-foreground">{t(`report.${report.id}.description`)}</p><p className="mt-1 text-label-l1 text-muted-foreground">{report.id === "sales" || report.id === "customers" ? "CSV　·　Excel　·　PDF" : "CSV　·　Excel"}</p></div><a href={report.endpoint} download className="shrink-0 rounded-input border border-border px-4 py-2 text-body-b10 font-semibold">{t("export")}</a></article>)}</div></section>
-    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(28rem,.8fr)]"><CustomExportBuilder /><div className="grid gap-4"><ExportSummary t={t} /><ScheduledReports t={t} /></div></div>
-    <RecentExports t={t} />
-  </div>;
+  return (
+    <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-4">
+      <nav aria-label={t("breadcrumbAria")} className="flex items-center gap-2 text-body-b10 text-muted-foreground">
+        <Link href="/dashboard/reports">{t("reports")}</Link>
+        <ChevronRight className="size-3.5" />
+        <span className="font-medium text-foreground">{t("heading")}</span>
+      </nav>
+      <header>
+        <h1 className="text-heading-h2">{t("heading")}</h1>
+        <p className="mt-1 text-body-b10 text-muted-foreground">{t("subtitle")}</p>
+      </header>
+      <section>
+        <h2 className="text-body-b7">{t("quickHeading")}</h2>
+        <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {EXPORT_REPORTS.map((report, index) => (
+            <article key={report.id} className="flex items-center gap-3 rounded-card-lg border border-border bg-background p-4">
+              <span
+                className={`flex size-11 shrink-0 items-center justify-center rounded-card-md ${["bg-accent text-primary", "bg-info text-info-foreground", "bg-muted text-secondary", "bg-error text-destructive"][index]}`}
+              >
+                <Icon icon={report.icon} size="md" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-body-b8 font-semibold">{t(`report.${report.id}.name`)}</h3>
+                <p className="mt-1 text-body-b10 text-muted-foreground">{t(`report.${report.id}.description`)}</p>
+              </div>
+              <a href={report.endpoint} download className="shrink-0 rounded-input border border-border px-4 py-2 text-body-b10 font-semibold">
+                {t("export")}
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
+      <CustomExportBuilder />
+    </div>
+  );
 }
-
-function ExportSummary({ t }: { t: Awaited<ReturnType<typeof getTranslations>> }) { return <section className="rounded-card-lg border border-border bg-background p-4"><h2 className="text-body-b5">{t("summaryHeading")}</h2><dl className="mt-3 grid grid-cols-2 gap-x-8 gap-y-2 text-body-b10"><Pair label={t("summaryReport")} value={t("report.sales.name")} /><Pair label={t("comparison")} value={t("previousPeriod")} /><Pair label={t("period")} value={t("samplePeriod")} /><Pair label={t("summaryFormat")} value="Excel (.xlsx)" /><Pair label={t("estimatedRows")} value="3,946" /><Pair label={t("estimatedSize")} value="1.8 MB" /></dl><div className="mt-3 flex items-center gap-3 rounded-card-md border border-primary/20 bg-accent/40 px-3 py-2"><Icon icon={CheckCircle2} size="sm" className="text-primary" /><div><p className="text-body-b10 font-semibold text-primary">{t("readyTitle")}</p><p className="text-body-b10 text-muted-foreground">{t("readyMinute")}</p></div></div></section>; }
-function ScheduledReports({ t }: { t: Awaited<ReturnType<typeof getTranslations>> }) { return <section className="rounded-card-lg border border-border bg-background p-4"><h2 className="text-body-b5">{t("scheduledReports")}</h2><div className="mt-2 divide-y divide-border">{[[t("weeklySales"), t("weeklyTiming")],[t("monthlyFinance"),t("monthlyTiming")]].map(([title,detail])=><div key={title} className="flex items-center gap-3 py-2"><span className="flex size-8 items-center justify-center rounded-card-md bg-accent text-primary"><Icon icon={CalendarDays} size="xs" /></span><span className="flex-1"><strong className="block text-body-b10">{title}</strong><span className="text-label-l1 text-muted-foreground">{detail}</span></span><span className="rounded-card-md bg-accent px-3 py-1 text-label-l1 text-primary">{t("active")}</span></div>)}</div><Link href="/dashboard/reports/exports" className="flex items-center gap-2 border-t border-border pt-3 text-body-b8 text-primary">{t("manageSchedules")}<Icon icon={ExternalLink} size="xs" /></Link></section>; }
-function RecentExports({ t }: { t: Awaited<ReturnType<typeof getTranslations>> }) { const rows = [["sales","Hannah Brooks","Excel","Jul 2 – Aug 1, 2026","Aug 1, 10:42 AM","Ready","Aug 8"],["orders","Hannah Brooks","CSV","Jul 1 – Jul 31, 2026","Aug 1, 9:18 AM","Ready","Aug 8"],["inventory","System schedule","Excel","As of Aug 1, 2026","Aug 1, 8:00 AM","Ready","Aug 8"],["customers","Daniel Kim","PDF","Jul 2 – Aug 1, 2026","Jul 31, 4:26 PM","Processing","—"],["sales","Priya Sharma","CSV","Jun 2 – Jul 1, 2026","Jul 30, 11:07 AM","Expired","Jul 30"]] as const; return <section className="rounded-card-lg border border-border bg-background p-4"><div className="flex flex-wrap items-center justify-between gap-2"><div className="flex items-center gap-3"><h2 className="text-body-b5">{t("recentExports")}</h2><label className="relative"><Icon icon={Search} size="xs" className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground" /><input className="h-8 w-44 rounded-input border border-border ps-9 text-body-b10" placeholder={t("searchExports")} /></label><select className="h-8 rounded-input border border-border bg-background px-3 text-body-b10"><option>{t("allStatuses")}</option></select></div><Link href="/dashboard/reports/exports" className="flex items-center gap-2 text-body-b8 text-primary">{t("viewAll")}<Icon icon={ExternalLink} size="xs" /></Link></div><div className="mt-2 overflow-x-auto"><table className="w-full min-w-[62rem] text-body-b10"><thead className="text-muted-foreground"><tr>{[t("columnReport"),t("createdBy"),t("summaryFormat"),t("period"),t("created"),t("status"),t("expires"),t("columnAction"),""].map((label)=><th key={label} className="px-3 py-2 text-start font-medium">{label}</th>)}</tr></thead><tbody className="divide-y divide-border">{rows.map(([id,creator,format,period,created,status,expires],index)=>{const report=EXPORT_REPORTS.find((item)=>item.id===id)??EXPORT_REPORTS[0];return <tr key={`${id}-${index}`}><td className="px-3 py-2"><span className="flex items-center gap-2"><span className="flex size-7 items-center justify-center rounded-card-md bg-accent text-primary"><Icon icon={report.icon} size="xs" /></span>{t(`report.${id}.name`)}</span></td><td className="px-3 py-2">{creator}</td><td className="px-3 py-2">{format}</td><td className="px-3 py-2">{period}</td><td className="px-3 py-2">{created}</td><td className="px-3 py-2"><span className={`rounded-card-md px-2 py-1 text-label-l1 ${status==="Ready"?"bg-accent text-primary":status==="Processing"?"bg-info text-info-foreground":"bg-error text-destructive"}`}>{status}</span></td><td className="px-3 py-2">{expires}</td><td className="px-3 py-2"><a href={report.endpoint} download className="inline-flex items-center gap-2 rounded-input border border-border px-3 py-1"><Icon icon={Download} size="xs" />{status==="Expired"?t("regenerate"):t("download")}</a></td><td><Icon icon={MoreHorizontal} size="xs" /></td></tr>})}</tbody></table></div></section>; }
-function Pair({ label, value }: { label: string; value: string }) { return <div className="flex justify-between gap-3"><dt className="text-muted-foreground">{label}</dt><dd className="font-medium">{value}</dd></div>; }
