@@ -11,6 +11,8 @@ import { cn } from "@/src/lib/utils";
 import { AnalyticsExportMenu } from "../analytics/AnalyticsExportMenu";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "../analytics/AnalyticsRangePicker";
 import { RefundOverviewMetricGrid } from "./RefundOverviewMetricGrid";
+import { InspectionRecoveryQueue } from "./InspectionRecoveryQueue";
+import { RecoveryBreakdownPanels } from "./RecoveryBreakdownPanels";
 import { RefundTrendChart } from "./RefundTrendChart";
 import type { RefundReportWire } from "./refund-report-response-schema";
 import { ReturnCasesTable, type ReturnCaseRow } from "./ReturnCasesTable";
@@ -44,6 +46,7 @@ export async function RefundsReturnsScreen({ report, customers, from, to, isCust
   const tableLabels = {
     search: t("searchReturns"), filterStatus: t("filterStatus"), status: t("statusColumn"), all: t("filterAll"), product: t("product"), order: t("order"), customer: t("customer"), reason: t("reason"), amount: t("amountColumn"), resolution: t("resolutionColumn"), date: t("date"), viewAll: t("viewAll"), moreActions: t("moreActions"), empty: t("noCases"),
   };
+  const recoveryLabels = { heading: t("inspectionRecoveryQueue"), search: t("searchReturns"), allConditions: t("allConditions"), allStatuses: t("allStatuses"), viewAll: t("viewAll"), product: t("product"), order: t("order"), condition: t("condition"), received: t("received"), inspectionStatus: t("inspectionStatus"), recoveryDecision: t("recoveryDecision"), value: t("valueColumn"), action: t("action"), awaitingInspection: t("awaitingInspection"), inspected: t("inspected"), inReview: t("inReview"), pending: t("pending"), restock: t("restock"), discount: t("discount"), returnToSupplier: t("returnToSupplier"), dispose: t("dispose"), inspect: t("inspect"), confirm: t("confirm"), review: t("review"), complete: t("complete"), showing: t("showingOpenItems", { shown: "__SHOWN__", total: "__TOTAL__" }).replace("__SHOWN__", "{shown}").replace("__TOTAL__", "{total}") };
 
   return <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-4">
     <nav aria-label={t("breadcrumbAria")} className="flex items-center gap-2 text-body-b10 text-muted-foreground"><Link href="/dashboard/reports" className="hover:text-foreground">{t("reports")}</Link><ChevronRight className="size-3.5 rtl:rotate-180" aria-hidden /><span className="font-medium text-foreground">{t("heading")}</span></nav>
@@ -56,9 +59,9 @@ export async function RefundsReturnsScreen({ report, customers, from, to, isCust
       <ReturnCasesTable rows={rows} labels={{ ...tableLabels, heading: t("recentCases") }} viewAllHref={viewHref(queryString, "items")} />
     </> : <>
       <ReturnMetricGrid report={report} locale={locale} />
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(20rem,.85fr)]"><RefundTrendChart points={report.series} previousPoints={report.previousSeries} granularity={report.granularity} range={report.range} previousRange={report.previousRange} title={t("returnedItemsOverTime")} /><ReturnProcessingStatus totals={report.totals} locale={locale} /></div>
-      <ReturnInsightBanner report={report} locale={locale} />
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(20rem,.8fr)]"><ReturnCasesTable rows={rows} labels={{ ...tableLabels, heading: t("returnQueue") }} viewAllHref="/dashboard/orders" /><ReturnReasonsPanel reasons={report.reasons} total={report.totals.refundCount} locale={locale} /></div>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.9fr)_minmax(34rem,1.5fr)]"><RefundTrendChart points={report.series} previousPoints={report.previousSeries} granularity={report.granularity} range={report.range} previousRange={report.previousRange} title={t("returnedItemsProcessed")} /><RecoveryBreakdownPanels report={report} locale={locale} /></div>
+      <ReturnInsightBanner report={report} locale={locale} recovery />
+      <InspectionRecoveryQueue rows={rows} labels={recoveryLabels} viewAllHref="/dashboard/orders" />
     </>}
   </div>;
 }
