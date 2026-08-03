@@ -1,0 +1,43 @@
+import { describe, expect, it, vi } from "vitest";
+import type { DateRange } from "../../../entities/Analytics";
+import type { IAnalyticsRepository } from "../../../repositories/IAnalyticsRepository";
+import { GetDeliveryPerformanceReport } from "../GetDeliveryPerformanceReport";
+
+const currentTotals = { deliveredOrders: 40, onTimeOrders: 34, lateDeliveries: 6, averageMinutes: 28 };
+
+describe("GetDeliveryPerformanceReport", () => {
+  it("reads the current period and equal-length baseline in one snapshot", async () => {
+    const range: DateRange = {
+      from: new Date("2026-07-02T00:00:00.000Z"),
+      to: new Date("2026-08-01T00:00:00.000Z"),
+    };
+    const deliveryTotals = vi.fn()
+      .mockResolvedValueOnce(currentTotals)
+      .mockResolvedValueOnce({ ...currentTotals, deliveredOrders: 30 });
+    const point = { bucket: range.from.toISOString(), deliveredOrders: 40, onTimeRate: 0.85, averageMinutes: 28 };
+    const window = { id: "w1", label: "9am-12pm", orders: 12, onTimeRate: 0.9, averageMinutes: 25, previousOnTimeRate: 0.8 };
+    const lateDelivery = { orderId: "o1", orderNumber: 101, userId: "u1", windowLabel: "9am-12pm", delayMinutes: 15, deliveredAt: range.from.toISOString(), zone: "downtown" };
+    const repository = {
+      snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository as IAnalyticsRepository),
+      deliveryTotals,
+      deliverySeries: vi.fn().mockResolvedValue([point]),
+      deliveryWindows: vi.fn().mockResolvedValue([window]),
+      lateDeliveries: vi.fn().mockResolvedValue([lateDelivery]),
+    } as unknown as IAnalyticsRepository;
+
+    const result = await new GetDeliveryPerformanceReport(repository).execute(range);
+
+    expect(result.totals.deliveredOrders).toBe(40);
+    expect(result.previousTotals.deliveredOrders).toBe(30);
+    expect(result.previousRange).toEqual({
+      from: "2026-06-02T00:00:00.000Z",
+      to: "2026-07-02T00:00:00.000Z",
+    });
+    expect(result.windows).toEqual([window]);
+    expect(result.lateDeliveries).toEqual([lateDelivery]);
+    expect(repository.snapshot).toBeDefined();
+    expect(deliveryTotals).toHaveBeenCalledTimes(2);
+    expect(repository.deliveryWindows).toHaveBeenCalledWith(range, { from: new Date("2026-06-02T00:00:00.000Z"), to: range.from }, 5);
+    expect(repository.lateDeliveries).toHaveBeenCalledWith(range, 5);
+  });
+});
