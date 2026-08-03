@@ -1,3 +1,4 @@
+import { z } from "zod";
 import {
   ANALYTICS_RANGE_PRESETS,
   DEFAULT_ANALYTICS_PRESET,
@@ -23,8 +24,8 @@ import {
  * ending "today" includes today's orders rather than stopping at last midnight.
  */
 
-const PRESET_SET = new Set<string>(ANALYTICS_RANGE_PRESETS);
-const REVENUE_RANK_SORT_SET = new Set<string>(REVENUE_RANK_SORTS);
+const presetSchema = z.enum(ANALYTICS_RANGE_PRESETS).catch(DEFAULT_ANALYTICS_PRESET);
+const revenueRankSortSchema = z.enum(REVENUE_RANK_SORTS).catch(DEFAULT_REVENUE_RANK_SORT);
 
 /** `YYYY-MM-DD`, the only date form accepted. */
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -33,6 +34,16 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** The longest custom period a single request may ask for. */
 const MAX_RANGE_DAYS = 731;
+
+/** A calendar date, rejecting shapes that match the pattern but don't exist (`2026-02-31`). */
+const dateParamSchema = z.string().regex(DATE_PATTERN).transform((value, ctx) => {
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime()) || toDateParam(parsed) !== value) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Not a real calendar date." });
+    return z.NEVER;
+  }
+  return parsed;
+});
 
 /**
  * Parse a period off the query string, falling back to the default preset for
@@ -63,8 +74,7 @@ export function parseAnalyticsRange(params: URLSearchParams, now: Date = new Dat
 
 /** The preset a query string names, or the default when it names none we know. */
 export function parseAnalyticsPreset(params: URLSearchParams): AnalyticsRangePreset {
-  const range = params.get("range");
-  return range && PRESET_SET.has(range) ? (range as AnalyticsRangePreset) : DEFAULT_ANALYTICS_PRESET;
+  return presetSchema.parse(params.get("range") ?? undefined);
 }
 
 /**
@@ -91,8 +101,7 @@ export function buildAnalyticsPresetParams(preset: AnalyticsRangePreset): URLSea
  * the other.
  */
 export function parseRevenueRankSort(params: URLSearchParams, paramName: string): RevenueRankSort {
-  const value = params.get(paramName);
-  return value && REVENUE_RANK_SORT_SET.has(value) ? (value as RevenueRankSort) : DEFAULT_REVENUE_RANK_SORT;
+  return revenueRankSortSchema.parse(params.get(paramName) ?? undefined);
 }
 
 /** The most rows a "top products"/"top categories" read may ask for — the analytics page's fuller tables. */
@@ -106,10 +115,12 @@ const MAX_RANK_LIMIT = 100;
  * hand-edited `?rankLimit=100000` is a way to ask the database to rank the whole
  * catalog into one response.
  */
+const rankLimitSchema = z.coerce.number().positive();
+
 export function parseRankLimit(params: URLSearchParams, defaultLimit: number): number {
-  const raw = Number(params.get("rankLimit"));
-  if (!Number.isFinite(raw) || raw <= 0) return defaultLimit;
-  return Math.min(MAX_RANK_LIMIT, Math.floor(raw));
+  const result = rankLimitSchema.safeParse(params.get("rankLimit"));
+  if (!result.success) return defaultLimit;
+  return Math.min(MAX_RANK_LIMIT, Math.floor(result.data));
 }
 
 /** Format an instant as the `YYYY-MM-DD` the params and the date inputs speak. */
@@ -128,10 +139,9 @@ export function toInclusiveEndParam(range: DateRange): string {
 
 /** Parse a `YYYY-MM-DD` param into midnight UTC on that day; `null` for anything else. */
 function parseDate(value: string | null): Date | null {
-  if (!value || !DATE_PATTERN.test(value)) return null;
-  const parsed = new Date(`${value}T00:00:00.000Z`);
-  // Catches the dates that match the shape but don't exist (`2026-02-31`).
-  return Number.isNaN(parsed.getTime()) || toDateParam(parsed) !== value ? null : parsed;
+  if (!value) return null;
+  const result = dateParamSchema.safeParse(value);
+  return result.success ? result.data : null;
 }
 
 /**

@@ -1,9 +1,8 @@
+import { z } from "zod";
 import {
   ADMIN_STOCK_FILTERS,
   ADMIN_VISIBILITY_FILTERS,
   type AdminProductFilters,
-  type AdminStockFilter,
-  type AdminVisibilityFilter,
 } from "@/src/domain/entities/AdminProductFilters";
 
 /**
@@ -16,8 +15,8 @@ import {
  * same query string but are parsed separately by `pagination-params.ts`.
  */
 
-const STOCK_SET = new Set<string>(ADMIN_STOCK_FILTERS);
-const VISIBILITY_SET = new Set<string>(ADMIN_VISIBILITY_FILTERS);
+const stockSchema = z.enum(ADMIN_STOCK_FILTERS).optional().catch(undefined);
+const visibilitySchema = z.enum(ADMIN_VISIBILITY_FILTERS).optional().catch(undefined);
 
 /** Parse management-list filters from a `URLSearchParams`, dropping blank/unrecognised values. */
 export function parseAdminProductFilters(params: URLSearchParams): AdminProductFilters {
@@ -31,15 +30,13 @@ export function parseAdminProductFilters(params: URLSearchParams): AdminProductF
 
   // Only a recognised stock level, so a hand-edited URL can't reach the repository
   // with a state `getStockStatus` never produces.
-  const stock = params.get("stock");
-  if (stock && STOCK_SET.has(stock)) filters.stock = stock as AdminStockFilter;
+  const stock = stockSchema.parse(params.get("stock") ?? undefined);
+  if (stock) filters.stock = stock;
 
   // Absent means both states — the management list deliberately shows withdrawn
   // products alongside live ones.
-  const visibility = params.get("visibility");
-  if (visibility && VISIBILITY_SET.has(visibility)) {
-    filters.visibility = visibility as AdminVisibilityFilter;
-  }
+  const visibility = visibilitySchema.parse(params.get("visibility") ?? undefined);
+  if (visibility) filters.visibility = visibility;
 
   return filters;
 }

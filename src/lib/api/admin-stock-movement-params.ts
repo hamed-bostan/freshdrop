@@ -1,19 +1,13 @@
+import { z } from "zod";
 import {
   STOCK_MOVEMENT_DIRECTIONS,
   STOCK_MOVEMENT_REASONS,
-  type StockMovementDirection,
   type StockMovementFilters,
-  type StockMovementReason,
 } from "@/src/domain/entities/StockMovement";
+import { parseInstant } from "./instant-param";
 
-const DIRECTION_SET = new Set<string>(STOCK_MOVEMENT_DIRECTIONS);
-const REASON_SET = new Set<string>(STOCK_MOVEMENT_REASONS);
-
-function parseInstant(value: string | null): string | undefined {
-  if (!value) return undefined;
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
-}
+const directionSchema = z.enum(STOCK_MOVEMENT_DIRECTIONS).optional().catch(undefined);
+const reasonSchema = z.enum(STOCK_MOVEMENT_REASONS).optional().catch(undefined);
 
 /** Parse and narrow the inventory ledger's URL filter contract. */
 export function parseAdminStockMovementFilters(params: URLSearchParams): StockMovementFilters {
@@ -21,13 +15,11 @@ export function parseAdminStockMovementFilters(params: URLSearchParams): StockMo
   const query = params.get("q")?.trim();
   if (query) filters.query = query;
 
-  const movement = params.get("movement");
-  if (movement && DIRECTION_SET.has(movement)) {
-    filters.direction = movement as StockMovementDirection;
-  }
+  const movement = directionSchema.parse(params.get("movement") ?? undefined);
+  if (movement) filters.direction = movement;
 
-  const reason = params.get("reason");
-  if (reason && REASON_SET.has(reason)) filters.reason = reason as StockMovementReason;
+  const reason = reasonSchema.parse(params.get("reason") ?? undefined);
+  if (reason) filters.reason = reason;
 
   const occurredFrom = parseInstant(params.get("from"));
   if (occurredFrom) filters.occurredFrom = occurredFrom;

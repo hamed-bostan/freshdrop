@@ -1,14 +1,8 @@
+import { z } from "zod";
 import type { AdminOrderFilters } from "@/src/domain/entities/AdminOrderFilters";
-import {
-  DELIVERY_TYPES,
-  PAYMENT_STATUSES,
-  type DeliveryType,
-  type PaymentStatus,
-} from "@/src/domain/entities/Order";
-import {
-  ORDER_PIPELINE_STAGES,
-  type OrderPipelineStage,
-} from "@/src/domain/entities/OrderPipelineStage";
+import { DELIVERY_TYPES, PAYMENT_STATUSES } from "@/src/domain/entities/Order";
+import { ORDER_PIPELINE_STAGES } from "@/src/domain/entities/OrderPipelineStage";
+import { parseInstant } from "./instant-param";
 
 /**
  * The wire contract for the admin order list's filters — shared by the dashboard
@@ -24,16 +18,13 @@ import {
  * a 400. The narrowing is what has to be trustworthy, not the input.
  */
 
-const PIPELINE_SET = new Set<string>(ORDER_PIPELINE_STAGES);
-const DELIVERY_SET = new Set<string>(DELIVERY_TYPES);
-const PAYMENT_SET = new Set<string>(PAYMENT_STATUSES);
-
-/** An ISO 8601 instant, or `undefined` when the value isn't a real date. */
-function parseInstant(value: string | null): string | undefined {
-  if (!value) return undefined;
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
-}
+const pipelineSchema = z.enum(ORDER_PIPELINE_STAGES).optional().catch(undefined);
+const deliverySchema = z.enum(DELIVERY_TYPES).optional().catch(undefined);
+const paymentSchema = z.enum(PAYMENT_STATUSES).optional().catch(undefined);
+const amountSchema = z
+  .preprocess((value) => (typeof value === "string" && value.trim() === "" ? undefined : value), z.coerce.number().finite().nonnegative())
+  .optional()
+  .catch(undefined);
 
 /**
  * A finite, non-negative money bound, or `undefined`.
@@ -43,9 +34,7 @@ function parseInstant(value: string | null): string | undefined {
  * "at most nothing", so both are handled by rejecting a blank outright.
  */
 function parseAmount(value: string | null): number | undefined {
-  if (!value?.trim()) return undefined;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
+  return amountSchema.parse(value ?? undefined);
 }
 
 export function parseAdminOrderFilters(params: URLSearchParams): AdminOrderFilters {
@@ -54,14 +43,14 @@ export function parseAdminOrderFilters(params: URLSearchParams): AdminOrderFilte
   const query = params.get("q")?.trim();
   if (query) filters.query = query;
 
-  const pipeline = params.get("pipeline");
-  if (pipeline && PIPELINE_SET.has(pipeline)) filters.pipeline = pipeline as OrderPipelineStage;
+  const pipeline = pipelineSchema.parse(params.get("pipeline") ?? undefined);
+  if (pipeline) filters.pipeline = pipeline;
 
-  const delivery = params.get("delivery");
-  if (delivery && DELIVERY_SET.has(delivery)) filters.deliveryType = delivery as DeliveryType;
+  const delivery = deliverySchema.parse(params.get("delivery") ?? undefined);
+  if (delivery) filters.deliveryType = delivery;
 
-  const payment = params.get("payment");
-  if (payment && PAYMENT_SET.has(payment)) filters.paymentStatus = payment as PaymentStatus;
+  const payment = paymentSchema.parse(params.get("payment") ?? undefined);
+  if (payment) filters.paymentStatus = payment;
 
   const placedFrom = parseInstant(params.get("from"));
   if (placedFrom) filters.placedFrom = placedFrom;
