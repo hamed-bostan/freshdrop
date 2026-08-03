@@ -479,7 +479,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
   }
 
   async lateDeliveries(range: DateRange, limit: number): Promise<LateDelivery[]> {
-    const rows = await this.db.$queryRaw<LateDeliveryRow[]>(Prisma.sql`SELECT order_id AS "orderId", order_number AS "orderNumber", user_id AS "userId", COALESCE(window_label, 'Unscheduled') AS "windowLabel", GREATEST(0, ROUND(EXTRACT(EPOCH FROM (delivered_at - due_at)) / 60))::int AS "delayMinutes", delivered_at AS "deliveredAt" FROM (${deliveryEvents(range)}) deliveries WHERE due_at IS NOT NULL AND delivered_at > due_at ORDER BY delivered_at DESC LIMIT ${Math.max(1, Math.min(limit, 20))}`);
+    const rows = await this.db.$queryRaw<LateDeliveryRow[]>(Prisma.sql`SELECT order_id AS "orderId", order_number AS "orderNumber", user_id AS "userId", COALESCE(window_label, 'Unscheduled') AS "windowLabel", GREATEST(0, ROUND(EXTRACT(EPOCH FROM (delivered_at - due_at)) / 60))::int AS "delayMinutes", delivered_at AS "deliveredAt", COALESCE(city, 'Unspecified') AS zone FROM (${deliveryEvents(range)}) deliveries WHERE due_at IS NOT NULL AND delivered_at > due_at ORDER BY delivered_at DESC LIMIT ${Math.max(1, Math.min(limit, 20))}`);
     return rows.map((row) => ({ ...row, deliveredAt: row.deliveredAt.toISOString() }));
   }
 
