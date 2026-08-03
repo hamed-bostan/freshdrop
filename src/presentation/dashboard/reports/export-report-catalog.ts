@@ -1,7 +1,7 @@
-import { Boxes, ClipboardList, PackageSearch, Users } from "lucide-react";
+import { Boxes, ClipboardList, TrendingUp, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-export type ExportReportId = "orders" | "products" | "inventory" | "customers";
+export type ExportReportId = "sales" | "orders" | "inventory" | "customers";
 
 export type ExportReportDefinition = {
   id: ExportReportId;
@@ -11,8 +11,8 @@ export type ExportReportDefinition = {
 };
 
 export const EXPORT_REPORTS: readonly ExportReportDefinition[] = [
+  { id: "sales", endpoint: "/api/admin/exports/orders", icon: TrendingUp, permissionLabel: "dashboardView" },
   { id: "orders", endpoint: "/api/admin/exports/orders", icon: ClipboardList, permissionLabel: "dashboardView" },
-  { id: "products", endpoint: "/api/admin/exports/products", icon: PackageSearch, permissionLabel: "dashboardView" },
   { id: "inventory", endpoint: "/api/admin/exports/inventory-movements", icon: Boxes, permissionLabel: "catalogWrite" },
   { id: "customers", endpoint: "/api/admin/exports/customers", icon: Users, permissionLabel: "dashboardView" },
 ] as const;
