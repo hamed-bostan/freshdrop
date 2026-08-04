@@ -23,6 +23,7 @@ import type { IActivityLog } from "@/src/domain/repositories/IActivityLog";
 import type { IAdminNotificationRepository } from "@/src/domain/repositories/IAdminNotificationRepository";
 import type { IUnitOfWork } from "@/src/domain/repositories/IUnitOfWork";
 import type { IAnalyticsRepository } from "@/src/domain/repositories/IAnalyticsRepository";
+import type { ICustomerSegmentSnapshotRepository } from "@/src/domain/repositories/ICustomerSegmentSnapshotRepository";
 import type { IStockMovementLog } from "@/src/domain/repositories/IStockMovementLog";
 import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
 import type { ITeamNotifier } from "@/src/domain/repositories/ITeamNotifier";
@@ -40,6 +41,7 @@ import { PrismaAdminNotificationRepository } from "./repositories/PrismaAdminNot
 import { PrismaUnitOfWork } from "./repositories/PrismaUnitOfWork";
 import { PrismaStockMovementLog } from "./repositories/PrismaStockMovementLog";
 import { PrismaAnalyticsRepository } from "./repositories/PrismaAnalyticsRepository";
+import { PrismaCustomerSegmentSnapshotRepository } from "./repositories/PrismaCustomerSegmentSnapshotRepository";
 import { MockFavoriteRepository } from "./repositories/mock/MockFavoriteRepository";
 import { PrismaReviewRepository } from "./repositories/PrismaReviewRepository";
 import { PrismaDeliveryLocationRepository } from "./repositories/PrismaDeliveryLocationRepository";
@@ -131,6 +133,9 @@ export const stockMovementLog: IStockMovementLog = new PrismaStockMovementLog();
 // second copy of the numbers to fall out of sync. See `IAnalyticsRepository` for
 // why this is a port rather than more methods on `IOrderRepository`.
 export const analyticsRepository: IAnalyticsRepository = new PrismaAnalyticsRepository();
+// Write side of the daily customer-segment snapshot — kept off `IAnalyticsRepository`,
+// which promises read-only aggregates (see `ICustomerSegmentSnapshotRepository`).
+export const customerSegmentSnapshotRepository: ICustomerSegmentSnapshotRepository = new PrismaCustomerSegmentSnapshotRepository();
 export const favoriteRepository: IFavoriteRepository = new MockFavoriteRepository(productRepository);
 // Reviews are real data now — PostgreSQL via Prisma. The demo reviews live on in
 // the seed migration that backfilled the table; new reviews are written by

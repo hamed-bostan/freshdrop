@@ -1070,7 +1070,7 @@
     "segment": { "high_value_loyal": "وفادار باارزش", "repeat_buyers": "خریداران تکراری", "new_customers": "مشتریان جدید", "reactivated": "فعال‌شده مجدد", "at_risk": "در معرض ریزش", "dormant": "غیرفعال" },
     "attention": { "at_risk": "کاهش حفظ مشتری", "dormant": "تعامل پایین", "new_customers": "فرصت تبدیل" },
     "viewInsights": "مشاهده بینش‌ها", "manageSegments": "مدیریت بخش‌ها", "viewAllSegments": "مشاهده همه بخش‌ها",
-    "segmentMovement": "جابه‌جایی بین بخش‌ها", "independentTransitions": "انتقال‌های مستقل این دوره", "higherValueMoved": "{count} مشتری به بخش باارزش‌تری منتقل شدند.", "moveNewRepeat": "جدید → خریداران تکراری", "moveRepeatLoyal": "خریداران تکراری → وفادار باارزش", "moveActiveRisk": "فعال → در معرض ریزش", "moveRiskReactivated": "در معرض ریزش → فعال‌شده مجدد", "viewMovementDetails": "مشاهده جزئیات جابه‌جایی"
+    "segmentMovement": "جابه‌جایی بین بخش‌ها", "independentTransitions": "انتقال‌های مستقل این دوره", "movementCollectingData": "پس از ثبت اسنپ‌شات‌های روزانه در ابتدا و انتهای این دوره، جابه‌جایی بین بخش‌ها اینجا نمایش داده می‌شود.", "higherValueMoved": "{count} مشتری به بخش باارزش‌تری منتقل شدند.", "viewMovementDetails": "مشاهده جزئیات جابه‌جایی"
   },
   "dashExportReports": {
     "reports": "گزارش‌ها", "heading": "خروجی گزارش‌ها", "subtitle": "نسخهٔ CSV تازه از داده‌های فروشگاه دریافت کنید.", "breadcrumbAria": "مسیر صفحه", "quickHeading": "خروجی‌های سریع", "export": "خروجی",

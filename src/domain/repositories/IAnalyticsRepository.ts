@@ -15,7 +15,7 @@ import type { RefundCase, RefundReasonCount, RefundReportTotals, ReturnBreakdown
 import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, DeliveryWindowPerformance, LateDelivery } from "../entities/DeliveryPerformanceReport";
 import type { DeliveryZonePerformance } from "../entities/DeliveryZonesReport";
 import type { CustomerGrowthPoint, PurchaseFrequency, RetentionCohort } from "../entities/CustomerInsightsReport";
-import type { CustomerSegmentPerformance } from "../entities/CustomerSegmentsReport";
+import type { CustomerSegmentAssignment, CustomerSegmentPerformance, CustomerSegmentTransition } from "../entities/CustomerSegmentsReport";
 
 /**
  * Read access to the store's aggregates.
@@ -156,6 +156,23 @@ export type IAnalyticsRepository = {
   purchaseFrequency(range: DateRange): Promise<PurchaseFrequency>;
   retentionCohorts(range: DateRange, limit: number): Promise<RetentionCohort[]>;
   customerSegmentPerformance(range: DateRange): Promise<CustomerSegmentPerformance[]>;
+
+  /**
+   * Every customer's individual segment for `range`, one row per customer —
+   * the same classification `customerSegmentPerformance` aggregates, kept
+   * per-row instead. Feeds `SnapshotCustomerSegments`, the daily job that turns
+   * this point-in-time read into a row `customerSegmentTransitions` can later
+   * compare against.
+   */
+  customerSegmentAssignments(range: DateRange): Promise<CustomerSegmentAssignment[]>;
+
+  /**
+   * How customers moved between segments from the snapshot nearest `range.from`
+   * to the one nearest `range.to` — real movement, sourced from
+   * `CustomerSegmentSnapshot` rows a daily job wrote, not a re-classification.
+   * Empty until snapshot history exists on both sides of `range`.
+   */
+  customerSegmentTransitions(range: DateRange): Promise<CustomerSegmentTransition[]>;
 
   /**
    * How many orders are in each `(status, stage)` pair right now — one `GROUP BY`

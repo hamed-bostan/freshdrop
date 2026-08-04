@@ -7,8 +7,8 @@ export class GetCustomerSegmentsReport {
 
   async execute(range: DateRange): Promise<CustomerSegmentsReport> {
     const previous = previousPeriod(range);
-    const [currentRows, previousRows] = await this.analytics.snapshot((repository) => Promise.all([
-      repository.customerSegmentPerformance(range), repository.customerSegmentPerformance(previous),
+    const [currentRows, previousRows, transitions] = await this.analytics.snapshot((repository) => Promise.all([
+      repository.customerSegmentPerformance(range), repository.customerSegmentPerformance(previous), repository.customerSegmentTransitions(range),
     ]));
     const current = byId(currentRows);
     const baseline = byId(previousRows);
@@ -22,6 +22,7 @@ export class GetCustomerSegmentsReport {
       attentionSegments: currentRows.filter((row) => (row.id === "at_risk" || row.id === "dormant") && row.customers > 0).length,
       loyalRevenue: value(currentRows, "high_value_loyal", "revenue"), previousLoyalRevenue: value(previousRows, "high_value_loyal", "revenue"),
       atRiskCustomers: value(currentRows, "at_risk", "customers"), previousAtRiskCustomers: value(previousRows, "at_risk", "customers"),
+      transitions,
     };
   }
 }

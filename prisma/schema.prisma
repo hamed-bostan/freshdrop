@@ -588,6 +588,40 @@ model StockMovement {
   @@map("stock_movements")
 }
 
+// One row per customer per day a snapshot job ran — which of the six
+// `CustomerSegmentId`s (`CustomerSegmentsReport.ts`) that customer belonged to,
+// and their trailing 30-day order count/revenue at the time. Written once daily
+// by `SnapshotCustomerSegments`, never mutated after.
+//
+// `customerSegmentPerformance` reclassifies every customer fresh from `orders`
+// on every report request — accurate for "what segment is X in right now", but
+// it has no memory, so "how many customers moved from at-risk to reactivated
+// this month" has nothing to compute from. This table is that memory: comparing
+// the row nearest a range's start to the row nearest its end is what makes a
+// real segment-transition count possible instead of an invented one (see the
+// reporting-audit note on `CustomerSegmentTrends`).
+//
+// `segment` is a plain string matching `CustomerSegmentId`, the schema's
+// enum-free style. `userId` is a plain reference, not a DB foreign key, like
+// the rest of the schema. Unique per (user, day) so a rerun of the job for a
+// day already captured is a no-op rather than a duplicate.
+model CustomerSegmentSnapshot {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  segment    String
+  capturedOn DateTime @map("captured_on") @db.Date
+  orders     Int
+  revenue    Float
+
+  // One customer's segment history, and the "nearest snapshot on/before a date"
+  // lookup `customerSegmentTransitions` runs twice per report request.
+  @@unique([userId, capturedOn])
+  // Reads narrow by date first (was a segment captured that day at all, and how
+  // did the store's mix look), then by segment.
+  @@index([capturedOn, segment])
+  @@map("customer_segment_snapshots")
+}
+
 // Localized overrides for a Product's user-facing text. The base `products` row holds
 // the default-locale (English) copy; one row here per non-default locale supplies the
 // translated fields, each nullable so a partial translation falls back field-by-field
