@@ -11,7 +11,9 @@ import { orderResponseSchema } from "@/src/presentation/orders/order-response-sc
 import { orderTrackingResponseSchema } from "@/src/presentation/orders/order-tracking-response-schema";
 import { productListResponseSchema } from "@/src/presentation/product/product-response-schema";
 import type { OrderTrackingStageInput } from "@/src/contracts/order-tracking-schema";
-import type { OrderReturnDecisionInput } from "@/src/contracts/order-return-schema";
+import type { OrderReturnDecisionInput, OrderReturnInspectionInput } from "@/src/contracts/order-return-schema";
+import type { ReturnRequest } from "@/src/domain/entities/Return";
+import { returnRequestResponseSchema } from "./order-return-response-schema";
 import type { OrderSubstitutionInput } from "@/src/contracts/order-substitution-schema";
 import type { IssueRefundInput } from "@/src/contracts/refund-schema";
 import {
@@ -37,6 +39,14 @@ export const ordersApi = {
   /** Approve or reject a pending return request; resolves with the updated order. */
   resolveReturn(orderId: string, values: OrderReturnDecisionInput): Promise<Order> {
     return apiPut(`/orders/${orderId}/return`, values, orderResponseSchema);
+  },
+
+  /**
+   * Record each returned item's condition and recovery decision; resolves with
+   * the updated return request.
+   */
+  recordReturnInspection(orderId: string, values: OrderReturnInspectionInput): Promise<ReturnRequest> {
+    return apiPost(`/orders/${orderId}/return/inspect`, values, returnRequestResponseSchema);
   },
 
   /**

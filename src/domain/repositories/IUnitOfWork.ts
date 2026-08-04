@@ -2,6 +2,7 @@ import type { IDeliverySlotRepository } from "./IDeliverySlotRepository";
 import type { IOrderRepository } from "./IOrderRepository";
 import type { IProductRepository } from "./IProductRepository";
 import type { IRefundRepository } from "./IRefundRepository";
+import type { IReturnRepository } from "./IReturnRepository";
 import type { IWalletRepository } from "./IWalletRepository";
 
 /**
@@ -10,7 +11,8 @@ import type { IWalletRepository } from "./IWalletRepository";
  *
  * Only the ones that participate in an operation claiming or releasing something
  * scarce — stock, delivery capacity, money — plus `refunds`, the ledger row that
- * makes a wallet credit auditable (see `Refund`). This isn't a registry of
+ * makes a wallet credit auditable (see `Refund`), and `returns`, the RMA record
+ * a return request/resolution commits alongside. This isn't a registry of
  * everything: a use-case that needs one repository should keep taking that
  * repository, because a unit of work is a claim about atomicity and asking for
  * one you don't need makes that claim where it isn't true.
@@ -21,6 +23,7 @@ export type TransactionalRepositories = {
   wallets: IWalletRepository;
   slots: IDeliverySlotRepository;
   refunds: IRefundRepository;
+  returns: IReturnRepository;
 };
 
 /**

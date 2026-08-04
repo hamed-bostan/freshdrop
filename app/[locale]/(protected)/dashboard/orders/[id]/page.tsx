@@ -47,6 +47,10 @@ export default async function DashboardOrderPage({ params }: DashboardOrderPageP
   // The ad hoc message form's starting subject/body (phase 4) — only fetched
   // when the viewer can actually send one, matching the endpoint's own gate.
   const messageDefault = canNotify ? await ordersServerApi.messageDefault(order.id) : undefined;
+  // The pending return's items, for the inspection panel — only fetched when
+  // there's actually a return to show, matching the section's own gate.
+  const returnRequest =
+    canFulfill && order.status === "return_requested" ? await ordersServerApi.getReturnRequest(order.id) : null;
 
   return (
     <OrderDetailScreen
@@ -59,6 +63,7 @@ export default async function DashboardOrderPage({ params }: DashboardOrderPageP
       canNote={canNote}
       canIssueRefund={canIssueRefund}
       messageDefault={messageDefault}
+      returnRequest={returnRequest}
     />
   );
 }

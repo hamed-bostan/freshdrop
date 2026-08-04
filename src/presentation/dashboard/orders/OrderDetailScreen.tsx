@@ -4,6 +4,7 @@ import { ChevronLeft, ArrowLeftRight, RotateCcw } from "lucide-react";
 import type { Order } from "@/src/domain/entities/Order";
 import { isPicking, orderNetPaid } from "@/src/domain/entities/Order";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
+import type { ReturnRequest } from "@/src/domain/entities/Return";
 import { Link } from "@/src/i18n/navigation";
 import { Icon, Thumbnail } from "@/src/presentation/design-system";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
@@ -14,6 +15,7 @@ import { deliverySteps, isAdvanceable, nextStage } from "./orderStages";
 import { OrderDeliveryTracker } from "./OrderDeliveryTracker";
 import { OrderStageAdvance } from "./OrderStageAdvance";
 import { OrderReturnControl } from "./OrderReturnControl";
+import { OrderReturnInspection } from "./OrderReturnInspection";
 import { OrderRefundControl } from "./OrderRefundControl";
 import { OrderItemPickControl } from "./OrderItemPickControl";
 import { OrderCommsPanel } from "./OrderCommsPanel";
@@ -44,6 +46,8 @@ type OrderDetailScreenProps = {
   canIssueRefund: boolean;
   /** The ad hoc message form's starting subject/body (phase 4) — undefined when `!canNotify`. */
   messageDefault?: OrderMessageDefaultWire;
+  /** The order's pending return request and its items, when there is one to inspect/resolve. */
+  returnRequest: ReturnRequest | null;
 };
 
 /**
@@ -63,6 +67,7 @@ export async function OrderDetailScreen({
   canNote,
   canIssueRefund,
   messageDefault,
+  returnRequest,
 }: OrderDetailScreenProps) {
   const t = await getTranslations("dashOrders");
   const locale = await getLocale();
@@ -123,6 +128,35 @@ export async function OrderDetailScreen({
             <section className="rounded-card-lg border border-border p-5">
               <h2 className="text-body-b5 text-foreground">{t("returnHeading")}</h2>
               <p className="mt-1 text-body-b7 text-muted-foreground">{t("returnBody")}</p>
+
+              {returnRequest ? (
+                <div className="mt-4 flex flex-col gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-body-b8 text-muted-foreground">
+                      {t("rmaLabel", { number: returnRequest.rmaNumber })}
+                    </span>
+                    {returnRequest.reason ? (
+                      <span className="text-body-b8 text-muted-foreground">
+                        {t("returnReason", { reason: returnRequest.reason })}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div>
+                    <h3 className="text-body-b8 uppercase tracking-wide text-muted-foreground">
+                      {t("returnItemsHeading")}
+                    </h3>
+                    <div className="mt-2">
+                      <OrderReturnInspection
+                        orderId={order.id}
+                        returnRequest={returnRequest}
+                        orderItems={order.items}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
               <div className="mt-4 flex justify-start">
                 <OrderReturnControl orderId={order.id} />
               </div>

@@ -1,5 +1,6 @@
 import type { Order } from "@/src/domain/entities/Order";
 import type { Page } from "@/src/domain/entities/Pagination";
+import type { ReturnRequest } from "@/src/domain/entities/Return";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { pageResponseSchema } from "@/src/lib/api/page-response-schema";
 import { serverApiGet } from "@/src/lib/api/server-client";
@@ -7,6 +8,7 @@ import { orderResponseSchema } from "@/src/presentation/orders/order-response-sc
 import type { OrderPipelineCounts } from "@/src/domain/use-cases/orders/GetOrderPipelineCounts";
 import { orderCountsResponseSchema } from "./order-counts-response-schema";
 import { orderMessageDefaultResponseSchema, type OrderMessageDefaultWire } from "./order-message-default-response-schema";
+import { returnRequestOrNullResponseSchema } from "./order-return-response-schema";
 
 /** What `GET /api/admin/orders` promises: a page of orders plus the total behind it. */
 const orderPageResponseSchema = pageResponseSchema(orderResponseSchema);
@@ -52,5 +54,10 @@ export const ordersServerApi = {
   /** The ad hoc customer-message form's starting subject/body for this order (phase 4). */
   messageDefault(id: string): Promise<OrderMessageDefaultWire> {
     return serverApiGet(`/admin/orders/${id}/message-default`, orderMessageDefaultResponseSchema);
+  },
+
+  /** The order's most recent return request, or `null` if it has never had one. */
+  getReturnRequest(id: string): Promise<ReturnRequest | null> {
+    return serverApiGet(`/orders/${id}/return`, returnRequestOrNullResponseSchema);
   },
 };

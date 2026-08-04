@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { ActivityActor } from "../../../entities/ActivityEntry";
 import type { Order, OrderItem } from "../../../entities/Order";
 import type { NewRefund, IRefundRepository } from "../../../repositories/IRefundRepository";
+import type { IReturnRepository } from "../../../repositories/IReturnRepository";
 import type { IOrderRepository } from "../../../repositories/IOrderRepository";
 import type { IWalletRepository } from "../../../repositories/IWalletRepository";
 import type { IProductRepository } from "../../../repositories/IProductRepository";
@@ -68,6 +69,10 @@ function fakeRefunds() {
   return stub<IRefundRepository>({ record, listForOrder: vi.fn(async () => []) });
 }
 
+function fakeReturns() {
+  return stub<IReturnRepository>({ getForOrder: vi.fn(async () => null) });
+}
+
 const actor: ActivityActor = { id: "admin-1", name: "Admin" };
 
 function setup(placed: Order, addFunds = vi.fn(async () => {})) {
@@ -85,6 +90,7 @@ function setup(placed: Order, addFunds = vi.fn(async () => {})) {
         wallets,
         slots: stub<IDeliverySlotRepository>({}),
         refunds,
+        returns: fakeReturns(),
       } satisfies TransactionalRepositories),
   };
   return { orders, wallets, refunds, uow, addFunds };
@@ -215,6 +221,7 @@ describe("IssueRefund", () => {
           wallets,
           slots: stub<IDeliverySlotRepository>({}),
           refunds,
+          returns: fakeReturns(),
         } satisfies TransactionalRepositories),
     };
 

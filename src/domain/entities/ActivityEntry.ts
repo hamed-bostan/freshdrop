@@ -71,6 +71,7 @@ export const ACTIVITY_ACTIONS = [
   // *staff* make to something stored.
   "order.stageChanged",
   "order.returnResolved",
+  "order.returnInspected",
   "order.itemSubstituted",
   "order.refundIssued",
   // The one action here that isn't a change to anything stored — an admin sent the

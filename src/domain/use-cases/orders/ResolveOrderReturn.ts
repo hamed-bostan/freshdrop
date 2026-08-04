@@ -1,8 +1,11 @@
 import type { ActivityActor, NewActivityEntry } from "../../entities/ActivityEntry";
 import { activityValue, singleChange } from "../../entities/ActivityEntry";
 import type { Order } from "../../entities/Order";
+import type { RefundLine } from "../../entities/Refund";
+import { round2 } from "@/src/lib/money";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IUnitOfWork } from "../../repositories/IUnitOfWork";
+import type { IReturnRepository } from "../../repositories/IReturnRepository";
 import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
@@ -12,9 +15,12 @@ export type ReturnDecision = "approve" | "reject";
 
 /**
  * Resolve a pending return request — the admin dashboard action. `approve`
- * refunds: the order goes to `refunded` (archived), its items are returned to
- * the shelf and the total is credited to the *customer's* wallet. `reject`
- * sends the order back to `completed`, with no money or stock movement.
+ * refunds: the order goes to `refunded` (archived), the *inspected* items whose
+ * recovery decision is `restocked` go back to the shelf, and the customer's
+ * wallet is credited the sum of what the `ReturnRequest`'s items were valued at
+ * — not `order.total` unconditionally, since a return can cover only some of
+ * the order's lines. `reject` sends the order back to `completed`, with no
+ * money or stock movement.
  *
  * As with cancellation, the state change is claimed with a guarded transition
  * from `return_requested` first, so only the winning call runs the refund side
@@ -31,6 +37,7 @@ export class ResolveOrderReturn {
     private readonly orderRepo: IOrderRepository,
     private readonly uow: IUnitOfWork,
     private readonly notifier: IOrderNotifier,
+    private readonly returnRepo: IReturnRepository,
   ) {}
 
   async execute(orderId: string, decision: ReturnDecision, actor: ActivityActor): Promise<Order> {
@@ -53,10 +60,55 @@ export class ResolveOrderReturn {
         (resolved) => this.entry(actor, resolved, "reject", order.status),
       );
       if (!rejected) throw new ValidationError("order", "This order has no pending return request.");
+
+      const pending = await this.returnRepo.getForOrder(orderId);
+      if (pending && pending.status !== "resolved" && pending.status !== "rejected") {
+        await this.returnRepo.resolve(pending.id, "rejected");
+      }
       return rejected;
     }
 
-    const refunded = await this.uow.run(async ({ orders, products, wallets, refunds }) => {
+    const refunded = await this.uow.run(async ({ orders, products, wallets, refunds, returns }) => {
+      // Read the return request *before* transitioning, so the amount actually
+      // refunded is known in time to land on the audit entry the transition
+      // writes — the entry is otherwise built from a snapshot that predates the
+      // computation (see `entry`).
+      const returnRequest = await returns.getForOrder(orderId);
+
+      let refundAmount: number;
+      let refundTaxAmount: number;
+      let refundLines: RefundLine[];
+      let restock: { productId: string; name: string; quantity: number }[];
+
+      if (returnRequest) {
+        refundAmount = round2(returnRequest.items.reduce((sum, item) => sum + item.refundAmount, 0));
+        refundTaxAmount = round2(returnRequest.items.reduce((sum, item) => sum + item.taxAmount, 0));
+        refundLines = returnRequest.items.map((item) => ({
+          orderItemId: item.orderItemId,
+          productId: item.productId,
+          quantity: item.quantity,
+          amount: item.refundAmount,
+          taxAmount: item.taxAmount,
+        }));
+        // Restock only what inspection actually decided to put back on the
+        // shelf — an item that skipped inspection (`recoveryDecision`
+        // `undefined`) or was decided as damaged/disposed/etc. doesn't restock.
+        restock = returnRequest.items
+          .filter((item) => item.recoveryDecision === "restocked")
+          .map((item) => {
+            const line = order.items.find((oi) => oi.id === item.orderItemId);
+            return { productId: item.productId, name: line?.name ?? item.productId, quantity: item.quantity };
+          });
+      } else {
+        // No `ReturnRequest` on record — an order that reached `return_requested`
+        // before this model existed. Falls back to the order-wide behaviour this
+        // replaces, so an in-flight legacy request still resolves correctly.
+        refundAmount = order.total;
+        refundTaxAmount = order.taxAmount ?? 0;
+        refundLines = [];
+        restock = order.items.map((item) => ({ productId: item.productId, name: item.name, quantity: item.quantity }));
+      }
+
       const resolved = await orders.transitionStatus(
         orderId,
         {
@@ -65,32 +117,36 @@ export class ResolveOrderReturn {
           // atomic write — see `CancelOrder` for the same reasoning.
           to: { status: "refunded", phase: "previous", paymentStatus: "refunded" },
         },
-        (updated) => this.entry(actor, updated, "approve", order.status),
+        (updated) => this.entry(actor, updated, "approve", order.status, refundAmount),
       );
       // Lost the race — another admin already resolved it. Throwing rolls back,
       // so nothing has been refunded and there is nothing to undo.
       if (!resolved) throw new ValidationError("order", "This order has no pending return request.");
 
-      // The returned goods go back on the shelf, attributed to the order they came
-      // back from rather than to the admin who approved the return — the units
-      // moved because of the return, not because someone counted the shelf.
-      await products.incrementStock(
-        resolved.items.map((item) => ({ productId: item.productId, name: item.name, quantity: item.quantity })),
-        { reason: "restock", orderId: resolved.id },
-      );
-      await wallets.addFunds(resolved.userId, resolved.total, { kind: "refundReturnedOrder" });
-      // Ledger row for the credit above — the admin's approval is the actor of
-      // record, same as the activity entry above.
-      await refunds.record({
-        orderId: resolved.id,
-        userId: resolved.userId,
-        kind: "return",
-        amount: resolved.total,
-        taxAmount: resolved.taxAmount ?? 0,
-        actorId: actor.id,
-        actorName: actor.name,
-        lines: [],
-      });
+      if (restock.length > 0) {
+        // The returned goods go back on the shelf, attributed to the order they
+        // came back from rather than to the admin who approved the return — the
+        // units moved because of the return, not because someone counted the shelf.
+        await products.incrementStock(restock, { reason: "restock", orderId: resolved.id });
+      }
+      if (refundAmount > 0) {
+        await wallets.addFunds(resolved.userId, refundAmount, { kind: "refundReturnedOrder" });
+        // Ledger row for the credit above — the admin's approval is the actor of
+        // record, same as the activity entry above.
+        await refunds.record({
+          orderId: resolved.id,
+          userId: resolved.userId,
+          kind: "return",
+          amount: refundAmount,
+          taxAmount: refundTaxAmount,
+          actorId: actor.id,
+          actorName: actor.name,
+          lines: refundLines,
+        });
+      }
+      if (returnRequest) {
+        await returns.resolve(returnRequest.id, "resolved");
+      }
 
       return resolved;
     });
@@ -110,13 +166,15 @@ export class ResolveOrderReturn {
    * back on `completed`, and only the decision says which happened. An approval
    * moves money, so the refunded amount is on the entry too — it's the number
    * anyone auditing this will want, and the order's total can be edited by later
-   * substitutions.
+   * substitutions (and, since a return can cover only some of the order, need not
+   * equal it).
    */
   private entry(
     actor: ActivityActor,
     order: Order,
     decision: ReturnDecision,
     fromStatus: Order["status"],
+    refundedAmount?: number,
   ): NewActivityEntry {
     return {
       actorId: actor.id,
@@ -129,7 +187,7 @@ export class ResolveOrderReturn {
         ...singleChange("status", fromStatus, order.status),
         { field: "decision", before: null, after: decision },
         ...(decision === "approve"
-          ? [{ field: "refunded", before: null, after: activityValue(order.total) }]
+          ? [{ field: "refunded", before: null, after: activityValue(refundedAmount ?? 0) }]
           : []),
       ],
     };

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { ActivityActor } from "../../../entities/ActivityEntry";
 import type { Order, OrderItem } from "../../../entities/Order";
 import type { NewRefund, IRefundRepository } from "../../../repositories/IRefundRepository";
+import type { IReturnRepository } from "../../../repositories/IReturnRepository";
 import type { IOrderRepository, OrderStatusTransition } from "../../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../../repositories/IProductRepository";
 import type { IWalletRepository } from "../../../repositories/IWalletRepository";
@@ -73,6 +74,12 @@ const products = stub<IProductRepository>({
   decrementStock: vi.fn(async () => {}),
 });
 
+/** Reports no pending `ReturnRequest` by default, so `ResolveOrderReturn` falls
+ * back to its legacy whole-order-refund path — what these tests exercise. */
+function fakeReturns() {
+  return stub<IReturnRepository>({ getForOrder: vi.fn(async () => null) });
+}
+
 function uowOf(repos: Partial<TransactionalRepositories>): IUnitOfWork {
   return {
     run: (work) =>
@@ -82,6 +89,7 @@ function uowOf(repos: Partial<TransactionalRepositories>): IUnitOfWork {
         wallets: repos.wallets ?? stub<IWalletRepository>({}),
         slots: repos.slots ?? stub<IDeliverySlotRepository>({}),
         refunds: repos.refunds ?? stub<IRefundRepository>({}),
+        returns: repos.returns ?? fakeReturns(),
       }),
   };
 }
@@ -149,7 +157,7 @@ describe("ResolveOrderReturn", () => {
     const wallets = stub<IWalletRepository>({ addFunds });
 
     const actor: ActivityActor = { id: "admin-1", name: "Admin" };
-    const useCase = new ResolveOrderReturn(orders, uowOf({ orders, wallets, refunds }), notifier);
+    const useCase = new ResolveOrderReturn(orders, uowOf({ orders, wallets, refunds }), notifier, fakeReturns());
     await useCase.execute("order-1", "approve", actor);
 
     expect(refunds.record).toHaveBeenCalledWith({
@@ -162,6 +170,81 @@ describe("ResolveOrderReturn", () => {
       actorName: "Admin",
       lines: [],
     });
+  });
+
+  it("refunds only the requested items and restocks only what inspection marked restockable", async () => {
+    const line1 = item({ id: "item-1", productId: "p1", quantity: 2, price: 20 });
+    const line2 = item({ id: "item-2", productId: "p2", quantity: 1, price: 60 });
+    const placed = order({
+      status: "return_requested",
+      items: [line1, line2],
+      subtotal: 100,
+      shipping: 5,
+      total: 105,
+    });
+    const addFunds = vi.fn(async () => {});
+    const refunds = fakeRefunds();
+    const orders = stub<IOrderRepository>({
+      getById: vi.fn(async () => placed),
+      transitionStatus: vi.fn(async (_id: string, transition: OrderStatusTransition) => ({
+        ...placed,
+        status: transition.to.status,
+        paymentStatus: transition.to.paymentStatus ?? placed.paymentStatus,
+      })),
+    });
+    const wallets = stub<IWalletRepository>({ addFunds });
+    const incrementStock = vi.fn(async () => {});
+    const productsRepo = stub<IProductRepository>({ incrementStock, decrementStock: vi.fn(async () => {}) });
+
+    // Only item-1's 2 units were requested for return; the customer kept item-2.
+    // Inspection marked item-1 restockable.
+    const returnRequest = {
+      id: "return-1",
+      rmaNumber: 1,
+      orderId: "order-1",
+      userId: "user-1",
+      status: "inspected" as const,
+      requestedAt: new Date().toISOString(),
+      items: [
+        {
+          id: "return-item-1",
+          orderItemId: "item-1",
+          productId: "p1",
+          quantity: 2,
+          condition: "resellable" as const,
+          recoveryDecision: "restocked" as const,
+          refundAmount: 40,
+          taxAmount: 0,
+        },
+      ],
+    };
+    const resolve = vi.fn(async () => ({ ...returnRequest, status: "resolved" as const }));
+    const returns = stub<IReturnRepository>({ getForOrder: vi.fn(async () => returnRequest), resolve });
+
+    const actor: ActivityActor = { id: "admin-1", name: "Admin" };
+    const useCase = new ResolveOrderReturn(
+      orders,
+      uowOf({ orders, products: productsRepo, wallets, refunds, returns }),
+      notifier,
+      fakeReturns(),
+    );
+    await useCase.execute("order-1", "approve", actor);
+
+    // Only item-1's 40, not the order's 105 total.
+    expect(addFunds).toHaveBeenCalledWith("user-1", 40, { kind: "refundReturnedOrder" });
+    expect(refunds.record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        amount: 40,
+        lines: [{ orderItemId: "item-1", productId: "p1", quantity: 2, amount: 40, taxAmount: 0 }],
+      }),
+    );
+    // Only item-1 (marked `restocked`) goes back on the shelf — item-2 was never returned.
+    expect(incrementStock).toHaveBeenCalledTimes(1);
+    expect(incrementStock).toHaveBeenCalledWith(
+      [{ productId: "p1", name: "Item", quantity: 2 }],
+      { reason: "restock", orderId: "order-1" },
+    );
+    expect(resolve).toHaveBeenCalledWith("return-1", "resolved");
   });
 });
 

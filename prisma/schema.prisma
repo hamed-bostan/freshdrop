@@ -400,6 +400,69 @@ model RefundLine {
   @@map("refund_lines")
 }
 
+// A customer's return request on a delivered order — the RMA. Distinct from
+// `Order.status = "return_requested"` (which just says a decision is pending):
+// this is the granular record of what's actually being returned, since a return
+// today has no reason, no per-item selection, and no inspection state — only an
+// order-wide status flip. `rmaNumber` is a friendly sequential label, the same
+// role `Order.orderNumber` plays. `status` covers the full lifecycle
+// (`requested | in_transit | received | inspected | resolved | rejected`), though
+// only `requested`, `inspected` (via `RecordReturnInspection`) and
+// `resolved`/`rejected` (via `ResolveOrderReturn`) are written today —
+// `in_transit`/`received` are modelled for a future courier-pickup flow. Stored
+// as a plain string matching the domain union, the schema's enum-free style.
+// `orderId`/`userId` are plain references, not DB foreign keys, the same loose
+// coupling the rest of the schema uses. `actorId`/`actorName` are null for a
+// request the customer opened themselves — same convention as `Refund`.
+model ReturnRequest {
+  id          String    @id @default(uuid())
+  rmaNumber   Int       @unique @default(autoincrement()) @map("rma_number")
+  orderId     String    @map("order_id")
+  userId      String    @map("user_id")
+  status      String    @default("requested")
+  reason      String?
+  requestedAt DateTime  @default(now()) @map("requested_at")
+  receivedAt  DateTime? @map("received_at")
+  inspectedAt DateTime? @map("inspected_at")
+  resolvedAt  DateTime? @map("resolved_at")
+  actorId     String?   @map("actor_id")
+  actorName   String?   @map("actor_name")
+  items       ReturnItem[]
+
+  // One order's return history (an order can be requested, rejected, and
+  // requested again).
+  @@index([orderId])
+  // The admin queue and reporting both narrow by status, then read chronologically.
+  @@index([status, requestedAt])
+  @@index([requestedAt])
+  @@map("return_requests")
+}
+
+// One line of a `ReturnRequest` — which order item, how many units, and (once
+// inspected) what condition they came back in and what happened to them.
+// `condition`/`recoveryDecision` are null until `RecordReturnInspection` sets
+// them — null means "not recorded", not a default value, and reporting must
+// render it that way rather than inventing one (see the reporting-audit note on
+// `RecoveryBreakdownPanels`). `refundAmount`/`taxAmount` are computed once, at
+// request time, from the order's pro-rata discount share (see
+// `refundForLineValue`) — the amount `ResolveOrderReturn` actually credits.
+// `orderItemId`/`productId` are plain references, like `RefundLine`'s.
+model ReturnItem {
+  id               String  @id @default(uuid())
+  returnRequestId  String  @map("return_request_id")
+  orderItemId      String  @map("order_item_id")
+  productId        String  @map("product_id")
+  quantity         Int
+  condition        String?
+  recoveryDecision String? @map("recovery_decision")
+  refundAmount     Float   @map("refund_amount")
+  taxAmount        Float   @default(0) @map("tax_amount")
+  returnRequest    ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
+
+  @@index([returnRequestId])
+  @@map("return_items")
+}
+
 model OrderItem {
   id        String @id @default(uuid())
   orderId   String @map("order_id")

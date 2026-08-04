@@ -28,6 +28,7 @@ import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
 import type { ITeamNotifier } from "@/src/domain/repositories/ITeamNotifier";
 import type { ITaxSettingsRepository } from "@/src/domain/repositories/ITaxSettingsRepository";
 import type { IRefundRepository } from "@/src/domain/repositories/IRefundRepository";
+import type { IReturnRepository } from "@/src/domain/repositories/IReturnRepository";
 import type { IOrderStatusEventLog } from "@/src/domain/repositories/IOrderStatusEventLog";
 import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
 
@@ -64,6 +65,7 @@ import { NominatimGeocodingRepository } from "./repositories/NominatimGeocodingR
 import { SupabaseImageStorageRepository } from "./repositories/SupabaseImageStorageRepository";
 import { PrismaTaxSettingsRepository } from "./repositories/PrismaTaxSettingsRepository";
 import { PrismaRefundRepository } from "./repositories/PrismaRefundRepository";
+import { PrismaReturnRepository } from "./repositories/PrismaReturnRepository";
 import { PrismaOrderStatusEventLog } from "./repositories/PrismaOrderStatusEventLog";
 import { PrismaNotificationTemplateRepository } from "./repositories/PrismaNotificationTemplateRepository";
 
@@ -194,6 +196,12 @@ export const taxSettingsRepository: ITaxSettingsRepository = new PrismaTaxSettin
 // outside a unit of work; `PrismaUnitOfWork` binds its own instance for writers
 // that need it in the same transaction as the order/wallet change it accompanies.
 export const refundRepository: IRefundRepository = new PrismaRefundRepository();
+// The return/RMA ledger — real storage from the start, PostgreSQL via Prisma.
+// `RequestOrderReturn` and `ResolveOrderReturn` write it inside the same unit of
+// work as the order transition it accompanies; exported standalone here (like
+// `refundRepository`) for read paths outside one — the admin detail screen
+// reading a pending request's items to inspect.
+export const returnRepository: IReturnRepository = new PrismaReturnRepository();
 // The order status event ledger — real storage from the start, PostgreSQL via
 // Prisma. `PrismaOrderRepository` binds its own instance inside its own
 // transaction to write from `transitionStatus`/`setTrackingStage`; exported

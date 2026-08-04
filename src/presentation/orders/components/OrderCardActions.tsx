@@ -10,13 +10,16 @@ import { ConfirmDialog } from "@/src/presentation/components/ConfirmDialog";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { useCart } from "@/src/presentation/cart/CartProvider";
 import { formatMoney } from "@/src/lib/formatMoney";
+import type { OrderReturnRequestInput } from "@/src/contracts/order-return-schema";
 import { ordersApi } from "../order-api";
+import { ReturnRequestDialog } from "./ReturnRequestDialog";
 
 /** Which mutation is in flight — drives the per-button loading label. */
 type RunningAction = "reorder" | "cancel" | "return";
 
-/** The actions that ask for confirmation first (they move money/stock). */
-type ConfirmAction = "cancel" | "return";
+/** The actions that ask for confirmation first (they move money/stock). Return
+ * has its own item-selection dialog rather than the plain yes/no. */
+type ConfirmAction = "cancel";
 
 interface OrderCardActionsProps {
   order: Order;
@@ -39,6 +42,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
   const [running, setRunning] = React.useState<RunningAction | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [confirm, setConfirm] = React.useState<ConfirmAction | null>(null);
+  const [returnDialogOpen, setReturnDialogOpen] = React.useState(false);
   const [pending, startTransition] = React.useTransition();
 
   // Live tracking is a courier map + ticking ETA, so it's only meaningful while
@@ -78,12 +82,14 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
         setConfirm(null);
         router.refresh();
       });
-    } else if (confirm === "return") {
-      run("return", () => ordersApi.requestReturn(order.id), () => {
-        setConfirm(null);
-        router.refresh();
-      });
     }
+  }
+
+  function submitReturn(values: OrderReturnRequestInput): void {
+    run("return", () => ordersApi.requestReturn(order.id, values), () => {
+      setReturnDialogOpen(false);
+      router.refresh();
+    });
   }
 
   const confirmCopy: Record<ConfirmAction, { title: string; description: string; confirmLabel: string; pendingLabel: string }> = {
@@ -92,12 +98,6 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
       description: t("cancelDescription", { amount: formatMoney(order.total, locale) }),
       confirmLabel: t("cancelConfirm"),
       pendingLabel: t("cancelling"),
-    },
-    return: {
-      title: t("returnTitle"),
-      description: t("returnDescription"),
-      confirmLabel: t("returnConfirm"),
-      pendingLabel: t("requesting"),
     },
   };
 
@@ -134,7 +134,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
         variant="outline"
         size="sm"
         disabled={pending}
-        onClick={() => setConfirm("return")}
+        onClick={() => setReturnDialogOpen(true)}
       >
         {running === "return" ? t("requesting") : t("return")}
       </Button>,
@@ -190,10 +190,21 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
           description={confirmCopy[confirm].description}
           confirmLabel={confirmCopy[confirm].confirmLabel}
           pendingLabel={confirmCopy[confirm].pendingLabel}
-          confirmVariant={confirm === "cancel" ? "outline" : "primary"}
-          cancelLabel={confirm === "cancel" ? t("keepOrder") : t("notNow")}
+          confirmVariant="outline"
+          cancelLabel={t("keepOrder")}
           pending={pending}
           onConfirm={handleConfirm}
+        />
+      )}
+
+      {returnDialogOpen && (
+        <ReturnRequestDialog
+          order={order}
+          open
+          onOpenChange={setReturnDialogOpen}
+          pending={pending && running === "return"}
+          error={running === "return" ? error : null}
+          onSubmit={submitReturn}
         />
       )}
     </div>
