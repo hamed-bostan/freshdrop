@@ -3,9 +3,9 @@ import { Download } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button, Icon, Select } from "@/src/presentation/design-system";
-import { buildExportHref, type ExportReportDefinition, type ExportReportId } from "./export-report-catalog";
+import { buildExportHref, type ExportReportId, type ExportReportSummary } from "./export-report-catalog";
 
-type Props = { from: string; to: string; reports: readonly ExportReportDefinition[] };
+type Props = { from: string; to: string; reports: readonly ExportReportSummary[] };
 
 export function CustomExportBuilder({ from, to, reports }: Props) {
   const t = useTranslations("dashExportReports");

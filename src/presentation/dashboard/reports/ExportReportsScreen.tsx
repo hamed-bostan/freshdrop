@@ -57,7 +57,11 @@ export async function ExportReportsScreen({ from, to, isCustomRange, permissions
           ))}
         </div>
       </section>
-      <CustomExportBuilder from={from} to={to} reports={reports} />
+      <CustomExportBuilder
+        from={from}
+        to={to}
+        reports={reports.map((report) => ({ id: report.id, endpoint: report.endpoint }))}
+      />
     </div>
   );
 }

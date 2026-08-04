@@ -25,11 +25,22 @@ export function getExportReport(id: ExportReportId): ExportReportDefinition {
 }
 
 /**
+ * The subset of a report definition that's safe to hand to a Client Component.
+ * `icon` is a Lucide component (a function) — React Server Components can't
+ * serialize functions across the server/client boundary, so any prop crossing
+ * into `"use client"` territory (see `CustomExportBuilder`) must be narrowed to
+ * this shape rather than passed the full `ExportReportDefinition`.
+ */
+export type ExportReportSummary = Pick<ExportReportDefinition, "id" | "endpoint">;
+
+/**
  * The report's endpoint scoped to a period, matching the `lte` semantics the
  * export routes' `to` filter uses — see `nextCalendarDay`. Reports with no date
- * filter (customers, products) simply ignore the params.
+ * filter (customers, products) simply ignore the params. Takes just the
+ * `endpoint` field so callers on either side of the server/client boundary
+ * (the full definition, or the serializable `ExportReportSummary`) both work.
  */
-export function buildExportHref(report: ExportReportDefinition, from: string, to: string): string {
+export function buildExportHref(report: Pick<ExportReportDefinition, "endpoint">, from: string, to: string): string {
   const params = new URLSearchParams({ from, to: nextCalendarDay(to) });
   return `${report.endpoint}?${params.toString()}`;
 }
