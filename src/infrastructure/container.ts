@@ -28,6 +28,7 @@ import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
 import type { ITeamNotifier } from "@/src/domain/repositories/ITeamNotifier";
 import type { ITaxSettingsRepository } from "@/src/domain/repositories/ITaxSettingsRepository";
 import type { IRefundRepository } from "@/src/domain/repositories/IRefundRepository";
+import type { IOrderStatusEventLog } from "@/src/domain/repositories/IOrderStatusEventLog";
 import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
 
 import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepository";
@@ -63,6 +64,7 @@ import { NominatimGeocodingRepository } from "./repositories/NominatimGeocodingR
 import { SupabaseImageStorageRepository } from "./repositories/SupabaseImageStorageRepository";
 import { PrismaTaxSettingsRepository } from "./repositories/PrismaTaxSettingsRepository";
 import { PrismaRefundRepository } from "./repositories/PrismaRefundRepository";
+import { PrismaOrderStatusEventLog } from "./repositories/PrismaOrderStatusEventLog";
 import { PrismaNotificationTemplateRepository } from "./repositories/PrismaNotificationTemplateRepository";
 
 const SMS_IR_DEFAULT_TEMPLATE_ID = 562447;
@@ -192,6 +194,11 @@ export const taxSettingsRepository: ITaxSettingsRepository = new PrismaTaxSettin
 // outside a unit of work; `PrismaUnitOfWork` binds its own instance for writers
 // that need it in the same transaction as the order/wallet change it accompanies.
 export const refundRepository: IRefundRepository = new PrismaRefundRepository();
+// The order status event ledger — real storage from the start, PostgreSQL via
+// Prisma. `PrismaOrderRepository` binds its own instance inside its own
+// transaction to write from `transitionStatus`/`setTrackingStage`; exported
+// standalone here for read paths (an order's history) outside that write path.
+export const orderStatusEventLog: IOrderStatusEventLog = new PrismaOrderStatusEventLog();
 // Editable copy for order-lifecycle notifications and admin-alert emails —
 // real storage from the start, PostgreSQL via Prisma. All 12 rows are seeded
 // by the migration; `buildOrderMessage`/`NotifyAdmins` fall back to their

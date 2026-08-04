@@ -324,11 +324,49 @@ model OrderNote {
   @@map("order_notes")
 }
 
-// The auditable record of every wallet credit issued for an order — cancellation,
-// return, substitution, or a discretionary partial refund (phase 7). Additive:
-// existing writers (`CancelOrder`, `ResolveOrderReturn`, the substitution flow)
-// don't emit these yet (see phase 5); this table exists with no readers or
-// writers until then.
+// Append-only history of every lifecycle transition an order goes through —
+// `processing → completed`, `completed → return_requested`, a stage advance,
+// and so on. Written by `PrismaOrderRepository.transitionStatus`/
+// `setTrackingStage` themselves (not by individual use-cases), inside the same
+// transaction as the change, so every caller is covered without having to
+// remember to record one — including customer-initiated moves (`CancelOrder`,
+// `RequestOrderReturn`) that the admin activity log never captured.
+//
+// This is what makes "when was this order actually delivered" an answered
+// question instead of a guess at `orders.updated_at`, which any later edit to
+// the row would silently move. Analytics reads the first `completed` event as
+// the real delivery timestamp (see `PrismaAnalyticsRepository`).
+//
+// `actorId`/`actorName` are null for a transition the customer triggered
+// themselves — same convention as `Refund`. `reason` is free text, except for
+// the sentinel `"backfill"` used by the rows the introducing migration
+// synthesized from pre-existing orders (from `updated_at`, since no real event
+// existed yet); reporting that wants only recorded, not reconstructed, history
+// can filter those out.
+model OrderStatusEvent {
+  id         String   @id @default(uuid())
+  orderId    String   @map("order_id")
+  fromStatus String?  @map("from_status")
+  toStatus   String   @map("to_status")
+  fromStage  String?  @map("from_stage")
+  toStage    String?  @map("to_stage")
+  actorId    String?  @map("actor_id")
+  actorName  String?  @map("actor_name")
+  reason     String?
+  occurredAt DateTime @default(now()) @map("occurred_at")
+
+  // One order's history, oldest first.
+  @@index([orderId, occurredAt])
+  // Delivery/analytics reads narrow by the status being reported on, then range
+  // over time — the same shape `orders`' `[status, placedAt]` index serves.
+  @@index([toStatus, occurredAt])
+  @@map("order_status_events")
+}
+
+// The auditable record of every wallet credit issued for an order —
+// cancellation, return, substitution, or a discretionary partial refund
+// (phase 7). `CancelOrder`, `ResolveOrderReturn` and the substitution flow all
+// emit a row here in the same transaction as the wallet credit it accompanies.
 model Refund {
   id        String   @id @default(uuid())
   orderId   String   @map("order_id")

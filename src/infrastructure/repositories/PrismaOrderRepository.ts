@@ -27,6 +27,7 @@ import { prisma } from "@/src/infrastructure/prisma/client";
 import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transaction";
 import { recordAudit } from "./writeActivityEntry";
 import { toRefund } from "./PrismaRefundRepository";
+import { PrismaOrderStatusEventLog } from "./PrismaOrderStatusEventLog";
 
 /** Items are always read in their authored order so the order card's thumbnails stay stable. */
 const ITEMS_INCLUDE = { items: { orderBy: { position: "asc" } } } as const;
@@ -160,6 +161,14 @@ export class PrismaOrderRepository implements IOrderRepository {
   ): Promise<Order> {
     try {
       return await inTransaction(this.db, async (tx) => {
+        // Read before the write purely to label the event below — the update
+        // itself has no precondition to guard (unlike `transitionStatus`, a
+        // stage advance isn't idempotency-sensitive the same way).
+        const prior = await tx.order.findUnique({
+          where: { id: orderId },
+          select: { status: true, stage: true },
+        });
+
         const updated = await tx.order.update({
           where: { id: orderId },
           data: { stage: update.stage, status: update.status },
@@ -167,6 +176,14 @@ export class PrismaOrderRepository implements IOrderRepository {
         });
         const order = await attachRefund(tx, toOrder(updated));
         await recordAudit(tx, order, audit);
+        await new PrismaOrderStatusEventLog(tx).record({
+          orderId,
+          fromStatus: prior?.status as OrderStatus | undefined,
+          fromStage: (prior?.stage as TrackingMilestone | null) ?? undefined,
+          toStatus: update.status,
+          toStage: update.stage,
+          occurredAt: new Date().toISOString(),
+        });
         return order;
       });
     } catch (error) {
@@ -182,6 +199,14 @@ export class PrismaOrderRepository implements IOrderRepository {
     const { from, to } = transition;
 
     return inTransaction(this.db, async (tx) => {
+      // Read before the guarded write purely to label the event below with the
+      // order's actual prior state — informational only, it plays no part in
+      // the atomicity the guard below provides.
+      const prior = await tx.order.findUnique({
+        where: { id: orderId },
+        select: { status: true, stage: true },
+      });
+
       // The `from` precondition is folded into the WHERE clause, so the match and
       // the write are one atomic statement — `count` is 1 only when this call is
       // the one that actually moved the order out of the expected state.
@@ -211,6 +236,14 @@ export class PrismaOrderRepository implements IOrderRepository {
 
       const order = await attachRefund(tx, toOrder(row));
       await recordAudit(tx, order, audit);
+      await new PrismaOrderStatusEventLog(tx).record({
+        orderId,
+        fromStatus: prior?.status as OrderStatus | undefined,
+        fromStage: (prior?.stage as TrackingMilestone | null) ?? undefined,
+        toStatus: to.status,
+        toStage: order.stage,
+        occurredAt: new Date().toISOString(),
+      });
       return order;
     });
   }
