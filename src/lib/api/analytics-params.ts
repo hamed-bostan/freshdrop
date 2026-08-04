@@ -168,6 +168,16 @@ export function toInclusiveEndParam(range: DateRange): string {
   return toDateParam(new Date(range.to.getTime() - DAY_MS));
 }
 
+/**
+ * The calendar day after `date` (`YYYY-MM-DD` in, `YYYY-MM-DD` out) — the inverse of
+ * {@link toInclusiveEndParam}. Query params that scope an export or filter to "through
+ * `to`" are compared with `lte` against an instant, so the day *after* an inclusive
+ * last day is what actually includes every moment of it.
+ */
+export function nextCalendarDay(date: string): string {
+  return toDateParam(new Date(new Date(`${date}T00:00:00.000Z`).getTime() + DAY_MS));
+}
+
 /** Parse a `YYYY-MM-DD` string into midnight UTC on that day; `null` for anything else, including shapes that match the pattern but don't exist (`2026-02-31`). */
 function parseCalendarDate(value: string): Date | null {
   if (!DATE_PATTERN.test(value)) return null;

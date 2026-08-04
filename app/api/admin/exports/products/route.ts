@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { singleChange } from "@/src/domain/entities/ActivityEntry";
 import {
   ADMIN_PRODUCT_SORTS,
   DEFAULT_ADMIN_PRODUCT_SORT,
@@ -6,7 +7,7 @@ import {
 import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
 import { ExportProducts } from "@/src/domain/use-cases/exports/ExportProducts";
-import { productRepository } from "@/src/infrastructure/container";
+import { activityLog, productRepository } from "@/src/infrastructure/container";
 import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminProductFilters } from "@/src/lib/api/admin-product-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
@@ -25,7 +26,8 @@ export const dynamic = "force-dynamic";
  * response is a bare streamed body rather than the JSON envelope.
  */
 export async function GET(request: NextRequest): Promise<Response> {
-  if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
+  const session = await getSessionWith("catalog.write");
+  if (!session) return unauthorizedResponse();
 
   const params = request.nextUrl.searchParams;
 
@@ -33,6 +35,15 @@ export async function GET(request: NextRequest): Promise<Response> {
     const filters = parseAdminProductFilters(params);
     const { sort } = parsePageRequest(params, ADMIN_PRODUCT_SORTS, { sort: DEFAULT_ADMIN_PRODUCT_SORT });
     const products = new ExportProducts(productRepository).execute(filters, sort);
+    await activityLog.recordEvent({
+      actorId: session.user.id,
+      actorName: session.user.name ?? session.user.id,
+      action: "export.downloaded",
+      entityType: "export",
+      entityId: "products",
+      entityLabel: "products",
+      changes: singleChange("query", null, filters.query ?? "all"),
+    });
     return csvResponse(csvFilename("products"), csvStream(HEADER, toRows(products)));
   } catch (error) {
     return errorResponseFromException(error, "GET /api/admin/exports/products failed");

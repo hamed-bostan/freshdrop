@@ -57,6 +57,8 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange }: An
               { resource: "customers", label: t("exportCustomersReport") },
               { resource: "inventory-movements", label: t("exportInventoryReport") },
             ]}
+            from={from}
+            to={to}
           />
         </div>
       </header>

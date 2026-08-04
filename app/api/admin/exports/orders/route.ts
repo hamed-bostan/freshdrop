@@ -1,9 +1,10 @@
 import type { NextRequest } from "next/server";
+import { singleChange } from "@/src/domain/entities/ActivityEntry";
 import { ADMIN_ORDER_SORTS, DEFAULT_ADMIN_ORDER_SORT } from "@/src/domain/entities/AdminOrderFilters";
 import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid, orderRecognizedRevenue, orderRefundedTotal } from "@/src/domain/entities/Order";
 import { ExportOrders } from "@/src/domain/use-cases/exports/ExportOrders";
-import { orderRepository, userRepository } from "@/src/infrastructure/container";
+import { activityLog, orderRepository, userRepository } from "@/src/infrastructure/container";
 import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminOrderFilters } from "@/src/lib/api/admin-order-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
@@ -28,7 +29,8 @@ export const dynamic = "force-dynamic";
  * silently truncating a file an admin would otherwise trust.
  */
 export async function GET(request: NextRequest): Promise<Response> {
-  if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
+  const session = await getSessionWith("dashboard.view");
+  if (!session) return unauthorizedResponse();
 
   const params = request.nextUrl.searchParams;
 
@@ -36,6 +38,17 @@ export async function GET(request: NextRequest): Promise<Response> {
     const filters = parseAdminOrderFilters(params);
     const { sort } = parsePageRequest(params, ADMIN_ORDER_SORTS, { sort: DEFAULT_ADMIN_ORDER_SORT });
     const orders = new ExportOrders(orderRepository, userRepository).execute(filters, sort);
+    // Best-effort, after the download starts: recorded from the session's own actor,
+    // never the request body, so the entry can't be told to blame someone else.
+    await activityLog.recordEvent({
+      actorId: session.user.id,
+      actorName: session.user.name ?? session.user.id,
+      action: "export.downloaded",
+      entityType: "export",
+      entityId: "orders",
+      entityLabel: "orders",
+      changes: singleChange("range", null, `${filters.placedFrom ?? "all"} .. ${filters.placedTo ?? "all"}`),
+    });
     return csvResponse(csvFilename("orders"), csvStream(HEADER, toRows(orders)));
   } catch (error) {
     return errorResponseFromException(error, "GET /api/admin/exports/orders failed");

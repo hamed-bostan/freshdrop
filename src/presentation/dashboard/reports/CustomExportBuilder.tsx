@@ -1,14 +1,17 @@
 "use client";
-import { Download, LockKeyhole } from "lucide-react";
+import { Download } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button, Icon, Select } from "@/src/presentation/design-system";
-import { EXPORT_REPORTS, getExportReport, type ExportReportId } from "./export-report-catalog";
+import { buildExportHref, type ExportReportDefinition, type ExportReportId } from "./export-report-catalog";
 
-export function CustomExportBuilder() {
+type Props = { from: string; to: string; reports: readonly ExportReportDefinition[] };
+
+export function CustomExportBuilder({ from, to, reports }: Props) {
   const t = useTranslations("dashExportReports");
-  const [reportId, setReportId] = useState<ExportReportId>("orders");
-  const report = getExportReport(reportId);
+  const [reportId, setReportId] = useState<ExportReportId>(reports[0]?.id ?? "orders");
+  const report = reports.find((item) => item.id === reportId) ?? reports[0];
+  if (!report) return null;
   return (
     <section id="custom-export" className="scroll-mt-6 rounded-card-lg border border-border bg-background p-4">
       <h2 className="text-body-b5">{t("customHeading")}</h2>
@@ -16,7 +19,7 @@ export function CustomExportBuilder() {
       <div className="mt-3 max-w-xs">
         <Field label={t("reportLabel")}>
           <Select value={reportId} onChange={(event) => setReportId(event.target.value as ExportReportId)} className="w-full">
-            {EXPORT_REPORTS.map((item) => (
+            {reports.map((item) => (
               <option key={item.id} value={item.id}>
                 {t(`report.${item.id}.name`)}
               </option>
@@ -24,13 +27,9 @@ export function CustomExportBuilder() {
           </Select>
         </Field>
       </div>
-      <div className="mt-4 flex flex-col gap-3 rounded-card-md border border-primary/20 bg-accent/35 px-3 py-2 sm:flex-row sm:items-center">
-        <span className="flex flex-1 items-center gap-2 text-body-b10">
-          <Icon icon={LockKeyhole} size="sm" className="text-primary" />
-          {t("encryptionNote")}
-        </span>
+      <div className="mt-4 flex flex-col gap-3 rounded-card-md border border-primary/20 bg-accent/35 px-3 py-2 sm:flex-row sm:items-center sm:justify-end">
         <Button asChild size="sm">
-          <a href={report.endpoint} download>
+          <a href={buildExportHref(report, from, to)} download>
             <Icon icon={Download} size="xs" className="me-2" />
             {t("generate")}
           </a>

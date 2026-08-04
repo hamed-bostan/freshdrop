@@ -30,6 +30,7 @@ export const ACTIVITY_ENTITY_TYPES = [
   "promoCode",
   "deliveryWindow",
   "user",
+  "export",
 ] as const;
 
 /**
@@ -87,6 +88,11 @@ export const ACTIVITY_ACTIONS = [
   "deliveryWindow.updated",
   "deliveryWindow.deleted",
   "user.roleChanged",
+  // Another event rather than a change to anything stored — an admin downloaded a
+  // customer-data export. Recorded through `IActivityLog.recordEvent`, same as
+  // `order.customerNotified`: the file has already left the moment this is
+  // written, so there is nothing to be atomic with.
+  "export.downloaded",
 ] as const;
 
 /** A recognised action, or `unknown` — see {@link ActivityEntityType} for why. */

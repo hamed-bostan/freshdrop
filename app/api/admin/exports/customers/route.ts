@@ -1,11 +1,12 @@
 import type { NextRequest } from "next/server";
+import { singleChange } from "@/src/domain/entities/ActivityEntry";
 import {
   ADMIN_CUSTOMER_SORTS,
   DEFAULT_ADMIN_CUSTOMER_SORT,
 } from "@/src/domain/entities/AdminCustomerFilters";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { ExportCustomers } from "@/src/domain/use-cases/exports/ExportCustomers";
-import { orderRepository, userRepository } from "@/src/infrastructure/container";
+import { activityLog, orderRepository, userRepository } from "@/src/infrastructure/container";
 import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminCustomerFilters } from "@/src/lib/api/admin-customer-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
@@ -27,7 +28,8 @@ export const dynamic = "force-dynamic";
  * it was built from, not where the file went.
  */
 export async function GET(request: NextRequest): Promise<Response> {
-  if (!(await getSessionWith("dashboard.view"))) return unauthorizedResponse();
+  const session = await getSessionWith("dashboard.view");
+  if (!session) return unauthorizedResponse();
 
   const params = request.nextUrl.searchParams;
   const filters = parseAdminCustomerFilters(params);
@@ -36,6 +38,16 @@ export async function GET(request: NextRequest): Promise<Response> {
   });
 
   const customers = new ExportCustomers(orderRepository, userRepository).execute(filters, sort);
+
+  await activityLog.recordEvent({
+    actorId: session.user.id,
+    actorName: session.user.name ?? session.user.id,
+    action: "export.downloaded",
+    entityType: "export",
+    entityId: "customers",
+    entityLabel: "customers",
+    changes: singleChange("query", null, filters.query ?? "all"),
+  });
 
   return csvResponse(csvFilename("customers"), csvStream(HEADER, toRows(customers)));
 }

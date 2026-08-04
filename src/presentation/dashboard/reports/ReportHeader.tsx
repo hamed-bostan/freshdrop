@@ -48,7 +48,7 @@ export async function ReportHeader({ ariaLabel, parentLabel, currentLabel, title
           <div className="flex h-10 items-center rounded-input border border-border px-4 text-body-b8 text-foreground">
             {ta("comparisonPeriod", { from: formatMediumDate(comparisonRange.from, locale), to: formatMediumDate(comparisonRange.to, locale) })}
           </div>
-          <AnalyticsExportMenu label={ta("exportHeading")} reports={exportReports} />
+          <AnalyticsExportMenu label={ta("exportHeading")} reports={exportReports} from={from} to={to} />
         </div>
       </header>
     </>
