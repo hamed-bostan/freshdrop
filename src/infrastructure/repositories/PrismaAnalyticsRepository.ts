@@ -69,6 +69,24 @@ import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transa
  * column uses, so the result stays directly comparable to `placed_at`. One
  * setting, imported from the domain and applied here and in `startOfUtcDay` /
  * `presetRange` — not one layer quietly picking its own.
+ *
+ * ## Money precision
+ *
+ * Every money column this class reads (`orders.total`/`subtotal`/`discount`,
+ * `refunds.amount`, `refund_lines.amount`, …) is `Decimal(12,2)` (phase 9) —
+ * exact base-10 arithmetic in Postgres, not float8. The `::double precision`
+ * casts below stay, but they now do only one job: converting the *finished*
+ * aggregate to a plain JS number for `$queryRaw` to hand back (Prisma returns
+ * `Decimal` instances for a raw `numeric` column, which would leak
+ * `Prisma.Decimal` through `IAnalyticsRepository`'s `number`-typed ports and
+ * break `JSON.stringify` on every report route). The arithmetic itself —
+ * `SUM`, subtraction, discount pro-rating — runs entirely in `numeric` before
+ * that cast is applied, so it inherits the same exactness the columns now
+ * have; float8 only ever sees the already-summed total, and a 64-bit float
+ * losslessly represents any store-scale money figure to far more than 2
+ * decimal places. Casting bare `::numeric` back to the client instead was
+ * considered and rejected: it would return `Decimal`/string values across
+ * every report endpoint for no precision gain over this narrower cast.
  */
 export class PrismaAnalyticsRepository implements IAnalyticsRepository {
   constructor(private readonly db: PrismaDb = prisma) {}

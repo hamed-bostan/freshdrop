@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import type { Refund, RefundKind, RefundLine } from "@/src/domain/entities/Refund";
 import type { IRefundRepository, NewRefund } from "@/src/domain/repositories/IRefundRepository";
 import type { AuditHook } from "@/src/domain/repositories/AuditHook";
@@ -65,8 +66,8 @@ export type RefundRow = {
   orderId: string;
   userId: string;
   kind: string;
-  amount: number;
-  taxAmount: number;
+  amount: Prisma.Decimal;
+  taxAmount: Prisma.Decimal;
   reason: string | null;
   actorId: string | null;
   actorName: string | null;
@@ -78,8 +79,8 @@ type RefundLineRow = {
   orderItemId: string;
   productId: string;
   quantity: number | null;
-  amount: number;
-  taxAmount: number;
+  amount: Prisma.Decimal;
+  taxAmount: Prisma.Decimal;
 };
 
 export function toRefund(row: RefundRow): Refund {
@@ -88,8 +89,8 @@ export function toRefund(row: RefundRow): Refund {
     orderId: row.orderId,
     userId: row.userId,
     kind: row.kind as RefundKind,
-    amount: row.amount,
-    taxAmount: row.taxAmount,
+    amount: row.amount.toNumber(),
+    taxAmount: row.taxAmount.toNumber(),
     reason: row.reason ?? undefined,
     actorId: row.actorId ?? undefined,
     actorName: row.actorName ?? undefined,
@@ -103,7 +104,7 @@ function toRefundLine(row: RefundLineRow): RefundLine {
     orderItemId: row.orderItemId,
     productId: row.productId,
     quantity: row.quantity ?? undefined,
-    amount: row.amount,
-    taxAmount: row.taxAmount,
+    amount: row.amount.toNumber(),
+    taxAmount: row.taxAmount.toNumber(),
   };
 }

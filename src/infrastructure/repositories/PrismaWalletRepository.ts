@@ -33,7 +33,7 @@ export class PrismaWalletRepository implements IWalletRepository {
     ]);
 
     return {
-      balance: account?.balance ?? 0,
+      balance: account?.balance.toNumber() ?? 0,
       cards,
       transactions: transactions.map((row) => ({
         id: row.id,
@@ -41,7 +41,7 @@ export class PrismaWalletRepository implements IWalletRepository {
         reason: row.reason,
         reasonItem: row.reasonItem,
         date: row.date.toISOString(),
-        amount: row.amount,
+        amount: row.amount.toNumber(),
         type: row.type as TransactionType,
       })),
     };

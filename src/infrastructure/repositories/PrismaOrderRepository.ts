@@ -298,33 +298,33 @@ type OrderRow = {
   destinationLat: number | null;
   destinationLng: number | null;
   city: string | null;
-  subtotal: number;
-  shipping: number;
-  discount: number;
-  total: number;
-  taxAmount: number | null;
+  subtotal: Prisma.Decimal;
+  shipping: Prisma.Decimal;
+  discount: Prisma.Decimal;
+  total: Prisma.Decimal;
+  taxAmount: Prisma.Decimal | null;
   taxRate: number | null;
   stage: string | null;
   deliveryDate: string | null;
   deliveryWindowId: string | null;
   deliveryWindow: string | null;
   deliveryInstructions: string | null;
-  walletApplied: number;
+  walletApplied: Prisma.Decimal;
   items: {
     id: string;
     productId: string;
     name: string;
     imageUrl: string;
     quantity: number;
-    price: number;
+    price: Prisma.Decimal;
     substitutionPreference: string;
     substitutionStatus: string | null;
-    substitutionRefundAmount: number | null;
+    substitutionRefundAmount: Prisma.Decimal | null;
     replacementProductId: string | null;
     replacementName: string | null;
     replacementImageUrl: string | null;
     taxExempt: boolean;
-    taxAmount: number | null;
+    taxAmount: Prisma.Decimal | null;
   }[];
 };
 
@@ -434,9 +434,9 @@ function toOrder(row: OrderRow): Order {
     name: item.name,
     imageUrl: item.imageUrl,
     quantity: item.quantity,
-    price: item.price,
+    price: item.price.toNumber(),
     taxExempt: item.taxExempt,
-    taxAmount: item.taxAmount,
+    taxAmount: item.taxAmount?.toNumber() ?? null,
     // Plain string columns that only ever hold the domain union values (the app
     // validates them), narrowed here — consistent with status/phase/stage above.
     substitutionPreference: item.substitutionPreference as SubstitutionPreference,
@@ -446,7 +446,7 @@ function toOrder(row: OrderRow): Order {
         : {
             status: item.substitutionStatus as ItemSubstitution["status"],
             // Null only for rows resolved before this column existed — treat as 0.
-            refundAmount: item.substitutionRefundAmount ?? 0,
+            refundAmount: item.substitutionRefundAmount?.toNumber() ?? 0,
             replacement: item.replacementProductId
               ? {
                   productId: item.replacementProductId,
@@ -475,18 +475,18 @@ function toOrder(row: OrderRow): Order {
       row.destinationLat != null && row.destinationLng != null
         ? { latitude: row.destinationLat, longitude: row.destinationLng }
         : undefined,
-    subtotal: row.subtotal,
-    shipping: row.shipping,
-    discount: row.discount,
-    total: row.total,
-    taxAmount: row.taxAmount,
+    subtotal: row.subtotal.toNumber(),
+    shipping: row.shipping.toNumber(),
+    discount: row.discount.toNumber(),
+    total: row.total.toNumber(),
+    taxAmount: row.taxAmount?.toNumber() ?? null,
     taxRate: row.taxRate,
     stage: (row.stage as TrackingMilestone | null) ?? undefined,
     deliveryDate: row.deliveryDate ?? undefined,
     deliveryWindowId: row.deliveryWindowId ?? undefined,
     deliveryWindow: row.deliveryWindow ?? undefined,
     deliveryInstructions: row.deliveryInstructions ?? undefined,
-    walletApplied: row.walletApplied,
+    walletApplied: row.walletApplied.toNumber(),
     items,
     // The correct value for a brand-new order (`createOrder`); every other caller
     // overwrites this with the real ledger via `attachRefund`/`attachRefunds`.

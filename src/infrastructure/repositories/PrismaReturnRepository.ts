@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import type {
   ReturnItem,
   ReturnItemCondition,
@@ -128,8 +129,8 @@ type ReturnItemRow = {
   quantity: number;
   condition: string | null;
   recoveryDecision: string | null;
-  refundAmount: number;
-  taxAmount: number;
+  refundAmount: Prisma.Decimal;
+  taxAmount: Prisma.Decimal;
 };
 
 function toReturnRequest(row: ReturnRequestRow): ReturnRequest {
@@ -158,7 +159,7 @@ function toReturnItem(row: ReturnItemRow): ReturnItem {
     quantity: row.quantity,
     condition: (row.condition as ReturnItemCondition | null) ?? undefined,
     recoveryDecision: (row.recoveryDecision as ReturnRecoveryDecision | null) ?? undefined,
-    refundAmount: row.refundAmount,
-    taxAmount: row.taxAmount,
+    refundAmount: row.refundAmount.toNumber(),
+    taxAmount: row.taxAmount.toNumber(),
   };
 }

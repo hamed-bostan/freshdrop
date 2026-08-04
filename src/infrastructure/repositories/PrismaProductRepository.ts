@@ -610,8 +610,8 @@ function orderByFor(sort: ProductSort | undefined): Prisma.ProductOrderByWithRel
 type ProductRow = {
   id: string;
   name: string;
-  price: number;
-  originalPrice: number | null;
+  price: Prisma.Decimal;
+  originalPrice: Prisma.Decimal | null;
   rating: number;
   ratingCount: number;
   stockQuantity: number;
@@ -635,13 +635,15 @@ type ProductRow = {
  * entity's optional (`undefined`) fields.
  */
 function toProduct(row: ProductRow): Product {
+  const price = row.price.toNumber();
+  const originalPrice = row.originalPrice?.toNumber() ?? undefined;
   return {
     id: row.id,
     name: row.name,
-    price: row.price,
-    originalPrice: row.originalPrice ?? undefined,
+    price,
+    originalPrice,
     discountPercent:
-      row.originalPrice != null ? Math.round((1 - row.price / row.originalPrice) * 100) : undefined,
+      originalPrice != null ? Math.round((1 - price / originalPrice) * 100) : undefined,
     rating: row.rating,
     ratingCount: row.ratingCount,
     stockQuantity: row.stockQuantity,

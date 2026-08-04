@@ -63,11 +63,11 @@ model User {
   // id is the user's normalized phone digits — the stable identifier carried on
   // the Auth.js session (and matched against ADMIN_USER_IDS), so it is supplied
   // at creation rather than database-generated.
-  id        String   @id
-  phone     String
-  name      String
-  email     String?
-  avatarUrl String?  @map("avatar_url")
+  id                      String    @id
+  phone                   String
+  name                    String
+  email                   String?
+  avatarUrl               String?   @map("avatar_url")
   // Access level: "customer" (default), "admin", or "owner" — stored as a plain
   // string matching the domain union, the schema's enum-free style. This is the
   // source of truth for dashboard access; ADMIN_USER_IDS remains only as a
@@ -75,7 +75,7 @@ model User {
   // holds "owner" (enforced by TransferOwnership, not by the schema — Postgres
   // can't express it without a partial unique index the app would still have to
   // honour). Indexed for the team listing.
-  role      String   @default("customer")
+  role                    String    @default("customer")
   // The payment method the user last selected for checkout — a single per-user
   // preference, so it lives here as a nullable scalar rather than a per-row flag
   // like a default address. The id references either the payment_methods catalog
@@ -83,7 +83,7 @@ model User {
   // reference, not a DB foreign key (the same loose coupling the rest of the schema
   // uses), so a stale id (e.g. a card later removed) is tolerated and falls back to
   // the first catalog option at read time. Null until the user picks one.
-  selectedPaymentMethodId String?  @map("selected_payment_method_id")
+  selectedPaymentMethodId String?   @map("selected_payment_method_id")
   // When this user last opened the notification bell — the one column the
   // derived feed needs. Unread is "activity newer than this", not a per-row
   // flag: the feed has no rows of its own to flag, only a read of the activity
@@ -96,9 +96,9 @@ model User {
   // inbound bell and the outbound `IEmailSender` finally meet (Track B3);
   // `NotifyAdmins` checks this against the same row it already read to resolve
   // recipients, no second query per person in the fan-out.
-  notifiedCategories String[] @default([]) @map("notified_categories")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  notifiedCategories      String[]  @default([]) @map("notified_categories")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
 
   @@index([role])
   @@map("users")
@@ -119,27 +119,27 @@ model User {
 // matching the loose coupling used throughout — and necessarily so, since an
 // entry outlives the thing it describes (`product.deleted` is the clearest case).
 model ActivityEntry {
-  id          String   @id @default(uuid())
+  id            String   @id @default(uuid())
   // Who made the change, and their name at the time.
-  actorId     String   @map("actor_id")
-  actorName   String   @map("actor_name")
+  actorId       String   @map("actor_id")
+  actorName     String   @map("actor_name")
   // Action and entity type as plain strings matching the domain unions
   // (enum-free schema) — the adapter narrows them on read.
-  action      String
-  entityType  String   @map("entity_type")
-  entityId    String   @map("entity_id")
+  action        String
+  entityType    String   @map("entity_type")
+  entityId      String   @map("entity_id")
   // How the entity read at the time: a product name, a promo code, a person.
-  entityLabel String?  @map("entity_label")
+  entityLabel   String?  @map("entity_label")
   // The fields that moved, as `[{ field, before, after }]` with string values.
   // Json rather than a child table: the diff is read whole with its entry, so a
   // join would buy nothing and cost a table. Filtering by field goes through
   // `changedFields` below instead.
-  changes     Json
+  changes       Json
   // Just the field names from `changes`, denormalized so "every price change" is
   // an index scan rather than a scan of every JSON blob. Derived by the store on
   // write, never set independently — see `changedFields()`.
   changedFields String[] @map("changed_fields")
-  createdAt   DateTime @default(now()) @map("created_at")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   // The unfiltered log, newest first.
   @@index([createdAt])
@@ -214,74 +214,75 @@ model NotificationTemplate {
 // plain strings matching the domain unions (the app validates them), consistent
 // with the rest of the schema's enum-free style.
 model Order {
-  id        String      @id @default(uuid())
+  id                   String      @id @default(uuid())
   // A short sequential number for humans (dashboard lists, support conversations)
   // — `id` stays the real key (checkout mints it, stock movements reference it),
   // this is purely a friendlier label. DB-assigned; nothing ever supplies one.
-  orderNumber Int       @unique @default(autoincrement()) @map("order_number")
+  orderNumber          Int         @unique @default(autoincrement()) @map("order_number")
   // The user who placed the order. A plain reference (not a DB foreign key),
   // same loose coupling as the rest of the schema. Indexed for the per-user read.
-  userId    String      @map("user_id")
-  status    String
-  phase     String
+  userId               String      @map("user_id")
+  status               String
+  phase                String
   // How the order is handed over ("delivery" | "pickup") and where the money stands
   // ("paid" | "pending" | "failed" | "refunded"). Plain strings matching the domain
   // unions, the schema's enum-free style. The defaults are what legacy rows truly
   // were: every order placed before these columns existed was couriered, and was
   // placed through a flow with no outcome other than paid.
-  deliveryType  String  @default("delivery") @map("delivery_type")
-  paymentStatus String  @default("paid") @map("payment_status")
-  placedAt  DateTime    @map("placed_at")
-  location  String
+  deliveryType         String      @default("delivery") @map("delivery_type")
+  paymentStatus        String      @default("paid") @map("payment_status")
+  placedAt             DateTime    @map("placed_at")
+  location             String
   // Short saved-address label ("Home", "Gym") captured at checkout, so the order
   // card can collapse the address to its label. Nullable: seeded/legacy orders
   // predate it and read as NULL (the card falls back to the address's city).
-  locationLabel String? @map("location_label")
+  locationLabel        String?     @map("location_label")
   // The settlement (city/town) the delivery address sits in, snapshotted from the
   // selected `DeliveryLocation.city` at checkout — the geographic dimension
   // delivery-zone reporting groups by. Nullable: seeded/legacy orders predate it,
   // and the geocoder doesn't always resolve a city for the saved address either.
-  city String?
+  city                 String?
   // The delivery coordinate snapshotted from the selected address at checkout, so
   // tracking can map the order to its real destination. Nullable: seeded/legacy
   // orders predate it, and a saved address may carry no coordinate — tracking then
   // falls back to a default point.
-  destinationLat Float? @map("destination_lat")
-  destinationLng Float? @map("destination_lng")
+  destinationLat       Float?      @map("destination_lat")
+  destinationLng       Float?      @map("destination_lng")
   // Price breakdown captured at checkout — the faithful record of what was charged
   // and the basis for pro-rating a partial (out-of-stock) refund. `total = subtotal
   // + shipping - discount`. `subtotal`/`shipping`/`discount` default to 0 so orders
   // placed before the breakdown was recorded stay valid.
-  subtotal  Float       @default(0)
-  shipping  Float       @default(0)
-  discount  Float       @default(0)
-  total     Float
+  subtotal             Decimal     @default(0) @db.Decimal(12, 2)
+  shipping             Decimal     @default(0) @db.Decimal(12, 2)
+  discount             Decimal     @default(0) @db.Decimal(12, 2)
+  total                Decimal     @db.Decimal(12, 2)
   // VAT portion of `total`, snapshotted at checkout alongside the rate it was
   // computed with — nullable, no backfill: NULL means tax wasn't in effect when
   // the order was placed (see `taxFromGross`/phase 3), not that it was 0.
-  taxAmount Float?      @map("tax_amount")
-  taxRate   Float?      @map("tax_rate")
+  taxAmount            Decimal?    @map("tax_amount") @db.Decimal(12, 2)
+  // A percentage, not money — stays Float (phase 9 only converts money columns).
+  taxRate              Float?      @map("tax_rate")
   // Current delivery milestone (confirmed/shipped/arrived). Null when the order
   // isn't trackable (archived or cancelled). Advanced from the admin dashboard.
-  stage     String?
+  stage                String?
   // The delivery slot the shopper booked at checkout. Nullable so seeded/legacy
   // orders (placed before slot booking existed) stay valid. `deliveryWindow` is a
   // display snapshot ("Tomorrow, 6:00 – 8:00 PM") captured at purchase time, so the
   // order reads correctly even if the window catalog changes later; the date/id are
   // the machine references (delivery calendar date `YYYY-MM-DD` + window slug).
-  deliveryDate     String? @map("delivery_date")
-  deliveryWindowId String? @map("delivery_window_id")
-  deliveryWindow   String? @map("delivery_window")
+  deliveryDate         String?     @map("delivery_date")
+  deliveryWindowId     String?     @map("delivery_window_id")
+  deliveryWindow       String?     @map("delivery_window")
   // Free-text courier note captured at checkout (gate code, "leave with
   // neighbour", …). Null for legacy orders and whenever the shopper left it blank.
-  deliveryInstructions String? @map("delivery_instructions")
+  deliveryInstructions String?     @map("delivery_instructions")
   // How much of `total` was paid from the customer's wallet balance, captured at
   // checkout; the rest was charged to the payment method on the order. Defaults
   // to 0 so orders placed before the wallet could be used this way stay valid.
-  walletApplied Float @default(0) @map("wallet_applied")
-  items     OrderItem[]
-  createdAt DateTime    @default(now()) @map("created_at")
-  updatedAt DateTime    @updatedAt @map("updated_at")
+  walletApplied        Decimal     @default(0) @map("wallet_applied") @db.Decimal(12, 2)
+  items                OrderItem[]
+  createdAt            DateTime    @default(now()) @map("created_at")
+  updatedAt            DateTime    @updatedAt @map("updated_at")
 
   @@index([userId])
   // Every analytics aggregate is a scan of one date range (see
@@ -368,17 +369,17 @@ model OrderStatusEvent {
 // (phase 7). `CancelOrder`, `ResolveOrderReturn` and the substitution flow all
 // emit a row here in the same transaction as the wallet credit it accompanies.
 model Refund {
-  id        String   @id @default(uuid())
-  orderId   String   @map("order_id")
-  userId    String   @map("user_id")
+  id        String       @id @default(uuid())
+  orderId   String       @map("order_id")
+  userId    String       @map("user_id")
   kind      String
   // Total credited to the wallet — matches the `addFunds` amount it accompanies.
-  amount    Float
-  taxAmount Float    @default(0) @map("tax_amount")
+  amount    Decimal      @db.Decimal(12, 2)
+  taxAmount Decimal      @default(0) @map("tax_amount") @db.Decimal(12, 2)
   reason    String?
-  actorId   String?  @map("actor_id")
-  actorName String?  @map("actor_name")
-  createdAt DateTime @default(now()) @map("created_at")
+  actorId   String?      @map("actor_id")
+  actorName String?      @map("actor_name")
+  createdAt DateTime     @default(now()) @map("created_at")
   lines     RefundLine[]
 
   // One order's refund history, in the order they were issued.
@@ -391,14 +392,14 @@ model Refund {
 }
 
 model RefundLine {
-  id          String @id @default(uuid())
-  refundId    String @map("refund_id")
-  orderItemId String @map("order_item_id")
-  productId   String @map("product_id")
+  id          String  @id @default(uuid())
+  refundId    String  @map("refund_id")
+  orderItemId String  @map("order_item_id")
+  productId   String  @map("product_id")
   quantity    Int?
-  amount      Float
-  taxAmount   Float  @default(0) @map("tax_amount")
-  refund      Refund @relation(fields: [refundId], references: [id], onDelete: Cascade)
+  amount      Decimal @db.Decimal(12, 2)
+  taxAmount   Decimal @default(0) @map("tax_amount") @db.Decimal(12, 2)
+  refund      Refund  @relation(fields: [refundId], references: [id], onDelete: Cascade)
 
   @@index([refundId])
   @@map("refund_lines")
@@ -419,18 +420,18 @@ model RefundLine {
 // coupling the rest of the schema uses. `actorId`/`actorName` are null for a
 // request the customer opened themselves — same convention as `Refund`.
 model ReturnRequest {
-  id          String    @id @default(uuid())
-  rmaNumber   Int       @unique @default(autoincrement()) @map("rma_number")
-  orderId     String    @map("order_id")
-  userId      String    @map("user_id")
-  status      String    @default("requested")
+  id          String       @id @default(uuid())
+  rmaNumber   Int          @unique @default(autoincrement()) @map("rma_number")
+  orderId     String       @map("order_id")
+  userId      String       @map("user_id")
+  status      String       @default("requested")
   reason      String?
-  requestedAt DateTime  @default(now()) @map("requested_at")
-  receivedAt  DateTime? @map("received_at")
-  inspectedAt DateTime? @map("inspected_at")
-  resolvedAt  DateTime? @map("resolved_at")
-  actorId     String?   @map("actor_id")
-  actorName   String?   @map("actor_name")
+  requestedAt DateTime     @default(now()) @map("requested_at")
+  receivedAt  DateTime?    @map("received_at")
+  inspectedAt DateTime?    @map("inspected_at")
+  resolvedAt  DateTime?    @map("resolved_at")
+  actorId     String?      @map("actor_id")
+  actorName   String?      @map("actor_name")
   items       ReturnItem[]
 
   // One order's return history (an order can be requested, rejected, and
@@ -452,15 +453,15 @@ model ReturnRequest {
 // `refundForLineValue`) — the amount `ResolveOrderReturn` actually credits.
 // `orderItemId`/`productId` are plain references, like `RefundLine`'s.
 model ReturnItem {
-  id               String  @id @default(uuid())
-  returnRequestId  String  @map("return_request_id")
-  orderItemId      String  @map("order_item_id")
-  productId        String  @map("product_id")
+  id               String        @id @default(uuid())
+  returnRequestId  String        @map("return_request_id")
+  orderItemId      String        @map("order_item_id")
+  productId        String        @map("product_id")
   quantity         Int
   condition        String?
-  recoveryDecision String? @map("recovery_decision")
-  refundAmount     Float   @map("refund_amount")
-  taxAmount        Float   @default(0) @map("tax_amount")
+  recoveryDecision String?       @map("recovery_decision")
+  refundAmount     Decimal       @map("refund_amount") @db.Decimal(12, 2)
+  taxAmount        Decimal       @default(0) @map("tax_amount") @db.Decimal(12, 2)
   returnRequest    ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
 
   @@index([returnRequestId])
@@ -468,19 +469,19 @@ model ReturnItem {
 }
 
 model OrderItem {
-  id        String @id @default(uuid())
-  orderId   String @map("order_id")
-  productId String @map("product_id")
+  id                       String   @id @default(uuid())
+  orderId                  String   @map("order_id")
+  productId                String   @map("product_id")
   // Display snapshot captured at purchase time (see Order).
-  name      String
-  imageUrl  String @map("image_url")
-  quantity  Int
+  name                     String
+  imageUrl                 String   @map("image_url")
+  quantity                 Int
   // Unit price snapshot at purchase — the basis for a substitution refund, so it
   // reflects what was charged rather than today's catalog price. Defaults to 0 so
   // pre-substitution rows stay valid.
-  price     Float  @default(0)
+  price                    Decimal  @default(0) @db.Decimal(12, 2)
   // Preserves the authored line order for the thumbnails on the order card.
-  position  Int
+  position                 Int
   // Grocery substitutions. `substitutionPreference` is the customer's out-of-stock
   // pre-approval captured at checkout ("substitute" | "refund" | "contact"); it
   // defaults to "substitute" (the grocery norm) so legacy rows stay valid. The `substitution*`
@@ -491,19 +492,19 @@ model OrderItem {
   // swap — may be 0), null until resolved; it makes the wallet credit visible on the
   // receipt while the order `total` stays the original charge. Plain strings/floats
   // matching the domain unions, the schema's enum-free style.
-  substitutionPreference   String  @default("substitute") @map("substitution_preference")
-  substitutionStatus       String? @map("substitution_status")
-  substitutionRefundAmount Float?  @map("substitution_refund_amount")
-  replacementProductId     String? @map("replacement_product_id")
-  replacementName          String? @map("replacement_name")
-  replacementImageUrl      String? @map("replacement_image_url")
+  substitutionPreference   String   @default("substitute") @map("substitution_preference")
+  substitutionStatus       String?  @map("substitution_status")
+  substitutionRefundAmount Decimal? @map("substitution_refund_amount") @db.Decimal(12, 2)
+  replacementProductId     String?  @map("replacement_product_id")
+  replacementName          String?  @map("replacement_name")
+  replacementImageUrl      String?  @map("replacement_image_url")
   // VAT snapshot for this line (phase 3). `taxExempt` mirrors the product's flag at
   // purchase time, defaulting true (the safe direction, matching `Product.taxExempt`).
   // `taxAmount` is nullable, no backfill: NULL means tax wasn't in effect for this
   // order, not that the line was exempt (that reads 0).
-  taxExempt                Boolean @default(true) @map("tax_exempt")
-  taxAmount                Float?  @map("tax_amount")
-  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  taxExempt                Boolean  @default(true) @map("tax_exempt")
+  taxAmount                Decimal? @map("tax_amount") @db.Decimal(12, 2)
+  order                    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
   @@map("order_items")
@@ -512,8 +513,8 @@ model OrderItem {
 model Product {
   id            String   @id @default(uuid())
   name          String
-  price         Float
-  originalPrice Float?   @map("original_price")
+  price         Decimal  @db.Decimal(12, 2)
+  originalPrice Decimal? @map("original_price") @db.Decimal(12, 2)
   rating        Float    @default(0)
   ratingCount   Int      @default(0) @map("rating_count")
   // Units on hand. Defaults to 0 so a row without an explicit value is treated as
@@ -681,7 +682,7 @@ model PromoCode {
 // users start without a row (treated as a $0 balance) until they add money.
 model WalletAccount {
   userId    String   @id @map("user_id")
-  balance   Float    @default(0)
+  balance   Decimal  @default(0) @db.Decimal(12, 2)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -702,7 +703,7 @@ model WalletTransaction {
   // that predate the columns (the reader falls back to matching the description).
   reason      String?
   reasonItem  String?  @map("reason_item")
-  amount      Float
+  amount      Decimal  @db.Decimal(12, 2)
   type        String
   date        DateTime
   createdAt   DateTime @default(now()) @map("created_at")

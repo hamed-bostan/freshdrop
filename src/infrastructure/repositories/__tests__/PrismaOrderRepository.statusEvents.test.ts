@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { describe, expect, it, vi } from "vitest";
 import { PrismaOrderRepository } from "../PrismaOrderRepository";
 
@@ -19,7 +20,7 @@ const ITEM = {
   name: "Milk",
   imageUrl: "https://example.com/milk.png",
   quantity: 1,
-  price: 10,
+  price: new Prisma.Decimal(10),
   substitutionPreference: "cancel_item",
   substitutionStatus: null,
   substitutionRefundAmount: null,
@@ -45,10 +46,10 @@ function orderRow(overrides: Partial<Record<string, unknown>> = {}) {
     destinationLat: null,
     destinationLng: null,
     city: null,
-    subtotal: 10,
-    shipping: 0,
-    discount: 0,
-    total: 10,
+    subtotal: new Prisma.Decimal(10),
+    shipping: new Prisma.Decimal(0),
+    discount: new Prisma.Decimal(0),
+    total: new Prisma.Decimal(10),
     taxAmount: null,
     taxRate: null,
     stage: null,
@@ -56,7 +57,7 @@ function orderRow(overrides: Partial<Record<string, unknown>> = {}) {
     deliveryWindowId: null,
     deliveryWindow: null,
     deliveryInstructions: null,
-    walletApplied: 0,
+    walletApplied: new Prisma.Decimal(0),
     items: [ITEM],
     ...overrides,
   };
