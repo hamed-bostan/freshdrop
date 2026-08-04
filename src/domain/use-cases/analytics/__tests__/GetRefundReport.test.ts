@@ -12,7 +12,9 @@ const currentTotals = {
   requestedReturns: 3,
   returnedOrders: 2,
   ordersInPeriod: 40,
+  averageProcessingMinutes: 90,
 };
+const returnBreakdown = { conditions: [], outcomes: [] };
 
 describe("GetRefundReport", () => {
   it("reads the current period and equal-length baseline in one snapshot", async () => {
@@ -25,7 +27,7 @@ describe("GetRefundReport", () => {
       .mockResolvedValueOnce({ ...currentTotals, refundedAmount: 160 });
     const point = { bucket: range.from.toISOString(), revenue: 320, orders: 4 };
     const reason = { reason: "Damaged item", kind: "damaged", refunds: 2, amount: 140 };
-    const refundCase = { id: "c1", orderId: "o1", orderNumber: 101, userId: "u1", productName: "Milk", productImageUrl: null, reason: "Damaged item", kind: "damaged", amount: 70, status: "refunded" as const, activityAt: range.from.toISOString() };
+    const refundCase = { id: "c1", orderId: "o1", orderNumber: 101, userId: "u1", productName: "Milk", productImageUrl: null, reason: "Damaged item", kind: "damaged", amount: 70, status: "refunded" as const, activityAt: range.from.toISOString(), returnStatus: null, condition: null, recoveryDecision: null };
     const repository = {
       snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository as IAnalyticsRepository),
       refundTotals,
@@ -33,6 +35,7 @@ describe("GetRefundReport", () => {
       compareRefundSeries: vi.fn().mockResolvedValue([{ ...point, revenue: 160 }]),
       refundReasons: vi.fn().mockResolvedValue([reason]),
       refundCases: vi.fn().mockResolvedValue([refundCase]),
+      returnBreakdown: vi.fn().mockResolvedValue(returnBreakdown),
     } as unknown as IAnalyticsRepository;
 
     const result = await new GetRefundReport(repository).execute(range);

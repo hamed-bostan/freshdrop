@@ -14,7 +14,8 @@ import {
   type TopProduct,
 } from "@/src/domain/entities/Analytics";
 import type { PaymentIssue, PaymentReportTotals } from "@/src/domain/entities/PaymentReport";
-import type { RefundCase, RefundReasonCount, RefundReportTotals } from "@/src/domain/entities/RefundReport";
+import type { RefundCase, RefundReasonCount, RefundReportTotals, ReturnBreakdown } from "@/src/domain/entities/RefundReport";
+import { RETURN_ITEM_CONDITIONS, RETURN_RECOVERY_DECISIONS, type ReturnItemCondition, type ReturnRecoveryDecision, type ReturnRequestStatus } from "@/src/domain/entities/Return";
 import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, DeliveryWindowPerformance, LateDelivery } from "@/src/domain/entities/DeliveryPerformanceReport";
 import type { DeliveryZonePerformance } from "@/src/domain/entities/DeliveryZonesReport";
 import type { CustomerGrowthPoint, PurchaseFrequency, RetentionCohort } from "@/src/domain/entities/CustomerInsightsReport";
@@ -335,7 +336,12 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
         COUNT(*) FILTER (WHERE r.kind = 'cancellation')::int AS "cancelledOrders",
         (SELECT COUNT(*)::int FROM orders o WHERE o.status = 'return_requested' AND o.placed_at >= ${range.from} AND o.placed_at < ${range.to}) AS "requestedReturns",
         COUNT(*) FILTER (WHERE r.kind = 'return')::int AS "returnedOrders",
-        (SELECT COUNT(*)::int FROM orders o WHERE o.placed_at >= ${range.from} AND o.placed_at < ${range.to}) AS "ordersInPeriod"
+        (SELECT COUNT(*)::int FROM orders o WHERE o.placed_at >= ${range.from} AND o.placed_at < ${range.to}) AS "ordersInPeriod",
+        (
+          SELECT COALESCE(AVG(EXTRACT(EPOCH FROM (rr.resolved_at - rr.requested_at)) / 60), 0)::double precision
+          FROM return_requests rr
+          WHERE rr.resolved_at IS NOT NULL AND rr.requested_at >= ${range.from} AND rr.requested_at < ${range.to}
+        ) AS "averageProcessingMinutes"
       FROM refunds r
       LEFT JOIN (
         SELECT refund_id, SUM(COALESCE(quantity, 0))::int AS units
@@ -380,11 +386,25 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
   }
 
   async refundReasons(range: DateRange, limit: number): Promise<RefundReasonCount[]> {
+    // `refunds.reason` is never written for the guarded flows (`CancelOrder`,
+    // `ResolveOrderReturn.approve`) — the customer's actual reason for a return
+    // lives on `ReturnRequest.reason` instead, so a return-kind refund is
+    // matched back to the resolved request it paid out (same order, most
+    // recently resolved) to recover it. Falls back to `r.kind` only when
+    // neither exists, same as before.
     const rows = await this.db.$queryRaw<RefundReasonRow[]>(Prisma.sql`
-      SELECT COALESCE(NULLIF(TRIM(r.reason), ''), r.kind) AS reason, r.kind, COUNT(*)::int AS refunds, SUM(r.amount)::double precision AS amount
+      SELECT COALESCE(NULLIF(TRIM(CASE WHEN r.kind = 'return' THEN rr.reason ELSE r.reason END), ''), r.kind) AS reason,
+        r.kind, COUNT(*)::int AS refunds, SUM(r.amount)::double precision AS amount
       FROM refunds r
+      LEFT JOIN LATERAL (
+        SELECT rrq.reason
+        FROM return_requests rrq
+        WHERE rrq.order_id = r.order_id AND rrq.status = 'resolved'
+        ORDER BY rrq.resolved_at DESC
+        LIMIT 1
+      ) rr ON r.kind = 'return'
       WHERE r.created_at >= ${range.from} AND r.created_at < ${range.to}
-      GROUP BY COALESCE(NULLIF(TRIM(r.reason), ''), r.kind), r.kind
+      GROUP BY COALESCE(NULLIF(TRIM(CASE WHEN r.kind = 'return' THEN rr.reason ELSE r.reason END), ''), r.kind), r.kind
       ORDER BY COUNT(*) DESC, SUM(r.amount) DESC
       LIMIT ${Math.max(1, Math.min(limit, 10))}
     `);
@@ -398,7 +418,8 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
           product.name AS "productName", product.image_url AS "productImageUrl", r.reason, r.kind,
           r.amount::double precision AS amount,
           CASE WHEN r.kind = 'cancellation' THEN 'cancelled' ELSE 'refunded' END AS status,
-          r.created_at AS "activityAt"
+          r.created_at AS "activityAt",
+          retinfo.status AS "returnStatus", retinfo.condition, retinfo.recovery_decision AS "recoveryDecision"
         FROM refunds r
         JOIN orders o ON o.id = r.order_id
         LEFT JOIN LATERAL (
@@ -406,17 +427,78 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
           FROM refund_lines rl JOIN order_items oi ON oi.id = rl.order_item_id
           WHERE rl.refund_id = r.id ORDER BY rl.id LIMIT 1
         ) product ON TRUE
+        -- The ReturnRequest this refund paid out, for a return-kind refund --
+        -- matched by order since a refund carries no direct reference to it.
+        LEFT JOIN LATERAL (
+          SELECT rr.status, ri.condition, ri.recovery_decision
+          FROM return_requests rr
+          JOIN return_items ri ON ri.return_request_id = rr.id
+          WHERE rr.order_id = r.order_id AND r.kind = 'return' AND rr.status = 'resolved'
+          ORDER BY rr.resolved_at DESC, ri.id
+          LIMIT 1
+        ) retinfo ON TRUE
         WHERE r.created_at >= ${range.from} AND r.created_at < ${range.to}
         UNION ALL
-        SELECT o.id, o.id, o.order_number, o.user_id, item.name, item.image_url, NULL, NULL,
-          0::double precision, 'return_requested', o.updated_at
+        SELECT o.id, o.id, o.order_number, o.user_id, COALESCE(oi.name, fallback.name), COALESCE(oi.image_url, fallback.image_url),
+          rr.reason, NULL,
+          0::double precision, 'return_requested', o.updated_at,
+          rr.status, ri.condition, ri.recovery_decision
         FROM orders o
-        LEFT JOIN LATERAL (SELECT oi.name, oi.image_url FROM order_items oi WHERE oi.order_id = o.id ORDER BY oi.position LIMIT 1) item ON TRUE
+        LEFT JOIN LATERAL (
+          SELECT rrq.id, rrq.status, rrq.reason
+          FROM return_requests rrq WHERE rrq.order_id = o.id
+          ORDER BY rrq.requested_at DESC LIMIT 1
+        ) rr ON TRUE
+        LEFT JOIN LATERAL (
+          SELECT riq.condition, riq.recovery_decision, riq.order_item_id
+          FROM return_items riq WHERE riq.return_request_id = rr.id
+          ORDER BY riq.id LIMIT 1
+        ) ri ON TRUE
+        LEFT JOIN order_items oi ON oi.id = ri.order_item_id
+        -- Orders that reached return_requested with no ReturnRequest row --
+        -- only possible for data from before this model existed.
+        LEFT JOIN LATERAL (SELECT oi2.name, oi2.image_url FROM order_items oi2 WHERE oi2.order_id = o.id ORDER BY oi2.position LIMIT 1) fallback ON TRUE
         WHERE o.status = 'return_requested' AND o.placed_at >= ${range.from} AND o.placed_at < ${range.to}
       )
       SELECT * FROM cases ORDER BY "activityAt" DESC LIMIT ${Math.max(1, Math.min(limit, 20))}
     `);
-    return rows.map((row) => ({ ...row, kind: row.kind as RefundKind | null, status: row.status as RefundCase["status"], activityAt: row.activityAt.toISOString() }));
+    return rows.map((row) => ({
+      ...row,
+      kind: row.kind as RefundKind | null,
+      status: row.status as RefundCase["status"],
+      activityAt: row.activityAt.toISOString(),
+      returnStatus: row.returnStatus as ReturnRequestStatus | null,
+      condition: row.condition as ReturnItemCondition | null,
+      recoveryDecision: row.recoveryDecision as ReturnRecoveryDecision | null,
+    }));
+  }
+
+  async returnBreakdown(range: DateRange): Promise<ReturnBreakdown> {
+    const [conditionRows, outcomeRows] = await Promise.all([
+      this.db.$queryRaw<{ condition: string | null; count: number }[]>(Prisma.sql`
+        SELECT ri.condition, COUNT(*)::int AS count
+        FROM return_items ri
+        JOIN return_requests rr ON rr.id = ri.return_request_id
+        WHERE rr.requested_at >= ${range.from} AND rr.requested_at < ${range.to}
+        GROUP BY ri.condition
+      `),
+      this.db.$queryRaw<{ decision: string | null; count: number }[]>(Prisma.sql`
+        SELECT ri.recovery_decision AS decision, COUNT(*)::int AS count
+        FROM return_items ri
+        JOIN return_requests rr ON rr.id = ri.return_request_id
+        WHERE rr.requested_at >= ${range.from} AND rr.requested_at < ${range.to}
+        GROUP BY ri.recovery_decision
+      `),
+    ]);
+    // Gap-fill every known bucket (including "not inspected", `null`) to 0 so
+    // the panel's layout doesn't shift depending on which conditions happened
+    // to occur in the period.
+    const conditionCounts = new Map(conditionRows.map((row) => [row.condition, row.count]));
+    const outcomeCounts = new Map(outcomeRows.map((row) => [row.decision, row.count]));
+    return {
+      conditions: [...RETURN_ITEM_CONDITIONS, null].map((condition) => ({ condition, count: conditionCounts.get(condition) ?? 0 })),
+      outcomes: [...RETURN_RECOVERY_DECISIONS, null].map((decision) => ({ decision, count: outcomeCounts.get(decision) ?? 0 })),
+    };
   }
 
   async deliveryTotals(range: DateRange): Promise<DeliveryPerformanceTotals> {
@@ -883,7 +965,7 @@ type PaymentTotalsRow = PaymentReportTotals;
 type PaymentIssueRow = Omit<PaymentIssue, "placedAt"> & { placedAt: Date };
 type RefundTotalsRow = RefundReportTotals;
 type RefundReasonRow = Omit<RefundReasonCount, "kind"> & { kind: string };
-type RefundCaseRow = Omit<RefundCase, "kind" | "status" | "activityAt"> & { kind: string | null; status: string; activityAt: Date };
+type RefundCaseRow = Omit<RefundCase, "kind" | "status" | "activityAt" | "returnStatus" | "condition" | "recoveryDecision"> & { kind: string | null; status: string; activityAt: Date; returnStatus: string | null; condition: string | null; recoveryDecision: string | null };
 type DeliveryTotalsRow = DeliveryPerformanceTotals;
 type DeliveryPointRow = Omit<DeliveryPerformancePoint, "bucket"> & { bucket: Date };
 type DeliveryWindowRow = DeliveryWindowPerformance;
@@ -894,7 +976,7 @@ function emptyPaymentTotals(): PaymentReportTotals {
   return { paidRevenue: 0, successfulPayments: 0, failedPayments: 0, pendingPayments: 0, refundedPayments: 0, walletAmount: 0, externalAmount: 0 };
 }
 
-function emptyRefundTotals(): RefundReportTotals { return { refundedAmount: 0, recoverableValue: 0, refundCount: 0, returnedItems: 0, cancelledOrders: 0, requestedReturns: 0, returnedOrders: 0, ordersInPeriod: 0 }; }
+function emptyRefundTotals(): RefundReportTotals { return { refundedAmount: 0, recoverableValue: 0, refundCount: 0, returnedItems: 0, cancelledOrders: 0, requestedReturns: 0, returnedOrders: 0, ordersInPeriod: 0, averageProcessingMinutes: 0 }; }
 function toRevenuePoint(row: SeriesRow): RevenuePoint { return { bucket: row.bucket.toISOString(), revenue: row.revenue, orders: row.orders }; }
 
 /**

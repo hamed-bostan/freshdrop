@@ -11,7 +11,7 @@ import type {
   TopProduct,
 } from "../entities/Analytics";
 import type { PaymentIssue, PaymentReportTotals } from "../entities/PaymentReport";
-import type { RefundCase, RefundReasonCount, RefundReportTotals } from "../entities/RefundReport";
+import type { RefundCase, RefundReasonCount, RefundReportTotals, ReturnBreakdown } from "../entities/RefundReport";
 import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, DeliveryWindowPerformance, LateDelivery } from "../entities/DeliveryPerformanceReport";
 import type { DeliveryZonePerformance } from "../entities/DeliveryZonesReport";
 import type { CustomerGrowthPoint, PurchaseFrequency, RetentionCohort } from "../entities/CustomerInsightsReport";
@@ -190,6 +190,8 @@ export type IAnalyticsRepository = {
   compareRefundSeries(range: DateRange, compareRange: DateRange, granularity: AnalyticsGranularity): Promise<RevenuePoint[]>;
   refundReasons(range: DateRange, limit: number): Promise<RefundReasonCount[]>;
   refundCases(range: DateRange, limit: number): Promise<RefundCase[]>;
+  /** Real `GROUP BY` counts of returned items by inspected condition and recovery decision, for requests requested in the period. */
+  returnBreakdown(range: DateRange): Promise<ReturnBreakdown>;
   deliveryTotals(range: DateRange): Promise<DeliveryPerformanceTotals>;
   deliverySeries(range: DateRange, granularity: AnalyticsGranularity): Promise<DeliveryPerformancePoint[]>;
   deliveryWindows(range: DateRange, previousRange: DateRange, limit: number): Promise<DeliveryWindowPerformance[]>;

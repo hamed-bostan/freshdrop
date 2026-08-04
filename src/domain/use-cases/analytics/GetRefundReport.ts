@@ -12,11 +12,12 @@ export class GetRefundReport {
   async execute(range: DateRange): Promise<RefundReport> {
     const previous = previousPeriod(range);
     const granularity = granularityFor(range);
-    const [totals, previousTotals, series, previousSeries, reasons, cases] = await this.analytics.snapshot((repository) => Promise.all([
+    const [totals, previousTotals, series, previousSeries, reasons, cases, returnBreakdown] = await this.analytics.snapshot((repository) => Promise.all([
       repository.refundTotals(range), repository.refundTotals(previous),
       repository.refundSeries(range, granularity), repository.compareRefundSeries(range, previous, granularity),
       repository.refundReasons(range, REASON_LIMIT), repository.refundCases(range, CASE_LIMIT),
+      repository.returnBreakdown(range),
     ]));
-    return { range: rangeToWire(range), previousRange: rangeToWire(previous), granularity, totals, previousTotals, series, previousSeries, reasons, cases };
+    return { range: rangeToWire(range), previousRange: rangeToWire(previous), granularity, totals, previousTotals, series, previousSeries, reasons, cases, returnBreakdown };
   }
 }

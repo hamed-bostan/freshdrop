@@ -1040,7 +1040,7 @@
     "returnRate": "نرخ مرجوعی", "refundedValue": "ارزش بازپرداخت‌شده", "openRequests": "درخواست‌های باز", "currentPeriod": "دوره جاری",
     "returnedItemsOverTime": "اقلام مرجوعی در طول زمان", "intervalLabel": "بازه نمودار", "items": "اقلام", "value": "ارزش", "day": "روزانه", "week": "هفتگی", "month": "ماهانه",
     "insightEmpty": "پس از ثبت فعالیت مرجوعی، بینش‌ها نمایش داده می‌شوند.", "resolvedInsight": "{percent} از درخواست‌های مرجوعی ثبت‌شده رسیدگی شده‌اند.", "refundedInsight": "ارزش بازپرداخت‌شده {amount} است.",
-    "returnQueue": "صف اقلام مرجوعی", "searchReturns": "جستجوی محصول یا سفارش", "filterStatus": "وضعیت", "filterAll": "وضعیت: همه", "processingStatus": "وضعیت رسیدگی", "action": "عملیات", "view": "مشاهده",
+    "returnQueue": "صف اقلام مرجوعی", "searchReturns": "جستجوی محصول یا سفارش", "filterStatus": "وضعیت", "filterAll": "وضعیت: همه", "processingStatus": "وضعیت رسیدگی", "action": "عملیات", "view": "مشاهده", "notRecorded": "ثبت نشده",
     "refundedAmount": "مبلغ بازپرداخت", "refundRate": "نرخ بازپرداخت", "returnedItems": "اقلام مرجوعی", "cancelledOrders": "سفارش‌های لغوشده", "vsPreviousPeriod": "نسبت به دوره قبل",
     "refundsOverTime": "بازپرداخت‌ها در گذر زمان", "metricLabel": "شاخص نمودار بازپرداخت", "amount": "مبلغ بازپرداخت", "count": "تعداد بازپرداخت", "currentValue": "این دوره: {value}", "previousValue": "دوره قبل: {value}",
     "reasons": "دلایل بازپرداخت", "noReasons": "در این دوره دلیل بازپرداختی ثبت نشده است.", "status": "وضعیت مرجوعی", "requested": "درخواست‌شده", "refunded": "بازپرداخت‌شده", "cancelled": "لغوشده",

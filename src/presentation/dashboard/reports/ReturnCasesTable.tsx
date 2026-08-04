@@ -6,6 +6,7 @@ import { ExternalLink, MoreVertical, Search } from "lucide-react";
 import { Link } from "@/src/i18n/navigation";
 import { cn } from "@/src/lib/utils";
 import { DataTable, Icon, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Thumbnail, focusRing } from "@/src/presentation/design-system";
+import type { ReturnItemCondition, ReturnRecoveryDecision, ReturnRequestStatus } from "@/src/domain/entities/Return";
 
 type ReturnStatus = "return_requested" | "refunded" | "cancelled";
 export type ReturnCaseRow = {
@@ -21,6 +22,10 @@ export type ReturnCaseRow = {
   statusLabel: string;
   resolution: string;
   date: string;
+  /** The linked `ReturnRequest`'s state, `null` when this case isn't a return. */
+  returnStatus: ReturnRequestStatus | null;
+  condition: ReturnItemCondition | null;
+  recoveryDecision: ReturnRecoveryDecision | null;
 };
 type Labels = {
   heading: string;
