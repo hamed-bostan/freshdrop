@@ -4,14 +4,21 @@ import type { ReturnItemCondition, ReturnRecoveryDecision, ReturnRequestStatus }
 
 export type RefundReportTotals = {
   refundedAmount: number;
-  /** Value of merchandise physically returned and available for recovery. */
+  /** Merchandise-only value of items physically returned and available for recovery — excludes tax/shipping. */
   recoverableValue: number;
-  refundCount: number;
+  /** Count of refund events created in the period (`created_at` basis) — not an order-cohort figure. */
+  refundActivity: number;
   returnedItems: number;
   cancelledOrders: number;
   requestedReturns: number;
   returnedOrders: number;
   ordersInPeriod: number;
+  /**
+   * Orders *placed* in the period that were ever refunded (any refund, any time) ÷ orders placed
+   * in the period. Bounded 0-1 by construction, unlike `refundActivity / ordersInPeriod`, which
+   * mixes a `created_at`-basis numerator with a `placed_at`-basis denominator and can exceed 100%.
+   */
+  orderCohortRefundRate: number;
   /**
    * Mean minutes from `ReturnRequest.requestedAt` to `resolvedAt`, over requests
    * *requested* in the period that have since been resolved. `0` when none have

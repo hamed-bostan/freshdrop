@@ -6,12 +6,13 @@ import { GetRefundReport } from "../GetRefundReport";
 const currentTotals = {
   refundedAmount: 320,
   recoverableValue: 180,
-  refundCount: 4,
+  refundActivity: 4,
   returnedItems: 5,
   cancelledOrders: 2,
   requestedReturns: 3,
   returnedOrders: 2,
   ordersInPeriod: 40,
+  orderCohortRefundRate: 0.1,
   averageProcessingMinutes: 90,
 };
 const returnBreakdown = { conditions: [], outcomes: [] };

@@ -328,26 +328,40 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
 
   async refundTotals(range: DateRange): Promise<RefundReportTotals> {
     const rows = await this.db.$queryRaw<RefundTotalsRow[]>(Prisma.sql`
+      WITH period_orders AS (
+        SELECT o.id, EXISTS (SELECT 1 FROM refunds r2 WHERE r2.order_id = o.id) AS refunded
+        FROM orders o
+        WHERE o.placed_at >= ${range.from} AND o.placed_at < ${range.to}
+      ),
+      lines AS (
+        SELECT refund_id, SUM(amount)::double precision AS "merchandiseAmount", SUM(COALESCE(quantity, 0))::int AS units
+        FROM refund_lines
+        GROUP BY refund_id
+      )
       SELECT
         COALESCE(SUM(r.amount), 0)::double precision AS "refundedAmount",
-        COALESCE(SUM(r.amount) FILTER (WHERE r.kind = 'return'), 0)::double precision AS "recoverableValue",
-        COUNT(*)::int AS "refundCount",
+        -- Merchandise-only value (excludes tax/shipping baked into refunds.amount).
+        COALESCE(SUM(lines."merchandiseAmount") FILTER (WHERE r.kind = 'return'), 0)::double precision AS "recoverableValue",
+        COUNT(*)::int AS "refundActivity",
         COALESCE(SUM(lines.units), 0)::int AS "returnedItems",
-        COUNT(*) FILTER (WHERE r.kind = 'cancellation')::int AS "cancelledOrders",
+        COUNT(DISTINCT r.order_id) FILTER (WHERE r.kind = 'cancellation')::int AS "cancelledOrders",
         (SELECT COUNT(*)::int FROM orders o WHERE o.status = 'return_requested' AND o.placed_at >= ${range.from} AND o.placed_at < ${range.to}) AS "requestedReturns",
-        COUNT(*) FILTER (WHERE r.kind = 'return')::int AS "returnedOrders",
-        (SELECT COUNT(*)::int FROM orders o WHERE o.placed_at >= ${range.from} AND o.placed_at < ${range.to}) AS "ordersInPeriod",
+        COUNT(DISTINCT r.order_id) FILTER (WHERE r.kind = 'return')::int AS "returnedOrders",
+        (SELECT COUNT(*)::int FROM period_orders) AS "ordersInPeriod",
+        -- Orders *placed* in the period that were ever refunded (any refund, any time) ÷ orders placed —
+        -- bounded 0-1 by construction, unlike refundActivity / ordersInPeriod which mixes cohorts.
+        COALESCE(
+          (SELECT COUNT(*) FILTER (WHERE refunded) FROM period_orders)::double precision
+            / NULLIF((SELECT COUNT(*) FROM period_orders), 0),
+          0
+        )::double precision AS "orderCohortRefundRate",
         (
           SELECT COALESCE(AVG(EXTRACT(EPOCH FROM (rr.resolved_at - rr.requested_at)) / 60), 0)::double precision
           FROM return_requests rr
           WHERE rr.resolved_at IS NOT NULL AND rr.requested_at >= ${range.from} AND rr.requested_at < ${range.to}
         ) AS "averageProcessingMinutes"
       FROM refunds r
-      LEFT JOIN (
-        SELECT refund_id, SUM(COALESCE(quantity, 0))::int AS units
-        FROM refund_lines
-        GROUP BY refund_id
-      ) lines ON lines.refund_id = r.id
+      LEFT JOIN lines ON lines.refund_id = r.id
       WHERE r.created_at >= ${range.from} AND r.created_at < ${range.to}
     `);
     return rows[0] ?? emptyRefundTotals();
@@ -1030,7 +1044,7 @@ function emptyPaymentTotals(): PaymentReportTotals {
   return { paidRevenue: 0, successfulPayments: 0, failedPayments: 0, pendingPayments: 0, refundedPayments: 0, walletAmount: 0, externalAmount: 0 };
 }
 
-function emptyRefundTotals(): RefundReportTotals { return { refundedAmount: 0, recoverableValue: 0, refundCount: 0, returnedItems: 0, cancelledOrders: 0, requestedReturns: 0, returnedOrders: 0, ordersInPeriod: 0, averageProcessingMinutes: 0 }; }
+function emptyRefundTotals(): RefundReportTotals { return { refundedAmount: 0, recoverableValue: 0, refundActivity: 0, returnedItems: 0, cancelledOrders: 0, requestedReturns: 0, returnedOrders: 0, ordersInPeriod: 0, orderCohortRefundRate: 0, averageProcessingMinutes: 0 }; }
 function toRevenuePoint(row: SeriesRow): RevenuePoint { return { bucket: row.bucket.toISOString(), revenue: row.revenue, orders: row.orders }; }
 
 /**

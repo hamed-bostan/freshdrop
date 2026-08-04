@@ -52,7 +52,7 @@ export async function RefundsReturnsScreen({ report, customers, from, to, isCust
     <nav className="flex border-b border-border" aria-label={t("viewTabsLabel")}><ReportTab active={view === "overview"} href={viewHref(queryString, "overview")} label={t("overview")} /><ReportTab active={view === "items"} href={viewHref(queryString, "items")} label={t("itemsRecovery")} /></nav>
     {view === "overview" ? <>
       <RefundOverviewMetricGrid report={report} locale={locale} />
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(17rem,.72fr)_minmax(17rem,.72fr)]"><RefundTrendChart points={report.series} previousPoints={report.previousSeries} granularity={report.granularity} range={report.range} previousRange={report.previousRange} title={t("overviewTrend")} defaultMetric="amount" /><ReturnReasonsPanel reasons={report.reasons} total={report.totals.refundCount} locale={locale} /><ReturnProcessingStatus totals={report.totals} locale={locale} /></div>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(17rem,.72fr)_minmax(17rem,.72fr)]"><RefundTrendChart points={report.series} previousPoints={report.previousSeries} granularity={report.granularity} range={report.range} previousRange={report.previousRange} title={t("overviewTrend")} defaultMetric="amount" /><ReturnReasonsPanel reasons={report.reasons} total={report.totals.refundActivity} locale={locale} /><ReturnProcessingStatus totals={report.totals} locale={locale} /></div>
       <ReturnInsightBanner report={report} locale={locale} />
       <ReturnCasesTable rows={rows} labels={{ ...tableLabels, heading: t("recentCases") }} viewAllHref={viewHref(queryString, "items")} />
     </> : <>
