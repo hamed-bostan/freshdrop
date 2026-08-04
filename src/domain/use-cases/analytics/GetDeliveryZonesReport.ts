@@ -32,12 +32,12 @@ function totalsOf(zones: DeliveryZonePerformance[]): DeliveryZonesReport["totals
   const deliveredOrders = zones.reduce((sum, zone) => sum + zone.orders, 0);
   const onTimeOrders = zones.reduce((sum, zone) => sum + Math.round(zone.orders * zone.onTimeRate), 0);
   const lateDeliveries = zones.reduce((sum, zone) => sum + zone.lateDeliveries, 0);
-  const weightedMinutes = zones.reduce((sum, zone) => sum + zone.averageMinutes * zone.orders, 0);
+  const weightedMinutes = zones.reduce((sum, zone) => sum + zone.averageFulfillmentMinutes * zone.orders, 0);
   return {
     deliveredOrders,
     onTimeOrders,
     lateDeliveries,
-    averageMinutes: deliveredOrders ? Math.round(weightedMinutes / deliveredOrders) : 0,
+    averageFulfillmentMinutes: deliveredOrders ? Math.round(weightedMinutes / deliveredOrders) : 0,
     zonesServed: zones.length,
   };
 }

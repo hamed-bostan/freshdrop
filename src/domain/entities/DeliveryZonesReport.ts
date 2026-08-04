@@ -9,7 +9,7 @@ export type DeliveryZonePerformance = {
   /** `null` when the zone had no completed deliveries in the prior period to compare against. */
   previousOnTimeRate: number | null;
   lateDeliveries: number;
-  averageMinutes: number;
+  averageFulfillmentMinutes: number;
   /** Average delivery coordinate for the zone's orders — a map marker position, not a zone boundary. `null` when none of its orders carry a coordinate. */
   centroid: GeoPoint | null;
 };
