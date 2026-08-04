@@ -1,16 +1,16 @@
 import { z } from "zod";
 import type { CustomerInsightsReport } from "@/src/domain/entities/CustomerInsightsReport";
+import { isoDateSchema, moneySchema, nonNegativeInt, rangeSchema } from "./analytics-wire";
 
-const range = z.object({ from: z.string(), to: z.string() });
-const totals = z.object({ revenue: z.number(), orders: z.number(), units: z.number(), customers: z.number(), averageOrderValue: z.number() });
-const segments = z.object({ totalCustomers: z.number(), newCustomers: z.number(), returningCustomers: z.number(), repeatCustomers: z.number() });
-const growth = z.object({ bucket: z.string(), newCustomers: z.number(), returningCustomers: z.number(), newRevenue: z.number(), returningRevenue: z.number() });
+const totals = z.object({ revenue: moneySchema, orders: nonNegativeInt, units: nonNegativeInt, customers: nonNegativeInt, averageOrderValue: moneySchema });
+const segments = z.object({ totalCustomers: nonNegativeInt, newCustomers: nonNegativeInt, returningCustomers: nonNegativeInt, repeatCustomers: nonNegativeInt });
+const growth = z.object({ bucket: isoDateSchema, newCustomers: nonNegativeInt, returningCustomers: nonNegativeInt, newRevenue: moneySchema, returningRevenue: moneySchema });
 
 export const customerInsightsResponseSchema = z.object({
-  range, previousRange: range, granularity: z.enum(["day", "week", "month"]), totals, previousTotals: totals,
+  range: rangeSchema, previousRange: rangeSchema, granularity: z.enum(["day", "week", "month"]), totals, previousTotals: totals,
   segments, previousSegments: segments, growth: z.array(growth), previousGrowth: z.array(growth),
-  frequency: z.object({ oneOrder: z.number(), twoToThreeOrders: z.number(), fourToSixOrders: z.number(), sevenPlusOrders: z.number(), averageOrders: z.number(), averageDaysBetweenOrders: z.number().nullable() }),
-  cohorts: z.array(z.object({ cohort: z.string(), customers: z.number(), retention: z.array(z.number()) })),
+  frequency: z.object({ oneOrder: nonNegativeInt, twoToThreeOrders: nonNegativeInt, fourToSixOrders: nonNegativeInt, sevenPlusOrders: nonNegativeInt, averageOrders: z.number().nonnegative(), averageDaysBetweenOrders: z.number().nullable() }),
+  cohorts: z.array(z.object({ cohort: isoDateSchema, customers: nonNegativeInt, retention: z.array(z.number()) })),
 }) satisfies z.ZodType<CustomerInsightsReport>;
 
 export type CustomerInsightsWire = z.infer<typeof customerInsightsResponseSchema>;

@@ -1,14 +1,17 @@
 import { z } from "zod";
-const range = z.object({ from: z.string(), to: z.string() });
-const zone = z.object({ zone: z.string(), orders: z.number(), onTimeRate: z.number(), previousOnTimeRate: z.number().nullable(), lateDeliveries: z.number(), averageFulfillmentMinutes: z.number(), centroid: z.object({ latitude: z.number(), longitude: z.number() }).nullable() });
-const alert = z.object({ zone: z.string(), severity: z.enum(["critical", "warning", "healthy"]), onTimeRate: z.number(), lateDeliveries: z.number() });
-const totals = z.object({ deliveredOrders: z.number(), onTimeOrders: z.number(), lateDeliveries: z.number(), averageFulfillmentMinutes: z.number() });
+import { nonNegativeInt, rangeSchema } from "./analytics-wire";
+
+const zone = z.object({ zone: z.string(), orders: nonNegativeInt, onTimeRate: z.number(), previousOnTimeRate: z.number().nullable(), lateDeliveries: nonNegativeInt, averageFulfillmentMinutes: nonNegativeInt, centroid: z.object({ latitude: z.number(), longitude: z.number() }).nullable() });
+const alert = z.object({ zone: z.string(), severity: z.enum(["critical", "warning", "healthy"]), onTimeRate: z.number(), lateDeliveries: nonNegativeInt });
+const totals = z.object({ deliveredOrders: nonNegativeInt, onTimeOrders: nonNegativeInt, lateDeliveries: nonNegativeInt, averageFulfillmentMinutes: nonNegativeInt });
+
 export const deliveryZonesResponseSchema = z.object({
-  range,
-  previousRange: range,
-  totals: totals.extend({ zonesServed: z.number() }),
+  range: rangeSchema,
+  previousRange: rangeSchema,
+  totals: totals.extend({ zonesServed: nonNegativeInt }),
   previousTotals: totals,
   zones: z.array(zone),
   alerts: z.array(alert),
 });
+
 export type DeliveryZonesWire = z.infer<typeof deliveryZonesResponseSchema>;

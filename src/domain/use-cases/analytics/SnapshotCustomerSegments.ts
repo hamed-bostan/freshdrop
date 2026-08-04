@@ -1,5 +1,5 @@
-import { presetRange, startOfUtcDay } from "../../entities/Analytics";
-import type { IAnalyticsRepository } from "../../repositories/IAnalyticsRepository";
+import { presetRange, storeDateString } from "../../entities/Analytics";
+import type { IAnalyticsCustomerRepository } from "../../repositories/IAnalyticsRepository";
 import type { ICustomerSegmentSnapshotRepository } from "../../repositories/ICustomerSegmentSnapshotRepository";
 
 /**
@@ -14,14 +14,14 @@ import type { ICustomerSegmentSnapshotRepository } from "../../repositories/ICus
  */
 export class SnapshotCustomerSegments {
   constructor(
-    private readonly analytics: IAnalyticsRepository,
+    private readonly analytics: IAnalyticsCustomerRepository,
     private readonly snapshots: ICustomerSegmentSnapshotRepository,
   ) {}
 
   async execute(now: Date = new Date()): Promise<{ capturedOn: string; written: number }> {
     const range = presetRange("30d", now);
     const assignments = await this.analytics.customerSegmentAssignments(range);
-    const capturedOn = startOfUtcDay(now).toISOString().slice(0, 10);
+    const capturedOn = storeDateString(now);
     const written = await this.snapshots.record(capturedOn, assignments);
     return { capturedOn, written };
   }

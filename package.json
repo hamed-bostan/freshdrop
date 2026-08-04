@@ -14,6 +14,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "generate:tokens": "tsx src/presentation/design-system/scripts/generate-css.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",

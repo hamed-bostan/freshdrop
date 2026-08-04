@@ -381,8 +381,12 @@ model Refund {
   createdAt DateTime @default(now()) @map("created_at")
   lines     RefundLine[]
 
-  // The only query: one order's refund history, in the order they were issued.
+  // One order's refund history, in the order they were issued.
   @@index([orderId, createdAt])
+  // Report queries (refundTotals, refundSeries, refundReasons) range-scan
+  // created_at with no order_id predicate — unusable against the composite
+  // index above, which needs order_id as its leading column.
+  @@index([createdAt])
   @@map("refunds")
 }
 

@@ -10,6 +10,8 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["**/*.test.ts", "**/*.test.tsx"],
-    exclude: ["node_modules", ".next", ".claude"],
+    // Postgres-backed tests live in their own project (`vitest.integration.config.ts`,
+    // `npm run test:integration`) so `npm test` never needs a database.
+    exclude: ["node_modules", ".next", ".claude", "**/*.integration.test.ts"],
   },
 });

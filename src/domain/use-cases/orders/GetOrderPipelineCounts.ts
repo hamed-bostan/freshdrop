@@ -1,5 +1,5 @@
 import { pipelineCounts, type OrderPipelineStage } from "../../entities/OrderPipelineStage";
-import type { IAnalyticsRepository } from "../../repositories/IAnalyticsRepository";
+import type { IAnalyticsOverviewRepository } from "../../repositories/IAnalyticsRepository";
 
 /** How many orders sit at each pipeline stage, plus the store's whole order count. */
 export type OrderPipelineCounts = {
@@ -23,7 +23,7 @@ export type OrderPipelineCounts = {
  * adding to 157 is the kind of arithmetic people notice and then stop trusting.
  */
 export class GetOrderPipelineCounts {
-  constructor(private readonly analytics: IAnalyticsRepository) {}
+  constructor(private readonly analytics: IAnalyticsOverviewRepository) {}
 
   async execute(): Promise<OrderPipelineCounts> {
     const groups = await this.analytics.orderStateCounts();

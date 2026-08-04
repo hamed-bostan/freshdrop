@@ -2,6 +2,8 @@ import { Prisma } from "@prisma/client";
 import {
   makeTotals,
   previousPeriod,
+  storeDateString,
+  STORE_TIME_ZONE,
   type AnalyticsGranularity,
   type AnalyticsTotals,
   type CustomerSegments,
@@ -58,11 +60,15 @@ import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transa
  *
  * ## Time zone
  *
- * `placed_at` is stored as a UTC timestamp, and every `date_trunc` below buckets
- * in UTC to match the ranges the domain builds (see `startOfUtcDay`). A store
- * whose trading day should close at local midnight wants a `AT TIME ZONE` here and
- * the same zone in `presetRange` — one setting, applied in both places, not one
- * layer quietly picking its own.
+ * `placed_at` (and every other instant column here) is stored as a naive
+ * timestamp holding a UTC instant. Bucketing with a bare `date_trunc` would
+ * therefore close the trading day at UTC midnight, three and a half hours before
+ * the store's actual local midnight — every `date_trunc` below instead goes
+ * through {@link zonedTrunc}, which truncates in `Analytics.STORE_TIME_ZONE` and
+ * converts back to the same UTC-instant-as-naive-timestamp shape every other
+ * column uses, so the result stays directly comparable to `placed_at`. One
+ * setting, imported from the domain and applied here and in `startOfUtcDay` /
+ * `presetRange` — not one layer quietly picking its own.
  */
 export class PrismaAnalyticsRepository implements IAnalyticsRepository {
   constructor(private readonly db: PrismaDb = prisma) {}
@@ -81,6 +87,19 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
         // single quick write. This is seven aggregates queued on one connection,
         // and the first request after a cold start pays for connecting too — the
         // defaults turn that into an error rather than a slow page.
+        //
+        // Measured rather than assumed (phase 8 hardening): a cold `PrismaClient`'s
+        // first query alone took ~2.1s against the dev database — already past
+        // Prisma's 2s `maxWait` default, which is what actually justifies widening
+        // it rather than the query cost. `GetAnalyticsOverview.execute` (ten
+        // aggregates, this repository's heaviest `snapshot` caller) ran 25-70ms
+        // warm, across every range preset. That's on a 54-order dev dataset, not
+        // production scale, so it confirms the cold-start assumption and rules out
+        // these numbers being *too tight* — it can't rule out a production-scale
+        // table eventually needing more, which is a real measurement nobody has,
+        // not a guess to make from here. Left as-is rather than tightened: shrinking
+        // a timeout on the strength of a demo dataset would be exactly the kind of
+        // unmeasured change this comment exists to warn against.
         maxWait: 10_000,
         timeout: 20_000,
       },
@@ -128,7 +147,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
       -- week and reads as steady trade — the gap is the signal.
       buckets AS (
         SELECT generate_series(
-          date_trunc('${unit}', ${range.from}::timestamp),
+          ${zonedTrunc(unit, Prisma.sql`${range.from}::timestamp`)},
           ${range.to}::timestamp - interval '1 microsecond',
           '1 ${unit}'::interval
         ) AS bucket
@@ -138,7 +157,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
         COALESCE(SUM(r.revenue), 0)::double precision              AS revenue,
         COUNT(r.id) FILTER (WHERE r.revenue > 0)::int              AS orders
       FROM buckets b
-      LEFT JOIN recognized r ON date_trunc('${unit}', r.placed_at) = b.bucket
+      LEFT JOIN recognized r ON ${zonedTrunc(unit, Prisma.sql`r.placed_at`)} = b.bucket
       GROUP BY b.bucket
       ORDER BY b.bucket
     `);
@@ -171,7 +190,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
       WITH ${recognizedOrders(compareRange)},
       buckets AS (
         SELECT generate_series(
-          date_trunc('${unit}', ${range.from}::timestamp),
+          ${zonedTrunc(unit, Prisma.sql`${range.from}::timestamp`)},
           ${range.to}::timestamp - interval '1 microsecond',
           '1 ${unit}'::interval
         ) AS bucket
@@ -182,7 +201,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
         COUNT(r.id) FILTER (WHERE r.revenue > 0)::int              AS orders
       FROM buckets b
       LEFT JOIN recognized r
-        ON date_trunc('${unit}', r.placed_at + (${shiftMs} * interval '1 millisecond')) = b.bucket
+        ON ${zonedTrunc(unit, Prisma.sql`r.placed_at + (${shiftMs} * interval '1 millisecond')`)} = b.bucket
       GROUP BY b.bucket
       ORDER BY b.bucket
     `);
@@ -261,7 +280,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
       WITH ${recognizedOrders(range)},
       buckets AS (
         SELECT generate_series(
-          date_trunc('${unit}', ${range.from}::timestamp),
+          ${zonedTrunc(unit, Prisma.sql`${range.from}::timestamp`)},
           ${range.to}::timestamp - interval '1 microsecond',
           '1 ${unit}'::interval
         ) AS bucket
@@ -271,7 +290,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
         COALESCE(SUM(r.revenue) FILTER (WHERE r.payment_status = 'paid'), 0)::double precision AS revenue,
         COUNT(r.id) FILTER (WHERE r.payment_status = 'paid')::int AS orders
       FROM buckets b
-      LEFT JOIN recognized r ON date_trunc('${unit}', r.placed_at) = b.bucket
+      LEFT JOIN recognized r ON ${zonedTrunc(unit, Prisma.sql`r.placed_at`)} = b.bucket
       GROUP BY b.bucket
       ORDER BY b.bucket
     `);
@@ -289,7 +308,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
       WITH ${recognizedOrders(compareRange)},
       buckets AS (
         SELECT generate_series(
-          date_trunc('${unit}', ${range.from}::timestamp),
+          ${zonedTrunc(unit, Prisma.sql`${range.from}::timestamp`)},
           ${range.to}::timestamp - interval '1 microsecond',
           '1 ${unit}'::interval
         ) AS bucket
@@ -300,7 +319,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
         COUNT(r.id) FILTER (WHERE r.payment_status = 'paid')::int AS orders
       FROM buckets b
       LEFT JOIN recognized r
-        ON date_trunc('${unit}', r.placed_at + (${shiftMs} * interval '1 millisecond')) = b.bucket
+        ON ${zonedTrunc(unit, Prisma.sql`r.placed_at + (${shiftMs} * interval '1 millisecond')`)} = b.bucket
       GROUP BY b.bucket
       ORDER BY b.bucket
     `);
@@ -371,11 +390,11 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     const unit = Prisma.raw(assertGranularity(granularity));
     const rows = await this.db.$queryRaw<SeriesRow[]>(Prisma.sql`
       WITH buckets AS (
-        SELECT generate_series(date_trunc('${unit}', ${range.from}::timestamp), ${range.to}::timestamp - interval '1 microsecond', '1 ${unit}'::interval) AS bucket
+        SELECT generate_series(${zonedTrunc(unit, Prisma.sql`${range.from}::timestamp`)}, ${range.to}::timestamp - interval '1 microsecond', '1 ${unit}'::interval) AS bucket
       )
       SELECT b.bucket, COALESCE(SUM(r.amount), 0)::double precision AS revenue, COUNT(r.id)::int AS orders
       FROM buckets b
-      LEFT JOIN refunds r ON date_trunc('${unit}', r.created_at) = b.bucket
+      LEFT JOIN refunds r ON ${zonedTrunc(unit, Prisma.sql`r.created_at`)} = b.bucket
       GROUP BY b.bucket
       ORDER BY b.bucket
     `);
@@ -387,11 +406,11 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     const shiftMs = range.from.getTime() - compareRange.from.getTime();
     const rows = await this.db.$queryRaw<SeriesRow[]>(Prisma.sql`
       WITH buckets AS (
-        SELECT generate_series(date_trunc('${unit}', ${range.from}::timestamp), ${range.to}::timestamp - interval '1 microsecond', '1 ${unit}'::interval) AS bucket
+        SELECT generate_series(${zonedTrunc(unit, Prisma.sql`${range.from}::timestamp`)}, ${range.to}::timestamp - interval '1 microsecond', '1 ${unit}'::interval) AS bucket
       )
       SELECT b.bucket, COALESCE(SUM(r.amount), 0)::double precision AS revenue, COUNT(r.id)::int AS orders
       FROM buckets b
-      LEFT JOIN refunds r ON date_trunc('${unit}', r.created_at + (${shiftMs} * interval '1 millisecond')) = b.bucket
+      LEFT JOIN refunds r ON ${zonedTrunc(unit, Prisma.sql`r.created_at + (${shiftMs} * interval '1 millisecond')`)} = b.bucket
         AND r.created_at >= ${compareRange.from} AND r.created_at < ${compareRange.to}
       GROUP BY b.bucket
       ORDER BY b.bucket
@@ -522,7 +541,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
 
   async deliverySeries(range: DateRange, granularity: AnalyticsGranularity): Promise<DeliveryPerformancePoint[]> {
     const unit = Prisma.raw(assertGranularity(granularity));
-    const rows = await this.db.$queryRaw<DeliveryPointRow[]>(Prisma.sql`WITH buckets AS (SELECT generate_series(date_trunc('${unit}', ${range.from}::timestamp), ${range.to}::timestamp - interval '1 microsecond', '1 ${unit}'::interval) AS bucket), deliveries AS (${deliveryEvents(range)}) SELECT b.bucket, COUNT(d.order_id)::int AS "deliveredOrders", COALESCE(COUNT(d.order_id) FILTER (WHERE d.due_at IS NOT NULL AND d.delivered_at <= d.due_at)::double precision / NULLIF(COUNT(d.order_id) FILTER (WHERE d.due_at IS NOT NULL), 0), 0) AS "onTimeRate", COALESCE(ROUND(AVG(d.fulfillment_minutes)), 0)::int AS "averageFulfillmentMinutes" FROM buckets b LEFT JOIN deliveries d ON date_trunc('${unit}', d.delivered_at) = b.bucket GROUP BY b.bucket ORDER BY b.bucket`);
+    const rows = await this.db.$queryRaw<DeliveryPointRow[]>(Prisma.sql`WITH buckets AS (SELECT generate_series(${zonedTrunc(unit, Prisma.sql`${range.from}::timestamp`)}, ${range.to}::timestamp - interval '1 microsecond', '1 ${unit}'::interval) AS bucket), deliveries AS (${deliveryEvents(range)}) SELECT b.bucket, COUNT(d.order_id)::int AS "deliveredOrders", COALESCE(COUNT(d.order_id) FILTER (WHERE d.due_at IS NOT NULL AND d.delivered_at <= d.due_at)::double precision / NULLIF(COUNT(d.order_id) FILTER (WHERE d.due_at IS NOT NULL), 0), 0) AS "onTimeRate", COALESCE(ROUND(AVG(d.fulfillment_minutes)), 0)::int AS "averageFulfillmentMinutes" FROM buckets b LEFT JOIN deliveries d ON ${zonedTrunc(unit, Prisma.sql`d.delivered_at`)} = b.bucket GROUP BY b.bucket ORDER BY b.bucket`);
     return rows.map((row) => ({ ...row, bucket: row.bucket.toISOString() }));
   }
 
@@ -745,7 +764,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     const unit = Prisma.raw(assertGranularity(granularity));
     const rows = await this.db.$queryRaw<CustomerGrowthRow[]>(Prisma.sql`
       WITH buckets AS (
-        SELECT generate_series(date_trunc('${unit}', ${range.from}::timestamp), ${range.to}::timestamp - interval '1 microsecond', '1 ${unit}'::interval) AS bucket
+        SELECT generate_series(${zonedTrunc(unit, Prisma.sql`${range.from}::timestamp`)}, ${range.to}::timestamp - interval '1 microsecond', '1 ${unit}'::interval) AS bucket
       ), range_customers AS (
         SELECT DISTINCT o.user_id FROM orders o
         WHERE o.status NOT IN ('cancelled', 'refunded') AND o.placed_at >= ${range.from} AND o.placed_at < ${range.to}
@@ -760,11 +779,11 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
         WHERE o.status NOT IN ('cancelled', 'refunded') AND o.placed_at >= ${range.from} AND o.placed_at < ${range.to}
       )
       SELECT b.bucket,
-        COUNT(DISTINCT p.user_id) FILTER (WHERE date_trunc('${unit}', p.first_order_at) = b.bucket)::int AS "newCustomers",
-        COUNT(DISTINCT p.user_id) FILTER (WHERE date_trunc('${unit}', p.first_order_at) < b.bucket)::int AS "returningCustomers",
-        COALESCE(SUM(p.revenue) FILTER (WHERE date_trunc('${unit}', p.first_order_at) = b.bucket), 0)::double precision AS "newRevenue",
-        COALESCE(SUM(p.revenue) FILTER (WHERE date_trunc('${unit}', p.first_order_at) < b.bucket), 0)::double precision AS "returningRevenue"
-      FROM buckets b LEFT JOIN period_orders p ON date_trunc('${unit}', p.placed_at) = b.bucket
+        COUNT(DISTINCT p.user_id) FILTER (WHERE ${zonedTrunc(unit, Prisma.sql`p.first_order_at`)} = b.bucket)::int AS "newCustomers",
+        COUNT(DISTINCT p.user_id) FILTER (WHERE ${zonedTrunc(unit, Prisma.sql`p.first_order_at`)} < b.bucket)::int AS "returningCustomers",
+        COALESCE(SUM(p.revenue) FILTER (WHERE ${zonedTrunc(unit, Prisma.sql`p.first_order_at`)} = b.bucket), 0)::double precision AS "newRevenue",
+        COALESCE(SUM(p.revenue) FILTER (WHERE ${zonedTrunc(unit, Prisma.sql`p.first_order_at`)} < b.bucket), 0)::double precision AS "returningRevenue"
+      FROM buckets b LEFT JOIN period_orders p ON ${zonedTrunc(unit, Prisma.sql`p.placed_at`)} = b.bucket
       GROUP BY b.bucket ORDER BY b.bucket
     `);
     return rows.map((row) => ({ ...row, bucket: row.bucket.toISOString() }));
@@ -798,13 +817,13 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     const safeLimit = Math.max(1, Math.min(limit, 12));
     const rows = await this.db.$queryRaw<RetentionCohortRow[]>(Prisma.sql`
       WITH customer_months AS (
-        SELECT DISTINCT o.user_id, date_trunc('month', o.placed_at) AS activity_month
+        SELECT DISTINCT o.user_id, ${zonedTrunc(Prisma.raw("month"), Prisma.sql`o.placed_at`)} AS activity_month
         FROM orders o WHERE o.status NOT IN ('cancelled', 'refunded')
       ), first_months AS (
         SELECT user_id, MIN(activity_month) AS cohort FROM customer_months GROUP BY user_id
       ), selected_cohorts AS (
         SELECT DISTINCT cohort FROM first_months
-        WHERE cohort < date_trunc('month', ${range.to}::timestamp)
+        WHERE cohort < ${zonedTrunc(Prisma.raw("month"), Prisma.sql`${range.to}::timestamp`)}
         ORDER BY cohort DESC LIMIT ${safeLimit}
       ), selected AS (
         SELECT f.* FROM first_months f JOIN selected_cohorts c ON c.cohort = f.cohort
@@ -901,13 +920,21 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
   }
 
   async customerSegmentTransitions(range: DateRange): Promise<CustomerSegmentTransition[]> {
+    // `captured_on` is a plain DATE holding the snapshot's *local* calendar day
+    // (see `storeDateString`, which is how `SnapshotCustomerSegments` labels
+    // each row). Casting `range.from::date` in SQL would instead truncate the
+    // UTC instant in whatever timezone the connection happens to run in — not
+    // necessarily `STORE_TIME_ZONE` — so the boundary is computed here, the same
+    // way the snapshot label itself is, and bound as a date literal.
+    const startDate = storeDateString(range.from);
+    const endDate = storeDateString(range.to);
     const rows = await this.db.$queryRaw<CustomerSegmentTransitionRow[]>(Prisma.sql`
       WITH start_snap AS (
         SELECT DISTINCT ON (user_id) user_id, segment FROM customer_segment_snapshots
-        WHERE captured_on <= ${range.from}::date ORDER BY user_id, captured_on DESC
+        WHERE captured_on <= ${startDate}::date ORDER BY user_id, captured_on DESC
       ), end_snap AS (
         SELECT DISTINCT ON (user_id) user_id, segment FROM customer_segment_snapshots
-        WHERE captured_on <= ${range.to}::date ORDER BY user_id, captured_on DESC
+        WHERE captured_on <= ${endDate}::date ORDER BY user_id, captured_on DESC
       )
       SELECT s.segment AS "fromSegment", e.segment AS "toSegment", COUNT(*)::int AS customers
       FROM end_snap e LEFT JOIN start_snap s ON s.user_id = e.user_id
@@ -1009,6 +1036,21 @@ function assertGranularity(granularity: AnalyticsGranularity): AnalyticsGranular
     throw new Error(`Unsupported analytics granularity: ${granularity}`);
   }
   return granularity;
+}
+
+/**
+ * `date_trunc('${unit}', …)`, but truncating in `STORE_TIME_ZONE` rather than UTC
+ * — see the class doc's "Time zone" section. `ts` must be a naive timestamp
+ * holding a UTC instant (every instant column in this schema is); the result is
+ * the same shape, so it stays directly comparable to `placed_at`/`created_at` and
+ * usable as a `GROUP BY`/join key against them.
+ *
+ * `unit` is a raw SQL fragment (see `assertGranularity`), not a bound value —
+ * this function just forwards it into the two `date_trunc` calls the round trip
+ * needs.
+ */
+function zonedTrunc(unit: Prisma.Sql, ts: Prisma.Sql): Prisma.Sql {
+  return Prisma.sql`(date_trunc('${unit}', (${ts}) AT TIME ZONE 'UTC' AT TIME ZONE ${STORE_TIME_ZONE}) AT TIME ZONE ${STORE_TIME_ZONE} AT TIME ZONE 'UTC')`;
 }
 
 /**

@@ -1,17 +1,15 @@
 import { z } from "zod";
+import { isoDateSchema, moneySchema, nonNegativeInt, rangeSchema, seriesSchema } from "./analytics-wire";
 
 const totalsSchema = z.object({
-  paidRevenue: z.number(),
-  successfulPayments: z.number(),
-  failedPayments: z.number(),
-  pendingPayments: z.number(),
-  refundedPayments: z.number(),
-  walletAmount: z.number(),
-  externalAmount: z.number(),
+  paidRevenue: moneySchema,
+  successfulPayments: nonNegativeInt,
+  failedPayments: nonNegativeInt,
+  pendingPayments: nonNegativeInt,
+  refundedPayments: nonNegativeInt,
+  walletAmount: moneySchema,
+  externalAmount: moneySchema,
 });
-
-const rangeSchema = z.object({ from: z.string(), to: z.string() });
-const seriesSchema = z.array(z.object({ bucket: z.string(), revenue: z.number(), orders: z.number() }));
 
 export const paymentReportResponseSchema = z.object({
   range: rangeSchema,
@@ -23,11 +21,11 @@ export const paymentReportResponseSchema = z.object({
   previousSeries: seriesSchema,
   issues: z.array(z.object({
     orderId: z.string(),
-    orderNumber: z.number(),
+    orderNumber: nonNegativeInt,
     userId: z.string(),
     status: z.enum(["failed", "refunded"]),
-    amount: z.number(),
-    placedAt: z.string(),
+    amount: moneySchema,
+    placedAt: isoDateSchema,
   })),
 });
 

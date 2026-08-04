@@ -11,10 +11,11 @@ import type { TrackingMilestone } from "./OrderTracking";
  * Nothing here reads a clock: `now` is injected wherever a period is derived, the
  * same rule `isReturnable(order, now)` follows, so a range is reproducible.
  *
- * All instants are UTC. Bucketing a day is a timezone decision, and picking one
- * arbitrarily per layer is how a "yesterday" tile ends up disagreeing with the
- * chart beside it; UTC is stated once, here, and honoured all the way down to
- * `date_trunc` in the SQL.
+ * All instants are UTC on the wire and in storage. Bucketing a *day*, though, is a
+ * timezone decision — picking one arbitrarily per layer is how a "yesterday" tile
+ * ends up disagreeing with the chart beside it. {@link STORE_TIME_ZONE} is stated
+ * once, here, and honoured all the way down to `date_trunc` in the SQL (see the
+ * class doc on `PrismaAnalyticsRepository`).
  */
 
 /**
@@ -66,9 +67,62 @@ const MAX_WEEKLY_POINTS = 78;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Midnight UTC on the day `at` falls in. */
+/**
+ * The store's trading-day timezone — the one setting that decides where a
+ * "day" begins for every preset, chart bucket and snapshot date the app
+ * produces. Applied here and, identically, in every `date_trunc` in
+ * `PrismaAnalyticsRepository`; a store whose orders are placed in Tehran
+ * closes its books at Tehran midnight, not UTC midnight.
+ */
+export const STORE_TIME_ZONE = "Asia/Tehran";
+
+/**
+ * `at`'s calendar date in {@link STORE_TIME_ZONE}, as `YYYY-MM-DD` — the label a
+ * daily snapshot is captured under.
+ *
+ * Deliberately not `startOfUtcDay(at).toISOString().slice(0, 10)`: that instant
+ * is local midnight expressed *as a UTC instant*, and slicing its ISO string
+ * reads its UTC calendar date back — which lands on the wrong day for roughly a
+ * third of every 24 hours (Tehran midnight is 20:30 UTC the day before).
+ */
+export function storeDateString(at: Date): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: STORE_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(at);
+  const field = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${field("year")}-${field("month")}-${field("day")}`;
+}
+
+/** Midnight in {@link STORE_TIME_ZONE} on the day `at` falls in, as its UTC instant. */
 export function startOfUtcDay(at: Date): Date {
-  return new Date(Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate()));
+  const offset = storeZoneOffsetMs(at);
+  const localWallClock = new Date(at.getTime() + offset);
+  const localMidnight = Date.UTC(localWallClock.getUTCFullYear(), localWallClock.getUTCMonth(), localWallClock.getUTCDate());
+  return new Date(localMidnight - offset);
+}
+
+/**
+ * `at`'s offset from UTC in {@link STORE_TIME_ZONE}, in milliseconds — how far
+ * to shift a UTC instant to read its wall-clock fields (year/month/day) in the
+ * store's zone via `Date`'s own UTC getters, without a timezone library.
+ */
+function storeZoneOffsetMs(at: Date): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: STORE_TIME_ZONE,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(at);
+  const field = (type: string) => Number(parts.find((part) => part.type === type)?.value ?? 0);
+  const wallClockAsUtc = Date.UTC(field("year"), field("month") - 1, field("day"), field("hour"), field("minute"), field("second"));
+  return wallClockAsUtc - at.getTime();
 }
 
 /**
@@ -108,8 +162,12 @@ export function previousPeriod(range: DateRange): DateRange {
  * comparison; December against last December is the one a seasonal business
  * actually wants from a "compare with" control.
  *
- * Shifting the UTC year is enough because every range this app builds starts and
- * ends at UTC midnight (see `startOfUtcDay`); a Feb 29 bound simply lands on
+ * Shifting the UTC-instant's own year/month/day fields is enough — no re-zoning
+ * needed — because {@link STORE_TIME_ZONE} carries a fixed offset (Iran abolished
+ * DST in 2022); the offset at `range.from` is the same offset a year earlier, so
+ * shifting the raw instant lands on the same local wall-clock time on the same
+ * calendar day. A zone that still observes DST would need `startOfUtcDay` applied
+ * again after the shift rather than this shortcut. A Feb 29 bound simply lands on
  * Feb 28 or Mar 1 a year later, the same way every other calendar-year-shift does.
  */
 export function previousYearRange(range: DateRange): DateRange {

@@ -19,7 +19,9 @@ describe("parseAnalyticsRange", () => {
   it("falls back to the default preset when nothing is given", () => {
     const now = new Date("2026-08-01T00:00:00.000Z");
     const range = parseAnalyticsRange(new URLSearchParams(), now);
-    expect(range.from.toISOString()).toBe("2026-07-03T00:00:00.000Z");
+    // 30d preset boundaries are `STORE_TIME_ZONE` (Asia/Tehran, UTC+3:30)
+    // midnight, not UTC midnight.
+    expect(range.from.toISOString()).toBe("2026-07-02T20:30:00.000Z");
   });
 
   it("resolves a valid custom from/to, treating `to` as inclusive", () => {
