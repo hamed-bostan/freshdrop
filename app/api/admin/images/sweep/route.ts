@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SweepOrphanImages } from "@/src/domain/use-cases/images/SweepOrphanImages";
 import { categoryRepository, imageStorageRepository } from "@/src/infrastructure/container";
+import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 import { isAuthorizedForCron } from "@/src/lib/cron-auth";
 import { MANAGED_IMAGE_FOLDERS } from "@/src/lib/imageFolders";
 
@@ -21,7 +22,7 @@ const DEFAULT_MAX_AGE_HOURS = 24;
  */
 export async function POST(request: NextRequest) {
   if (!(await isAuthorizedForCron(request, "catalog.write", process.env.IMAGE_SWEEP_SECRET))) {
-    return NextResponse.json({ error: "Not authorized." }, { status: 401 });
+    return unauthorizedResponse();
   }
 
   const dryRun = new URL(request.url).searchParams.get("dryRun") === "1";
@@ -38,8 +39,7 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
-    console.error("Image sweep failed:", error);
-    return NextResponse.json({ error: "Image sweep failed." }, { status: 500 });
+    return errorResponseFromException(error, "Image sweep failed");
   }
 }
 

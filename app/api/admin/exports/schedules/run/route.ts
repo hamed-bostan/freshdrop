@@ -11,6 +11,7 @@ import {
   stockMovementLog,
   userRepository,
 } from "@/src/infrastructure/container";
+import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 import { isAuthorizedForCron } from "@/src/lib/cron-auth";
 
 // Reads/writes fresh state on every call; never cache or statically analyse it.
@@ -29,7 +30,7 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(request: NextRequest) {
   if (!(await isAuthorizedForCron(request, "dashboard.view", process.env.EXPORT_SCHEDULE_SECRET))) {
-    return NextResponse.json({ error: "Not authorized." }, { status: 401 });
+    return unauthorizedResponse();
   }
 
   try {
@@ -46,8 +47,7 @@ export async function POST(request: NextRequest) {
     }).execute();
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
-    console.error("Scheduled export run failed:", error);
-    return NextResponse.json({ error: "Scheduled export run failed." }, { status: 500 });
+    return errorResponseFromException(error, "Scheduled export run failed");
   }
 }
 

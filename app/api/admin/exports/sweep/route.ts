@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SweepExportJobs } from "@/src/domain/use-cases/exports/SweepExportJobs";
 import { exportFileStorage, exportJobRepository } from "@/src/infrastructure/container";
+import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 import { isAuthorizedForCron } from "@/src/lib/cron-auth";
 
 // Reads/writes fresh state on every call; never cache or statically analyse it.
@@ -19,14 +20,13 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(request: NextRequest) {
   if (!(await isAuthorizedForCron(request, "dashboard.view", process.env.EXPORT_SWEEP_SECRET))) {
-    return NextResponse.json({ error: "Not authorized." }, { status: 401 });
+    return unauthorizedResponse();
   }
 
   try {
     const result = await new SweepExportJobs(exportJobRepository, exportFileStorage).execute();
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
-    console.error("Export sweep failed:", error);
-    return NextResponse.json({ error: "Export sweep failed." }, { status: 500 });
+    return errorResponseFromException(error, "Export sweep failed");
   }
 }
