@@ -935,3 +935,49 @@ model ExportJob {
   @@index([requestedById, createdAt])
   @@map("export_jobs")
 }
+
+// A standing "generate this export automatically" rule — the Export center's
+// Scheduled reports panel. `RunDueSchedules` turns a due row into an
+// `ExportJob` with source "schedule"; this table only holds the recurring
+// configuration, never a generated file.
+model ScheduledExport {
+  id String @id @default(uuid())
+
+  reportId String @map("report_id")
+  format   String
+  // The builder's selection this schedule replays on every run. See `ExportJobParams`.
+  params Json
+
+  // "weekly" | "monthly" — see `ScheduleCadence`.
+  cadence String
+  // 0 (Sunday) – 6 (Saturday), set for "weekly". Null for "monthly".
+  dayOfWeek Int? @map("day_of_week")
+  // 1–28, set for "monthly". Null for "weekly" — see `ScheduledExport.dayOfMonth`.
+  dayOfMonth Int? @map("day_of_month")
+  // 0–23, the hour of day in `timezone` the schedule fires.
+  hour Int
+  // IANA zone name, e.g. "Asia/Tehran".
+  timezone String
+
+  // Email to send the secure link to when a run completes. Null disables
+  // delivery — the run still generates and lists the job, just with nobody notified.
+  deliverTo String? @map("deliver_to")
+
+  active Boolean @default(true)
+
+  createdById   String @map("created_by_id")
+  createdByName String @map("created_by_name")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  lastRunAt DateTime? @map("last_run_at")
+  // When this schedule next fires — advanced by `RunDueSchedules` after each
+  // run, recomputed by `SaveScheduledExport` whenever the timing fields change.
+  nextRunAt DateTime @map("next_run_at")
+
+  // The management list, newest first.
+  @@index([createdAt])
+  // `RunDueSchedules`'s query: active schedules whose time has come.
+  @@index([active, nextRunAt])
+  @@map("scheduled_exports")
+}

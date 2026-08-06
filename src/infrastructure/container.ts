@@ -34,6 +34,7 @@ import type { IOrderStatusEventLog } from "@/src/domain/repositories/IOrderStatu
 import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
 import type { IExportJobRepository } from "@/src/domain/repositories/IExportJobRepository";
 import type { IFileStorageRepository } from "@/src/domain/repositories/IFileStorageRepository";
+import type { IScheduledExportRepository } from "@/src/domain/repositories/IScheduledExportRepository";
 
 import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepository";
 import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
@@ -74,6 +75,7 @@ import { PrismaOrderStatusEventLog } from "./repositories/PrismaOrderStatusEvent
 import { PrismaNotificationTemplateRepository } from "./repositories/PrismaNotificationTemplateRepository";
 import { PrismaExportJobRepository } from "./repositories/PrismaExportJobRepository";
 import { SupabaseFileStorageRepository } from "./repositories/SupabaseFileStorageRepository";
+import { PrismaScheduledExportRepository } from "./repositories/PrismaScheduledExportRepository";
 
 const SMS_IR_DEFAULT_TEMPLATE_ID = 562447;
 
@@ -344,3 +346,8 @@ export const exportFileStorage: IFileStorageRepository = new SupabaseFileStorage
   serviceRoleKey: process.env.SUPABASE_SECRET_KEY!,
   bucket: process.env.SUPABASE_EXPORTS_BUCKET ?? "exports",
 });
+
+// Scheduled-export persistence — real storage from the start, PostgreSQL via
+// Prisma. Backs the Export center's Scheduled reports panel; `RunDueSchedules`
+// reads it to find what's due and turns each into an `exportJobRepository` row.
+export const scheduledExportRepository: IScheduledExportRepository = new PrismaScheduledExportRepository();

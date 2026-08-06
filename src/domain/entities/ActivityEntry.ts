@@ -93,6 +93,13 @@ export const ACTIVITY_ACTIONS = [
   // `order.customerNotified`: the file has already left the moment this is
   // written, so there is nothing to be atomic with.
   "export.downloaded",
+  // A standing scheduled-export rule was authored/edited, paused/resumed, or
+  // removed — the Scheduled reports panel's own audit trail. A schedule
+  // *firing* isn't logged here: it's an automated background action (see
+  // `RunDueSchedules`), not something an admin did.
+  "export.scheduleSaved",
+  "export.scheduleActiveChanged",
+  "export.scheduleDeleted",
 ] as const;
 
 /** A recognised action, or `unknown` — see {@link ActivityEntityType} for why. */

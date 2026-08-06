@@ -8,6 +8,7 @@ import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "../analytics/Analytics
 import { CustomExportBuilder } from "./CustomExportBuilder";
 import { buildExportHref, EXPORT_REPORTS } from "./export-report-catalog";
 import { RecentExports } from "./RecentExports";
+import { ScheduledExportsPanel } from "./ScheduledExportsPanel";
 
 type Props = {
   from: string;
@@ -70,6 +71,7 @@ export async function ExportReportsScreen({ from, to, isCustomRange, permissions
         to={to}
         reports={reports.map((report) => ({ id: report.id, endpoint: report.endpoint, periodCapable: report.periodCapable }))}
       />
+      {reports.length > 0 ? <ScheduledExportsPanel /> : null}
       {reports.length > 0 ? <RecentExports params={params} /> : null}
     </div>
   );
