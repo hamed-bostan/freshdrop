@@ -1,7 +1,6 @@
-import type { Session } from "next-auth";
 import type { UserRole } from "@/src/domain/entities/User";
-import { sessionRole } from "@/src/lib/require-permission";
-import { userRepository } from "@/src/infrastructure/container";
+import { ApiError } from "@/src/lib/api/ApiError";
+import { viewerServerApi } from "./viewer-server-api";
 
 /**
  * Who is looking at the dashboard, as far as the chrome is concerned.
@@ -24,19 +23,21 @@ export type DashboardViewer = {
 };
 
 /**
- * Builds the viewer the chrome draws, from the same session `requirePermission`
- * already verified. Reads the user row for the display fields and asks
- * `sessionRole` for the role rather than trusting the row's own — a break-glass
- * admin's row can lag the `owner` override that `ADMIN_USER_IDS` grants it.
+ * Builds the viewer the chrome draws, reading its own record over the BFF
+ * (`GET /api/admin/me`) rather than the repository — a Server Component reads
+ * like any other client of the API, same as every other dashboard screen.
+ * `viewerServerApi` forwards the session cookie the layout's own
+ * `requirePermission` already verified, so the endpoint resolves the same user.
  *
- * Returns `null` only when the row has vanished between the permission check and
- * this call (e.g. the account was deleted mid-session); the layout has no
- * sensible chrome to draw for that and falls back to the bare session id.
+ * Returns `null` only when the account has vanished between the permission
+ * check and this call (e.g. deleted mid-session — the endpoint 404s); the
+ * layout has no sensible chrome to draw for that and falls back to the door.
  */
-export async function dashboardViewerFor(session: Session): Promise<DashboardViewer | null> {
-  const userId = session.user.id;
-  const [user, role] = await Promise.all([userRepository.getById(userId), sessionRole(session)]);
-  if (!user || role == null) return null;
-
-  return { id: user.id, name: user.name, email: user.email, imageUrl: user.avatarUrl, role };
+export async function dashboardViewerFor(): Promise<DashboardViewer | null> {
+  try {
+    return await viewerServerApi.get();
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 404 || error.status === 401)) return null;
+    throw error;
+  }
 }

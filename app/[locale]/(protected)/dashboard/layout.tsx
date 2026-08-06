@@ -21,7 +21,7 @@ import { SIDEBAR_COLLAPSED_COOKIE_NAME } from "@/src/presentation/dashboard/shel
  */
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const session = await requirePermission("dashboard.view");
-  const viewer = await dashboardViewerFor(session);
+  const viewer = await dashboardViewerFor();
   // The account backing an active session vanishing mid-request is not something
   // any page here can recover from — back to the door, same as no session at all.
   if (!viewer) redirect("/login");
