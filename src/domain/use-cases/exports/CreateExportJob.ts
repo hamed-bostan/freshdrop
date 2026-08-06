@@ -11,6 +11,8 @@ export type CreateExportJobRequest = {
   /** Whether the report accepts a period at all — the route reads this off the catalog. */
   periodCapable: boolean;
   params: ExportJobParams;
+  /** Resolved server-side by the caller (the session's own email) — see `ExportJob.deliverTo`. */
+  deliverTo?: string | null;
 };
 
 /**
@@ -33,6 +35,7 @@ export class CreateExportJob {
       source: request.source,
       requestedById: request.requestedById,
       requestedByName: request.requestedByName,
+      deliverTo: request.deliverTo ?? null,
       params: request.params,
       periodFrom: request.periodCapable ? (request.params.from ?? null) : null,
       periodTo: request.periodCapable ? (request.params.to ?? null) : null,

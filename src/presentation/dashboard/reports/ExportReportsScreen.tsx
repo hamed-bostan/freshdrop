@@ -17,9 +17,13 @@ type Props = {
   permissions: readonly Permission[];
   /** This page's own query string — forwarded to `RecentExports` for its search/status filters. */
   params: URLSearchParams;
+  /** Whether the builder may offer "email me a secure link" at all — the viewer has an email on file *and* SMTP is configured. */
+  canEmailDeliver: boolean;
+  /** Whether the viewer has an email on file, so the builder can explain *why* email delivery is unavailable when `canEmailDeliver` is false. */
+  hasEmailOnFile: boolean;
 };
 
-export async function ExportReportsScreen({ from, to, isCustomRange, permissions, params }: Props) {
+export async function ExportReportsScreen({ from, to, isCustomRange, permissions, params, canEmailDeliver, hasEmailOnFile }: Props) {
   const t = await getTranslations("dashExportReports");
   const ta = await getTranslations("dashAnalytics");
   const reports = EXPORT_REPORTS.filter((report) => permissions.includes(report.permission));
@@ -70,6 +74,8 @@ export async function ExportReportsScreen({ from, to, isCustomRange, permissions
         from={from}
         to={to}
         reports={reports.map((report) => ({ id: report.id, endpoint: report.endpoint, periodCapable: report.periodCapable }))}
+        canEmailDeliver={canEmailDeliver}
+        hasEmailOnFile={hasEmailOnFile}
       />
       {reports.length > 0 ? <ScheduledExportsPanel /> : null}
       {reports.length > 0 ? <RecentExports params={params} /> : null}

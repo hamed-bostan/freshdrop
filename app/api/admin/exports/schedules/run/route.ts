@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { RunDueSchedules } from "@/src/domain/use-cases/exports/RunDueSchedules";
 import {
   analyticsRepository,
+  emailSender,
   exportFileStorage,
   exportJobRepository,
   orderRepository,
@@ -42,6 +43,7 @@ export async function POST(request: NextRequest) {
       products: productRepository,
       movements: stockMovementLog,
       analytics: analyticsRepository,
+      emailSender,
     }).execute();
     return NextResponse.json(result, { status: 200 });
   } catch (error) {

@@ -3,6 +3,7 @@ import type { DateRange } from "@/src/domain/entities/Analytics";
 import type { ExportFormat, ExportJob } from "@/src/domain/entities/ExportJob";
 import type { StockMovementFilters } from "@/src/domain/entities/StockMovement";
 import type { IAnalyticsRepository } from "@/src/domain/repositories/IAnalyticsRepository";
+import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
 import type { IExportJobRepository } from "@/src/domain/repositories/IExportJobRepository";
 import type { IFileStorageRepository } from "@/src/domain/repositories/IFileStorageRepository";
 import type { IOrderRepository } from "@/src/domain/repositories/IOrderRepository";
@@ -19,6 +20,7 @@ import { buildCustomersDataset } from "./datasets/CustomersDataset";
 import { buildInventoryDataset } from "./datasets/InventoryDataset";
 import { buildOrdersDataset } from "./datasets/OrdersDataset";
 import { buildProductsDataset } from "./datasets/ProductsDataset";
+import { NotifyExportReady } from "./NotifyExportReady";
 
 export type RunExportJobDeps = {
   jobs: IExportJobRepository;
@@ -28,6 +30,7 @@ export type RunExportJobDeps = {
   products: IProductRepository;
   movements: IStockMovementLog;
   analytics: IAnalyticsRepository;
+  emailSender: IEmailSender;
 };
 
 /**
@@ -62,6 +65,16 @@ export class RunExportJob {
         byteSize: written.data.length,
         storagePath: path,
       });
+
+      if (job.deliverTo) {
+        await new NotifyExportReady(this.deps.storage, this.deps.emailSender).execute({
+          deliverTo: job.deliverTo,
+          reportId: job.reportId,
+          format: job.format,
+          storagePath: path,
+          expiresAt: job.expiresAt,
+        });
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Export generation failed.";
       console.error(`[EXPORT_JOB_FAILED] ${job.id} (${job.reportId}/${job.format}):`, error);

@@ -37,6 +37,7 @@ export class RunDueSchedules {
         source: "schedule",
         requestedById: schedule.createdById,
         requestedByName: schedule.createdByName,
+        deliverTo: schedule.deliverTo,
         params: schedule.params,
         periodFrom: periodCapable ? (schedule.params.from ?? null) : null,
         periodTo: periodCapable ? (schedule.params.to ?? null) : null,

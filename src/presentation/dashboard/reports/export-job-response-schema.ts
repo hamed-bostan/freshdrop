@@ -16,6 +16,7 @@ export const exportJobResponseSchema = z.object({
   source: z.enum(EXPORT_JOB_SOURCES),
   requestedById: z.string(),
   requestedByName: z.string(),
+  deliverTo: z.string().nullable(),
   params: z.object({
     from: z.string().optional(),
     to: z.string().optional(),

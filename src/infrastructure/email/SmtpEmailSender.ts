@@ -49,6 +49,7 @@ export class SmtpEmailSender implements IEmailSender {
         subject: message.subject,
         text: message.text,
         html: message.html,
+        attachments: message.attachments,
       });
     } catch (error) {
       // Never rethrow: the change that triggered this mail has already committed.

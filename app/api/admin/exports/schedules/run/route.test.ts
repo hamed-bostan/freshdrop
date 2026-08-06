@@ -13,6 +13,7 @@ vi.mock("@/src/infrastructure/container", () => ({
   productRepository: {},
   stockMovementLog: {},
   analyticsRepository: {},
+  emailSender: {},
 }));
 
 const execute = vi.fn();

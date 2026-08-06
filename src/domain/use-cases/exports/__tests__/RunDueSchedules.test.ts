@@ -39,6 +39,7 @@ function fakeDeps(jobs: IExportJobRepository, schedules: IScheduledExportReposit
     products: {} as never,
     movements: {} as never,
     analytics: {} as never,
+    emailSender: {} as never,
   };
 }
 
@@ -54,6 +55,7 @@ describe("RunDueSchedules", () => {
       source: "schedule",
       requestedById: "admin-1",
       requestedByName: "Admin",
+      deliverTo: null,
       params: {},
       periodFrom: null,
       periodTo: null,

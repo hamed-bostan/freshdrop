@@ -33,6 +33,7 @@ export class PrismaExportJobRepository implements IExportJobRepository {
         source: job.source,
         requestedById: job.requestedById,
         requestedByName: job.requestedByName,
+        deliverTo: job.deliverTo,
         params: job.params as Prisma.InputJsonValue,
         periodFrom: job.periodFrom,
         periodTo: job.periodTo,
@@ -149,6 +150,7 @@ function toExportJob(row: {
   source: string;
   requestedById: string;
   requestedByName: string;
+  deliverTo: string | null;
   params: Prisma.JsonValue;
   periodFrom: string | null;
   periodTo: string | null;
@@ -171,6 +173,7 @@ function toExportJob(row: {
     source: toExportJobSource(row.source),
     requestedById: row.requestedById,
     requestedByName: row.requestedByName,
+    deliverTo: row.deliverTo,
     params: toParams(row.params),
     periodFrom: row.periodFrom,
     periodTo: row.periodTo,

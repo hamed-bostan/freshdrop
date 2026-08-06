@@ -108,6 +108,15 @@ export type ExportJob = {
   requestedById: string;
   /** The requester's name at the time — snapshotted, like `ActivityEntry.actorName`. */
   requestedByName: string;
+  /**
+   * Email to send a secure download link to once the job reaches `ready`.
+   * `null` means download-only — the requester picks this up from the Recent
+   * exports table instead. For a manual job, resolved server-side from the
+   * requester's own account (never taken from the request body — see
+   * `createExportJobSchema`'s `delivery` field); for a scheduled job, copied
+   * from `ScheduledExport.deliverTo`.
+   */
+  deliverTo: string | null;
   params: ExportJobParams;
   /** Null for snapshot-style reports (inventory, products) that have no period. */
   periodFrom: string | null;

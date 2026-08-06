@@ -903,6 +903,10 @@ model ExportJob {
   requestedById   String @map("requested_by_id")
   requestedByName String @map("requested_by_name")
 
+  // Email to send a secure download link to once the job is ready. Null
+  // means download-only. See `ExportJob.deliverTo`.
+  deliverTo String? @map("deliver_to")
+
   // The builder's selection (date range, compare-with, sections), captured
   // verbatim so a failed or expired job can be regenerated with the same
   // inputs. See `ExportJobParams`.

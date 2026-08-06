@@ -16,7 +16,14 @@ import { exportJobsApi, type EstimateExportQuery } from "./export-job-api";
 import { EXPORT_FORMAT_LABEL, supportsComparison, type ExportReportId, type ExportReportSummary } from "./export-report-catalog";
 import type { ExportEstimateResponse } from "./export-job-response-schema";
 
-type Props = { from: string; to: string; reports: readonly ExportReportSummary[] };
+type Props = {
+  from: string;
+  to: string;
+  reports: readonly ExportReportSummary[];
+  /** Whether "email me a secure link" may be offered — an address on file *and* SMTP configured. */
+  canEmailDeliver: boolean;
+  hasEmailOnFile: boolean;
+};
 
 const FORMATS: readonly ExportFormat[] = ["csv", "xlsx", "pdf"];
 const ESTIMATE_DEBOUNCE_MS = 400;
@@ -32,7 +39,7 @@ const ESTIMATE_DEBOUNCE_MS = 400;
  * and refreshes the route so anything server-rendered downstream (the Recent
  * exports table, once it exists) picks up the new row.
  */
-export function CustomExportBuilder({ from, to, reports }: Props) {
+export function CustomExportBuilder({ from, to, reports, canEmailDeliver, hasEmailOnFile }: Props) {
   const t = useTranslations("dashExportReports");
   const ta = useTranslations("dashAnalytics");
   const tApiErrors = useTranslations("apiErrors");
@@ -47,6 +54,7 @@ export function CustomExportBuilder({ from, to, reports }: Props) {
   const [compareWithPrevious, setCompareWithPrevious] = useState(false);
   const [includeComparisonSection, setIncludeComparisonSection] = useState(true);
   const [format, setFormat] = useState<ExportFormat>("csv");
+  const [delivery, setDelivery] = useState<"download" | "email">("download");
 
   const [estimate, setEstimate] = useState<ExportEstimateResponse | null>(null);
   const [estimateLoading, setEstimateLoading] = useState(false);
@@ -93,6 +101,7 @@ export function CustomExportBuilder({ from, to, reports }: Props) {
     setCompareWithPrevious(false);
     setIncludeComparisonSection(true);
     setFormat("csv");
+    setDelivery("download");
     setSubmitError(null);
     setSubmitSuccess(false);
   }
@@ -109,6 +118,7 @@ export function CustomExportBuilder({ from, to, reports }: Props) {
       to: report.periodCapable ? rangeTo : undefined,
       compareWithPrevious: canCompare ? compareWithPrevious : undefined,
       sections: canCompare && compareWithPrevious && !includeComparisonSection ? [report.id] : undefined,
+      delivery: canEmailDeliver && delivery === "email" ? "email" : "download",
     };
     try {
       await exportJobsApi.create(input);
@@ -202,6 +212,17 @@ export function CustomExportBuilder({ from, to, reports }: Props) {
               </label>
             )}
           </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-body-b10 font-medium">{t("deliveryLabel")}</p>
+          <p className="mt-1 text-body-b10 text-muted-foreground">{canEmailDeliver ? t("deliveryDescription") : hasEmailOnFile ? t("deliverySmtpUnconfiguredHint") : t("deliveryNoEmailHint")}</p>
+          <ChipGroup value={delivery} onValueChange={(value) => setDelivery(value as typeof delivery)} aria-label={t("deliveryLabel")} className="mt-2">
+            <Chip value="download">{t("deliveryDownload")}</Chip>
+            <Chip value="email" disabled={!canEmailDeliver}>
+              {t("deliveryEmail")}
+            </Chip>
+          </ChipGroup>
         </div>
 
         {submitError && <FormMessage className="mt-3">{submitError}</FormMessage>}

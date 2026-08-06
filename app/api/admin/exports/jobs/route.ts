@@ -14,6 +14,7 @@ import { RunExportJob } from "@/src/domain/use-cases/exports/RunExportJob";
 import {
   activityLog,
   analyticsRepository,
+  emailSender,
   exportFileStorage,
   exportJobRepository,
   orderRepository,
@@ -25,6 +26,7 @@ import { parseExportJobQueryFilters } from "@/src/lib/api/export-job-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
 import { errorResponseFromException, parseJsonBody, unauthorizedResponse } from "@/src/lib/api/responses";
 import { auth } from "@/auth";
+import { ValidationError } from "@/src/domain/errors/ValidationError";
 import { sessionPermissions } from "@/src/lib/require-permission";
 
 export const dynamic = "force-dynamic";
@@ -54,6 +56,18 @@ export async function POST(request: NextRequest): Promise<Response> {
     const permissions = await sessionPermissions(session);
     if (!permissions.includes(requiredPermission)) return unauthorizedResponse();
 
+    // `deliverTo` is never taken from the request body (`createExportJobSchema`
+    // only carries the `"download" | "email"` choice) — it's resolved here from
+    // the caller's own account, the same way the session's name/id already are.
+    let deliverTo: string | null = null;
+    if (input.delivery === "email") {
+      const requester = await userRepository.getById(session.user.id);
+      if (!requester?.email) {
+        throw new ValidationError("delivery", "Your account has no email address on file.");
+      }
+      deliverTo = requester.email;
+    }
+
     const job = await new CreateExportJob(exportJobRepository).execute({
       reportId: input.reportId,
       format: input.format,
@@ -61,6 +75,7 @@ export async function POST(request: NextRequest): Promise<Response> {
       requestedByName: session.user.name ?? session.user.id,
       source: "manual",
       periodCapable: EXPORT_REPORT_PERIOD_CAPABLE[input.reportId],
+      deliverTo,
       params: {
         from: input.from,
         to: input.to,
@@ -81,6 +96,7 @@ export async function POST(request: NextRequest): Promise<Response> {
       products: productRepository,
       movements: stockMovementLog,
       analytics: analyticsRepository,
+      emailSender,
     })
       .execute(job.id)
       .catch((error) => console.error(`[EXPORT_JOB_RUN_UNCAUGHT] ${job.id}:`, error));
