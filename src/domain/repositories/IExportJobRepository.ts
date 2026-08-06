@@ -41,4 +41,12 @@ export type IExportJobRepository = {
    * no result to report), so `markFailed` covers this path too.
    */
   listStranded(before: Date): Promise<ExportJob[]>;
+
+  /**
+   * Delete a job row outright — the Recent exports table's overflow-menu
+   * "Delete", as opposed to `markExpired`'s time-based transition. The caller
+   * (`DeleteExportJob`) is responsible for removing the storage object first;
+   * this only ever removes the row.
+   */
+  remove(id: string): Promise<void>;
 };

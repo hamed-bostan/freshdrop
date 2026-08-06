@@ -106,6 +106,10 @@ export class PrismaExportJobRepository implements IExportJobRepository {
     });
     return rows.map(toExportJob);
   }
+
+  async remove(id: string): Promise<void> {
+    await prisma.exportJob.delete({ where: { id } });
+  }
 }
 
 function toWhere(filters: ExportJobFilters): Prisma.ExportJobWhereInput {

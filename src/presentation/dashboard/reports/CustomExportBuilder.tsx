@@ -13,13 +13,12 @@ import { formatByteSize } from "@/src/lib/formatByteSize";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { Button, Checkbox, Chip, ChipGroup, FormMessage, Icon, Input, Select, Spinner } from "@/src/presentation/design-system";
 import { exportJobsApi, type EstimateExportQuery } from "./export-job-api";
-import { supportsComparison, type ExportReportId, type ExportReportSummary } from "./export-report-catalog";
+import { EXPORT_FORMAT_LABEL, supportsComparison, type ExportReportId, type ExportReportSummary } from "./export-report-catalog";
 import type { ExportEstimateResponse } from "./export-job-response-schema";
 
 type Props = { from: string; to: string; reports: readonly ExportReportSummary[] };
 
 const FORMATS: readonly ExportFormat[] = ["csv", "xlsx", "pdf"];
-const FORMAT_LABEL: Record<ExportFormat, string> = { csv: "CSV", xlsx: "Excel", pdf: "PDF" };
 const ESTIMATE_DEBOUNCE_MS = 400;
 
 /**
@@ -179,7 +178,7 @@ export function CustomExportBuilder({ from, to, reports }: Props) {
           <ChipGroup value={format} onValueChange={(value) => setFormat(value as ExportFormat)} aria-label={t("formatLabel")} className="mt-2">
             {FORMATS.map((value) => (
               <Chip key={value} value={value}>
-                {FORMAT_LABEL[value]}
+                {EXPORT_FORMAT_LABEL[value]}
               </Chip>
             ))}
           </ChipGroup>
@@ -233,7 +232,7 @@ export function CustomExportBuilder({ from, to, reports }: Props) {
         from={rangeFrom}
         to={rangeTo}
         comparison={canCompare && compareWithPrevious ? t("previousPeriod") : t("noComparison")}
-        format={FORMAT_LABEL[format]}
+        format={EXPORT_FORMAT_LABEL[format]}
         estimate={estimate}
         estimateLoading={estimateLoading}
         locale={locale}

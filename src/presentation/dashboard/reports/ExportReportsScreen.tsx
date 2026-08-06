@@ -7,10 +7,18 @@ import { Icon } from "@/src/presentation/design-system";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "../analytics/AnalyticsRangePicker";
 import { CustomExportBuilder } from "./CustomExportBuilder";
 import { buildExportHref, EXPORT_REPORTS } from "./export-report-catalog";
+import { RecentExports } from "./RecentExports";
 
-type Props = { from: string; to: string; isCustomRange: boolean; permissions: readonly Permission[] };
+type Props = {
+  from: string;
+  to: string;
+  isCustomRange: boolean;
+  permissions: readonly Permission[];
+  /** This page's own query string — forwarded to `RecentExports` for its search/status filters. */
+  params: URLSearchParams;
+};
 
-export async function ExportReportsScreen({ from, to, isCustomRange, permissions }: Props) {
+export async function ExportReportsScreen({ from, to, isCustomRange, permissions, params }: Props) {
   const t = await getTranslations("dashExportReports");
   const ta = await getTranslations("dashAnalytics");
   const reports = EXPORT_REPORTS.filter((report) => permissions.includes(report.permission));
@@ -62,6 +70,7 @@ export async function ExportReportsScreen({ from, to, isCustomRange, permissions
         to={to}
         reports={reports.map((report) => ({ id: report.id, endpoint: report.endpoint, periodCapable: report.periodCapable }))}
       />
+      {reports.length > 0 ? <RecentExports params={params} /> : null}
     </div>
   );
 }

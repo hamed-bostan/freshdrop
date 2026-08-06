@@ -4,6 +4,7 @@ import {
   EXPORT_JOB_REPORT_IDS,
   EXPORT_REPORT_PERIOD_CAPABLE,
   EXPORT_REPORT_PERMISSION,
+  type ExportFormat,
   type ExportJobReportId,
 } from "@/src/domain/entities/ExportJob";
 import type { Permission } from "@/src/domain/entities/Permission";
@@ -53,6 +54,13 @@ export const EXPORT_REPORTS: readonly ExportReportDefinition[] = EXPORT_JOB_REPO
 export function getExportReport(id: ExportReportId): ExportReportDefinition {
   return EXPORT_REPORTS.find((report) => report.id === id) ?? EXPORT_REPORTS[0];
 }
+
+/**
+ * The three formats' display labels — not translated, since "CSV"/"Excel"/"PDF"
+ * are the same word in both locales. Shared by the builder's format picker and
+ * the Recent exports table's format column, so the two never drift.
+ */
+export const EXPORT_FORMAT_LABEL: Record<ExportFormat, string> = { csv: "CSV", xlsx: "Excel", pdf: "PDF" };
 
 /**
  * Whether the report has a real "previous period" comparison the custom

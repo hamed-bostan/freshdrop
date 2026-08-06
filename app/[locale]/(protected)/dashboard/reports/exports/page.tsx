@@ -11,5 +11,13 @@ export default async function ExportReportsPage({ searchParams }: Props) {
   const range = parseAnalyticsRange(params);
   const session = await auth();
   const permissions = await sessionPermissions(session);
-  return <ExportReportsScreen from={toDateParam(range.from)} to={toInclusiveEndParam(range)} isCustomRange={hasCustomAnalyticsRange(params)} permissions={permissions} />;
+  return (
+    <ExportReportsScreen
+      from={toDateParam(range.from)}
+      to={toInclusiveEndParam(range)}
+      isCustomRange={hasCustomAnalyticsRange(params)}
+      permissions={permissions}
+      params={params}
+    />
+  );
 }

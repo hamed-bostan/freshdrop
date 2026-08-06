@@ -1,6 +1,6 @@
 import type { CreateExportJobInput } from "@/src/contracts/export-job-schema";
 import type { ExportJob, ExportFormat, ExportJobReportId } from "@/src/domain/entities/ExportJob";
-import { apiGet, apiPost } from "@/src/lib/api/client";
+import { apiDelete, apiGet, apiPost } from "@/src/lib/api/client";
 import { exportEstimateResponseSchema, exportJobResponseSchema, type ExportEstimateResponse } from "./export-job-response-schema";
 
 export type EstimateExportQuery = {
@@ -18,6 +18,20 @@ export type EstimateExportQuery = {
 export const exportJobsApi = {
   create(input: CreateExportJobInput): Promise<ExportJob> {
     return apiPost("/admin/exports/jobs", input, exportJobResponseSchema);
+  },
+
+  /** Regenerate replays a stored job's `params` as a brand-new `create` call — same request shape, fresh job. */
+  regenerate(job: Pick<ExportJob, "reportId" | "format" | "params">): Promise<ExportJob> {
+    return apiPost(
+      "/admin/exports/jobs",
+      { reportId: job.reportId, format: job.format, ...job.params },
+      exportJobResponseSchema,
+    );
+  },
+
+  /** The Recent exports table's overflow "Delete" — removes the row and its storage object. */
+  remove(id: string): Promise<void> {
+    return apiDelete(`/admin/exports/jobs/${id}`);
   },
 
   /** The Export summary sidebar's live row-count / size guess as the builder's selection changes. */

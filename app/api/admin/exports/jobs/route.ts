@@ -7,7 +7,6 @@ import {
   EXPORT_REPORT_PERMISSION,
   toExportJobReportId,
   type ExportJobFilters,
-  type ExportJobStatus,
 } from "@/src/domain/entities/ExportJob";
 import { CreateExportJob } from "@/src/domain/use-cases/exports/CreateExportJob";
 import { ListExportJobs } from "@/src/domain/use-cases/exports/ListExportJobs";
@@ -22,6 +21,7 @@ import {
   stockMovementLog,
   userRepository,
 } from "@/src/infrastructure/container";
+import { parseExportJobQueryFilters } from "@/src/lib/api/export-job-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
 import { errorResponseFromException, parseJsonBody, unauthorizedResponse } from "@/src/lib/api/responses";
 import { auth } from "@/auth";
@@ -119,16 +119,10 @@ export async function GET(request: NextRequest): Promise<Response> {
     if (visibleReportIds.length === 0) return unauthorizedResponse();
 
     const params = request.nextUrl.searchParams;
-    const filters: ExportJobFilters = { visibleReportIds };
+    const filters: ExportJobFilters = { visibleReportIds, ...parseExportJobQueryFilters(params) };
 
     const reportId = toExportJobReportId(params.get("reportId") ?? "");
     if (reportId && visibleReportIds.includes(reportId)) filters.reportId = reportId;
-
-    const status = params.get("status");
-    if (status && STATUS_SET.has(status)) filters.status = status as ExportJobStatus;
-
-    const query = params.get("q")?.trim();
-    if (query) filters.query = query;
 
     const page = parsePageRequest(params, EXPORT_JOB_SORTS, { sort: "createdAt", direction: "desc" });
     const result = await new ListExportJobs(exportJobRepository).execute(filters, page);
@@ -138,5 +132,3 @@ export async function GET(request: NextRequest): Promise<Response> {
     return errorResponseFromException(error, "GET /api/admin/exports/jobs failed");
   }
 }
-
-const STATUS_SET = new Set(["processing", "ready", "failed", "expired"]);
