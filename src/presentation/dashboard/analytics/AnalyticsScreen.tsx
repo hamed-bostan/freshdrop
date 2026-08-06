@@ -1,19 +1,26 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { ANALYTICS_RANGE_PRESETS, type RevenueRankSort } from "@/src/domain/entities/Analytics";
+import { ANALYTICS_RANGE_PRESETS, REVENUE_RANK_SORTS, type RevenueRankSort } from "@/src/domain/entities/Analytics";
+import { paginateArray } from "@/src/domain/entities/Pagination";
 import type { Locale } from "@/src/i18n/routing";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import type { AnalyticsOverviewWire } from "./analytics-response-schema";
 import { AnalyticsExportMenu } from "./AnalyticsExportMenu";
-import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./AnalyticsRangePicker";
-import { RevenueChart } from "./RevenueChart";
-import { TopPerformancePanel } from "./TopPerformancePanel";
 import {
   AnalyticsInsights,
   AnalyticsKpiStrip,
+  CustomerMixCard,
+  OrderHealthCard,
   PriorityActionsCard,
+  QuickAccessCard,
 } from "./AnalyticsOverviewPanels";
+import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./AnalyticsRangePicker";
+import { RankingsTable } from "./RankingsTable";
+import { RevenueChart } from "./RevenueChart";
+import { RevenueRankPanel, type RevenueRankRow } from "./RevenueRankPanel";
 
 export const ANALYTICS_RANK_LIMIT = 60;
+const TEASER_ROW_COUNT = 5;
+const RANKING_PAGE_SIZE = 10;
 
 type AnalyticsScreenProps = {
   analytics: AnalyticsOverviewWire;
@@ -26,9 +33,30 @@ type AnalyticsScreenProps = {
   categoriesPage: number;
 };
 
-export async function AnalyticsScreen({ analytics, from, to, isCustomRange }: AnalyticsScreenProps) {
+export async function AnalyticsScreen({ analytics, from, to, isCustomRange, productSort, categorySort, productsPage, categoriesPage }: AnalyticsScreenProps) {
   const t = await getTranslations("dashAnalytics");
   const locale = (await getLocale()) as Locale;
+
+  const productRows: RevenueRankRow[] = analytics.topProducts.map((product) => ({
+    id: product.productId,
+    label: product.name,
+    imageUrl: product.imageUrl,
+    units: product.units,
+    revenue: product.revenue,
+    href: `/dashboard/products/${product.productId}/edit`,
+  }));
+  const categoryRows: RevenueRankRow[] = analytics.topCategories.map((category) => ({
+    id: category.categoryId,
+    label: category.name,
+    units: category.units,
+    revenue: category.revenue,
+    href: `/dashboard/categories/${category.categoryId}/edit`,
+  }));
+
+  const sortOptions = REVENUE_RANK_SORTS.map((sort) => ({ value: sort, label: t(sort === "revenue" ? "sortByRevenue" : "sortByUnits") }));
+  const productsPageResult = paginateArray(productRows, { page: productsPage, pageSize: RANKING_PAGE_SIZE });
+  const categoriesPageResult = paginateArray(categoryRows, { page: categoriesPage, pageSize: RANKING_PAGE_SIZE });
+
   return (
     <div className="flex flex-col gap-4 pb-2">
       <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -79,8 +107,63 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange }: An
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <TopPerformancePanel products={analytics.topProducts} />
+        <CustomerMixCard analytics={analytics} />
+        <OrderHealthCard analytics={analytics} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <RevenueRankPanel
+          heading={t("topProducts")}
+          rows={productRows.slice(0, TEASER_ROW_COUNT)}
+          emptyLabel={t("noSales")}
+          unitsLabel={(units) => t("unitsSold", { units })}
+          sort={productSort}
+          sortParamName="productSort"
+          sortLabel={t("sortLabel")}
+          sortOptions={sortOptions}
+          viewAllHref="/dashboard/products"
+          viewAllLabel={t("viewAllProducts")}
+        />
+        <RevenueRankPanel
+          heading={t("topCategories")}
+          rows={categoryRows.slice(0, TEASER_ROW_COUNT)}
+          emptyLabel={t("noSales")}
+          unitsLabel={(units) => t("unitsSold", { units })}
+          sort={categorySort}
+          sortParamName="categorySort"
+          sortLabel={t("sortLabel")}
+          sortOptions={sortOptions}
+          viewAllHref="/dashboard/categories"
+          viewAllLabel={t("viewAllCategories")}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <RankingsTable
+          heading={t("topProducts")}
+          page={productsPageResult}
+          pageParamName="productsPage"
+          emptyLabel={t("noSales")}
+          colRankLabel={t("colRank")}
+          colNameLabel={t("colProduct")}
+          colUnitsLabel={t("colUnits")}
+          colRevenueLabel={t("colRevenue")}
+        />
+        <RankingsTable
+          heading={t("topCategories")}
+          page={categoriesPageResult}
+          pageParamName="categoriesPage"
+          emptyLabel={t("noSales")}
+          colRankLabel={t("colRank")}
+          colNameLabel={t("colCategory")}
+          colUnitsLabel={t("colUnits")}
+          colRevenueLabel={t("colRevenue")}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <PriorityActionsCard analytics={analytics} />
+        <QuickAccessCard />
       </div>
     </div>
   );

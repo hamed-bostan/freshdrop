@@ -21,6 +21,8 @@ import { formatOrderDate } from "@/src/lib/formatOrderDate";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
 import { CustomerOrdersPanel } from "./CustomerOrdersPanel";
+import { CustomerReviewsPanel } from "./CustomerReviewsPanel";
+import { CustomerWalletPanel } from "./CustomerWalletPanel";
 import {
   CustomerActivityCard,
   CustomerAddressesCard,
@@ -96,6 +98,18 @@ export async function CustomerDetailScreen({ customer }: CustomerDetailScreenPro
           <CustomerNotesCard customer={customer} />
           <CustomerActivityCard customer={customer} />
         </aside>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <section className="min-w-0 rounded-card-lg border border-border bg-background p-4">
+          <h2 className="mb-4 text-body-b5 text-foreground">{t("wallet")}</h2>
+          <CustomerWalletPanel wallet={customer.wallet} />
+        </section>
+
+        <section className="min-w-0 rounded-card-lg border border-border bg-background p-4">
+          <h2 className="mb-4 text-body-b5 text-foreground">{t("reviews")}</h2>
+          <CustomerReviewsPanel reviews={customer.reviews} />
+        </section>
       </div>
     </div>
   );
