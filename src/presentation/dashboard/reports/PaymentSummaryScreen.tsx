@@ -1,5 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { AlertTriangle, ArrowDown, ArrowUp, CalendarDays, CheckCircle2, CircleDollarSign, CreditCard, ExternalLink, Landmark, MoreVertical as MoreHorizontal, Percent, Search } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, CalendarDays, CheckCircle2, CircleDollarSign, CreditCard, ExternalLink, Landmark, Percent } from "lucide-react";
 import { ANALYTICS_RANGE_PRESETS, percentChange } from "@/src/domain/entities/Analytics";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
@@ -7,11 +7,11 @@ import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
-import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { Icon } from "@/src/presentation/design-system";
 import { StatSparkline } from "../StatSparkline";
 import { AnalyticsExportMenu } from "../analytics/AnalyticsExportMenu";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "../analytics/AnalyticsRangePicker";
+import { PaymentIssuesTable } from "./PaymentIssuesTable";
 import type { PaymentReportWire } from "./payment-report-response-schema";
 import { PaymentTrendChart } from "./PaymentTrendChart";
 
@@ -22,6 +22,7 @@ export async function PaymentSummaryScreen({ report, customers, from, to, isCust
   const ta = await getTranslations("dashAnalytics");
   const locale = (await getLocale()) as Locale;
   const customerById = new Map(customers.map((customer) => [customer.userId, customer]));
+  const issuesWithCustomerName = report.issues.map((issue) => ({ ...issue, customerName: customerById.get(issue.userId)?.name ?? issue.userId }));
   const gross = report.totals.walletAmount + report.totals.externalAmount;
   const previousGross = report.previousTotals.walletAmount + report.previousTotals.externalAmount;
   const attempts = report.totals.successfulPayments + report.totals.failedPayments;
@@ -45,7 +46,7 @@ export async function PaymentSummaryScreen({ report, customers, from, to, isCust
 
     <section className="rounded-card-lg border border-border bg-background p-4"><div className="flex items-center justify-between"><h2 className="text-body-b5">{t("settlements")}</h2><Link href="/dashboard/reports/exports" className="inline-flex items-center gap-1 text-body-b10 text-primary">{t("viewSettlements")}<Icon icon={ExternalLink} size="xs" /></Link></div><div className="mt-3 grid grid-cols-1 divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0 rtl:sm:divide-x-reverse"><Summary icon={Landmark} tone="bg-accent text-primary" label={t("pendingPayout")} value={formatMoney(report.totals.externalAmount, locale)} note={t("estimatedPayout")} /><Summary icon={CalendarDays} tone="bg-info text-info-foreground" label={t("lastPayout")} value={formatMoney(report.totals.paidRevenue, locale)} note={t("paidThisPeriod")} /><Summary icon={Percent} tone="bg-muted text-secondary" label={t("processingFees")} value={formatMoney(gross * 0.0232, locale)} note={t("feeShare")} /></div></section>
 
-    <section className="rounded-card-lg border border-border bg-background p-4"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-body-b5">{t("recentTransactions")}</h2><div className="flex flex-wrap items-center gap-2"><label className="flex h-8 items-center gap-2 rounded-input border border-border px-3 text-muted-foreground"><Icon icon={Search} size="xs" /><input className="w-40 bg-transparent text-body-b10 outline-none" placeholder={t("searchTransactions")} /></label><select aria-label={t("status")} className="h-8 rounded-input border border-border bg-background px-3 text-body-b10"><option>{t("allStatuses")}</option></select><Link href="/dashboard/orders?payment=failed" className="ms-2 text-body-b10 text-primary">{t("viewAll")}</Link></div></div>{report.issues.length ? <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[58rem] text-body-b10"><thead className="bg-surface-sunken text-muted-foreground"><tr><th className="px-3 py-2 text-start">{t("order")}</th><th className="px-3 py-2 text-start">{t("customer")}</th><th className="px-3 py-2 text-start">{t("method")}</th><th className="px-3 py-2 text-start">{t("reason")}</th><th className="px-3 py-2 text-end">{t("amount")}</th><th className="px-3 py-2 text-start">{t("status")}</th><th className="px-3 py-2 text-start">{t("date")}</th><th className="w-10"><span className="sr-only">{t("actions")}</span></th></tr></thead><tbody className="divide-y divide-border">{report.issues.map((issue) => <tr key={issue.orderId}><td className="px-3 py-2"><Link href={`/dashboard/orders/${issue.orderId}`} className="font-mono">#{issue.orderNumber}</Link></td><td className="px-3 py-2">{customerById.get(issue.userId)?.name ?? issue.userId}</td><td className="px-3 py-2">{t("cardPayment")}</td><td className="px-3 py-2 text-muted-foreground">{t(issue.status === "failed" ? "paymentFailedReason" : "paymentRefundedReason")}</td><td className="px-3 py-2 text-end">{formatMoney(issue.amount, locale)}</td><td className="px-3 py-2"><span className={issue.status === "failed" ? "rounded-card-md bg-error px-3 py-1 text-destructive" : "rounded-card-md bg-warning px-3 py-1 text-warning-foreground"}>{t(issue.status)}</span></td><td className="whitespace-nowrap px-3 py-2 text-muted-foreground">{formatOrderDateShort(issue.placedAt, locale)} · {formatOrderTime(issue.placedAt, locale)}</td><td className="px-2 text-end"><Link href={`/dashboard/orders/${issue.orderId}`} aria-label={t("openTransaction", { order: issue.orderNumber })} className="inline-flex size-7 items-center justify-center rounded-card-md text-muted-foreground hover:bg-muted hover:text-foreground"><Icon icon={MoreHorizontal} size="sm" /></Link></td></tr>)}</tbody></table></div> : <p className="mt-4 text-body-b8 text-muted-foreground">{t("noIssues")}</p>}</section>
+    <PaymentIssuesTable issues={issuesWithCustomerName} />
   </div>;
 }
 

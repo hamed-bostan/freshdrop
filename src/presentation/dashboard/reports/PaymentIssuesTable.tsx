@@ -1,0 +1,89 @@
+"use client";
+
+import * as React from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { MoreVertical as MoreHorizontal, Search } from "lucide-react";
+import type { Locale } from "@/src/i18n/routing";
+import { Link } from "@/src/i18n/navigation";
+import { formatMoney } from "@/src/lib/formatMoney";
+import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
+import { DataTable, Icon, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
+import type { PaymentReportWire } from "./payment-report-response-schema";
+
+type Issue = PaymentReportWire["issues"][number] & { customerName: string };
+
+const STATUS_TONE: Record<Issue["status"], string> = {
+  failed: "rounded-card-md bg-error px-3 py-1 text-destructive",
+  refunded: "rounded-card-md bg-warning px-3 py-1 text-warning-foreground",
+};
+
+/**
+ * The payment report's "recent transactions" table — client-side because its
+ * search and status filter act on the already-loaded `issues` list rather than
+ * re-querying the report for a handful of rows.
+ */
+export function PaymentIssuesTable({ issues }: { issues: Issue[] }) {
+  const t = useTranslations("dashPaymentReport");
+  const locale = useLocale() as Locale;
+  const [query, setQuery] = React.useState("");
+  const [status, setStatus] = React.useState<"all" | Issue["status"]>("all");
+
+  const visible = issues.filter((issue) =>
+    (status === "all" || issue.status === status)
+    && (!query.trim() || `${issue.orderNumber} ${issue.customerName}`.toLowerCase().includes(query.trim().toLowerCase())),
+  );
+
+  return <section className="rounded-card-lg border border-border bg-background p-4">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <h2 className="text-body-b5">{t("recentTransactions")}</h2>
+      <div className="flex flex-wrap items-center gap-2">
+        <Input size="sm" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("searchTransactions")} aria-label={t("searchTransactions")} className="w-40" leftElement={<Icon icon={Search} size="xs" />} />
+        <Select size="sm" value={status} onChange={(event) => setStatus(event.target.value as "all" | Issue["status"])} aria-label={t("status")} className="h-8">
+          <option value="all">{t("allStatuses")}</option>
+          <option value="failed">{t("failed")}</option>
+          <option value="refunded">{t("refunded")}</option>
+        </Select>
+        <Link href="/dashboard/orders?payment=failed" className="ms-2 text-body-b10 text-primary">{t("viewAll")}</Link>
+      </div>
+    </div>
+
+    {visible.length ? (
+      <DataTable className="mt-3" minWidthClassName="min-w-[58rem]">
+        <Table className="text-body-b10">
+          <TableHeader>
+            <tr>
+              <TableHead>{t("order")}</TableHead>
+              <TableHead>{t("customer")}</TableHead>
+              <TableHead>{t("method")}</TableHead>
+              <TableHead>{t("reason")}</TableHead>
+              <TableHead className="text-end">{t("amount")}</TableHead>
+              <TableHead>{t("status")}</TableHead>
+              <TableHead>{t("date")}</TableHead>
+              <TableHead className="w-10"><span className="sr-only">{t("actions")}</span></TableHead>
+            </tr>
+          </TableHeader>
+          <TableBody>
+            {visible.map((issue) => (
+              <TableRow key={issue.orderId}>
+                <TableCell><Link href={`/dashboard/orders/${issue.orderId}`} className="font-mono">#{issue.orderNumber}</Link></TableCell>
+                <TableCell>{issue.customerName}</TableCell>
+                <TableCell>{t("cardPayment")}</TableCell>
+                <TableCell className="text-muted-foreground">{t(issue.status === "failed" ? "paymentFailedReason" : "paymentRefundedReason")}</TableCell>
+                <TableCell className="text-end">{formatMoney(issue.amount, locale)}</TableCell>
+                <TableCell><span className={STATUS_TONE[issue.status]}>{t(issue.status)}</span></TableCell>
+                <TableCell className="whitespace-nowrap text-muted-foreground">{formatOrderDateShort(issue.placedAt, locale)} · {formatOrderTime(issue.placedAt, locale)}</TableCell>
+                <TableCell className="text-end">
+                  <Link href={`/dashboard/orders/${issue.orderId}`} aria-label={t("openTransaction", { order: issue.orderNumber })} className="inline-flex size-7 items-center justify-center rounded-card-md text-muted-foreground hover:bg-muted hover:text-foreground">
+                    <Icon icon={MoreHorizontal} size="sm" />
+                  </Link>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </DataTable>
+    ) : (
+      <p className="mt-4 text-body-b8 text-muted-foreground">{t("noIssues")}</p>
+    )}
+  </section>;
+}
