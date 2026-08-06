@@ -1,11 +1,9 @@
 import { getTranslations } from "next-intl/server";
-import { ExternalLink, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import type { TopCategory } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
-import { Link } from "@/src/i18n/navigation";
 import { formatMoney } from "@/src/lib/formatMoney";
-import { Icon, focusRing } from "@/src/presentation/design-system";
-import { cn } from "@/src/lib/utils";
+import { Icon } from "@/src/presentation/design-system";
 
 export async function SalesCategoryPanel({ categories, totalRevenue, locale }: { categories: TopCategory[]; totalRevenue: number; locale: Locale }) {
   const t = await getTranslations("dashReports");
@@ -17,7 +15,6 @@ export async function SalesCategoryPanel({ categories, totalRevenue, locale }: {
         const share = totalRevenue > 0 ? category.revenue / totalRevenue * 100 : 0;
         return <div key={category.categoryId} className="grid min-h-7 grid-cols-[minmax(7rem,1fr)_minmax(7rem,1.5fr)_3.25rem_6rem] items-center gap-3 text-body-b10"><span className="truncate font-medium text-foreground">{category.name}</span><span className="h-1 overflow-hidden rounded-pill bg-surface-sunken"><span className="block h-full rounded-pill bg-primary" style={{ width: `${Math.max(category.revenue / peak * 100, 3)}%` }} /></span><span className="text-end font-medium text-foreground">{new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(share)}%</span><span className="whitespace-nowrap text-end text-muted-foreground">{formatMoney(category.revenue, locale)}</span></div>;
       })}</div> : <p className="flex flex-1 items-center justify-center text-body-b7 text-muted-foreground">{t("noSales")}</p>}
-      <Link href="/dashboard/analytics?categorySort=revenue" className={cn(focusRing, "mt-auto flex items-center gap-1 border-t border-border pt-3 text-body-b10 font-medium text-primary hover:text-primary-hover")}>{t("viewCategoryReport")}<Icon icon={ExternalLink} size="xs" /></Link>
     </section>
   );
 }
