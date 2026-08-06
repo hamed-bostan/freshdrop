@@ -7,14 +7,14 @@ import { ImagePlus } from "lucide-react";
 import { Button, FormMessage, Icon, Thumbnail } from "@/src/presentation/design-system";
 import { imagesApi } from "@/src/presentation/images/image-api";
 
-interface ProductImageUploadProps {
+type ProductImageUploadProps = {
   value?: string;
   onChange: (url: string) => void;
   /** A11y wiring forwarded from the surrounding <Field>. */
   id?: string;
   "aria-invalid"?: boolean;
   "aria-describedby"?: string;
-}
+};
 
 const ACCEPT = "image/png,image/jpeg,image/webp,image/avif";
 

@@ -20,15 +20,13 @@ import { formatNumber } from "@/src/lib/formatNumber";
 import { formatOrderDate } from "@/src/lib/formatOrderDate";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
+import { CustomerActivityCard } from "./CustomerActivityCard";
+import { CustomerAddressesCard } from "./CustomerAddressesCard";
+import { CustomerNotesCard } from "./CustomerNotesCard";
 import { CustomerOrdersPanel } from "./CustomerOrdersPanel";
 import { CustomerReviewsPanel } from "./CustomerReviewsPanel";
+import { CustomerSummaryPanel } from "./CustomerSummaryPanel";
 import { CustomerWalletPanel } from "./CustomerWalletPanel";
-import {
-  CustomerActivityCard,
-  CustomerAddressesCard,
-  CustomerNotesCard,
-  CustomerSummaryPanel,
-} from "./CustomerDetailPanels";
 
 type CustomerDetailScreenProps = { customer: CustomerDetail };
 

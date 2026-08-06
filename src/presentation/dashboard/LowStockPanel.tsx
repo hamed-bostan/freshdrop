@@ -7,9 +7,9 @@ import { Link } from "@/src/i18n/navigation";
 import { Icon, Thumbnail } from "@/src/presentation/design-system";
 import { formatNumber } from "@/src/lib/formatNumber";
 
-interface Props {
+type Props = {
   products: Product[];
-}
+};
 
 export async function LowStockPanel({ products }: Props) {
   const t = await getTranslations("dashHome");
