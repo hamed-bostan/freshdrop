@@ -1,51 +1,28 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { ANALYTICS_RANGE_PRESETS, REVENUE_RANK_SORTS, type RevenueRankSort } from "@/src/domain/entities/Analytics";
-import { paginateArray } from "@/src/domain/entities/Pagination";
+import { ANALYTICS_RANGE_PRESETS } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import type { AnalyticsOverviewWire } from "./analytics-response-schema";
 import { AnalyticsExportMenu } from "./AnalyticsExportMenu";
+import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./AnalyticsRangePicker";
+import { RevenueChart } from "./RevenueChart";
+import { TopPerformancePanel } from "./TopPerformancePanel";
 import {
   AnalyticsInsights,
   AnalyticsKpiStrip,
-  CustomerMixCard,
-  OrderHealthCard,
   PriorityActionsCard,
-  QuickAccessCard,
 } from "./AnalyticsOverviewPanels";
-import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./AnalyticsRangePicker";
-import { RankingsTable, type RevenueRankRow } from "./RankingsTable";
-import { RevenueChart } from "./RevenueChart";
-import { RevenueRankSortSelect } from "./RevenueRankSortSelect";
-
-export const ANALYTICS_RANK_LIMIT = 60;
-const RANKING_PAGE_SIZE = 10;
 
 type AnalyticsScreenProps = {
   analytics: AnalyticsOverviewWire;
   from: string;
   to: string;
   isCustomRange: boolean;
-  productSort: RevenueRankSort;
-  productsPage: number;
 };
 
-export async function AnalyticsScreen({ analytics, from, to, isCustomRange, productSort, productsPage }: AnalyticsScreenProps) {
+export async function AnalyticsScreen({ analytics, from, to, isCustomRange }: AnalyticsScreenProps) {
   const t = await getTranslations("dashAnalytics");
   const locale = (await getLocale()) as Locale;
-
-  const productRows: RevenueRankRow[] = analytics.topProducts.map((product) => ({
-    id: product.productId,
-    label: product.name,
-    imageUrl: product.imageUrl,
-    units: product.units,
-    revenue: product.revenue,
-    href: `/dashboard/products/${product.productId}/edit`,
-  }));
-
-  const sortOptions = REVENUE_RANK_SORTS.map((sort) => ({ value: sort, label: t(sort === "revenue" ? "sortByRevenue" : "sortByUnits") }));
-  const productsPageResult = paginateArray(productRows, { page: productsPage, pageSize: RANKING_PAGE_SIZE });
-
   return (
     <div className="flex flex-col gap-4 pb-2">
       <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -96,33 +73,8 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange, prod
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <CustomerMixCard analytics={analytics} />
-        <OrderHealthCard analytics={analytics} />
-      </div>
-
-      <RankingsTable
-        heading={t("topSellingProducts")}
-        page={productsPageResult}
-        pageParamName="productsPage"
-        emptyLabel={t("noSales")}
-        colRankLabel={t("colRank")}
-        colNameLabel={t("colProduct")}
-        colUnitsLabel={t("colUnits")}
-        colRevenueLabel={t("colRevenue")}
-        headingAction={
-          <RevenueRankSortSelect
-            paramName="productSort"
-            value={productSort}
-            defaultValue="revenue"
-            label={t("sortLabel")}
-            options={sortOptions}
-          />
-        }
-      />
-
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <TopPerformancePanel products={analytics.topProducts} />
         <PriorityActionsCard analytics={analytics} />
-        <QuickAccessCard />
       </div>
     </div>
   );

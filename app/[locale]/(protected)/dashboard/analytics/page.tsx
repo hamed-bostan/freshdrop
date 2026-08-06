@@ -1,12 +1,8 @@
 import { analyticsServerApi } from "@/src/presentation/dashboard/analytics/analytics-server-api";
-import {
-  AnalyticsScreen,
-  ANALYTICS_RANK_LIMIT,
-} from "@/src/presentation/dashboard/analytics/AnalyticsScreen";
+import { AnalyticsScreen } from "@/src/presentation/dashboard/analytics/AnalyticsScreen";
 import {
   hasCustomAnalyticsRange,
   parseAnalyticsRange,
-  parseRevenueRankSort,
   toDateParam,
   toInclusiveEndParam,
 } from "@/src/lib/api/analytics-params";
@@ -18,12 +14,6 @@ type DashboardAnalyticsPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-/** Parse a 1-based page number off the query string, falling back to page 1 for anything absent or invalid. */
-function parseRankPage(params: URLSearchParams, paramName: string): number {
-  const page = Math.floor(Number(params.get(paramName)));
-  return Number.isFinite(page) && page > 0 ? page : 1;
-}
-
 export default async function DashboardAnalyticsPage({ searchParams }: DashboardAnalyticsPageProps) {
   const params = new URLSearchParams(
     Object.entries(await searchParams).flatMap(([key, value]) =>
@@ -32,14 +22,7 @@ export default async function DashboardAnalyticsPage({ searchParams }: Dashboard
   );
 
   const range = parseAnalyticsRange(params);
-  const productSort = parseRevenueRankSort(params, "productSort");
-  const productsPage = parseRankPage(params, "productsPage");
-
-  // Asks for a fuller product ranking (up to `ANALYTICS_RANK_LIMIT` rows) to page
-  // through, rather than a short teaser.
-  const rankParams = new URLSearchParams(params);
-  rankParams.set("rankLimit", String(ANALYTICS_RANK_LIMIT));
-  const analytics = await analyticsServerApi.getOverview(rankParams);
+  const analytics = await analyticsServerApi.getOverview(params);
 
   return (
     <AnalyticsScreen
@@ -47,8 +30,6 @@ export default async function DashboardAnalyticsPage({ searchParams }: Dashboard
       from={toDateParam(range.from)}
       to={toInclusiveEndParam(range)}
       isCustomRange={hasCustomAnalyticsRange(params)}
-      productSort={productSort}
-      productsPage={productsPage}
     />
   );
 }
