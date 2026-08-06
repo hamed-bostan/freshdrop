@@ -16,6 +16,6 @@ export async function DeliveryPerformanceScreen({ report, zoneReport, customers,
     <ReportHeader ariaLabel={t("breadcrumbAria")} parentLabel={t("reports")} currentLabel={t("heading")} title={t("heading")} subtitle={t("referenceSubtitle")} from={from} to={to} isCustomRange={isCustomRange} comparisonRange={report.previousRange} exportReports={[{ resource: "orders", label: ta("exportOrdersReport") }]} />
     <DeliveryMetricGrid report={report} locale={locale} />
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(32rem,1fr)]"><DeliveryTrendChart report={report} title={t("onTimeTrend")} /><DeliveryOperationsPanels report={report} zoneReport={zoneReport} customers={customers} locale={locale} panel="zones" /></div>
-    <DeliveryOperationsPanels report={report} customers={customers} locale={locale} panel="issues" />
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-2"><DeliveryOperationsPanels report={report} customers={customers} locale={locale} panel="drivers" /><DeliveryOperationsPanels report={report} customers={customers} locale={locale} panel="issues" /></div>
   </div>;
 }

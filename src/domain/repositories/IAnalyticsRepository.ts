@@ -14,6 +14,7 @@ import type { PaymentIssue, PaymentReportTotals } from "../entities/PaymentRepor
 import type { RefundCase, RefundReasonCount, RefundReportTotals, ReturnBreakdown } from "../entities/RefundReport";
 import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, DeliveryWindowPerformance, LateDelivery } from "../entities/DeliveryPerformanceReport";
 import type { DeliveryZonePerformance } from "../entities/DeliveryZonesReport";
+import type { DriverPerformance } from "../entities/DriverPerformance";
 import type { CustomerGrowthPoint, PurchaseFrequency, RetentionCohort } from "../entities/CustomerInsightsReport";
 import type { CustomerSegmentAssignment, CustomerSegmentPerformance, CustomerSegmentTransition } from "../entities/CustomerSegmentsReport";
 
@@ -179,6 +180,9 @@ export type IAnalyticsDeliveryRepository = {
 
   /** Delivery performance grouped by delivery-zone (settlement/city), ranked by order volume. */
   deliveryZonePerformance(range: DateRange, previousRange: DateRange, limit: number): Promise<DeliveryZonePerformance[]>;
+
+  /** Delivery performance grouped by assigned driver, ranked by completed-delivery volume. Drivers with no deliveries in the period are omitted. */
+  driverPerformance(range: DateRange, limit: number): Promise<DriverPerformance[]>;
 };
 
 /**

@@ -20,6 +20,7 @@ import type { RefundCase, RefundReasonCount, RefundReportTotals, ReturnBreakdown
 import { RETURN_ITEM_CONDITIONS, RETURN_RECOVERY_DECISIONS, type ReturnItemCondition, type ReturnRecoveryDecision, type ReturnRequestStatus } from "@/src/domain/entities/Return";
 import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, DeliveryWindowPerformance, LateDelivery } from "@/src/domain/entities/DeliveryPerformanceReport";
 import type { DeliveryZonePerformance } from "@/src/domain/entities/DeliveryZonesReport";
+import type { DriverPerformance } from "@/src/domain/entities/DriverPerformance";
 import type { CustomerGrowthPoint, PurchaseFrequency, RetentionCohort } from "@/src/domain/entities/CustomerInsightsReport";
 import type { CustomerSegmentAssignment, CustomerSegmentId, CustomerSegmentPerformance, CustomerSegmentTransition } from "@/src/domain/entities/CustomerSegmentsReport";
 import type { RefundKind } from "@/src/domain/entities/Refund";
@@ -680,6 +681,34 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     }));
   }
 
+  /**
+   * Delivery performance grouped by the driver assigned on the order (`Order.driverId`),
+   * ranked by completed-delivery volume. Inner-joined to `drivers`: an order with no
+   * driver assigned contributes to {@link deliveryTotals} but can't be attributed to
+   * anyone here, so it's silently excluded rather than surfacing as a fake "Unassigned"
+   * driver row.
+   */
+  async driverPerformance(range: DateRange, limit: number): Promise<DriverPerformance[]> {
+    const rows = await this.db.$queryRaw<DriverPerformanceRow[]>(Prisma.sql`
+      SELECT
+        d.id AS "driverId",
+        d.name,
+        COUNT(*)::int AS "completedDeliveries",
+        COALESCE(
+          COUNT(*) FILTER (WHERE deliveries.due_at IS NOT NULL AND deliveries.delivered_at <= deliveries.due_at)::double precision
+            / NULLIF(COUNT(*) FILTER (WHERE deliveries.due_at IS NOT NULL), 0),
+          0
+        ) AS "onTimeRate",
+        d.rating AS "averageRating"
+      FROM (${deliveryEvents(range)}) deliveries
+      JOIN drivers d ON d.id = deliveries.driver_id
+      GROUP BY d.id, d.name, d.rating
+      ORDER BY "completedDeliveries" DESC
+      LIMIT ${Math.max(1, Math.min(limit, 20))}
+    `);
+    return rows;
+  }
+
   async topProducts(range: DateRange, limit: number, sort: RevenueRankSort, comparisonRange?: DateRange): Promise<TopProduct[]> {
     const rows = await this.db.$queryRaw<TopProductRow[]>(Prisma.sql`
       WITH ${earningLines(range)}
@@ -1099,6 +1128,7 @@ type DeliveryPointRow = Omit<DeliveryPerformancePoint, "bucket"> & { bucket: Dat
 type DeliveryWindowRow = DeliveryWindowPerformance;
 type LateDeliveryRow = Omit<LateDelivery, "deliveredAt"> & { deliveredAt: Date };
 type DeliveryZonePerformanceRow = { zone: string; orders: number; onTimeRate: number; lateDeliveries: number; averageFulfillmentMinutes: number; centroidLat: number | null; centroidLng: number | null; previousOnTimeRate: number | null };
+type DriverPerformanceRow = DriverPerformance;
 
 function emptyPaymentTotals(): PaymentReportTotals {
   return { paidRevenue: 0, successfulPayments: 0, failedPayments: 0, pendingPayments: 0, refundedPayments: 0, walletAmount: 0, externalAmount: 0 };
@@ -1122,5 +1152,5 @@ function toRevenuePoint(row: SeriesRow): RevenuePoint { return { bucket: row.buc
  * `updated_at`, so every `completed` order has at least one row here.
  */
 function deliveryEvents(range: DateRange): Prisma.Sql {
-  return Prisma.sql`SELECT o.id AS order_id, o.order_number, o.user_id, o.placed_at, e.delivered_at, o.delivery_window_id AS window_id, o.delivery_window AS window_label, o.city, o.destination_lat, o.destination_lng, ROUND(EXTRACT(EPOCH FROM (e.delivered_at - o.placed_at)) / 60)::int AS fulfillment_minutes, CASE WHEN o.delivery_date IS NOT NULL AND w.end_minutes IS NOT NULL THEN o.delivery_date::date + (w.end_minutes * interval '1 minute') ELSE NULL END AS due_at FROM orders o LEFT JOIN delivery_windows w ON w.id = o.delivery_window_id LEFT JOIN LATERAL (SELECT MIN(occurred_at) AS delivered_at FROM order_status_events ev WHERE ev.order_id = o.id AND ev.to_status = 'completed') e ON TRUE WHERE o.delivery_type = 'delivery' AND o.status = 'completed' AND e.delivered_at >= ${range.from} AND e.delivered_at < ${range.to}`;
+  return Prisma.sql`SELECT o.id AS order_id, o.order_number, o.user_id, o.driver_id, o.placed_at, e.delivered_at, o.delivery_window_id AS window_id, o.delivery_window AS window_label, o.city, o.destination_lat, o.destination_lng, ROUND(EXTRACT(EPOCH FROM (e.delivered_at - o.placed_at)) / 60)::int AS fulfillment_minutes, CASE WHEN o.delivery_date IS NOT NULL AND w.end_minutes IS NOT NULL THEN o.delivery_date::date + (w.end_minutes * interval '1 minute') ELSE NULL END AS due_at FROM orders o LEFT JOIN delivery_windows w ON w.id = o.delivery_window_id LEFT JOIN LATERAL (SELECT MIN(occurred_at) AS delivered_at FROM order_status_events ev WHERE ev.order_id = o.id AND ev.to_status = 'completed') e ON TRUE WHERE o.delivery_type = 'delivery' AND o.status = 'completed' AND e.delivered_at >= ${range.from} AND e.delivered_at < ${range.to}`;
 }

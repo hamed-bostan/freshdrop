@@ -17,12 +17,14 @@ describe("GetDeliveryPerformanceReport", () => {
     const point = { bucket: range.from.toISOString(), deliveredOrders: 40, onTimeRate: 0.85, averageFulfillmentMinutes: 28 };
     const window = { id: "w1", label: "9am-12pm", orders: 12, onTimeRate: 0.9, averageFulfillmentMinutes: 25, previousOnTimeRate: 0.8 };
     const lateDelivery = { orderId: "o1", orderNumber: 101, userId: "u1", windowLabel: "9am-12pm", delayMinutes: 15, deliveredAt: range.from.toISOString(), zone: "downtown" };
+    const driver = { driverId: "d1", name: "Amit Singh", completedDeliveries: 12, onTimeRate: 0.9, averageRating: 4.8 };
     const repository = {
       snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository as IAnalyticsRepository),
       deliveryTotals,
       deliverySeries: vi.fn().mockResolvedValue([point]),
       deliveryWindows: vi.fn().mockResolvedValue([window]),
       lateDeliveries: vi.fn().mockResolvedValue([lateDelivery]),
+      driverPerformance: vi.fn().mockResolvedValue([driver]),
     } as unknown as IAnalyticsRepository;
 
     const result = await new GetDeliveryPerformanceReport(repository).execute(range);
@@ -35,9 +37,11 @@ describe("GetDeliveryPerformanceReport", () => {
     });
     expect(result.windows).toEqual([window]);
     expect(result.lateDeliveries).toEqual([lateDelivery]);
+    expect(result.drivers).toEqual([driver]);
     expect(repository.snapshot).toBeDefined();
     expect(deliveryTotals).toHaveBeenCalledTimes(2);
     expect(repository.deliveryWindows).toHaveBeenCalledWith(range, { from: new Date("2026-06-02T00:00:00.000Z"), to: range.from }, 5);
     expect(repository.lateDeliveries).toHaveBeenCalledWith(range, 5);
+    expect(repository.driverPerformance).toHaveBeenCalledWith(range, 5);
   });
 });

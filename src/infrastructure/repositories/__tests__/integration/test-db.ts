@@ -77,6 +77,7 @@ export async function resetTestDatabase(prisma: PrismaClient): Promise<void> {
     prisma.refund.deleteMany(),
     prisma.orderItem.deleteMany(),
     prisma.order.deleteMany(),
+    prisma.driver.deleteMany(),
     prisma.product.deleteMany(),
     prisma.user.deleteMany(),
   ]);

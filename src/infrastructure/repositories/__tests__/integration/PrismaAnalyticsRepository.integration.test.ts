@@ -43,6 +43,7 @@ describe("PrismaAnalyticsRepository (integration)", () => {
     total: number;
     status?: string;
     deliveryType?: string;
+    driverId?: string;
   }): Promise<void> {
     await prisma.order.create({
       data: {
@@ -58,6 +59,7 @@ describe("PrismaAnalyticsRepository (integration)", () => {
         total: input.total,
         shipping: 0,
         discount: 0,
+        driverId: input.driverId,
       },
     });
   }
@@ -119,6 +121,28 @@ describe("PrismaAnalyticsRepository (integration)", () => {
       const totals = await repo.deliveryTotals(RANGE);
 
       expect(totals.averageFulfillmentMinutes).toBe(60);
+    });
+  });
+
+  describe("driverPerformance", () => {
+    it("groups completed deliveries by the assigned driver, ranked by volume, and excludes unassigned orders", async () => {
+      await seedUser("u1");
+      const driver = await prisma.driver.create({ data: { name: "Amit Singh", rating: 4.8 } });
+
+      await seedOrder({ id: "o1", userId: "u1", placedAt: new Date("2026-07-10T12:00:00.000Z"), total: 40, driverId: driver.id });
+      await prisma.orderStatusEvent.create({ data: { orderId: "o1", toStatus: "completed", occurredAt: new Date("2026-07-10T12:30:00.000Z") } });
+
+      await seedOrder({ id: "o2", userId: "u1", placedAt: new Date("2026-07-11T12:00:00.000Z"), total: 40, driverId: driver.id });
+      await prisma.orderStatusEvent.create({ data: { orderId: "o2", toStatus: "completed", occurredAt: new Date("2026-07-11T12:20:00.000Z") } });
+
+      // No driver assigned — must not appear as a fake "Unassigned" row.
+      await seedOrder({ id: "o3", userId: "u1", placedAt: new Date("2026-07-12T12:00:00.000Z"), total: 40 });
+      await prisma.orderStatusEvent.create({ data: { orderId: "o3", toStatus: "completed", occurredAt: new Date("2026-07-12T12:20:00.000Z") } });
+
+      const drivers = await repo.driverPerformance(RANGE, 5);
+
+      expect(drivers).toHaveLength(1);
+      expect(drivers[0]).toMatchObject({ driverId: driver.id, name: "Amit Singh", completedDeliveries: 2, averageRating: 4.8 });
     });
   });
 

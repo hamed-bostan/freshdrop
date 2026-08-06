@@ -273,6 +273,10 @@ model Order {
   deliveryDate         String?     @map("delivery_date")
   deliveryWindowId     String?     @map("delivery_window_id")
   deliveryWindow       String?     @map("delivery_window")
+  // The driver assigned to fulfil the delivery, set from the admin dashboard.
+  // A plain reference (not a DB foreign key), same loose coupling as `userId`.
+  // Nullable: most orders predate driver assignment, and pickup orders never get one.
+  driverId             String?     @map("driver_id")
   // Free-text courier note captured at checkout (gate code, "leave with
   // neighbour", …). Null for legacy orders and whenever the shopper left it blank.
   deliveryInstructions String?     @map("delivery_instructions")
@@ -297,6 +301,19 @@ model Order {
   // along as row checks: they're too low-cardinality to earn their own index.
   @@index([status, placedAt])
   @@map("orders")
+}
+
+// A delivery driver, referenced loosely from `Order.driverId` (see that field's
+// doc). `rating` is an admin-maintained figure (there's no per-delivery rating
+// capture yet — reviews are product reviews, not delivery ones) rather than a
+// computed average; nullable until the admin sets one.
+model Driver {
+  id        String   @id @default(uuid())
+  name      String
+  rating    Float?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("drivers")
 }
 
 // An internal note left on an order by whoever is working it — "customer called,
