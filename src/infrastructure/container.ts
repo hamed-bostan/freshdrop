@@ -9,6 +9,7 @@ import type { IGeocodingRepository } from "@/src/domain/repositories/IGeocodingR
 import type { IWalletRepository } from "@/src/domain/repositories/IWalletRepository";
 import type { IOrderRepository } from "@/src/domain/repositories/IOrderRepository";
 import type { IOrderNoteRepository } from "@/src/domain/repositories/IOrderNoteRepository";
+import type { IDeliveryIssueRepository } from "@/src/domain/repositories/IDeliveryIssueRepository";
 import type { IOrderTrackingRepository } from "@/src/domain/repositories/IOrderTrackingRepository";
 import type { ICartRepository } from "@/src/domain/repositories/ICartRepository";
 import type { IStockAlertRepository } from "@/src/domain/repositories/IStockAlertRepository";
@@ -53,6 +54,7 @@ import { PrismaDeliverySlotRepository } from "./repositories/PrismaDeliverySlotR
 import { PrismaWalletRepository } from "./repositories/PrismaWalletRepository";
 import { PrismaOrderRepository } from "./repositories/PrismaOrderRepository";
 import { PrismaOrderNoteRepository } from "./repositories/PrismaOrderNoteRepository";
+import { PrismaDeliveryIssueRepository } from "./repositories/PrismaDeliveryIssueRepository";
 import { MockOrderTrackingRepository } from "./repositories/mock/MockOrderTrackingRepository";
 import { PrismaCartRepository } from "./repositories/PrismaCartRepository";
 import { PrismaStockAlertRepository } from "./repositories/PrismaStockAlertRepository";
@@ -170,6 +172,7 @@ export const orderRepository: IOrderRepository = new PrismaOrderRepository();
 // Internal, staff-facing notes on an order — append-only, and never shown to the
 // customer (see `OrderNote`).
 export const orderNoteRepository: IOrderNoteRepository = new PrismaOrderNoteRepository();
+export const deliveryIssueRepository: IDeliveryIssueRepository = new PrismaDeliveryIssueRepository();
 // Tracking composes the real order (its persisted stage drives the stepper) with
 // a SIMULATED courier feed. The stage and the destination (snapshotted from the
 // address at checkout) are production data; the movement is a stand-in — the

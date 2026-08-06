@@ -23,6 +23,8 @@ import {
 } from "@/src/contracts/order-notification-schema";
 import type { OrderNote } from "@/src/domain/entities/OrderNote";
 import { orderNoteResponseSchema, type OrderNoteInput } from "@/src/contracts/order-note-schema";
+import type { DeliveryIssue } from "@/src/domain/entities/DeliveryIssue";
+import { deliveryIssueResponseSchema, type CreateDeliveryIssueInput } from "@/src/contracts/delivery-issue-schema";
 
 /**
  * Typed client for the order REST *mutations*. UI components call these instead of
@@ -84,6 +86,11 @@ export const ordersApi = {
    */
   addNote(orderId: string, values: OrderNoteInput): Promise<OrderNote> {
     return apiPost(`/admin/orders/${orderId}/notes`, values, orderNoteResponseSchema);
+  },
+
+  /** Log a delivery issue against an order; resolves with the issue as recorded. */
+  reportDeliveryIssue(orderId: string, values: CreateDeliveryIssueInput): Promise<DeliveryIssue> {
+    return apiPost(`/admin/orders/${orderId}/delivery-issues`, values, deliveryIssueResponseSchema);
   },
 
   /**

@@ -20,9 +20,11 @@ import { OrderRefundControl } from "./OrderRefundControl";
 import { OrderItemPickControl } from "./OrderItemPickControl";
 import { OrderCommsPanel } from "./OrderCommsPanel";
 import { OrderNotesPanel } from "./OrderNotesPanel";
+import { OrderDeliveryIssuesPanel } from "./OrderDeliveryIssuesPanel";
 import { ActivityPanel } from "@/src/presentation/dashboard/activity/ActivityPanel";
 import type { ActivityEntryWire } from "@/src/presentation/dashboard/activity/activity-response-schema";
 import type { OrderNote } from "@/src/domain/entities/OrderNote";
+import type { DeliveryIssue } from "@/src/domain/entities/DeliveryIssue";
 import type { OrderMessageDefaultWire } from "./order-message-default-response-schema";
 
 type OrderDetailScreenProps = {
@@ -42,6 +44,8 @@ type OrderDetailScreenProps = {
   notes: OrderNote[];
   /** Whether the viewer may add one. Every dashboard role can, including support. */
   canNote: boolean;
+  /** The order's logged delivery issues, newest first — only fetched/shown for delivery orders. */
+  deliveryIssues: DeliveryIssue[];
   /** Whether the viewer may issue a discretionary refund (phase 7) — admin/owner only. */
   canIssueRefund: boolean;
   /** The ad hoc message form's starting subject/body (phase 4) — undefined when `!canNotify`. */
@@ -65,6 +69,7 @@ export async function OrderDetailScreen({
   canNotify,
   notes,
   canNote,
+  deliveryIssues,
   canIssueRefund,
   messageDefault,
   returnRequest,
@@ -277,6 +282,16 @@ export async function OrderDetailScreen({
             </h2>
             <OrderNotesPanel orderId={order.id} notes={notes} canWrite={canNote} />
           </section>
+
+          {/* Pickup orders have no driver to report an issue against. */}
+          {order.deliveryType === "delivery" ? (
+            <section className="rounded-card-lg border border-border p-5">
+              <h2 className="mb-4 text-body-b8 uppercase tracking-wide text-muted-foreground">
+                {t("deliveryIssuesHeading")}
+              </h2>
+              <OrderDeliveryIssuesPanel orderId={order.id} issues={deliveryIssues} canWrite={canFulfill} />
+            </section>
+          ) : null}
 
           {/* Below the customer card, because that's who these go to. */}
           {canNotify ? (

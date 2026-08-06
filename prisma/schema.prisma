@@ -316,6 +316,28 @@ model Driver {
   @@map("drivers")
 }
 
+// A logged delivery incident (customer unavailable, traffic delay, …), worked
+// through `open -> investigating -> resolved`. `orderId` is a plain reference,
+// same loose coupling as `Order.userId`/`driverId`. `driverId` is a snapshot of
+// the order's assigned driver *at the moment the issue was logged* — not a live
+// lookup — so the record still reads correctly if the order is later reassigned.
+// `delayMinutes` is entered by whoever logs the issue (an observed fact, like
+// `Driver.rating`), not derived from the order's own timestamps.
+model DeliveryIssue {
+  id           String   @id @default(uuid())
+  orderId      String   @map("order_id")
+  type         String
+  status       String   @default("open")
+  driverId     String?  @map("driver_id")
+  delayMinutes Int      @map("delay_minutes")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([orderId])
+  @@index([status])
+  @@map("delivery_issues")
+}
+
 // An internal note left on an order by whoever is working it — "customer called,
 // wants it left with the neighbour", "second delivery attempt failed". Staff-facing
 // only: nothing here is ever shown to the customer, which is what distinguishes a
