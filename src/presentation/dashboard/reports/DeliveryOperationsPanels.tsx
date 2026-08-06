@@ -2,7 +2,7 @@ import { ExternalLink, Info, Star } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
-import { formatNumber } from "@/src/lib/formatNumber";
+import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
 import { Avatar, DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
 import type { DeliveryPerformanceWire } from "./delivery-performance-response-schema";
 import type { DeliveryZonesWire } from "./delivery-zones-response-schema";
@@ -26,4 +26,3 @@ export async function DeliveryOperationsPanels({ report, zoneReport, locale, pan
 
 function Heading({ title }: { title: string }) { return <h2 className="flex items-center gap-1.5 text-body-b5">{title}<Icon icon={Info} size="xs" className="text-muted-foreground" /></h2>; }
 function FooterLink({ href, label }: { href: string; label: string }) { return <Link href={href} className="mt-auto flex items-center gap-2 border-t border-border pt-3 text-body-b8 font-medium text-primary">{label}<Icon icon={ExternalLink} size="xs" /></Link>; }
-function formatPercent(value: number, locale: Locale) { return new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 }).format(value); }

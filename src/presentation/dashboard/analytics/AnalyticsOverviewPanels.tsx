@@ -25,7 +25,7 @@ import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
 import { Icon, focusRing } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
-import { formatNumber } from "@/src/lib/formatNumber";
+import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
 import { StatSparkline } from "@/src/presentation/dashboard/StatSparkline";
 import type { AnalyticsOverviewWire } from "./analytics-response-schema";
@@ -236,5 +236,6 @@ function countStatus(items: OrderStatusCount[], status: OrderStatus): number { r
 function donutStops(items: { value: number; color: string }[]): string { const total = items.reduce((sum, item) => sum + item.value, 0); if (total === 0) return "var(--color-muted) 0 100%"; let cursor = 0; return items.map((item) => { const start = cursor; cursor += item.value / total * 100; return `${item.color} ${start}% ${cursor}%`; }).join(", "); }
 function statusClass(status: OrderStatus): string { return { completed: "bg-primary", processing: "bg-info-foreground", cancelled: "bg-error-foreground", return_requested: "bg-warning-foreground", refunded: "bg-muted-foreground" }[status]; }
 function healthToneClass(tone: HealthTone): string { return { positive: "bg-success text-success-foreground", negative: "bg-error text-destructive", warning: "bg-warning text-warning-foreground" }[tone]; }
-function formatPercent(value: number, locale: Locale): string { return new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 }).format(value); }
+// Signed % of an already-×100-scaled delta (e.g. `kpi.delta * 100`) — distinct from formatPercent/formatSignedPercent
+// in formatNumber.ts, which take a 0–1 ratio. Kept local: this KPI-strip-specific pre-scaling isn't shared elsewhere.
 function formatSignedPercent(value: number, locale: Locale): string { return new Intl.NumberFormat(locale, { signDisplay: "always", maximumFractionDigits: 1 }).format(value) + "%"; }

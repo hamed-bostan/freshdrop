@@ -5,6 +5,7 @@ import { Star } from "lucide-react";
 import type { Locale } from "@/src/i18n/routing";
 import type { PublicReview, ReviewStatus } from "@/src/domain/entities/Review";
 import type { Product } from "@/src/domain/entities/Product";
+import { formatCompactDateTime } from "@/src/lib/formatOrderDate";
 import { formatNumber } from "@/src/lib/formatNumber";
 import {
   Avatar,
@@ -36,44 +37,10 @@ type ReviewsTableProps = {
   footer?: ReactNode;
 };
 
-// Fixed UTC formatters → deterministic output (identical on server and client), so
-// the server-rendered submission date doesn't trigger a hydration mismatch — unlike
-// relative time ("5 seconds ago"), which is computed against a moving "now". A
-// moderation queue also reads better with the exact date than a relative one. Under
-// `fa` the date is Jalali with Persian numerals (`fa-IR-u-ca-persian`). Built once
-// per locale, then reused.
-const DATE_TAG: Record<Locale, string> = { en: "en-GB", fa: "fa-IR-u-ca-persian" };
-const TIME_TAG: Record<Locale, string> = { en: "en-US", fa: "fa-IR-u-ca-persian" };
-
-const cache = new Map<Locale, { date: Intl.DateTimeFormat; time: Intl.DateTimeFormat }>();
-
-function getFormatters(locale: Locale): { date: Intl.DateTimeFormat; time: Intl.DateTimeFormat } {
-  const cached = cache.get(locale);
-  if (cached) return cached;
-
-  const formatters = {
-    date: new Intl.DateTimeFormat(DATE_TAG[locale], {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      timeZone: "UTC",
-    }),
-    time: new Intl.DateTimeFormat(TIME_TAG[locale], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: locale === "en",
-      timeZone: "UTC",
-    }),
-  };
-  cache.set(locale, formatters);
-  return formatters;
-}
-
 /** "1 Jul 2026, 3:22 PM" (en, UTC) — Jalali + Persian numerals under `fa`. */
 function formatReviewDate(iso: string, locale: Locale): string {
-  const date = new Date(iso);
-  const f = getFormatters(locale);
-  return `${f.date.format(date)}, ${f.time.format(date)}`;
+  const { date, time } = formatCompactDateTime(iso, locale);
+  return `${date}, ${time}`;
 }
 
 const STATUS_BADGE: Record<ReviewStatus, { variant: "success" | "warning" | "destructive"; labelKey: "statusPending" | "statusApproved" | "statusRejected" }> = {

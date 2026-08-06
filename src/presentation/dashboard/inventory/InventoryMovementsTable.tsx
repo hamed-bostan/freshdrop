@@ -5,6 +5,7 @@ import type { Product } from "@/src/domain/entities/Product";
 import type { StockMovementReason } from "@/src/domain/entities/StockMovement";
 import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
+import { formatCompactDateTime } from "@/src/lib/formatOrderDate";
 import { formatNumber } from "@/src/lib/formatNumber";
 import {
   Badge,
@@ -33,27 +34,6 @@ const REASON_VARIANT: Record<StockMovementReason, "success" | "warning" | "info"
   correction: "neutral",
   sale: "info",
 };
-
-const DATE_TAG: Record<Locale, string> = { en: "en-GB", fa: "fa-IR-u-ca-persian" };
-const TIME_TAG: Record<Locale, string> = { en: "en-US", fa: "fa-IR-u-ca-persian" };
-
-function movementDate(iso: string, locale: Locale): { date: string; time: string } {
-  const value = new Date(iso);
-  return {
-    date: new Intl.DateTimeFormat(DATE_TAG[locale], {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      timeZone: "UTC",
-    }).format(value),
-    time: new Intl.DateTimeFormat(TIME_TAG[locale], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: locale === "en",
-      timeZone: "UTC",
-    }).format(value),
-  };
-}
 
 /** Compact visual reference; the full immutable id remains in the link and tooltip. */
 function shortOrderReference(id: string): string {
@@ -93,7 +73,7 @@ export async function InventoryMovementsTable({
             const product = productsById.get(movement.productId);
             const added = movement.delta > 0;
             const quantityBefore = movement.quantityAfter - movement.delta;
-            const timestamp = movementDate(movement.at, locale);
+            const timestamp = formatCompactDateTime(movement.at, locale);
             return (
               <TableRow key={movement.id}>
                 <TableCell>

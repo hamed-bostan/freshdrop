@@ -4,6 +4,8 @@ import "leaflet/dist/leaflet.css";
 
 import * as React from "react";
 import { CircleMarker, MapContainer, TileLayer, Tooltip, useMap } from "react-leaflet";
+import type { Locale } from "@/src/i18n/routing";
+import { formatPercent } from "@/src/lib/formatNumber";
 import type { DeliveryZonesWire } from "./delivery-zones-response-schema";
 
 type ZoneWithCentroid = DeliveryZonesWire["zones"][number] & { centroid: NonNullable<DeliveryZonesWire["zones"][number]["centroid"]> };
@@ -30,11 +32,12 @@ function FitToZones({ points }: { points: [number, number][] }) {
   return null;
 }
 
-interface DeliveryZoneMapViewProps {
+type DeliveryZoneMapViewProps = {
   zones: DeliveryZonesWire["zones"];
   ordersLabel: string;
   onTimeLabel: string;
-}
+  locale: Locale;
+};
 
 /**
  * Marker size is each zone's share of delivered orders; marker color is its
@@ -42,7 +45,7 @@ interface DeliveryZoneMapViewProps {
  * orders (a real centroid of real deliveries) — not a drawn zone boundary,
  * since the app has no zone-polygon data to draw one from.
  */
-export function DeliveryZoneMapView({ zones, ordersLabel, onTimeLabel }: DeliveryZoneMapViewProps) {
+export function DeliveryZoneMapView({ zones, ordersLabel, onTimeLabel, locale }: DeliveryZoneMapViewProps) {
   const located = zones.filter((zone): zone is ZoneWithCentroid => zone.centroid != null);
   const maxOrders = Math.max(...located.map((zone) => zone.orders), 1);
   const points = located.map((zone): [number, number] => [zone.centroid.latitude, zone.centroid.longitude]);
@@ -65,7 +68,7 @@ export function DeliveryZoneMapView({ zones, ordersLabel, onTimeLabel }: Deliver
             <div className="text-body-b10">
               <div className="font-semibold">{zone.zone}</div>
               <div>{ordersLabel}: {zone.orders}</div>
-              <div>{onTimeLabel}: {new Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 1 }).format(zone.onTimeRate)}</div>
+              <div>{onTimeLabel}: {formatPercent(zone.onTimeRate, locale)}</div>
             </div>
           </Tooltip>
         </CircleMarker>

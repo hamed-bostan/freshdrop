@@ -44,6 +44,11 @@ export function formatMediumDate(iso: string, locale: Locale): string {
   ).format(new Date(iso));
 }
 
+/** A month and year, no day — "Jul 2023". For labelling a whole-month cohort/bucket. */
+export function formatMonthYear(iso: string, locale: Locale): string {
+  return getFormatter(locale, { year: "numeric", month: "short" }, "monthYear").format(new Date(iso));
+}
+
 /**
  * A time-series bucket's label. Monthly buckets drop the day — "Jul 1" under a bar
  * covering all of July is worse than no label, because it reads as a single day.

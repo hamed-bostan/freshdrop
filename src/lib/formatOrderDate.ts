@@ -84,3 +84,30 @@ export function formatOrderDate(iso: string, locale: Locale): string {
   }
   return `${f.weekday.format(date)} - ${f.month.format(date)} ${f.day.format(date)},${f.year.format(date)}`;
 }
+
+// Separate tag set from `INTL_LOCALE` above: this pair renders a compact
+// "1 Jul 2026" + "3:22 PM" for dense table rows (inventory movements, reviews) —
+// `en-GB` orders the date day-first to match, `en-US` keeps the 12-hour clock.
+const COMPACT_DATE_TAG: Record<Locale, string> = { en: "en-GB", fa: "fa-IR-u-ca-persian" };
+const COMPACT_TIME_TAG: Record<Locale, string> = { en: "en-US", fa: "fa-IR-u-ca-persian" };
+
+const compactCache = new Map<Locale, { date: Intl.DateTimeFormat; time: Intl.DateTimeFormat }>();
+
+function getCompactFormatters(locale: Locale): { date: Intl.DateTimeFormat; time: Intl.DateTimeFormat } {
+  const cached = compactCache.get(locale);
+  if (cached) return cached;
+
+  const formatters = {
+    date: new Intl.DateTimeFormat(COMPACT_DATE_TAG[locale], { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }),
+    time: new Intl.DateTimeFormat(COMPACT_TIME_TAG[locale], { hour: "2-digit", minute: "2-digit", hour12: locale === "en", timeZone: "UTC" }),
+  };
+  compactCache.set(locale, formatters);
+  return formatters;
+}
+
+/** Date and time as separate compact parts — "1 Jul 2026" / "3:22 PM" — for dense table rows. */
+export function formatCompactDateTime(iso: string, locale: Locale): { date: string; time: string } {
+  const date = new Date(iso);
+  const f = getCompactFormatters(locale);
+  return { date: f.date.format(date), time: f.time.format(date) };
+}

@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { percentChange } from "@/src/domain/entities/Analytics";
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
-import { formatNumber } from "@/src/lib/formatNumber";
+import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
 import { DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
 import { DeliveryZoneMapClient } from "./DeliveryZoneMapClient";
 import type { DeliveryZonesWire } from "./delivery-zones-response-schema";
@@ -24,12 +24,12 @@ export async function DeliveryZoneMetrics({ report, locale }: Props) {
   return <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{metrics.map((metric) => <SalesMetricCard key={metric.label} {...metric} locale={locale} comparisonLabel={t("vsPrevious")} currentLabel={t("currentPeriod")} />)}</section>;
 }
 
-export async function DeliveryZoneMap({ report }: { report: DeliveryZonesWire }) {
+export async function DeliveryZoneMap({ report, locale }: Props) {
   const t = await getTranslations("dashDeliveryReport");
   return <section className="rounded-card-lg border border-border bg-background p-3">
     <div className="flex items-center justify-between"><h2 className="text-body-b5">{t("zoneCoverageDemand")}</h2></div>
     <div className="relative mt-2 h-[245px] overflow-hidden rounded-card-md border border-border" aria-label={t("zoneMapAria")}>
-      <DeliveryZoneMapClient zones={report.zones} ordersLabel={t("orders")} onTimeLabel={t("onTimeShort")} />
+      <DeliveryZoneMapClient zones={report.zones} ordersLabel={t("orders")} onTimeLabel={t("onTimeShort")} locale={locale} />
     </div>
     <p className="mt-2 text-label-l1 text-muted-foreground">{t("zoneMapLegend")}</p>
   </section>;
@@ -81,4 +81,3 @@ export async function DeliveryZoneAlerts({ report, locale }: Props) {
 
 function Footer({ href, label }: { href: string; label: string }) { return <Link href={href} className="mt-auto flex items-center gap-2 border-t border-border pt-3 text-body-b8 font-medium text-primary">{label}<Icon icon={ExternalLink} size="xs" /></Link>; }
 function Bar({ width, label }: { width: number; label: string }) { return <div className="flex items-center gap-2"><span className="h-1.5 rounded-full bg-primary" style={{ width: `${Math.max(width, 4)}%` }} /><span className="text-label-l1">{label}</span></div>; }
-function formatPercent(value: number, locale: Locale) { return new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 }).format(value); }

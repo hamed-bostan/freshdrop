@@ -6,10 +6,12 @@ import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import type { Order, PaymentStatus } from "@/src/domain/entities/Order";
 import { orderNetPaid } from "@/src/domain/entities/Order";
 import { Link } from "@/src/i18n/navigation";
+import type { Locale } from "@/src/i18n/routing";
 import { Badge, Button, DataGridBody, DataGridHeader, DataTable, focusRing, Icon } from "@/src/presentation/design-system";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { cn } from "@/src/lib/utils";
 
 const PAGE_SIZE = 8;
@@ -28,7 +30,7 @@ type CustomerOrdersPanelProps = { orders: Order[] };
 export function CustomerOrdersPanel({ orders }: CustomerOrdersPanelProps) {
   const t = useTranslations("dashCustomerDetail");
   const tOrders = useTranslations("dashOrders");
-  const locale = useLocale();
+  const locale = useLocale() as Locale;
   const [page, setPage] = useState(1);
   const pages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE));
   const visible = useMemo(() => orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [orders, page]);
@@ -93,13 +95,6 @@ function capitalize(value: PaymentStatus): "Paid" | "Pending" | "Failed" | "Refu
   return `${value[0].toUpperCase()}${value.slice(1)}` as "Paid" | "Pending" | "Failed" | "Refunded";
 }
 
-function formatDateTime(iso: string, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
-    timeZone: "UTC",
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(iso));
+function formatDateTime(iso: string, locale: Locale): string {
+  return `${formatOrderDateShort(iso, locale)}, ${formatOrderTime(iso, locale)}`;
 }

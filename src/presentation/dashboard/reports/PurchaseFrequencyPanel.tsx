@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import type { PurchaseFrequency } from "@/src/domain/entities/CustomerInsightsReport";
 import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
-import { formatNumber } from "@/src/lib/formatNumber";
+import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
 import { Icon, focusRing } from "@/src/presentation/design-system";
 
@@ -37,7 +37,7 @@ export async function PurchaseFrequencyPanel({ frequency, locale }: { frequency:
               <span className="h-1 overflow-hidden rounded-pill bg-surface-sunken">
                 <span className="block h-full rounded-pill bg-primary" style={{ width: `${Math.min(share * 200, 100)}%` }} />
               </span>
-              <span className="text-end">{new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 }).format(share)}</span>
+              <span className="text-end">{formatPercent(share, locale)}</span>
               <span className="text-end font-medium">{formatNumber(row.value, locale)}</span>
             </div>
           );
