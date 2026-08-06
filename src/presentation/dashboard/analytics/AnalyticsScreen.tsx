@@ -14,12 +14,11 @@ import {
   QuickAccessCard,
 } from "./AnalyticsOverviewPanels";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./AnalyticsRangePicker";
-import { RankingsTable } from "./RankingsTable";
+import { RankingsTable, type RevenueRankRow } from "./RankingsTable";
 import { RevenueChart } from "./RevenueChart";
-import { RevenueRankPanel, type RevenueRankRow } from "./RevenueRankPanel";
+import { RevenueRankSortSelect } from "./RevenueRankSortSelect";
 
 export const ANALYTICS_RANK_LIMIT = 60;
-const TEASER_ROW_COUNT = 5;
 const RANKING_PAGE_SIZE = 10;
 
 type AnalyticsScreenProps = {
@@ -28,12 +27,10 @@ type AnalyticsScreenProps = {
   to: string;
   isCustomRange: boolean;
   productSort: RevenueRankSort;
-  categorySort: RevenueRankSort;
   productsPage: number;
-  categoriesPage: number;
 };
 
-export async function AnalyticsScreen({ analytics, from, to, isCustomRange, productSort, categorySort, productsPage, categoriesPage }: AnalyticsScreenProps) {
+export async function AnalyticsScreen({ analytics, from, to, isCustomRange, productSort, productsPage }: AnalyticsScreenProps) {
   const t = await getTranslations("dashAnalytics");
   const locale = (await getLocale()) as Locale;
 
@@ -45,17 +42,9 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange, prod
     revenue: product.revenue,
     href: `/dashboard/products/${product.productId}/edit`,
   }));
-  const categoryRows: RevenueRankRow[] = analytics.topCategories.map((category) => ({
-    id: category.categoryId,
-    label: category.name,
-    units: category.units,
-    revenue: category.revenue,
-    href: `/dashboard/categories/${category.categoryId}/edit`,
-  }));
 
   const sortOptions = REVENUE_RANK_SORTS.map((sort) => ({ value: sort, label: t(sort === "revenue" ? "sortByRevenue" : "sortByUnits") }));
   const productsPageResult = paginateArray(productRows, { page: productsPage, pageSize: RANKING_PAGE_SIZE });
-  const categoriesPageResult = paginateArray(categoryRows, { page: categoriesPage, pageSize: RANKING_PAGE_SIZE });
 
   return (
     <div className="flex flex-col gap-4 pb-2">
@@ -111,55 +100,25 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange, prod
         <OrderHealthCard analytics={analytics} />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <RevenueRankPanel
-          heading={t("topProducts")}
-          rows={productRows.slice(0, TEASER_ROW_COUNT)}
-          emptyLabel={t("noSales")}
-          unitsLabel={(units) => t("unitsSold", { units })}
-          sort={productSort}
-          sortParamName="productSort"
-          sortLabel={t("sortLabel")}
-          sortOptions={sortOptions}
-          viewAllHref="/dashboard/products"
-          viewAllLabel={t("viewAllProducts")}
-        />
-        <RevenueRankPanel
-          heading={t("topCategories")}
-          rows={categoryRows.slice(0, TEASER_ROW_COUNT)}
-          emptyLabel={t("noSales")}
-          unitsLabel={(units) => t("unitsSold", { units })}
-          sort={categorySort}
-          sortParamName="categorySort"
-          sortLabel={t("sortLabel")}
-          sortOptions={sortOptions}
-          viewAllHref="/dashboard/categories"
-          viewAllLabel={t("viewAllCategories")}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <RankingsTable
-          heading={t("topProducts")}
-          page={productsPageResult}
-          pageParamName="productsPage"
-          emptyLabel={t("noSales")}
-          colRankLabel={t("colRank")}
-          colNameLabel={t("colProduct")}
-          colUnitsLabel={t("colUnits")}
-          colRevenueLabel={t("colRevenue")}
-        />
-        <RankingsTable
-          heading={t("topCategories")}
-          page={categoriesPageResult}
-          pageParamName="categoriesPage"
-          emptyLabel={t("noSales")}
-          colRankLabel={t("colRank")}
-          colNameLabel={t("colCategory")}
-          colUnitsLabel={t("colUnits")}
-          colRevenueLabel={t("colRevenue")}
-        />
-      </div>
+      <RankingsTable
+        heading={t("topSellingProducts")}
+        page={productsPageResult}
+        pageParamName="productsPage"
+        emptyLabel={t("noSales")}
+        colRankLabel={t("colRank")}
+        colNameLabel={t("colProduct")}
+        colUnitsLabel={t("colUnits")}
+        colRevenueLabel={t("colRevenue")}
+        headingAction={
+          <RevenueRankSortSelect
+            paramName="productSort"
+            value={productSort}
+            defaultValue="revenue"
+            label={t("sortLabel")}
+            options={sortOptions}
+          />
+        }
+      />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <PriorityActionsCard analytics={analytics} />

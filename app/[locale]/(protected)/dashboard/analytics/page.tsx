@@ -33,13 +33,10 @@ export default async function DashboardAnalyticsPage({ searchParams }: Dashboard
 
   const range = parseAnalyticsRange(params);
   const productSort = parseRevenueRankSort(params, "productSort");
-  const categorySort = parseRevenueRankSort(params, "categorySort");
   const productsPage = parseRankPage(params, "productsPage");
-  const categoriesPage = parseRankPage(params, "categoriesPage");
 
-  // The one difference from the overview's own fetch of the same endpoint: this
-  // page asks for a fuller ranking (up to `ANALYTICS_RANK_LIMIT` rows) to page
-  // through, rather than the overview's three-row teaser.
+  // Asks for a fuller product ranking (up to `ANALYTICS_RANK_LIMIT` rows) to page
+  // through, rather than a short teaser.
   const rankParams = new URLSearchParams(params);
   rankParams.set("rankLimit", String(ANALYTICS_RANK_LIMIT));
   const analytics = await analyticsServerApi.getOverview(rankParams);
@@ -51,9 +48,7 @@ export default async function DashboardAnalyticsPage({ searchParams }: Dashboard
       to={toInclusiveEndParam(range)}
       isCustomRange={hasCustomAnalyticsRange(params)}
       productSort={productSort}
-      categorySort={categorySort}
       productsPage={productsPage}
-      categoriesPage={categoriesPage}
     />
   );
 }

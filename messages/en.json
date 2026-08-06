@@ -796,6 +796,7 @@
     "percentOfOrders": "{percent}%",
     "noOrders": "No orders in this period.",
     "topProducts": "Top products",
+    "topSellingProducts": "Top-selling products",
     "topCategories": "Top categories",
     "unitsSold": "{units} sold",
     "noSales": "No sales in this period.",
