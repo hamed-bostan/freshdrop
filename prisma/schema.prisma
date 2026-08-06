@@ -878,3 +878,60 @@ model StockAlert {
   @@index([productId])
   @@map("stock_alerts")
 }
+
+// A generated export file and the async job that produced it — the Export
+// center's "Recent exports" history and the state a custom export moves
+// through on its way from "processing" to a downloadable file. The four
+// quick-export routes (`/api/admin/exports/<resource>`) stream straight to
+// the browser and never create a row here; this table exists for the custom
+// builder and scheduled reports, where generation is genuinely asynchronous
+// and multi-format. `requestedById`/`requestedByName` are a plain reference +
+// snapshot, the same loose coupling and "record what it read at the time"
+// `ActivityEntry` uses — a job outlives the admin who requested it.
+model ExportJob {
+  id     String @id @default(uuid())
+  // The report catalog id ("orders" | "inventory" | "customers" | "products")
+  // and the chosen output format, as plain strings matching the domain unions
+  // (enum-free schema) — the adapter narrows them on read.
+  reportId String @map("report_id")
+  format   String
+  // "processing" | "ready" | "failed" | "expired" — see `ExportJobStatus`.
+  status String @default("processing")
+  // "manual" (the builder) | "schedule" (a due `ScheduledExport`).
+  source String
+
+  requestedById   String @map("requested_by_id")
+  requestedByName String @map("requested_by_name")
+
+  // The builder's selection (date range, compare-with, sections), captured
+  // verbatim so a failed or expired job can be regenerated with the same
+  // inputs. See `ExportJobParams`.
+  params Json
+
+  // The report's period, if it has one — null for snapshot-style reports
+  // (inventory, products). Stored as text (already-formatted, like an
+  // `ActivityChange` value) since a job never queries by date, only displays it.
+  periodFrom String? @map("period_from")
+  periodTo   String? @map("period_to")
+
+  rowCount    Int?    @map("row_count")
+  byteSize    Int?    @map("byte_size")
+  storagePath String? @map("storage_path")
+  error       String?
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+  // `createdAt + 7 days`, set at creation regardless of when generation
+  // finishes — a job that failed still occupies its slot in the history
+  // until the same sweep that expires successful ones clears it out.
+  expiresAt DateTime @map("expires_at")
+
+  // The Recent exports table, newest first.
+  @@index([createdAt])
+  // The sweep's two passes: ready jobs past their expiry, and processing jobs
+  // stranded by a restart (see `EXPORT_JOB_STRANDED_MINUTES`).
+  @@index([status, createdAt])
+  // "My exports" / who has been generating what.
+  @@index([requestedById, createdAt])
+  @@map("export_jobs")
+}

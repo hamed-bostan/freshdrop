@@ -32,6 +32,8 @@ import type { IRefundRepository } from "@/src/domain/repositories/IRefundReposit
 import type { IReturnRepository } from "@/src/domain/repositories/IReturnRepository";
 import type { IOrderStatusEventLog } from "@/src/domain/repositories/IOrderStatusEventLog";
 import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
+import type { IExportJobRepository } from "@/src/domain/repositories/IExportJobRepository";
+import type { IFileStorageRepository } from "@/src/domain/repositories/IFileStorageRepository";
 
 import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepository";
 import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
@@ -70,6 +72,8 @@ import { PrismaRefundRepository } from "./repositories/PrismaRefundRepository";
 import { PrismaReturnRepository } from "./repositories/PrismaReturnRepository";
 import { PrismaOrderStatusEventLog } from "./repositories/PrismaOrderStatusEventLog";
 import { PrismaNotificationTemplateRepository } from "./repositories/PrismaNotificationTemplateRepository";
+import { PrismaExportJobRepository } from "./repositories/PrismaExportJobRepository";
+import { SupabaseFileStorageRepository } from "./repositories/SupabaseFileStorageRepository";
 
 const SMS_IR_DEFAULT_TEMPLATE_ID = 562447;
 
@@ -325,4 +329,18 @@ export const imageStorageRepository: IImageStorageRepository = new SupabaseImage
   url: process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL!,
   serviceRoleKey: process.env.SUPABASE_SECRET_KEY!,
   bucket: process.env.SUPABASE_IMAGES_BUCKET ?? "images",
+});
+
+// Export job persistence — real storage from the start, PostgreSQL via Prisma.
+// Backs the custom export builder and scheduled reports; the four quick-export
+// routes stream directly and never touch this.
+export const exportJobRepository: IExportJobRepository = new PrismaExportJobRepository();
+
+// Supabase Storage for generated export files, in a separate **private** bucket
+// from images — see `SupabaseFileStorageRepository` for why this isn't the same
+// repository as `imageStorageRepository`. Every read goes through a signed URL.
+export const exportFileStorage: IFileStorageRepository = new SupabaseFileStorageRepository({
+  url: process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  serviceRoleKey: process.env.SUPABASE_SECRET_KEY!,
+  bucket: process.env.SUPABASE_EXPORTS_BUCKET ?? "exports",
 });

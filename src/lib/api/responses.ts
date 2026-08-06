@@ -8,6 +8,7 @@ import { SlotUnavailableError } from "@/src/domain/errors/SlotUnavailableError";
 import { InsufficientWalletBalanceError } from "@/src/domain/errors/InsufficientWalletBalanceError";
 import { ResourceInUseError } from "@/src/domain/errors/ResourceInUseError";
 import { AdminRevokeError } from "@/src/domain/errors/AdminRevokeError";
+import { ExportNotReadyError } from "@/src/domain/errors/ExportNotReadyError";
 
 /**
  * Server-side helpers for REST route handlers (Next.js `app/api/**` only — never
@@ -110,6 +111,13 @@ export function errorResponseFromException(error: unknown, context: string): Nex
       message: error.message,
       code: error.reason === "self" ? "REVOKE_SELF" : "REVOKE_OWNER",
     });
+  }
+
+  // An export job exists but isn't a downloadable file right now — still
+  // generating, failed, or expired. 409 Conflict, and `reason` picks the
+  // precise copy client-side (retry later vs. regenerate).
+  if (error instanceof ExportNotReadyError) {
+    return errorResponse(409, { message: error.message, code: `EXPORT_${error.reason.toUpperCase()}` });
   }
 
   console.error(`${context}:`, error);
