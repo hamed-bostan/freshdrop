@@ -1,6 +1,5 @@
 import {
   AlertTriangle,
-  ChevronRight,
   ClipboardList,
   Clock,
   DollarSign,
@@ -17,7 +16,6 @@ import {
   percentChange,
 } from "@/src/domain/entities/Analytics";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
-import { orderNetPaid } from "@/src/domain/entities/Order";
 import type { Order } from "@/src/domain/entities/Order";
 import { PENDING_ORDER_SLA_HOURS, UNFULFILLED_ORDER_SLA_HOURS } from "@/src/domain/entities/OrderSla";
 import type { Product } from "@/src/domain/entities/Product";
@@ -26,11 +24,8 @@ import { Link } from "@/src/i18n/navigation";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
-import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { cn } from "@/src/lib/utils";
-import { DataGridBody, DataGridHeader, DataTable, Icon, focusRing } from "@/src/presentation/design-system";
-import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
-
+import { Icon, focusRing } from "@/src/presentation/design-system";
 
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./analytics/AnalyticsRangePicker";
 import { OrderStatusBreakdown } from "./analytics/OrderStatusBreakdown";
@@ -38,23 +33,13 @@ import { RevenueChart } from "./analytics/RevenueChart";
 import { NeedsAttentionPanel } from "./attention/NeedsAttentionPanel";
 import { buildDashboardOverviewViewModel } from "./dashboard-overview-view-model";
 import { LowStockPanel } from "./LowStockPanel";
+import { RecentOrdersPanel } from "./RecentOrdersPanel";
 import { StatCard } from "./StatCard";
 import { StatCardCarousel } from "./StatCardCarousel";
 
 import type { AnalyticsOverviewWire } from "./analytics/analytics-response-schema";
 import type { AttentionItem } from "./attention/AttentionItem";
 import type { StatCardProps } from "./StatCard";
-
-
-
-/**
- * Grid template shared by the recent-orders header and rows. Columns: order id,
- * customer, status, placed, amount, and the trailing chevron affordance — same
- * "row is a link" shape as `CustomerOrdersPanel`, which is why this is a grid
- * rather than the orders list's `<table>` (a `<tr>` can't be one link).
- */
-const RECENT_ORDERS_ROW_GRID =
-  "grid grid-cols-[minmax(0,.55fr)_minmax(0,.9fr)_auto_minmax(0,.75fr)_auto_auto] items-center gap-2";
 
 type DashboardOverviewScreenProps = {
   /** Every period-scoped figure on the screen, from one aggregate endpoint. */
@@ -133,7 +118,6 @@ export async function DashboardOverviewScreen({
   overdueOrdersCutoff,
 }: DashboardOverviewScreenProps) {
   const t = await getTranslations("dashHome");
-  const tOrders = await getTranslations("dashOrders");
   const tAnalytics = await getTranslations("dashAnalytics");
   const locale = (await getLocale());
 
@@ -357,63 +341,7 @@ export async function DashboardOverviewScreen({
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <section className="rounded-card-lg border border-border p-4">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-body-b5 text-foreground">{t("recentOrders")}</h2>
-          <Link href="/dashboard/orders" className="inline-flex items-center gap-1 text-body-b8 text-primary hover:underline">
-            {t("viewAll")}
-            <Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" />
-          </Link>
-        </div>
-
-        {recentOrders.length > 0 ? (
-          <DataTable className="mt-3" minWidthClassName="min-w-[30rem]">
-            <DataGridHeader template={RECENT_ORDERS_ROW_GRID}>
-              <span>{tOrders("colOrder")}</span>
-              <span>{tOrders("colCustomer")}</span>
-              <span>{tOrders("colStatus")}</span>
-              <span>{tOrders("colPlaced")}</span>
-              <span className="text-end">{tOrders("colTotal")}</span>
-              <span aria-hidden className="w-4" />
-            </DataGridHeader>
-            <DataGridBody>
-              {recentOrders.map((order) => {
-                const customer = recentOrderCustomersById.get(order.userId);
-                return (
-                  <Link
-                    key={order.id}
-                    href={`/dashboard/orders/${order.id}`}
-                    aria-label={tOrders("viewOrderAria", { id: order.orderNumber })}
-                    className={cn(
-                      RECENT_ORDERS_ROW_GRID,
-                      focusRing,
-                      "bg-background px-4 py-2 transition-colors hover:bg-surface-sunken/50",
-                    )}
-                  >
-                    <span className="truncate font-mono text-body-b6 text-foreground">
-                      #{order.orderNumber}
-                    </span>
-                    <span className="truncate text-body-b7 text-foreground">
-                      {customer?.name ?? order.userId}
-                    </span>
-                    <OrderStatusBadge status={order.status} stage={order.stage} context="admin" size="sm" />
-                    <span className="flex flex-col whitespace-nowrap text-body-b8 text-muted-foreground">
-                      <span className="text-foreground">{formatOrderDateShort(order.placedAt, locale)}</span>
-                      {formatOrderTime(order.placedAt, locale)}
-                    </span>
-                    <span className="whitespace-nowrap text-end text-body-b7 text-foreground">
-                      {formatMoney(orderNetPaid(order, order.refunds), locale)}
-                    </span>
-                    <Icon icon={ChevronRight} size="xs" className="text-muted-foreground rtl:-scale-x-100" />
-                  </Link>
-                );
-              })}
-            </DataGridBody>
-          </DataTable>
-        ) : (
-          <p className="mt-4 text-body-b7 text-muted-foreground">{t("noRecentOrders")}</p>
-        )}
-        </section>
+        <RecentOrdersPanel orders={recentOrders} customersById={recentOrderCustomersById} />
         <LowStockPanel products={lowStockProducts} />
       </div>
     </div>
