@@ -323,7 +323,11 @@ export async function DashboardOverviewScreen({
           stacked cards would push everything else below the fold before the
           page says anything actionable. `sm` and up: the plain grid. */}
       <div className="sm:hidden">
-        <StatCardCarousel cards={statCards} />
+        <StatCardCarousel>
+          {statCards.map((card) => (
+            <StatCard key={card.label} {...card} />
+          ))}
+        </StatCardCarousel>
       </div>
       <div className="hidden gap-4 sm:grid sm:grid-cols-2 xl:grid-cols-4">
         {statCards.map((card) => (

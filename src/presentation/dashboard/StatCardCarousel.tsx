@@ -9,14 +9,17 @@ import { getLangDir } from "@/src/i18n/direction";
 import { cn } from "@/src/lib/utils";
 import { stillWhenReduced } from "@/src/presentation/design-system";
 
-import { StatCard } from "./StatCard";
-
-import type { StatCardProps } from "./StatCard";
 import type { Swiper as SwiperType } from "swiper";
 
 type StatCardCarouselProps = {
-  /** One entry per KPI tile, same props `StatCard` itself takes. */
-  cards: StatCardProps[];
+  /**
+   * One `StatCard` element per KPI, rendered by the (server) caller and passed
+   * in as children — not raw props. `StatCard`'s `icon` prop is a Lucide
+   * component, and Next only allows passing already-rendered elements, not
+   * component references, from a Server Component across into a Client
+   * Component's props.
+   */
+  children: React.ReactNode;
 };
 
 /**
@@ -30,9 +33,10 @@ type StatCardCarouselProps = {
  * the existing grid for `sm:` and up, hidden here via the wrapper's
  * responsive class rather than duplicated logic in this component.
  */
-export function StatCardCarousel({ cards }: StatCardCarouselProps) {
+export function StatCardCarousel({ children }: StatCardCarouselProps) {
   const locale = useLocale();
   const [activeIndex, setActiveIndex] = React.useState(0);
+  const cards = React.Children.toArray(children);
 
   return (
     <div>
@@ -41,18 +45,16 @@ export function StatCardCarousel({ cards }: StatCardCarouselProps) {
         onSlideChange={(instance: SwiperType) => setActiveIndex(instance.activeIndex)}
         className="w-full"
       >
-        {cards.map((card) => (
-          <SwiperSlide key={card.label}>
-            <StatCard {...card} />
-          </SwiperSlide>
+        {cards.map((card, index) => (
+          <SwiperSlide key={index}>{card}</SwiperSlide>
         ))}
       </Swiper>
 
       {cards.length > 1 ? (
         <div className="mt-3 flex items-center justify-center gap-1.5">
-          {cards.map((card, index) => (
+          {cards.map((_, index) => (
             <span
-              key={card.label}
+              key={index}
               aria-hidden
               className={cn(
                 "h-1.5 rounded-full transition-all duration-200",
