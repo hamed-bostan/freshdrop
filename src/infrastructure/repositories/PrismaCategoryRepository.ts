@@ -1,7 +1,11 @@
 import { Prisma } from "@prisma/client";
+
 import type { AdminCategoryFilters, AdminCategorySort } from "@/src/domain/entities/AdminCategoryFilters";
 import type { Category } from "@/src/domain/entities/Category";
 import { createPage, toSkipTake, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
+import { NotFoundError } from "@/src/domain/errors/NotFoundError";
+import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError";
+import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import type {
   BulkCategoryChange,
   BulkCategoryUpdate,
@@ -9,10 +13,8 @@ import type {
   ICategoryRepository,
   NewCategory,
 } from "@/src/domain/repositories/ICategoryRepository";
-import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError";
-import { NotFoundError } from "@/src/domain/errors/NotFoundError";
-import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import { prisma } from "@/src/infrastructure/prisma/client";
+
 import { recordAudit } from "./writeActivityEntry";
 
 /**

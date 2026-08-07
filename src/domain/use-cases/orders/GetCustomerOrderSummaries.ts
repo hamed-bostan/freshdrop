@@ -1,4 +1,5 @@
 import { orderRecognizedRevenue } from "../../entities/Order";
+
 import type { CustomerOrderSummary } from "../../entities/CustomerOrderSummary";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IUserRepository } from "../../repositories/IUserRepository";

@@ -1,4 +1,5 @@
 import { presetRange, storeDateString } from "../../entities/Analytics";
+
 import type { IAnalyticsCustomerRepository } from "../../repositories/IAnalyticsRepository";
 import type { ICustomerSegmentSnapshotRepository } from "../../repositories/ICustomerSegmentSnapshotRepository";
 

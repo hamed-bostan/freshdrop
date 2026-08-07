@@ -1,14 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { categoryFormSchema } from "@/src/contracts/category-schema";
+import { DeleteCategory } from "@/src/domain/use-cases/categories/DeleteCategory";
 import { GetCategoryById } from "@/src/domain/use-cases/categories/GetCategoryById";
 import { UpdateCategory } from "@/src/domain/use-cases/categories/UpdateCategory";
-import { DeleteCategory } from "@/src/domain/use-cases/categories/DeleteCategory";
 import {
   categoryRepository,
   imageStorageRepository,
 } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
-import { categoryFormSchema } from "@/src/contracts/category-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -16,6 +16,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Looked up in Postgres per request — never statically cached.
 export const dynamic = "force-dynamic";

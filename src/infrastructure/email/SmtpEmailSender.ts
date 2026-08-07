@@ -1,4 +1,5 @@
 import nodemailer, { type Transporter } from "nodemailer";
+
 import type { EmailMessage, IEmailSender } from "@/src/domain/repositories/IEmailSender";
 
 export type SmtpConfig = {

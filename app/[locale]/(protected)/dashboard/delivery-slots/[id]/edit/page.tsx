@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { EditDeliveryWindowScreen } from "@/src/presentation/dashboard/delivery-slots/EditDeliveryWindowScreen";
-import { deliveryWindowsServerApi } from "@/src/presentation/dashboard/delivery-slots/delivery-window-server-api";
+
 import { requirePermission } from "@/src/lib/require-permission";
+import { deliveryWindowsServerApi } from "@/src/presentation/dashboard/delivery-slots/delivery-window-server-api";
+import { EditDeliveryWindowScreen } from "@/src/presentation/dashboard/delivery-slots/EditDeliveryWindowScreen";
 
 type EditDeliveryWindowPageProps = {
   params: Promise<{ id: string }>;

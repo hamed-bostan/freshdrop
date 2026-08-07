@@ -1,12 +1,13 @@
 import { ExternalLink, Info } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 import type { RetentionCohort } from "@/src/domain/entities/CustomerInsightsReport";
-import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
+import type { Locale } from "@/src/i18n/routing";
 import { formatMonthYear } from "@/src/lib/formatAnalyticsDate";
 import { formatPercent } from "@/src/lib/formatNumber";
-import { Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, focusRing } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
+import { Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, focusRing } from "@/src/presentation/design-system";
 
 export async function RetentionCohortTable({ cohorts, locale }: { cohorts: RetentionCohort[]; locale: Locale }) {
   const t = await getTranslations("dashCustomerInsights");

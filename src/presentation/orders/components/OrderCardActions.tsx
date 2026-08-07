@@ -1,17 +1,20 @@
 "use client";
 
-import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link, useRouter } from "@/src/i18n/navigation";
+import * as React from "react";
+
+import type { OrderReturnRequestInput } from "@/src/contracts/order-return-schema";
 import type { Order } from "@/src/domain/entities/Order";
 import { isCancellable, isReturnable } from "@/src/domain/entities/Order";
-import { Button, FormMessage } from "@/src/presentation/design-system";
-import { ConfirmDialog } from "@/src/presentation/components/ConfirmDialog";
+import { Link, useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
-import { useCart } from "@/src/presentation/cart/CartProvider";
 import { formatMoney } from "@/src/lib/formatMoney";
-import type { OrderReturnRequestInput } from "@/src/contracts/order-return-schema";
+import { useCart } from "@/src/presentation/cart/CartProvider";
+import { ConfirmDialog } from "@/src/presentation/components/ConfirmDialog";
+import { Button, FormMessage } from "@/src/presentation/design-system";
+
 import { ordersApi } from "../order-api";
+
 import { ReturnRequestDialog } from "./ReturnRequestDialog";
 
 /** Which mutation is in flight — drives the per-button loading label. */
@@ -160,7 +163,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
         run("reorder", () => ordersApi.reorder(order.id), () => {
           // Reorder added the items server-side: resync the shared cart store so
           // the nav badge reflects them, then navigate to the cart and refresh.
-          refreshCart();
+          void refreshCart();
           router.push("/cart");
           router.refresh();
         })

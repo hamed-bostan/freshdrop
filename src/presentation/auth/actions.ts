@@ -1,6 +1,7 @@
 "use server";
 
 import { AuthError } from "next-auth";
+
 import { signIn, signOut } from "@/auth";
 import { RequestOtp } from "@/src/domain/use-cases/auth/RequestOtp";
 import { authRepository } from "@/src/infrastructure/container";

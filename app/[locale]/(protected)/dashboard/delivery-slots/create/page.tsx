@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
-import { DeliveryWindowForm } from "@/src/presentation/dashboard/delivery-slots/DeliveryWindowForm";
+
 import { requirePermission } from "@/src/lib/require-permission";
+import { DeliveryWindowForm } from "@/src/presentation/dashboard/delivery-slots/DeliveryWindowForm";
 
 export default async function CreateDeliveryWindowPage() {
   // The layout only gates on `dashboard.view`; this whole section is a write

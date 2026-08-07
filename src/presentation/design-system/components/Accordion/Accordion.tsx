@@ -1,10 +1,12 @@
 "use client";
 
-import * as React from "react";
-import { Accordion as AccordionPrimitive } from "radix-ui";
 import { ChevronDown } from "lucide-react";
-import { Icon } from "../Icon";
+import { Accordion as AccordionPrimitive } from "radix-ui";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
+
+import { Icon } from "../Icon";
 import { focusRing } from "../shared/focusRing";
 import { stillWhenReduced } from "../shared/motion";
 

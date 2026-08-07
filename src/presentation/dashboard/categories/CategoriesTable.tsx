@@ -1,11 +1,16 @@
 import Image from "next/image";
-import type { ReactNode } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
+
 import {
   DEFAULT_ADMIN_CATEGORY_DIRECTION,
   DEFAULT_ADMIN_CATEGORY_SORT,
 } from "@/src/domain/entities/AdminCategoryFilters";
 import type { Category } from "@/src/domain/entities/Category";
+import { Link } from "@/src/i18n/navigation";
+import { formatNumber } from "@/src/lib/formatNumber";
+import { formatOrderDateShort } from "@/src/lib/formatOrderDate";
+import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
+import { ListSortHeader } from "@/src/presentation/dashboard/list";
 import {
   Badge,
   DataTable,
@@ -17,12 +22,10 @@ import {
   TableRow,
   Thumbnail,
 } from "@/src/presentation/design-system";
-import { ListSortHeader } from "@/src/presentation/dashboard/list";
-import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
-import { formatOrderDateShort } from "@/src/lib/formatOrderDate";
-import { formatNumber } from "@/src/lib/formatNumber";
-import { Link } from "@/src/i18n/navigation";
+
 import { CategoryRowActions } from "./CategoryRowActions";
+
+import type { ReactNode } from "react";
 
 type CategoriesTableProps = {
   categories: Category[];

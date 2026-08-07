@@ -1,10 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { profileUpdateSchema } from "@/src/contracts/profile-schema";
+import { DeleteAccount } from "@/src/domain/use-cases/profile/DeleteAccount";
 import { GetOrCreateUser } from "@/src/domain/use-cases/profile/GetOrCreateUser";
 import { UpdateProfile } from "@/src/domain/use-cases/profile/UpdateProfile";
-import { DeleteAccount } from "@/src/domain/use-cases/profile/DeleteAccount";
 import { userRepository, imageStorageRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
-import { profileUpdateSchema } from "@/src/contracts/profile-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -12,6 +12,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Per-user data, read per request — never statically cached.
 export const dynamic = "force-dynamic";

@@ -1,5 +1,6 @@
-import type { IDeliveryLocationRepository } from "../../repositories/IDeliveryLocationRepository";
 import { NotFoundError } from "../../errors/NotFoundError";
+
+import type { IDeliveryLocationRepository } from "../../repositories/IDeliveryLocationRepository";
 
 /**
  * Delete an existing delivery address for a user. Both the ownership check and the

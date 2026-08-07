@@ -1,11 +1,13 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import type { Session } from "next-auth";
+
 import { auth } from "@/auth";
 import type { Permission } from "@/src/domain/entities/Permission";
 import { roleHasPermission, ROLE_PERMISSIONS } from "@/src/domain/entities/Permission";
 import { isDashboardRole, type UserRole } from "@/src/domain/entities/User";
 import { userRepository } from "@/src/infrastructure/container";
+
+import type { Session } from "next-auth";
 
 /**
  * The authorization boundary: everything that guards a dashboard route or an admin

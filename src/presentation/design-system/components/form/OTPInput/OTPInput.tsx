@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
+import React, { useEffect, useRef } from "react";
+
 import { cn } from "@/src/lib/utils";
-import { baseFieldStyles } from "../shared/baseFieldStyles";
+
 import { focusRing } from "../../shared/focusRing";
+import { baseFieldStyles } from "../shared/baseFieldStyles";
 
 type OTPInputProps = {
   length?: number;

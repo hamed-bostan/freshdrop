@@ -1,6 +1,6 @@
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
-import { DeliveryLocationSelector } from "@/src/presentation/delivery-location/DeliveryLocationSelector";
 import { SearchBar } from "@/src/presentation/components/SearchBar";
+import { DeliveryLocationSelector } from "@/src/presentation/delivery-location/DeliveryLocationSelector";
 
 interface HomeHeaderProps {
   deliveryLocations: DeliveryLocation[];

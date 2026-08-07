@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { UploadImage } from "@/src/domain/use-cases/images/UploadImage";
 import { imageStorageRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
-import { getUserSession } from "@/src/lib/require-auth";
-import { AVATAR_IMAGE_FOLDER, MANAGED_IMAGE_FOLDERS } from "@/src/lib/imageFolders";
 import { errorResponse, unauthorizedResponse } from "@/src/lib/api/responses";
+import { AVATAR_IMAGE_FOLDER, MANAGED_IMAGE_FOLDERS } from "@/src/lib/imageFolders";
+import { getUserSession } from "@/src/lib/require-auth";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 const ADMIN_FOLDERS = new Set<string>(MANAGED_IMAGE_FOLDERS);
 const ALLOWED_FOLDERS = new Set<string>([...MANAGED_IMAGE_FOLDERS, AVATAR_IMAGE_FOLDER]);

@@ -1,7 +1,8 @@
+import type { AddCardInput, AddFundsInput } from "@/src/contracts/wallet-schema";
 import type { SavedCard } from "@/src/domain/entities/Wallet";
 import { apiPost } from "@/src/lib/api/client";
+
 import { savedCardResponseSchema } from "./wallet-response-schema";
-import type { AddCardInput, AddFundsInput } from "@/src/contracts/wallet-schema";
 
 /**
  * Browser client for wallet mutations. Components call these (never Axios directly);

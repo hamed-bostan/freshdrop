@@ -1,5 +1,8 @@
-import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+import type { TeamMember } from "@/src/contracts/team-response-schema";
+import type { UserRole } from "@/src/domain/entities/User";
 import {
   Badge,
   Button,
@@ -9,8 +12,7 @@ import {
   DataTable,
   Icon,
 } from "@/src/presentation/design-system";
-import type { UserRole } from "@/src/domain/entities/User";
-import type { TeamMember } from "@/src/contracts/team-response-schema";
+
 import { RevokeAdminButton } from "./RevokeAdminButton";
 import { TransferOwnershipButton } from "./TransferOwnershipButton";
 

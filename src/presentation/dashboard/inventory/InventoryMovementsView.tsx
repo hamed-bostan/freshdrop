@@ -1,10 +1,12 @@
 import { getTranslations } from "next-intl/server";
+
 import type { Page } from "@/src/domain/entities/Pagination";
 import type { Product } from "@/src/domain/entities/Product";
 import type { StockMovementFilters } from "@/src/domain/entities/StockMovement";
 import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvLink";
 import { ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
 import type { StockMovementEntry } from "@/src/presentation/dashboard/products/stock-movement-response-schema";
+
 import { InventoryMovementFilters } from "./InventoryMovementFilters";
 import { InventoryMovementsTable } from "./InventoryMovementsTable";
 

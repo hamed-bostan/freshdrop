@@ -1,5 +1,5 @@
-import type { Refund } from "../entities/Refund";
 import type { AuditHook } from "./AuditHook";
+import type { Refund } from "../entities/Refund";
 
 /** A refund about to be written. The id and timestamp are the repository's to assign. */
 export type NewRefund = Omit<Refund, "id" | "createdAt">;

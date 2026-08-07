@@ -1,12 +1,17 @@
 import Image from "next/image";
-import type { ReactNode } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
-import type { Product } from "@/src/domain/entities/Product";
+
 import {
   DEFAULT_ADMIN_PRODUCT_DIRECTION,
   DEFAULT_ADMIN_PRODUCT_SORT,
 } from "@/src/domain/entities/AdminProductFilters";
+import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
+import { Link } from "@/src/i18n/navigation";
+import { formatMoney } from "@/src/lib/formatMoney";
+import { formatNumber } from "@/src/lib/formatNumber";
+import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
+import { ListSortHeader } from "@/src/presentation/dashboard/list";
 import {
   Badge,
   DataTable,
@@ -18,12 +23,10 @@ import {
   TableRow,
   Thumbnail,
 } from "@/src/presentation/design-system";
-import { ListSortHeader } from "@/src/presentation/dashboard/list";
-import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
-import { Link } from "@/src/i18n/navigation";
-import { formatMoney } from "@/src/lib/formatMoney";
-import { formatNumber } from "@/src/lib/formatNumber";
+
 import { ProductRowActions } from "./ProductRowActions";
+
+import type { ReactNode } from "react";
 
 type ProductsTableProps = {
   products: Product[];

@@ -1,7 +1,7 @@
+import { requirePermission, sessionHas } from "@/src/lib/require-permission";
+import { notificationTemplatesServerApi } from "@/src/presentation/dashboard/notification-templates/notification-template-server-api";
 import { SettingsScreen } from "@/src/presentation/dashboard/settings/SettingsScreen";
 import { taxSettingsServerApi } from "@/src/presentation/dashboard/settings/tax-settings-server-api";
-import { notificationTemplatesServerApi } from "@/src/presentation/dashboard/notification-templates/notification-template-server-api";
-import { requirePermission, sessionHas } from "@/src/lib/require-permission";
 
 // The rate is read during server render over the REST API (BFF) and passed to the
 // presentational screen — never statically cached, so a change shows up on the

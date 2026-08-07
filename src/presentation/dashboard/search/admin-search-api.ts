@@ -1,6 +1,8 @@
-import type { AxiosRequestConfig } from "axios";
 import { apiGet } from "@/src/lib/api/client";
+
 import { adminSearchResponseSchema, type AdminSearchResponse } from "./admin-search-response-schema";
+
+import type { AxiosRequestConfig } from "axios";
 
 export const adminSearchApi = {
   search(query: string, config?: AxiosRequestConfig): Promise<AdminSearchResponse> {

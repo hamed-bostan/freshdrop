@@ -1,15 +1,17 @@
 "use client";
 
-import * as React from "react";
 import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { Category } from "@/src/domain/entities/Category";
 import type { ProductFilters, ProductSort } from "@/src/domain/entities/ProductFilters";
 import { DEFAULT_PRODUCT_SORT, hasProductSearchCriteria } from "@/src/domain/entities/ProductFilters";
+import { useRouter } from "@/src/i18n/navigation";
 import { buildProductFilterParams } from "@/src/lib/api/product-search-params";
 import { cn } from "@/src/lib/utils";
-import { useRouter } from "@/src/i18n/navigation";
-import { focusRing, Select } from "@/src/presentation/design-system";
 import { SearchBar } from "@/src/presentation/components/SearchBar";
+import { focusRing, Select } from "@/src/presentation/design-system";
+
 import { ProductFilterSheet } from "./ProductFilterSheet";
 
 /** Sort options in display order, keyed to their `search` namespace labels. */

@@ -1,13 +1,16 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { diffFields } from "../../entities/ActivityEntry";
-import type { Product } from "../../entities/Product";
-import type { IProductRepository, NewProduct } from "../../repositories/IProductRepository";
-import type { IStockAlertRepository } from "../../repositories/IStockAlertRepository";
-import type { IStockAlertNotifier } from "../../repositories/IStockAlertNotifier";
-import { ValidationError } from "../../errors/ValidationError";
 import { NotFoundError } from "../../errors/NotFoundError";
+import { ValidationError } from "../../errors/ValidationError";
+
 import { FulfillStockAlerts } from "./FulfillStockAlerts";
 import { productSnapshot } from "./productActivity";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
+import type { Product } from "../../entities/Product";
+import type { IProductRepository, NewProduct } from "../../repositories/IProductRepository";
+import type { IStockAlertNotifier } from "../../repositories/IStockAlertNotifier";
+import type { IStockAlertRepository } from "../../repositories/IStockAlertRepository";
+
 
 export class UpdateProduct {
   constructor(

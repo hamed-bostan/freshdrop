@@ -1,14 +1,16 @@
-import type { ActivityActor, NewActivityEntry } from "../../entities/ActivityEntry";
 import { activityValue } from "../../entities/ActivityEntry";
-import type { ItemSubstitution, Order } from "../../entities/Order";
 import { isFullyRefunded, isPicking, refundForLineValue } from "../../entities/Order";
 import { taxShareOfRefund } from "../../entities/Refund";
+import { NotFoundError } from "../../errors/NotFoundError";
+import { ValidationError } from "../../errors/ValidationError";
+
+import type { ActivityActor, NewActivityEntry } from "../../entities/ActivityEntry";
+import type { ItemSubstitution, Order } from "../../entities/Order";
+import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 import type { IUnitOfWork, TransactionalRepositories } from "../../repositories/IUnitOfWork";
-import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
-import { NotFoundError } from "../../errors/NotFoundError";
-import { ValidationError } from "../../errors/ValidationError";
+
 
 /**
  * A picker's resolution of an out-of-stock line:

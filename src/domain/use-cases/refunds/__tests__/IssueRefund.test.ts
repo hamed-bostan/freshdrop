@@ -1,16 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
+
+import { NotFoundError } from "../../../errors/NotFoundError";
+import { ValidationError } from "../../../errors/ValidationError";
+import { IssueRefund } from "../IssueRefund";
+
 import type { ActivityActor } from "../../../entities/ActivityEntry";
 import type { Order, OrderItem } from "../../../entities/Order";
+import type { IDeliverySlotRepository } from "../../../repositories/IDeliverySlotRepository";
+import type { IOrderRepository } from "../../../repositories/IOrderRepository";
+import type { IProductRepository } from "../../../repositories/IProductRepository";
 import type { NewRefund, IRefundRepository } from "../../../repositories/IRefundRepository";
 import type { IReturnRepository } from "../../../repositories/IReturnRepository";
-import type { IOrderRepository } from "../../../repositories/IOrderRepository";
-import type { IWalletRepository } from "../../../repositories/IWalletRepository";
-import type { IProductRepository } from "../../../repositories/IProductRepository";
-import type { IDeliverySlotRepository } from "../../../repositories/IDeliverySlotRepository";
 import type { IUnitOfWork, TransactionalRepositories } from "../../../repositories/IUnitOfWork";
-import { ValidationError } from "../../../errors/ValidationError";
-import { NotFoundError } from "../../../errors/NotFoundError";
-import { IssueRefund } from "../IssueRefund";
+import type { IWalletRepository } from "../../../repositories/IWalletRepository";
 
 /** Throws for any method not explicitly overridden — keeps each fake to just what a test exercises. */
 function stub<T extends object>(overrides: Partial<T>): T {

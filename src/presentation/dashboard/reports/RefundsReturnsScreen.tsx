@@ -1,16 +1,16 @@
 import { getLocale, getTranslations } from "next-intl/server";
+
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
-import type { Locale } from "@/src/i18n/routing";
 import type { ComparisonMode } from "@/src/lib/api/analytics-params";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { cn } from "@/src/lib/utils";
-import { RefundOverviewMetricGrid } from "./RefundOverviewMetricGrid";
+
 import { InspectionRecoveryQueue } from "./InspectionRecoveryQueue";
 import { RecoveryBreakdownPanels } from "./RecoveryBreakdownPanels";
+import { RefundOverviewMetricGrid } from "./RefundOverviewMetricGrid";
 import { RefundTrendChart } from "./RefundTrendChart";
-import type { RefundReportWire } from "./refund-report-response-schema";
 import { ReportHeader } from "./ReportHeader";
 import { ReturnCasesTable, type ReturnCaseRow } from "./ReturnCasesTable";
 import { ReturnInsightBanner } from "./ReturnInsightBanner";
@@ -18,13 +18,15 @@ import { ReturnMetricGrid } from "./ReturnMetricGrid";
 import { ReturnProcessingStatus } from "./ReturnProcessingStatus";
 import { ReturnReasonsPanel } from "./ReturnReasonsPanel";
 
+import type { RefundReportWire } from "./refund-report-response-schema";
+
 type RefundView = "overview" | "items";
 type Props = { report: RefundReportWire; customers: CustomerOrderSummary[]; from: string; to: string; isCustomRange: boolean; compareMode: ComparisonMode; view: RefundView; queryString: string };
 
 export async function RefundsReturnsScreen({ report, customers, from, to, isCustomRange, compareMode, view, queryString }: Props) {
   const t = await getTranslations("dashRefundReport");
   const ta = await getTranslations("dashAnalytics");
-  const locale = await getLocale() as Locale;
+  const locale = await getLocale();
   const customerById = new Map(customers.map((item) => [item.userId, item]));
   const rows: ReturnCaseRow[] = report.cases.map((item) => ({
     id: item.id,

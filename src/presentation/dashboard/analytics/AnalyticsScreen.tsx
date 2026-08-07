@@ -1,20 +1,22 @@
 import { getLocale, getTranslations } from "next-intl/server";
+
 import { ANALYTICS_RANGE_PRESETS } from "@/src/domain/entities/Analytics";
-import type { Locale } from "@/src/i18n/routing";
 import { wireRangeToParams, type ComparisonMode } from "@/src/lib/api/analytics-params";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
-import type { AnalyticsOverviewWire } from "./analytics-response-schema";
+
 import { AnalyticsComparePicker } from "./AnalyticsComparePicker";
 import { AnalyticsExportMenu } from "./AnalyticsExportMenu";
-import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./AnalyticsRangePicker";
-import { resolveComparePreviews } from "./compare-preview";
-import { RevenueChart } from "./RevenueChart";
-import { TopPerformancePanel } from "./TopPerformancePanel";
 import {
   AnalyticsInsights,
   AnalyticsKpiStrip,
   PriorityActionsCard,
 } from "./AnalyticsOverviewPanels";
+import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./AnalyticsRangePicker";
+import { resolveComparePreviews } from "./compare-preview";
+import { RevenueChart } from "./RevenueChart";
+import { TopPerformancePanel } from "./TopPerformancePanel";
+
+import type { AnalyticsOverviewWire } from "./analytics-response-schema";
 
 type AnalyticsScreenProps = {
   analytics: AnalyticsOverviewWire;
@@ -26,7 +28,7 @@ type AnalyticsScreenProps = {
 
 export async function AnalyticsScreen({ analytics, from, to, isCustomRange, compareMode }: AnalyticsScreenProps) {
   const t = await getTranslations("dashAnalytics");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
   const { from: activeFrom, to: activeTo } = wireRangeToParams(analytics.previousRange);
   const previews = resolveComparePreviews(from, to, locale);
   const compareOptions = [

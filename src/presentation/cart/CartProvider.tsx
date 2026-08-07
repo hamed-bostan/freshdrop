@@ -10,8 +10,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
+
 import { priceCart, type Cart } from "@/src/domain/entities/Cart";
 import type { Product } from "@/src/domain/entities/Product";
+
 import { cartsApi } from "./cart-api";
 
 /**

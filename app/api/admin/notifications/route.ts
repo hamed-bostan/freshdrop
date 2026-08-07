@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import type { AdminNotification } from "@/src/domain/entities/AdminNotification";
 import { GetNotificationFeed } from "@/src/domain/use-cases/notifications/GetNotificationFeed";
 import { MarkNotificationsSeen } from "@/src/domain/use-cases/notifications/MarkNotificationsSeen";
@@ -10,10 +11,10 @@ import {
   reviewRepository,
   userRepository,
 } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
-import { isOwner } from "@/src/lib/require-admin";
 import { visibleActivityEntityTypes } from "@/src/lib/api/activity-visibility";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { isOwner } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Every open reads the log, the stored notifications and the attention counts
 // fresh — a badge that showed a cached count would be worse than none.

@@ -1,4 +1,5 @@
 import { pipelineCounts, type OrderPipelineStage } from "../../entities/OrderPipelineStage";
+
 import type { IAnalyticsOverviewRepository } from "../../repositories/IAnalyticsRepository";
 
 /** How many orders sit at each pipeline stage, plus the store's whole order count. */

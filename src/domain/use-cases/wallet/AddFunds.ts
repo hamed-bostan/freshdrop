@@ -1,5 +1,6 @@
-import type { IWalletRepository } from "../../repositories/IWalletRepository";
 import { ValidationError } from "../../errors/ValidationError";
+
+import type { IWalletRepository } from "../../repositories/IWalletRepository";
 
 /** Largest single top-up, mirroring the add-money keypad's digit cap (6 digits). */
 const MAX_FUNDS = 999_999;

@@ -1,6 +1,6 @@
+import { orderNoteListResponseSchema } from "@/src/contracts/order-note-schema";
 import type { OrderNote } from "@/src/domain/entities/OrderNote";
 import { serverApiGet } from "@/src/lib/api/server-client";
-import { orderNoteListResponseSchema } from "@/src/contracts/order-note-schema";
 
 /**
  * Server-side reads of an order's internal notes for the dashboard (BFF), fetched

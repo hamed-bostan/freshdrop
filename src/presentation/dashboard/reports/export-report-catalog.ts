@@ -1,5 +1,5 @@
 import { Boxes, ClipboardList, Package, Users } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+
 import {
   EXPORT_JOB_REPORT_IDS,
   EXPORT_REPORT_PERIOD_CAPABLE,
@@ -9,6 +9,8 @@ import {
 } from "@/src/domain/entities/ExportJob";
 import type { Permission } from "@/src/domain/entities/Permission";
 import { nextCalendarDay } from "@/src/lib/api/analytics-params";
+
+import type { LucideIcon } from "lucide-react";
 
 /** Re-exported under the name this module has always used it by. */
 export type ExportReportId = ExportJobReportId;

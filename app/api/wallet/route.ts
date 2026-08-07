@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+
 import { GetWallet } from "@/src/domain/use-cases/wallet/GetWallet";
 import { walletRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Per-user data, read per request — never statically cached.
 export const dynamic = "force-dynamic";

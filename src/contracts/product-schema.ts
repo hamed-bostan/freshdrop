@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { DIETARY_TAGS, PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
 
 const DIETARY_SET = new Set<string>(DIETARY_TAGS);

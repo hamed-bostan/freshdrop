@@ -1,4 +1,3 @@
-import type { Prisma } from "@prisma/client";
 import {
   toExportFormat,
   toExportJobReportId,
@@ -13,6 +12,8 @@ import {
 } from "@/src/domain/entities/ScheduledExport";
 import type { IScheduledExportRepository } from "@/src/domain/repositories/IScheduledExportRepository";
 import { prisma } from "@/src/infrastructure/prisma/client";
+
+import type { Prisma } from "@prisma/client";
 
 /**
  * Scheduled-export persistence backed by PostgreSQL via Prisma. Server-side

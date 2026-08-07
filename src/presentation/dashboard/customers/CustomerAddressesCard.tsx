@@ -1,7 +1,9 @@
-import { useTranslations } from "next-intl";
 import { Dumbbell, House, MapPin, PackageCheck, type LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
 import { Badge, Icon } from "@/src/presentation/design-system";
+
 import { PANEL_CLASS, PanelHeading } from "./PanelHeading";
 
 const ADDRESS_ICON: Record<DeliveryLocation["kind"], LucideIcon> = {

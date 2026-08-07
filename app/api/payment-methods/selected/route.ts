@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { selectPaymentMethodSchema } from "@/src/contracts/payment-method-schema";
 import { GetSelectedPaymentMethod } from "@/src/domain/use-cases/payment-methods/GetSelectedPaymentMethod";
 import { SetSelectedPaymentMethod } from "@/src/domain/use-cases/payment-methods/SetSelectedPaymentMethod";
 import { paymentMethodRepository, userRepository, walletRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
-import { selectPaymentMethodSchema } from "@/src/contracts/payment-method-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -11,6 +11,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Per-user preference, read/written per request — never statically cached.
 export const dynamic = "force-dynamic";

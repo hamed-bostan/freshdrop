@@ -1,8 +1,8 @@
 import { isValidGeoPoint, type GeoPoint } from "@/src/domain/entities/Place";
 import { ReverseGeocode } from "@/src/domain/use-cases/geocoding/ReverseGeocode";
 import { geocodingRepository } from "@/src/infrastructure/container";
-import LocationDetailScreen from "@/src/presentation/map/LocationDetailScreen";
 import { DEFAULT_CENTER } from "@/src/presentation/map/constants";
+import LocationDetailScreen from "@/src/presentation/map/LocationDetailScreen";
 
 interface LocationDetailsPageProps {
   params: Promise<{ locale: string }>;

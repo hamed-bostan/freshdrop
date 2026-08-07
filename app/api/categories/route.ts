@@ -1,11 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { categoryFormSchema } from "@/src/contracts/category-schema";
+import { CreateCategory } from "@/src/domain/use-cases/categories/CreateCategory";
 import { GetCategories } from "@/src/domain/use-cases/categories/GetCategories";
 import { GetCategoryBySlug } from "@/src/domain/use-cases/categories/GetCategoryBySlug";
-import { CreateCategory } from "@/src/domain/use-cases/categories/CreateCategory";
 import { categoryRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
-import { categoryFormSchema } from "@/src/contracts/category-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -13,6 +13,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Categories are read from Postgres per request — never statically cached.
 export const dynamic = "force-dynamic";

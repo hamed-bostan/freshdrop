@@ -1,9 +1,10 @@
-import { useLocale, useTranslations } from "next-intl";
 import { CreditCard } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+
 import type { Wallet } from "@/src/domain/entities/Wallet";
+import { formatMoney } from "@/src/lib/formatMoney";
 import { Icon } from "@/src/presentation/design-system";
 import { TransactionItem } from "@/src/presentation/wallet/components/TransactionItem";
-import { formatMoney } from "@/src/lib/formatMoney";
 
 /** How many of the customer's most recent wallet movements the panel shows. */
 const RECENT_TRANSACTION_COUNT = 8;

@@ -1,4 +1,5 @@
 import { granularityFor, previousPeriod, rangeToWire, type DateRange } from "../../entities/Analytics";
+
 import type { CustomerInsightsReport } from "../../entities/CustomerInsightsReport";
 import type { IAnalyticsRepository } from "../../repositories/IAnalyticsRepository";
 

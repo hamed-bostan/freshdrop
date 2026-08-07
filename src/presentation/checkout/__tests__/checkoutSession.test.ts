@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
+
 import { checkoutItemsHref, checkoutReviewHref, firstBookableSlot, maskPhone, reviveSlot, reviveSubstitutions, walletAmounts } from "../checkoutSession";
 
 const days: DeliverySlotDay[] = [{

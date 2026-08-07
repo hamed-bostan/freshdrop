@@ -1,13 +1,14 @@
 "use client";
 
-import * as React from "react";
-import { useLocale, useTranslations } from "next-intl";
 import { MoreVertical as MoreHorizontal, Search } from "lucide-react";
-import type { Locale } from "@/src/i18n/routing";
+import { useLocale, useTranslations } from "next-intl";
+import * as React from "react";
+
 import { Link } from "@/src/i18n/navigation";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { DataTable, Icon, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
+
 import type { PaymentReportWire } from "./payment-report-response-schema";
 
 type Issue = PaymentReportWire["issues"][number] & { customerName: string };
@@ -24,7 +25,7 @@ const STATUS_TONE: Record<Issue["status"], string> = {
  */
 export function PaymentIssuesTable({ issues }: { issues: Issue[] }) {
   const t = useTranslations("dashPaymentReport");
-  const locale = useLocale() as Locale;
+  const locale = useLocale();
   const [query, setQuery] = React.useState("");
   const [status, setStatus] = React.useState<"all" | Issue["status"]>("all");
 

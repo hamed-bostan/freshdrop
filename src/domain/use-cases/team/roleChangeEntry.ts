@@ -1,6 +1,7 @@
-import type { ActivityActor, NewActivityEntry } from "../../entities/ActivityEntry";
 import { singleChange } from "../../entities/ActivityEntry";
 import { ROLE_CHANGE_FIELD } from "../../entities/RoleChange";
+
+import type { ActivityActor, NewActivityEntry } from "../../entities/ActivityEntry";
 import type { UserRole } from "../../entities/User";
 
 /**

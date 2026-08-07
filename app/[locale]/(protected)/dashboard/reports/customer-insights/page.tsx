@@ -1,7 +1,7 @@
 import { hasCustomAnalyticsRange, parseAnalyticsRange, parseComparisonMode, toDateParam, toInclusiveEndParam } from "@/src/lib/api/analytics-params";
-import { CustomerInsightsScreen } from "@/src/presentation/dashboard/reports/CustomerInsightsScreen";
 import { customerInsightsServerApi } from "@/src/presentation/dashboard/reports/customer-insights-server-api";
 import { customerSegmentsServerApi } from "@/src/presentation/dashboard/reports/customer-segments-server-api";
+import { CustomerInsightsScreen } from "@/src/presentation/dashboard/reports/CustomerInsightsScreen";
 
 export const dynamic = "force-dynamic";
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };

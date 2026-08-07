@@ -1,18 +1,23 @@
 import { activityValue } from "../../entities/ActivityEntry";
+import { isAdminStockMovementReason } from "../../entities/StockMovement";
+import { NotFoundError } from "../../errors/NotFoundError";
+import { ValidationError } from "../../errors/ValidationError";
+import { NotifyAdmins } from "../notifications/NotifyAdmins";
+
+import { FulfillStockAlerts } from "./FulfillStockAlerts";
+
 import type { Product } from "../../entities/Product";
 import type { AdminStockMovementReason } from "../../entities/StockMovement";
-import { isAdminStockMovementReason } from "../../entities/StockMovement";
-import type { IProductRepository } from "../../repositories/IProductRepository";
-import type { IStockAlertRepository } from "../../repositories/IStockAlertRepository";
-import type { IStockAlertNotifier } from "../../repositories/IStockAlertNotifier";
-import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { IAdminNotificationRepository } from "../../repositories/IAdminNotificationRepository";
 import type { IEmailSender } from "../../repositories/IEmailSender";
 import type { INotificationTemplateRepository } from "../../repositories/INotificationTemplateRepository";
-import { ValidationError } from "../../errors/ValidationError";
-import { NotFoundError } from "../../errors/NotFoundError";
-import { FulfillStockAlerts } from "./FulfillStockAlerts";
-import { NotifyAdmins } from "../notifications/NotifyAdmins";
+import type { IProductRepository } from "../../repositories/IProductRepository";
+import type { IStockAlertNotifier } from "../../repositories/IStockAlertNotifier";
+import type { IStockAlertRepository } from "../../repositories/IStockAlertRepository";
+import type { IUserRepository } from "../../repositories/IUserRepository";
+
+
+
 
 export type AdjustStockInput = {
   productId: string;

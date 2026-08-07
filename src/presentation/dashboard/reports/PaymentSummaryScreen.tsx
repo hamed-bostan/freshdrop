@@ -1,5 +1,6 @@
-import { getLocale, getTranslations } from "next-intl/server";
 import { AlertTriangle, ArrowDown, ArrowUp, CalendarDays, CheckCircle2, CircleDollarSign, CreditCard, ExternalLink, Landmark, Percent } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+
 import { ANALYTICS_RANGE_PRESETS, percentChange } from "@/src/domain/entities/Analytics";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
@@ -9,21 +10,24 @@ import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
 import { Icon } from "@/src/presentation/design-system";
-import { StatSparkline } from "../StatSparkline";
+
 import { AnalyticsComparePicker } from "../analytics/AnalyticsComparePicker";
 import { AnalyticsExportMenu } from "../analytics/AnalyticsExportMenu";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "../analytics/AnalyticsRangePicker";
 import { resolveComparePreviews } from "../analytics/compare-preview";
+import { StatSparkline } from "../StatSparkline";
+
 import { PaymentIssuesTable } from "./PaymentIssuesTable";
-import type { PaymentReportWire } from "./payment-report-response-schema";
 import { PaymentTrendChart } from "./PaymentTrendChart";
+
+import type { PaymentReportWire } from "./payment-report-response-schema";
 
 type Props = { report: PaymentReportWire; customers: CustomerOrderSummary[]; from: string; to: string; isCustomRange: boolean; compareMode: ComparisonMode };
 
 export async function PaymentSummaryScreen({ report, customers, from, to, isCustomRange, compareMode }: Props) {
   const t = await getTranslations("dashPaymentReport");
   const ta = await getTranslations("dashAnalytics");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
   const { from: activeFrom, to: activeTo } = wireRangeToParams(report.previousRange);
   const previews = resolveComparePreviews(from, to, locale);
   const compareOptions = [

@@ -1,4 +1,5 @@
 import { DASHBOARD_ROLES, type User } from "../../entities/User";
+
 import type { IUserRepository } from "../../repositories/IUserRepository";
 
 /**

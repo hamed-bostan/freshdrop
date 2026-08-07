@@ -1,7 +1,12 @@
-import type { Cart } from "../../entities/Cart";
 import { lineTaxAmount } from "../../entities/Cart";
-import type { DeliveryWindow } from "../../entities/DeliveryWindow";
 import { formatWindowRange } from "../../entities/DeliveryWindow";
+import { InsufficientWalletBalanceError } from "../../errors/InsufficientWalletBalanceError";
+import { SlotUnavailableError } from "../../errors/SlotUnavailableError";
+import { ValidationError } from "../../errors/ValidationError";
+import { SLOT_HORIZON_DAYS } from "../delivery-slots/GetDeliverySlots";
+
+import type { Cart } from "../../entities/Cart";
+import type { DeliveryWindow } from "../../entities/DeliveryWindow";
 import type {
   DeliveryType,
   Order,
@@ -13,10 +18,7 @@ import type { GeoPoint } from "../../entities/Place";
 import type { AuditHook } from "../../repositories/AuditHook";
 import type { IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
 import type { IUnitOfWork } from "../../repositories/IUnitOfWork";
-import { SlotUnavailableError } from "../../errors/SlotUnavailableError";
-import { InsufficientWalletBalanceError } from "../../errors/InsufficientWalletBalanceError";
-import { ValidationError } from "../../errors/ValidationError";
-import { SLOT_HORIZON_DAYS } from "../delivery-slots/GetDeliverySlots";
+
 
 /** The out-of-stock pre-approval used when no preference was set for a line. */
 const DEFAULT_SUBSTITUTION_PREFERENCE: SubstitutionPreference = "substitute";

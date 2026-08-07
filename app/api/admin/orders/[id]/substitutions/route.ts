@@ -1,4 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { orderSubstitutionSchema } from "@/src/contracts/order-substitution-schema";
 import { ResolveItemSubstitution } from "@/src/domain/use-cases/orders/ResolveItemSubstitution";
 import {
   orderRepository,
@@ -6,8 +8,6 @@ import {
   unitOfWork,
   orderNotifier,
 } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
-import { orderSubstitutionSchema } from "@/src/contracts/order-substitution-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -15,6 +15,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Mutates order/stock/wallet state — never statically cached.
 export const dynamic = "force-dynamic";

@@ -1,16 +1,22 @@
 "use client";
 
-import * as React from "react";
-import { useLocale, useTranslations } from "next-intl";
-import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PackagePlus } from "lucide-react";
-import { ADMIN_STOCK_MOVEMENT_REASONS } from "@/src/domain/entities/StockMovement";
+import { useLocale, useTranslations } from "next-intl";
+import * as React from "react";
+import { useForm, useWatch } from "react-hook-form";
+
 import {
   stockAdjustmentSchema,
   STOCK_ADJUSTMENT_DIRECTIONS,
   type StockAdjustmentInput,
 } from "@/src/contracts/stock-adjustment-schema";
+import { ADMIN_STOCK_MOVEMENT_REASONS } from "@/src/domain/entities/StockMovement";
+import { useRouter } from "@/src/i18n/navigation";
+import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { formatNumber } from "@/src/lib/formatNumber";
+import { formErrorMessage } from "@/src/lib/formErrorMessage";
 import {
   Button,
   FormMessage,
@@ -21,12 +27,7 @@ import {
   Select,
   TextField,
 } from "@/src/presentation/design-system";
-import type { Locale } from "@/src/i18n/routing";
-import { useRouter } from "@/src/i18n/navigation";
-import { ApiError } from "@/src/lib/api/ApiError";
-import { localizeApiError } from "@/src/lib/api/localizeApiError";
-import { formErrorMessage } from "@/src/lib/formErrorMessage";
-import { formatNumber } from "@/src/lib/formatNumber";
+
 import { productsApi } from "./product-api";
 
 type AdjustStockButtonProps = {
@@ -71,7 +72,7 @@ export function AdjustStockButton({
   const t = useTranslations("dashProducts");
   const tApiErrors = useTranslations("apiErrors");
   const tFormErrors = useTranslations("formErrors");
-  const locale = useLocale() as Locale;
+  const locale = useLocale();
   const router = useRouter();
   const [internalOpen, setInternalOpen] = React.useState(false);
   const open = controlledOpen ?? internalOpen;

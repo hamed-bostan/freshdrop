@@ -1,10 +1,12 @@
 import { getTranslations } from "next-intl/server";
+
 import type { AdminProductFilters } from "@/src/domain/entities/AdminProductFilters";
 import type { Category } from "@/src/domain/entities/Category";
 import type { Page } from "@/src/domain/entities/Pagination";
 import type { Product } from "@/src/domain/entities/Product";
 import type { StockMovementFilters } from "@/src/domain/entities/StockMovement";
 import type { StockMovementEntry } from "@/src/presentation/dashboard/products/stock-movement-response-schema";
+
 import { InventoryMovementsView } from "./InventoryMovementsView";
 import { InventoryProductsView } from "./InventoryProductsView";
 import { InventoryTabs, type InventoryView } from "./InventoryTabs";

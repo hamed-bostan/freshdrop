@@ -1,13 +1,15 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import { Check, X } from "lucide-react";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { CategoryBulkAction } from "@/src/contracts/bulk-action-schema";
-import { Button, Icon } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { useBulkSelection } from "@/src/presentation/dashboard/bulk";
+import { Button, Icon } from "@/src/presentation/design-system";
+
 import { categoriesApi } from "./category-api";
 
 /**

@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { BulkUpdateProducts } from "@/src/domain/use-cases/products/BulkUpdateProducts";
-import type { BulkProductChange } from "@/src/domain/repositories/IProductRepository";
-import { productRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
+
 import { productBulkRequestSchema, type ProductBulkAction } from "@/src/contracts/bulk-action-schema";
+import type { BulkProductChange } from "@/src/domain/repositories/IProductRepository";
+import { BulkUpdateProducts } from "@/src/domain/use-cases/products/BulkUpdateProducts";
+import { productRepository } from "@/src/infrastructure/container";
 import {
   errorResponse,
   errorResponseFromException,
@@ -11,6 +11,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 

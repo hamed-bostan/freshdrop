@@ -1,9 +1,10 @@
+import { resolveOrderSearch } from "./resolveOrderSearch";
+
 import type { AdminOrderFilters, AdminOrderSort } from "../../entities/AdminOrderFilters";
 import type { Order } from "../../entities/Order";
 import type { Page, PageRequest } from "../../entities/Pagination";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IUserRepository } from "../../repositories/IUserRepository";
-import { resolveOrderSearch } from "./resolveOrderSearch";
 
 /**
  * One page of the admin order-tracking list. Backs `GET /api/admin/orders`.

@@ -1,9 +1,9 @@
+import type { Page, PageRequest } from "../entities/Pagination";
 import type {
   StockMovement,
   StockMovementFilters,
   StockMovementSort,
 } from "../entities/StockMovement";
-import type { Page, PageRequest } from "../entities/Pagination";
 
 /**
  * Read access to the append-only stock ledger.

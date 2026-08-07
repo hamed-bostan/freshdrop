@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+
 import type { GeoPoint } from "@/src/domain/entities/Place";
 import { Skeleton } from "@/src/presentation/design-system";
 

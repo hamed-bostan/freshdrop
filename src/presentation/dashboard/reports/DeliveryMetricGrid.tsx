@@ -1,10 +1,13 @@
 import { Clock3, TimerOff, Truck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 import { percentChange } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
-import type { DeliveryPerformanceWire } from "./delivery-performance-response-schema";
+
 import { SalesMetricCard } from "./SalesMetricCard";
+
+import type { DeliveryPerformanceWire } from "./delivery-performance-response-schema";
 
 export async function DeliveryMetricGrid({ report, locale }: { report: DeliveryPerformanceWire; locale: Locale }) {
   const t = await getTranslations("dashDeliveryReport");

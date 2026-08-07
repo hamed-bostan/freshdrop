@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
+
 import { Icon, Input } from "@/src/presentation/design-system";
+
 import { useListParams } from "./useListParams";
 
 /** How long typing must pause before the search navigates. */

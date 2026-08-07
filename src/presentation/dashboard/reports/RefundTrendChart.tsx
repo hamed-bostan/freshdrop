@@ -1,9 +1,10 @@
 "use client";
 
-import * as React from "react";
-import { useLocale, useTranslations } from "next-intl";
 import { Info } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import * as React from "react";
 import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
+
 import type { RevenuePoint } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
 import { formatShortDate } from "@/src/lib/formatAnalyticsDate";
@@ -19,7 +20,7 @@ type ChartRow = { label: string; current: number; previous: number };
 
 export function RefundTrendChart({ points, previousPoints, granularity, range, previousRange, title, defaultMetric = "count" }: Props) {
   const t = useTranslations("dashRefundReport");
-  const locale = useLocale() as Locale;
+  const locale = useLocale();
   const [metric, setMetric] = React.useState<Metric>(defaultMetric);
   const [interval, setInterval] = React.useState<Interval>(granularity);
   const availableIntervals: Interval[] = granularity === "month" ? ["month"] : granularity === "week" ? ["week", "month"] : ["day", "week", "month"];

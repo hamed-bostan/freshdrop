@@ -1,12 +1,16 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { diffFields } from "../../entities/ActivityEntry";
+import { NotFoundError } from "../../errors/NotFoundError";
+import { UniqueConstraintError } from "../../errors/UniqueConstraintError";
+import { ValidationError } from "../../errors/ValidationError";
+
+import { categorySnapshot } from "./categoryActivity";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
 import type { Category } from "../../entities/Category";
 import type { ICategoryRepository, NewCategory } from "../../repositories/ICategoryRepository";
 import type { IImageStorageRepository } from "../../repositories/IImageStorageRepository";
-import { UniqueConstraintError } from "../../errors/UniqueConstraintError";
-import { ValidationError } from "../../errors/ValidationError";
-import { NotFoundError } from "../../errors/NotFoundError";
-import { categorySnapshot } from "./categoryActivity";
+
+
 
 export class UpdateCategory {
   constructor(

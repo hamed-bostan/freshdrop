@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { IsSubscribedToStockAlert } from "@/src/domain/use-cases/stock-alerts/IsSubscribedToStockAlert";
 import { SubscribeToStockAlert } from "@/src/domain/use-cases/stock-alerts/SubscribeToStockAlert";
 import { UnsubscribeFromStockAlert } from "@/src/domain/use-cases/stock-alerts/UnsubscribeFromStockAlert";
 import { stockAlertRepository, productRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Per-user data — never statically cached.
 export const dynamic = "force-dynamic";

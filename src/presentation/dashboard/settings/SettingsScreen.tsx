@@ -1,8 +1,11 @@
 import { useTranslations } from "next-intl";
+
 import type { NotificationTemplateWire } from "@/src/presentation/dashboard/notification-templates/notification-template-response-schema";
 import { NotificationTemplateEditor } from "@/src/presentation/dashboard/notification-templates/NotificationTemplateEditor";
-import type { TaxSettingsWire } from "./tax-settings-response-schema";
+
 import { TaxSettingsForm } from "./TaxSettingsForm";
+
+import type { TaxSettingsWire } from "./tax-settings-response-schema";
 
 type SettingsScreenProps = {
   /** The store's current VAT configuration, fetched over the BFF during server render. */

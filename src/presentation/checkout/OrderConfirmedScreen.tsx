@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+
 import type { Order } from "@/src/domain/entities/Order";
 import { Link } from "@/src/i18n/navigation";
 import { Button } from "@/src/presentation/design-system";

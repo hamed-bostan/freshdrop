@@ -1,11 +1,12 @@
 "use client";
 
-import * as React from "react";
+import { ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Collapsible } from "radix-ui";
-import { ChevronDown } from "lucide-react";
-import { focusRing, Icon, stillWhenReduced } from "@/src/presentation/design-system";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
+import { focusRing, Icon, stillWhenReduced } from "@/src/presentation/design-system";
 
 interface OrderLocationRowProps {
   location: string;

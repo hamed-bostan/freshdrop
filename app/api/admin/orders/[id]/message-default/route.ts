@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { GetOrderMessageDefault } from "@/src/domain/use-cases/orders/GetOrderMessageDefault";
 import { orderRepository, notificationTemplateRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // The template row can change at any time — never statically cached.
 export const dynamic = "force-dynamic";

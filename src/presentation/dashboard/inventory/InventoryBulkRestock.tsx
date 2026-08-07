@@ -1,14 +1,21 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PackagePlus } from "lucide-react";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+import { useForm } from "react-hook-form";
+
 import {
   stockAdjustmentSchema,
   type StockAdjustmentInput,
 } from "@/src/contracts/stock-adjustment-schema";
+import { useRouter } from "@/src/i18n/navigation";
+import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { formErrorMessage } from "@/src/lib/formErrorMessage";
+import { useBulkSelection } from "@/src/presentation/dashboard/bulk";
+import { productsApi } from "@/src/presentation/dashboard/products/product-api";
 import {
   Button,
   FormMessage,
@@ -18,12 +25,6 @@ import {
   Icon,
   TextField,
 } from "@/src/presentation/design-system";
-import { useRouter } from "@/src/i18n/navigation";
-import { ApiError } from "@/src/lib/api/ApiError";
-import { localizeApiError } from "@/src/lib/api/localizeApiError";
-import { formErrorMessage } from "@/src/lib/formErrorMessage";
-import { useBulkSelection } from "@/src/presentation/dashboard/bulk";
-import { productsApi } from "@/src/presentation/dashboard/products/product-api";
 
 /**
  * Bulk restock: add the same count of units, for the same reason, to every

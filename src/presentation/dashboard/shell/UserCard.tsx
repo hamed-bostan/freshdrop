@@ -1,10 +1,12 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { Avatar, Badge } from "@/src/presentation/design-system";
+import { useTranslations } from "next-intl";
+
 import type { UserRole } from "@/src/domain/entities/User";
 import { cn } from "@/src/lib/utils";
+import { Avatar, Badge } from "@/src/presentation/design-system";
+
 import type { DashboardViewer } from "./viewer";
 
 /** Mirrors `TeamTable`'s role tones — same role, same colour, wherever it's shown. */

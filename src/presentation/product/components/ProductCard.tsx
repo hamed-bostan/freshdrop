@@ -1,15 +1,18 @@
-import { useLocale, useTranslations } from "next-intl";
 import { Star } from "lucide-react";
-import { focusRing, Icon } from "@/src/presentation/design-system";
-import { cn } from "@/src/lib/utils";
-import { formatMoney } from "@/src/lib/formatMoney";
-import { formatNumber, formatRating } from "@/src/lib/formatNumber";
-import { CartQuantityControl } from "./CartQuantityControl";
-import { FavoriteToggle } from "./FavoriteToggle";
+import Image from "next/image";
+import { useLocale, useTranslations } from "next-intl";
+
 import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
-import Image from "next/image";
 import { Link } from "@/src/i18n/navigation";
+import { formatMoney } from "@/src/lib/formatMoney";
+import { formatNumber, formatRating } from "@/src/lib/formatNumber";
+import { cn } from "@/src/lib/utils";
+import { focusRing, Icon } from "@/src/presentation/design-system";
+
+import { CartQuantityControl } from "./CartQuantityControl";
+import { FavoriteToggle } from "./FavoriteToggle";
+
 
 /**
  * Promo badges are stored as free-form text on the product, but the catalogue draws from a

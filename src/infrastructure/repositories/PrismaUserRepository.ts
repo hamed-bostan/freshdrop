@@ -1,16 +1,17 @@
 import { Prisma } from "@prisma/client";
+
 import { changedFields } from "@/src/domain/entities/ActivityEntry";
 import type { AdminNotificationAction } from "@/src/domain/entities/AdminNotification";
 import { toAdminNotificationAction } from "@/src/domain/entities/AdminNotification";
 import type { User, UserRole } from "@/src/domain/entities/User";
 import { PLACEHOLDER_USER_NAME, toUserRole } from "@/src/domain/entities/User";
+import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import type {
   IUserRepository,
   NewUser,
   ProfileUpdate,
   RoleChangeBatch,
 } from "@/src/domain/repositories/IUserRepository";
-import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { prisma } from "@/src/infrastructure/prisma/client";
 
 /**

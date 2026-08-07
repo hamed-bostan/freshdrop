@@ -1,9 +1,10 @@
 "use client";
 
-import * as React from "react";
+import { ImagePlus } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { ImagePlus } from "lucide-react";
+import * as React from "react";
+
 import { Button, FormMessage, Icon, Thumbnail } from "@/src/presentation/design-system";
 import { imagesApi } from "@/src/presentation/images/image-api";
 

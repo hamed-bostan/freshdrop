@@ -1,13 +1,14 @@
+import { ArrowDown, ArrowUp, Info } from "lucide-react";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
-import { ArrowDown, ArrowUp, Info } from "lucide-react";
+
 import { percentChange, type TopProduct } from "@/src/domain/entities/Analytics";
-import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
+import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
-import { DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Thumbnail } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
+import { DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Thumbnail } from "@/src/presentation/design-system";
 
 export async function TopSellingProductsTable({ products, locale }: { products: TopProduct[]; totalRevenue: number; locale: Locale }) {
   const t = await getTranslations("dashReports");

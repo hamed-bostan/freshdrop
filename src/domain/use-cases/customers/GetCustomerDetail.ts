@@ -1,10 +1,11 @@
-import type { CustomerDetail, CustomerLifetime } from "../../entities/CustomerDetail";
 import { orderRecognizedRevenue, type Order } from "../../entities/Order";
 import { toPublicReview } from "../../entities/Review";
 import { NotFoundError } from "../../errors/NotFoundError";
+
+import type { CustomerDetail, CustomerLifetime } from "../../entities/CustomerDetail";
 import type { IDeliveryLocationRepository } from "../../repositories/IDeliveryLocationRepository";
-import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IOrderNoteRepository } from "../../repositories/IOrderNoteRepository";
+import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IReviewRepository } from "../../repositories/IReviewRepository";
 import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { IWalletRepository } from "../../repositories/IWalletRepository";

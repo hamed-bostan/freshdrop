@@ -1,9 +1,11 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { activityValue } from "../../entities/ActivityEntry";
-import type { IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ResourceInUseError } from "../../errors/ResourceInUseError";
+
 import { deliveryWindowSnapshot } from "./deliveryWindowActivity";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
+import type { IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
 
 /**
  * Remove a delivery window from the catalog — refused while orders are still

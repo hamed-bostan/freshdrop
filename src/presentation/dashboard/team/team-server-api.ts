@@ -1,5 +1,5 @@
-import { serverApiGet } from "@/src/lib/api/server-client";
 import { teamMemberListResponseSchema, type TeamMember } from "@/src/contracts/team-response-schema";
+import { serverApiGet } from "@/src/lib/api/server-client";
 
 /**
  * Server-side team read for the admin dashboard (BFF). `serverApiGet` forwards the

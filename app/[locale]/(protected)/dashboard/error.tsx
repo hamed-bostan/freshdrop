@@ -1,7 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { RotateCcw } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { Button, Icon } from "@/src/presentation/design-system";
 
 /**

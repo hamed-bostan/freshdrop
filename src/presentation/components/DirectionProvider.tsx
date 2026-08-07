@@ -1,8 +1,10 @@
 "use client";
 
 import { Direction } from "radix-ui";
-import type { ReactNode } from "react";
+
 import type { Direction as TextDirection } from "@/src/i18n/direction";
+
+import type { ReactNode } from "react";
 
 /**
  * Client boundary around Radix's `Direction.Provider`. Radix primitives read their

@@ -4,6 +4,7 @@ import {
   rangeToWire,
   type DateRange,
 } from "../../entities/Analytics";
+
 import type { PaymentReport } from "../../entities/PaymentReport";
 import type { IAnalyticsRepository } from "../../repositories/IAnalyticsRepository";
 

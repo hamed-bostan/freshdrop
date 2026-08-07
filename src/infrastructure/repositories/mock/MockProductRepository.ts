@@ -1,12 +1,15 @@
 import { randomUUID } from "node:crypto";
+
+import type { AdminProductFilters, AdminProductSort } from "@/src/domain/entities/AdminProductFilters";
+import { DEFAULT_ADMIN_PRODUCT_DIRECTION } from "@/src/domain/entities/AdminProductFilters";
 import type { Category } from "@/src/domain/entities/Category";
+import { paginateArray, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
 import type { Product } from "@/src/domain/entities/Product";
 import type { ProductFilters, ProductSort } from "@/src/domain/entities/ProductFilters";
 import { PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
-import type { AdminProductFilters, AdminProductSort } from "@/src/domain/entities/AdminProductFilters";
-import { DEFAULT_ADMIN_PRODUCT_DIRECTION } from "@/src/domain/entities/AdminProductFilters";
-import { paginateArray, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
 import { getStockStatus } from "@/src/domain/entities/stock";
+import { InsufficientStockError, type StockShortfall } from "@/src/domain/errors/InsufficientStockError";
+import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import type {
   BulkProductChange,
   BulkProductUpdate,
@@ -15,8 +18,7 @@ import type {
   ProductTranslationInput,
   StockAdjustment,
 } from "@/src/domain/repositories/IProductRepository";
-import { NotFoundError } from "@/src/domain/errors/NotFoundError";
-import { InsufficientStockError, type StockShortfall } from "@/src/domain/errors/InsufficientStockError";
+
 import { MOCK_CATEGORIES } from "./MockCategoryRepository";
 
 /**

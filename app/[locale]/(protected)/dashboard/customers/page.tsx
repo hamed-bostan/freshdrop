@@ -1,6 +1,6 @@
+import { toSearchParams } from "@/src/lib/api/searchParams";
 import { customersServerApi } from "@/src/presentation/dashboard/customers/customer-server-api";
 import { CustomersScreen } from "@/src/presentation/dashboard/customers/CustomersScreen";
-import { toSearchParams } from "@/src/lib/api/searchParams";
 
 // Customer summaries are read from the REST API (BFF) per request — never statically cached.
 export const dynamic = "force-dynamic";

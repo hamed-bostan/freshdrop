@@ -1,12 +1,14 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { diffFields } from "../../entities/ActivityEntry";
+import { NotFoundError } from "../../errors/NotFoundError";
+import { UniqueConstraintError } from "../../errors/UniqueConstraintError";
+import { ValidationError } from "../../errors/ValidationError";
+
+import { promoCodeSnapshot } from "./promoCodeActivity";
+import { assertValidPromoCode, normalizePromoCode } from "./promoCodeRules";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
 import type { AdminPromoCode } from "../../entities/PromoCode";
 import type { IPromoCodeRepository, NewPromoCode } from "../../repositories/IPromoCodeRepository";
-import { UniqueConstraintError } from "../../errors/UniqueConstraintError";
-import { NotFoundError } from "../../errors/NotFoundError";
-import { ValidationError } from "../../errors/ValidationError";
-import { assertValidPromoCode, normalizePromoCode } from "./promoCodeRules";
-import { promoCodeSnapshot } from "./promoCodeActivity";
 
 /** Edit an existing campaign — its code, copy, discount, window and on/off switch. */
 export class UpdatePromoCode {

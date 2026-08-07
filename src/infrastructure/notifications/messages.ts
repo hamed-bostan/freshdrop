@@ -1,6 +1,6 @@
-import type { Order } from "@/src/domain/entities/Order";
 import type { NotificationKind, NotificationMessage } from "@/src/domain/entities/Notification";
 import { orderConfirmedRenderVars, shortOrderRef } from "@/src/domain/entities/NotificationTemplate";
+import type { Order } from "@/src/domain/entities/Order";
 import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
 import { render } from "@/src/lib/renderTemplate";
 

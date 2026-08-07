@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+
 import type { DeliveryIssueStatus } from "@/src/domain/entities/DeliveryIssue";
 import { Badge } from "@/src/presentation/design-system";
 

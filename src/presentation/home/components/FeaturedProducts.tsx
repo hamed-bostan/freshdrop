@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+
 import type { Product } from "@/src/domain/entities/Product";
 import { SectionHeader } from "@/src/presentation/components/SectionHeader";
 import { ProductGrid } from "@/src/presentation/product/components";

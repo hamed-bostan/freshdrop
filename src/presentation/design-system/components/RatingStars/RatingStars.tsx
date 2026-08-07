@@ -1,9 +1,11 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Star } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { RadioGroup as RadioGroupPrimitive } from "radix-ui";
+
 import { cn } from "@/src/lib/utils";
+
 import { focusRing } from "../shared/focusRing";
 import { stillWhenReduced } from "../shared/motion";
 

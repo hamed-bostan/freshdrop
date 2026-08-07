@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { NOTIFICATION_TEMPLATE_KINDS } from "@/src/domain/entities/NotificationTemplate";
 
 /** The wire shape of `NotificationTemplate` — dates travel as ISO strings over JSON. */

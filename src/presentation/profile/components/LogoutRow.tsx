@@ -1,11 +1,12 @@
 "use client";
 
-import * as React from "react";
 import { LogOut } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { ConfirmSheet } from "@/src/presentation/design-system";
-import { MenuRow } from "@/src/presentation/components/menu-row";
+import * as React from "react";
+
 import { logout } from "@/src/presentation/auth/actions";
+import { MenuRow } from "@/src/presentation/components/menu-row";
+import { ConfirmSheet } from "@/src/presentation/design-system";
 
 /** The destructive "Log out" row + its confirm sheet, isolated as a client island. */
 export function LogoutRow() {

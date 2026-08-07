@@ -1,5 +1,7 @@
 import * as React from "react";
+
 import { adminSearchApi } from "./admin-search-api";
+
 import type { AdminSearchResponse } from "./admin-search-response-schema";
 
 const DEBOUNCE_MS = 200;
@@ -28,14 +30,16 @@ export function useAdminSearch(query: string): AdminSearchState {
     }
 
     const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      setState((prev) => ({ ...prev, isLoading: true, isError: false }));
-      try {
-        const response = await adminSearchApi.search(trimmed, { signal: controller.signal });
-        if (!controller.signal.aborted) setState({ response, isLoading: false, isError: false });
-      } catch {
-        if (!controller.signal.aborted) setState({ response: null, isLoading: false, isError: true });
-      }
+    const timer = setTimeout(() => {
+      void (async (): Promise<void> => {
+        setState((prev) => ({ ...prev, isLoading: true, isError: false }));
+        try {
+          const response = await adminSearchApi.search(trimmed, { signal: controller.signal });
+          if (!controller.signal.aborted) setState({ response, isLoading: false, isError: false });
+        } catch {
+          if (!controller.signal.aborted) setState({ response: null, isLoading: false, isError: true });
+        }
+      })();
     }, DEBOUNCE_MS);
 
     return () => {

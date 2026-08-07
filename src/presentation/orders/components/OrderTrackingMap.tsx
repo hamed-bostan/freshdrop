@@ -2,9 +2,10 @@
 
 import "leaflet/dist/leaflet.css";
 
-import * as React from "react";
 import L from "leaflet";
+import * as React from "react";
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
+
 import type { GeoPoint } from "@/src/domain/entities/Place";
 
 const toLatLng = (point: GeoPoint): [number, number] => [point.latitude, point.longitude];

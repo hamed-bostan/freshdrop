@@ -1,7 +1,10 @@
-import type { PrismaClient } from "@prisma/client";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
+
 import { PrismaDeliveryIssueRepository } from "../../PrismaDeliveryIssueRepository";
+
 import { getTestPrisma, resetTestDatabase } from "./test-db";
+
+import type { PrismaClient } from "@prisma/client";
 
 /**
  * Exercises `PrismaDeliveryIssueRepository`'s raw-SQL joins (zone/driver-name

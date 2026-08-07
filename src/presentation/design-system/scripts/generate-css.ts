@@ -2,11 +2,10 @@ import fs from "fs";
 import path from "path";
 
 import { typography as typographyPrimitives } from "../tokens/primitives/typography";
-
 import { colors } from "../tokens/semantic/colors";
 import { radius as semanticRadius } from "../tokens/semantic/radius";
-import { typography as semanticTypography } from "../tokens/semantic/typography";
 import { shadow as semanticShadow } from "../tokens/semantic/shadow";
+import { typography as semanticTypography } from "../tokens/semantic/typography";
 
 const toKebab = (str: string) =>
   str
@@ -26,18 +25,23 @@ const createNestedVars = (prefix: string, obj: Record<string, unknown>, pathArr:
     } else {
       const segments = [prefix, ...currentPath].filter(Boolean);
       const varName = `--${segments.join("-")}`;
-      vars.push(`${varName}: ${value};`);
+      vars.push(`${varName}: ${String(value)};`);
     }
   }
 
   return vars;
 };
 
+// `Object.entries` can't preserve the per-group value shape of the `as const`
+// token tree below (TS falls back to its untyped overload), so we pin the
+// shape once here instead of leaking `any` into every entry.
+type TypographyToken = { size?: string; lineHeight?: string; weight?: string | number; family?: string };
+
 const buildTypographyTokens = () => {
   const vars: string[] = [];
 
   for (const [group, variants] of Object.entries(semanticTypography)) {
-    for (const [variant, token] of Object.entries(variants)) {
+    for (const [variant, token] of Object.entries(variants) as [string, TypographyToken][]) {
       const name = `${toKebab(group)}-${toKebab(variant)}`;
 
       if (token.size) vars.push(`--text-${name}: ${token.size};`);

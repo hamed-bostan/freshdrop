@@ -1,8 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { Check, ChevronRight } from "lucide-react";
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
+
 import type { CartItem } from "@/src/domain/entities/Cart";
 import type { SubstitutionPreference } from "@/src/domain/entities/Order";
 import { formatMoney } from "@/src/lib/formatMoney";

@@ -1,10 +1,14 @@
 "use client";
 
-import * as React from "react";
 import { ChevronDown, CircleSlash, PackageCheck, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
+import * as React from "react";
+
 import type { OrderBulkAction } from "@/src/contracts/bulk-action-schema";
+import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
+import { useRouter } from "@/src/i18n/navigation";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { useBulkSelection } from "@/src/presentation/dashboard/bulk";
 import {
   Button,
   ConfirmSheet,
@@ -17,9 +21,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/src/presentation/design-system";
-import { useRouter } from "@/src/i18n/navigation";
-import { localizeApiError } from "@/src/lib/api/localizeApiError";
-import { useBulkSelection } from "@/src/presentation/dashboard/bulk";
+
 import { ordersApi } from "./order-api";
 
 /** The milestones offered, in the order an order passes through them. */

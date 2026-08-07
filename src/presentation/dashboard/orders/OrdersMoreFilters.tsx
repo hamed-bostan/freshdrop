@@ -1,12 +1,13 @@
 "use client";
 
-import * as React from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import { PAYMENT_STATUSES, type PaymentStatus } from "@/src/domain/entities/Order";
-import { Button, Input, PopoverClose } from "@/src/presentation/design-system";
-import { ListFilterPopover, useListParams } from "@/src/presentation/dashboard/list";
 import { cn } from "@/src/lib/utils";
+import { ListFilterPopover, useListParams } from "@/src/presentation/dashboard/list";
+import { Button, Input, PopoverClose } from "@/src/presentation/design-system";
 
 /**
  * The order list's secondary filters — the ones that don't earn a permanent slot

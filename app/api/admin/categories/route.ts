@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import {
   ADMIN_CATEGORY_SORTS,
   DEFAULT_ADMIN_CATEGORY_DIRECTION,
@@ -6,11 +7,11 @@ import {
 } from "@/src/domain/entities/AdminCategoryFilters";
 import { ListCategories } from "@/src/domain/use-cases/categories/ListCategories";
 import { categoryRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminCategoryFilters } from "@/src/lib/api/admin-category-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Reads a page of the category list per request — never statically cached.
 export const dynamic = "force-dynamic";

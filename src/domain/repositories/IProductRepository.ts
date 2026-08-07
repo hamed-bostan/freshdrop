@@ -1,8 +1,8 @@
-import type { Product } from "../entities/Product";
+import type { AuditHook } from "./AuditHook";
 import type { AdminProductFilters, AdminProductSort } from "../entities/AdminProductFilters";
 import type { Page, PageRequest } from "../entities/Pagination";
+import type { Product } from "../entities/Product";
 import type { ProductFilters } from "../entities/ProductFilters";
-import type { AuditHook } from "./AuditHook";
 import type { StockMovementReason } from "../entities/StockMovement";
 
 /**

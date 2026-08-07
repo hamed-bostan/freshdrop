@@ -1,18 +1,20 @@
-import { getTranslations } from "next-intl/server";
 import { Plus, Upload } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+
 import {
   ADMIN_STOCK_FILTERS,
   ADMIN_VISIBILITY_FILTERS,
   type AdminProductFilters,
 } from "@/src/domain/entities/AdminProductFilters";
-import type { Page } from "@/src/domain/entities/Pagination";
 import type { Category } from "@/src/domain/entities/Category";
+import type { Page } from "@/src/domain/entities/Pagination";
 import type { Product } from "@/src/domain/entities/Product";
-import { Button, Icon } from "@/src/presentation/design-system";
-import { ListFilterSelect, ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
-import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvLink";
 import { Link } from "@/src/i18n/navigation";
+import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvLink";
 import { BulkActionBar, BulkSelectionProvider } from "@/src/presentation/dashboard/bulk";
+import { ListFilterSelect, ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
+import { Button, Icon } from "@/src/presentation/design-system";
+
 import { ProductBulkActions } from "./ProductBulkActions";
 import { ProductsTable } from "./ProductsTable";
 

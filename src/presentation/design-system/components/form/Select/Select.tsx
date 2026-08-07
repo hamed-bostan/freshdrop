@@ -1,10 +1,12 @@
 "use client";
 
-import * as React from "react";
 import { type VariantProps } from "class-variance-authority";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
-import { baseFieldStyles } from "../shared/baseFieldStyles";
+
 import { focusRing } from "../../shared/focusRing";
+import { baseFieldStyles } from "../shared/baseFieldStyles";
 
 export type SelectProps = Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size"> &
   VariantProps<typeof baseFieldStyles>;

@@ -1,11 +1,11 @@
 import { cartsServerApi } from "@/src/presentation/cart/cart-server-api";
 import { promoCodesServerApi } from "@/src/presentation/cart/promo-code-server-api";
-import { deliveryLocationsServerApi } from "@/src/presentation/delivery-location/delivery-location-server-api";
-import { deliverySlotsServerApi } from "@/src/presentation/checkout/delivery-slot-server-api";
-import { paymentMethodsServerApi } from "@/src/presentation/payment/payment-method-server-api";
-import { walletsServerApi } from "@/src/presentation/wallet/wallet-server-api";
 import CheckoutScreen from "@/src/presentation/checkout/CheckoutScreen";
+import { deliverySlotsServerApi } from "@/src/presentation/checkout/delivery-slot-server-api";
+import { deliveryLocationsServerApi } from "@/src/presentation/delivery-location/delivery-location-server-api";
+import { paymentMethodsServerApi } from "@/src/presentation/payment/payment-method-server-api";
 import { profilesServerApi } from "@/src/presentation/profile/profile-server-api";
+import { walletsServerApi } from "@/src/presentation/wallet/wallet-server-api";
 
 interface CheckoutPageProps {
   searchParams: Promise<{ promo?: string; step?: string }>;

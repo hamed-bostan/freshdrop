@@ -1,6 +1,7 @@
+import { ValidationError } from "../../errors/ValidationError";
+
 import type { TaxSettings } from "../../entities/TaxSettings";
 import type { ITaxSettingsRepository } from "../../repositories/ITaxSettingsRepository";
-import { ValidationError } from "../../errors/ValidationError";
 
 export type UpdateTaxSettingsInput = {
   ratePercent: number;

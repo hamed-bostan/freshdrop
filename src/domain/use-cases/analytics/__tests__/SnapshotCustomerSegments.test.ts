@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
+
+import { SnapshotCustomerSegments } from "../SnapshotCustomerSegments";
+
 import type { IAnalyticsCustomerRepository } from "../../../repositories/IAnalyticsRepository";
 import type { ICustomerSegmentSnapshotRepository } from "../../../repositories/ICustomerSegmentSnapshotRepository";
-import { SnapshotCustomerSegments } from "../SnapshotCustomerSegments";
 
 describe("SnapshotCustomerSegments", () => {
   it("classifies against a trailing 30-day window ending `now` and records the day's assignments", async () => {

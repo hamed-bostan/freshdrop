@@ -1,9 +1,11 @@
 import { ExternalLink, Info, Star } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
 import { Avatar, DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
+
 import type { DeliveryPerformanceWire } from "./delivery-performance-response-schema";
 import type { DeliveryZonesWire } from "./delivery-zones-response-schema";
 

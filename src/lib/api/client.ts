@@ -1,7 +1,9 @@
 import axios, { type AxiosError, type AxiosInstance, type AxiosRequestConfig } from "axios";
-import type { ZodType } from "zod";
+
 import { normalizeAxiosError } from "./normalizeAxiosError";
 import { parseApiResponse } from "./parseApiResponse";
+
+import type { ZodType } from "zod";
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 

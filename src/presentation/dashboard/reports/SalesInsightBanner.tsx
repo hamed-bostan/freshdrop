@@ -1,5 +1,6 @@
-import { getTranslations } from "next-intl/server";
 import { ArrowDown, ArrowUp, Lightbulb } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+
 import { percentChange } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
 import { Icon } from "@/src/presentation/design-system";

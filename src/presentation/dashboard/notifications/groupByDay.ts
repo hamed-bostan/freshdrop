@@ -25,7 +25,7 @@ export function groupByDay<T>(items: readonly T[], getAt: (item: T) => Date): Da
     const at = getAt(item);
     const key = dateKey(at);
     const current = groups[groups.length - 1];
-    if (current && current.dateKey === key) {
+    if (current?.dateKey === key) {
       current.items.push(item);
     } else {
       groups.push({ dateKey: key, at, items: [item] });

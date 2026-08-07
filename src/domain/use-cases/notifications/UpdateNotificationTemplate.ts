@@ -1,6 +1,7 @@
 import { NOTIFICATION_TEMPLATE_KINDS, type NotificationTemplate, type NotificationTemplateKind } from "../../entities/NotificationTemplate";
-import type { INotificationTemplateRepository, NotificationTemplateInput } from "../../repositories/INotificationTemplateRepository";
 import { NotFoundError } from "../../errors/NotFoundError";
+
+import type { INotificationTemplateRepository, NotificationTemplateInput } from "../../repositories/INotificationTemplateRepository";
 
 export class UpdateNotificationTemplate {
   constructor(private readonly templateRepo: INotificationTemplateRepository) {}

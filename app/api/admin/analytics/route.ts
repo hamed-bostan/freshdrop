@@ -1,9 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { GetAnalyticsOverview } from "@/src/domain/use-cases/analytics/GetAnalyticsOverview";
 import { analyticsRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAnalyticsRange, parseComparisonRange, parseRankLimit, parseRevenueRankSort } from "@/src/lib/api/analytics-params";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Aggregates over a period that usually ends "now" — a cached answer here is a
 // dashboard that has quietly stopped counting today's orders.

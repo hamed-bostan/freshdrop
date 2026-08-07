@@ -1,12 +1,14 @@
-import { getTranslations } from "next-intl/server";
 import { Plus } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+
 import { ADMIN_CATEGORY_STATUSES, type AdminCategoryFilters } from "@/src/domain/entities/AdminCategoryFilters";
 import type { Category } from "@/src/domain/entities/Category";
 import type { Page } from "@/src/domain/entities/Pagination";
-import { Button, Icon } from "@/src/presentation/design-system";
-import { ListFilterSelect, ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
-import { BulkActionBar, BulkSelectionProvider } from "@/src/presentation/dashboard/bulk";
 import { Link } from "@/src/i18n/navigation";
+import { BulkActionBar, BulkSelectionProvider } from "@/src/presentation/dashboard/bulk";
+import { ListFilterSelect, ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
+import { Button, Icon } from "@/src/presentation/design-system";
+
 import { CategoriesTable } from "./CategoriesTable";
 import { CategoryBulkActions } from "./CategoryBulkActions";
 

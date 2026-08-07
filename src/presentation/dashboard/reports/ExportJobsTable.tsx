@@ -1,11 +1,13 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import type { ReactNode } from "react";
+
 import type { ExportJob, ExportJobStatus } from "@/src/domain/entities/ExportJob";
-import type { Locale } from "@/src/i18n/routing";
 import { formatOrderDateShort } from "@/src/lib/formatOrderDate";
 import { Badge, DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
+
 import { EXPORT_FORMAT_LABEL, getExportReport } from "./export-report-catalog";
 import { ExportJobRowActions } from "./ExportJobRowActions";
+
+import type { ReactNode } from "react";
 
 type ExportJobsTableProps = {
   jobs: ExportJob[];
@@ -30,7 +32,7 @@ const STATUS_VARIANT: Record<ExportJobStatus, "info" | "success" | "error" | "ne
  */
 export async function ExportJobsTable({ jobs, footer }: ExportJobsTableProps) {
   const t = await getTranslations("dashExportReports");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
 
   return (
     <DataTable minWidthClassName="min-w-[56rem]" footer={footer}>

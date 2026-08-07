@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect, useId } from "react";
-import { useLocale, useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useId } from "react";
+
 import {
   DEFAULT_PAGE_SIZE,
   TABLE_PAGE_SIZE_OPTIONS,
   pageCount,
   type Page,
 } from "@/src/domain/entities/Pagination";
-import { Button, Icon, Select } from "@/src/presentation/design-system";
 import { mergePageParams } from "@/src/lib/api/pagination-params";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { Button, Icon, Select } from "@/src/presentation/design-system";
+
 import { useListParams } from "./useListParams";
 
 type ListPagerProps = {

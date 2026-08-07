@@ -1,9 +1,11 @@
 "use client";
 
-import * as React from "react";
 import { Check } from "lucide-react";
-import { Button, Input, PopoverClose } from "@/src/presentation/design-system";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
+import { Button, Input, PopoverClose } from "@/src/presentation/design-system";
+
 import { ListFilterPopover } from "./ListFilterPopover";
 import { useListParams } from "./useListParams";
 

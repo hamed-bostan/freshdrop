@@ -2,6 +2,7 @@
 import { Download, ShieldCheck } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+
 import type { CreateExportJobInput } from "@/src/contracts/export-job-schema";
 import type { ExportFormat } from "@/src/domain/entities/ExportJob";
 import { useRouter } from "@/src/i18n/navigation";
@@ -12,8 +13,10 @@ import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatByteSize } from "@/src/lib/formatByteSize";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { Button, Checkbox, Chip, ChipGroup, FormMessage, Icon, Input, Select, Spinner } from "@/src/presentation/design-system";
+
 import { exportJobsApi, type EstimateExportQuery } from "./export-job-api";
 import { EXPORT_FORMAT_LABEL, supportsComparison, type ExportReportId, type ExportReportSummary } from "./export-report-catalog";
+
 import type { ExportEstimateResponse } from "./export-job-response-schema";
 
 type Props = {
@@ -43,7 +46,7 @@ export function CustomExportBuilder({ from, to, reports, canEmailDeliver, hasEma
   const t = useTranslations("dashExportReports");
   const ta = useTranslations("dashAnalytics");
   const tApiErrors = useTranslations("apiErrors");
-  const locale = useLocale() as Locale;
+  const locale = useLocale();
   const router = useRouter();
 
   const [reportId, setReportId] = useState<ExportReportId>(reports[0]?.id ?? "orders");

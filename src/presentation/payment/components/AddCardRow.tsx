@@ -1,10 +1,13 @@
-import { useTranslations } from "next-intl";
-import { Link } from "@/src/i18n/navigation";
-import { focusRing } from "@/src/presentation/design-system";
-import { cn } from "@/src/lib/utils";
-import { PaymentMethodIcon } from "./PaymentMethodIcon";
 import { ChevronRight } from "lucide-react";
-import { Icon } from "@/src/presentation/design-system";
+import { useTranslations } from "next-intl";
+
+import { Link } from "@/src/i18n/navigation";
+import { cn } from "@/src/lib/utils";
+import { focusRing , Icon } from "@/src/presentation/design-system";
+
+import { PaymentMethodIcon } from "./PaymentMethodIcon";
+
+
 
 /**
  * The "Add Card" entry under the Credit Card section. Unlike the other rows it

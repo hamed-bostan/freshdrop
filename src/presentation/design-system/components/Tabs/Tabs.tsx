@@ -1,8 +1,10 @@
 "use client";
 
-import * as React from "react";
 import { Tabs as TabsPrimitive } from "radix-ui";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
+
 import { focusRing } from "../shared/focusRing";
 
 /**

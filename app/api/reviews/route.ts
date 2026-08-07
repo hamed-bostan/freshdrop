@@ -1,4 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { reviewSubmissionSchema } from "@/src/contracts/review-schema";
 import { toPublicReview } from "@/src/domain/entities/Review";
 import { GetProductReviews } from "@/src/domain/use-cases/reviews/GetProductReviews";
 import { SubmitReview } from "@/src/domain/use-cases/reviews/SubmitReview";
@@ -9,8 +11,6 @@ import {
   emailSender,
   notificationTemplateRepository,
 } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
-import { reviewSubmissionSchema } from "@/src/contracts/review-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -18,6 +18,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Read from Postgres per request — never statically cached.
 export const dynamic = "force-dynamic";

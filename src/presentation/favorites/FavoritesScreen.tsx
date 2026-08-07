@@ -1,7 +1,9 @@
 import { getTranslations } from "next-intl/server";
-import type { Product } from "@/src/domain/entities/Product";
+
 import type { Category } from "@/src/domain/entities/Category";
+import type { Product } from "@/src/domain/entities/Product";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
+
 import { FavoritesBrowser, FavoritesEmptyState } from "./components";
 
 interface FavoritesScreenProps {

@@ -1,8 +1,10 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { singleChange } from "../../entities/ActivityEntry";
+import { NotFoundError } from "../../errors/NotFoundError";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
 import type { AdminPromoCode } from "../../entities/PromoCode";
 import type { IPromoCodeRepository } from "../../repositories/IPromoCodeRepository";
-import { NotFoundError } from "../../errors/NotFoundError";
+
 
 /**
  * Switch a campaign off (or back on) — the promo-code answer to "delete".

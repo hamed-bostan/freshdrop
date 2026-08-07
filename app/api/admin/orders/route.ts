@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import {
   ADMIN_ORDER_SORTS,
   DEFAULT_ADMIN_ORDER_DIRECTION,
@@ -6,10 +7,10 @@ import {
 } from "@/src/domain/entities/AdminOrderFilters";
 import { ListOrders } from "@/src/domain/use-cases/orders/ListOrders";
 import { orderRepository, userRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminOrderFilters } from "@/src/lib/api/admin-order-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Reads a page of orders per request — never statically cached.
 export const dynamic = "force-dynamic";

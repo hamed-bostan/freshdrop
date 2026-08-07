@@ -1,9 +1,10 @@
 "use client";
 
-import * as React from "react";
 import { ChevronDown } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/src/presentation/design-system";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/src/presentation/design-system";
 
 type ListFilterPopoverProps = {
   /** The filter's name, shown on the trigger ("Status", "Date"). */

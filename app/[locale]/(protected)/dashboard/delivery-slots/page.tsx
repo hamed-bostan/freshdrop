@@ -1,6 +1,6 @@
-import { DeliverySlotsScreen } from "@/src/presentation/dashboard/delivery-slots/DeliverySlotsScreen";
-import { deliveryWindowsServerApi } from "@/src/presentation/dashboard/delivery-slots/delivery-window-server-api";
 import { requirePermission } from "@/src/lib/require-permission";
+import { deliveryWindowsServerApi } from "@/src/presentation/dashboard/delivery-slots/delivery-window-server-api";
+import { DeliverySlotsScreen } from "@/src/presentation/dashboard/delivery-slots/DeliverySlotsScreen";
 
 // The window catalog is fetched during server render over the REST API (BFF) and
 // passed to the presentational screen. Mutations call router.refresh() to re-run

@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { orderReturnInspectionSchema } from "@/src/contracts/order-return-schema";
 import { RecordReturnInspection } from "@/src/domain/use-cases/orders/RecordReturnInspection";
 import { orderRepository, returnRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
-import { orderReturnInspectionSchema } from "@/src/contracts/order-return-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -10,6 +10,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Writes return/order state — never statically cached.
 export const dynamic = "force-dynamic";

@@ -1,9 +1,11 @@
 "use client";
 
-import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { DeliverySlot, DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import { SelectableTile } from "@/src/presentation/design-system";
+
 import { slotDayLabel, slotName, slotTimeRange } from "../deliverySlotFormat";
 
 /** The shopper's chosen slot — a day plus a window within it. */

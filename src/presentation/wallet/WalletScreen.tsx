@@ -1,10 +1,12 @@
 import { getLocale, getTranslations } from "next-intl/server";
+
 import type { Wallet } from "@/src/domain/entities/Wallet";
-import { cn } from "@/src/lib/utils";
-import { formatMoney } from "@/src/lib/formatMoney";
-import { Button } from "@/src/presentation/design-system";
-import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { Link } from "@/src/i18n/navigation";
+import { formatMoney } from "@/src/lib/formatMoney";
+import { cn } from "@/src/lib/utils";
+import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { Button } from "@/src/presentation/design-system";
+
 import { TransactionItem, WalletCard } from "./components";
 
 // Decorative brand gradients (green / magenta), cycled per card. Stops come

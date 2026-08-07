@@ -1,5 +1,5 @@
-import type { Locale } from "@/src/i18n/routing";
 import { getUsdToToman } from "@/src/config/currency";
+import type { Locale } from "@/src/i18n/routing";
 
 // Single source of truth for presenting a stored USD amount per locale:
 //   • en → US dollars via `Intl` ("$4.50")

@@ -1,7 +1,8 @@
 import { getTranslations } from "next-intl/server";
-import { ProductForm } from "@/src/presentation/dashboard/products/ProductForm";
-import { categoriesServerApi } from "@/src/presentation/dashboard/categories/category-server-api";
+
 import { requirePermission } from "@/src/lib/require-permission";
+import { categoriesServerApi } from "@/src/presentation/dashboard/categories/category-server-api";
+import { ProductForm } from "@/src/presentation/dashboard/products/ProductForm";
 
 // The category list for the picker is fetched over the REST API (BFF) during
 // server render. A failed fetch surfaces via the dashboard error boundary.

@@ -1,8 +1,8 @@
-import type { AdminPromoCode } from "./PromoCode";
 import type { Category } from "./Category";
 import type { CustomerOrderSummary } from "./CustomerOrderSummary";
 import type { Order } from "./Order";
 import type { Product } from "./Product";
+import type { AdminPromoCode } from "./PromoCode";
 
 /** The entities the admin global search (⌘K) can fan out to. */
 export const ADMIN_SEARCH_GROUPS = ["orders", "products", "customers", "categories", "promoCodes"] as const;

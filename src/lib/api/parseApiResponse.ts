@@ -1,5 +1,6 @@
-import type { ZodType } from "zod";
 import { ApiError } from "./ApiError";
+
+import type { ZodType } from "zod";
 
 /**
  * Response-shape validation — the seam both REST clients share, so a body that

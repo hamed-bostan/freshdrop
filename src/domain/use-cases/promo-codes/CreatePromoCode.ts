@@ -1,10 +1,14 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { activityValue } from "../../entities/ActivityEntry";
+import { UniqueConstraintError } from "../../errors/UniqueConstraintError";
+
+import { promoCodeSnapshot } from "./promoCodeActivity";
+import { assertValidPromoCode, normalizePromoCode } from "./promoCodeRules";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
 import type { AdminPromoCode } from "../../entities/PromoCode";
 import type { IPromoCodeRepository, NewPromoCode } from "../../repositories/IPromoCodeRepository";
-import { UniqueConstraintError } from "../../errors/UniqueConstraintError";
-import { assertValidPromoCode, normalizePromoCode } from "./promoCodeRules";
-import { promoCodeSnapshot } from "./promoCodeActivity";
+
+
 
 /**
  * Author a new discount campaign. The code is normalized to upper case so the

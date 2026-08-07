@@ -1,6 +1,6 @@
-import type { AdminPromoCode, AdminPromoCodeFilters, AdminPromoCodeSort, PromoCode } from "../entities/PromoCode";
-import type { Page, PageRequest } from "../entities/Pagination";
 import type { AuditHook } from "./AuditHook";
+import type { Page, PageRequest } from "../entities/Pagination";
+import type { AdminPromoCode, AdminPromoCodeFilters, AdminPromoCodeSort, PromoCode } from "../entities/PromoCode";
 
 /**
  * A promo code before it exists — the database assigns the id, the timestamps and

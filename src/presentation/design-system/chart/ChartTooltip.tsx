@@ -1,8 +1,10 @@
 "use client";
 
 import * as React from "react";
-import type { TooltipContentProps } from "recharts";
+
 import { cn } from "@/src/lib/utils";
+
+import type { TooltipContentProps } from "recharts";
 
 export type ChartTooltipRenderArgs = {
   payload: TooltipContentProps["payload"];

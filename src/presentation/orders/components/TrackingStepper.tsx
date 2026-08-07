@@ -1,9 +1,10 @@
-import { useLocale, useTranslations } from "next-intl";
 import { Check, Truck, PackageCheck, type LucideIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+
 import type { TrackingMilestone, TrackingStep, TrackingStepStatus } from "@/src/domain/entities/OrderTracking";
-import { Icon } from "@/src/presentation/design-system";
 import { formatOrderTime } from "@/src/lib/formatOrderDate";
 import { cn } from "@/src/lib/utils";
+import { Icon } from "@/src/presentation/design-system";
 
 /** Each milestone shows its own icon inside the step node. */
 const MILESTONE_ICONS: Record<TrackingMilestone, LucideIcon> = {

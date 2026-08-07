@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { useState } from "react";
 import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
+
 import type { RevenuePoint } from "@/src/domain/entities/Analytics";
-import type { Locale } from "@/src/i18n/routing";
 import { getLangDir } from "@/src/i18n/direction";
 import { formatBucketLabel, formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
-import { ChartContainer, ChartLegend, ChartTooltip, chartColor } from "@/src/presentation/design-system";
 import { ChartSegmentedControl } from "@/src/presentation/dashboard/ChartSegmentedControl";
+import { ChartContainer, ChartLegend, ChartTooltip, chartColor } from "@/src/presentation/design-system";
 
 type Props = { points: RevenuePoint[]; previousPoints: RevenuePoint[]; granularity: "day" | "week" | "month"; range: { from: string; to: string }; previousRange: { from: string; to: string } };
 type Metric = "amount" | "transactions";
@@ -18,7 +18,7 @@ type Interval = "daily" | "weekly" | "monthly";
 
 export function PaymentTrendChart({ points, previousPoints, granularity, range, previousRange }: Props) {
   const t = useTranslations("dashPaymentReport");
-  const locale = useLocale() as Locale;
+  const locale = useLocale();
   const [metric, setMetric] = useState<Metric>("amount");
   const [interval, setInterval] = useState<Interval>("daily");
   const size = interval === "daily" ? 1 : interval === "weekly" ? 7 : 30;

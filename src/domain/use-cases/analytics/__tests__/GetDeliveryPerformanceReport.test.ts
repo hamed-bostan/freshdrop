@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
+
+import { GetDeliveryPerformanceReport } from "../GetDeliveryPerformanceReport";
+
 import type { DateRange } from "../../../entities/Analytics";
 import type { IAnalyticsRepository } from "../../../repositories/IAnalyticsRepository";
-import { GetDeliveryPerformanceReport } from "../GetDeliveryPerformanceReport";
 
 const currentTotals = { deliveredOrders: 40, onTimeOrders: 34, lateDeliveries: 6, averageFulfillmentMinutes: 28 };
 
@@ -19,7 +21,7 @@ describe("GetDeliveryPerformanceReport", () => {
     const lateDelivery = { orderId: "o1", orderNumber: 101, userId: "u1", windowLabel: "9am-12pm", delayMinutes: 15, deliveredAt: range.from.toISOString(), zone: "downtown" };
     const driver = { driverId: "d1", name: "Amit Singh", completedDeliveries: 12, onTimeRate: 0.9, averageRating: 4.8 };
     const repository = {
-      snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository as IAnalyticsRepository),
+      snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository),
       deliveryTotals,
       deliverySeries: vi.fn().mockResolvedValue([point]),
       deliveryWindows: vi.fn().mockResolvedValue([window]),

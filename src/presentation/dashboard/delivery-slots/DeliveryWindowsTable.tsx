@@ -1,7 +1,8 @@
-import { getLocale, getTranslations } from "next-intl/server";
 import { Pencil } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+
 import { formatWindowRange, type DeliveryWindow } from "@/src/domain/entities/DeliveryWindow";
-import type { Locale } from "@/src/i18n/routing";
+import { Link } from "@/src/i18n/navigation";
 import { formatNumber } from "@/src/lib/formatNumber";
 import {
   Button,
@@ -14,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/presentation/design-system";
-import { Link } from "@/src/i18n/navigation";
+
 import { DeleteDeliveryWindowButton } from "./DeleteDeliveryWindowButton";
 
 type DeliveryWindowsTableProps = {
@@ -31,7 +32,7 @@ type DeliveryWindowsTableProps = {
  */
 export async function DeliveryWindowsTable({ windows }: DeliveryWindowsTableProps) {
   const t = await getTranslations("dashDeliverySlots");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
 
   return (
     <DataTable>

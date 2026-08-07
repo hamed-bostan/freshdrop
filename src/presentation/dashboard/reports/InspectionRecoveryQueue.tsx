@@ -1,13 +1,15 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
 import { ChevronLeft, ChevronRight, ExternalLink, MoreVertical, Search } from "lucide-react";
+import Image from "next/image";
+import * as React from "react";
+
+import { pageCount } from "@/src/domain/entities/Pagination";
 import type { ReturnItemCondition, ReturnRecoveryDecision, ReturnRequestStatus } from "@/src/domain/entities/Return";
 import { Link } from "@/src/i18n/navigation";
 import { cn } from "@/src/lib/utils";
-import { pageCount } from "@/src/domain/entities/Pagination";
 import { Badge, type BadgeProps, Button, DataTable, Icon, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Thumbnail, focusRing } from "@/src/presentation/design-system";
+
 import type { ReturnCaseRow } from "./ReturnCasesTable";
 
 type Labels = Record<"heading" | "search" | "allConditions" | "allStatuses" | "viewAll" | "product" | "order" | "condition" | "received" | "inspectionStatus" | "recoveryDecision" | "value" | "action" | "awaitingInspection" | "inspected" | "inReview" | "pending" | "restock" | "discount" | "returnToSupplier" | "dispose" | "inspect" | "confirm" | "review" | "complete" | "showing" | "previousPage" | "nextPage" | "unopened" | "resellable" | "damaged" | "expired" | "missingParts" | "pendingDecision" | "notRecorded", string>;

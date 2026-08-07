@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+
 import type { UserRole } from "@/src/domain/entities/User";
 import { userRepository } from "@/src/infrastructure/container";
-import { getSessionWith, sessionRole } from "@/src/lib/require-permission";
 import { errorResponse, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getSessionWith, sessionRole } from "@/src/lib/require-permission";
 
 /** What this route promises — the presentation layer's `viewerResponseSchema` (colocated with its one consumer) validates the client sees exactly this. */
 type ViewerBody = { id: string; name: string; email: string | null; imageUrl: string | null; role: UserRole };

@@ -1,8 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { FilterTab, FilterTabs } from "@/src/presentation/design-system";
+
 import type { Category } from "@/src/domain/entities/Category";
+import { FilterTab, FilterTabs } from "@/src/presentation/design-system";
 
 /** Sentinel value for the "All" tab (no category filter). */
 export const ALL_FILTER = "all";

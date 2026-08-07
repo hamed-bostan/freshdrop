@@ -1,10 +1,11 @@
+import { NotifyAdmins } from "../notifications/NotifyAdmins";
+
 import type { Review } from "../../entities/Review";
-import type { IReviewRepository, NewReview } from "../../repositories/IReviewRepository";
-import type { IUserRepository } from "../../repositories/IUserRepository";
 import type { IAdminNotificationRepository } from "../../repositories/IAdminNotificationRepository";
 import type { IEmailSender } from "../../repositories/IEmailSender";
 import type { INotificationTemplateRepository } from "../../repositories/INotificationTemplateRepository";
-import { NotifyAdmins } from "../notifications/NotifyAdmins";
+import type { IReviewRepository, NewReview } from "../../repositories/IReviewRepository";
+import type { IUserRepository } from "../../repositories/IUserRepository";
 
 /**
  * Persist a customer review for a product. The author's name/avatar are snapshotted

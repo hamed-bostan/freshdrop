@@ -1,9 +1,10 @@
+import { detectImageType } from "../../../lib/detectImageType";
+
 import type {
   IImageStorageRepository,
   StoredImage,
   UploadImageInput,
 } from "../../repositories/IImageStorageRepository";
-import { detectImageType } from "../../../lib/detectImageType";
 
 /** Mirrors the bucket's server-side limit (5 MB) so we fail fast and cheaply. */
 const MAX_BYTES = 5 * 1024 * 1024;

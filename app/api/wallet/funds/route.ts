@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { addFundsSchema } from "@/src/contracts/wallet-schema";
 import { AddFunds } from "@/src/domain/use-cases/wallet/AddFunds";
 import { walletRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
-import { addFundsSchema } from "@/src/contracts/wallet-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -10,6 +10,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Per-user mutation — never statically cached.
 export const dynamic = "force-dynamic";

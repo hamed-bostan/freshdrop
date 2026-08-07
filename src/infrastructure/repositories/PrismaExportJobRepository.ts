@@ -1,4 +1,3 @@
-import type { Prisma } from "@prisma/client";
 import {
   EXPORT_JOB_EXPIRY_DAYS,
   toExportFormat,
@@ -15,6 +14,8 @@ import type { Page, PageRequest } from "@/src/domain/entities/Pagination";
 import { createPage, toSkipTake } from "@/src/domain/entities/Pagination";
 import type { IExportJobRepository } from "@/src/domain/repositories/IExportJobRepository";
 import { prisma } from "@/src/infrastructure/prisma/client";
+
+import type { Prisma } from "@prisma/client";
 
 /**
  * Export job persistence backed by PostgreSQL via Prisma. Server-side only,

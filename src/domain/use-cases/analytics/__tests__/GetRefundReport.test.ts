@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
+
+import { GetRefundReport } from "../GetRefundReport";
+
 import type { DateRange } from "../../../entities/Analytics";
 import type { IAnalyticsRepository } from "../../../repositories/IAnalyticsRepository";
-import { GetRefundReport } from "../GetRefundReport";
 
 const currentTotals = {
   refundedAmount: 320,
@@ -30,7 +32,7 @@ describe("GetRefundReport", () => {
     const reason = { reason: "Damaged item", kind: "damaged", refunds: 2, amount: 140 };
     const refundCase = { id: "c1", orderId: "o1", orderNumber: 101, userId: "u1", productName: "Milk", productImageUrl: null, reason: "Damaged item", kind: "damaged", amount: 70, status: "refunded" as const, activityAt: range.from.toISOString(), returnStatus: null, condition: null, recoveryDecision: null };
     const repository = {
-      snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository as IAnalyticsRepository),
+      snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository),
       refundTotals,
       refundSeries: vi.fn().mockResolvedValue([point]),
       compareRefundSeries: vi.fn().mockResolvedValue([{ ...point, revenue: 160 }]),

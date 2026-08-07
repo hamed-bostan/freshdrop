@@ -1,6 +1,8 @@
 import * as React from "react";
-import type { LucideIcon } from "lucide-react";
+
 import { Icon } from "@/src/presentation/design-system";
+
+import type { LucideIcon } from "lucide-react";
 
 interface CheckoutSectionProps {
   icon: LucideIcon;

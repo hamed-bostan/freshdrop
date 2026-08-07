@@ -1,5 +1,6 @@
-import type { StockMovement } from "../../entities/StockMovement";
 import { clampMovementLimit } from "../../entities/StockMovement";
+
+import type { StockMovement } from "../../entities/StockMovement";
 import type { IStockMovementLog } from "../../repositories/IStockMovementLog";
 
 /**

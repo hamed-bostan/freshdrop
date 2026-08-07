@@ -1,12 +1,14 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import type { ReactNode } from "react";
+
 import type { ScheduledExport } from "@/src/domain/entities/ScheduledExport";
-import type { Locale } from "@/src/i18n/routing";
 import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { Badge, DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
+
 import { EXPORT_FORMAT_LABEL, getExportReport } from "./export-report-catalog";
 import { ScheduledExportActiveToggle } from "./ScheduledExportActiveToggle";
 import { ScheduledExportRowActions } from "./ScheduledExportRowActions";
+
+import type { ReactNode } from "react";
 
 type Props = {
   schedules: ScheduledExport[];
@@ -23,7 +25,7 @@ type Props = {
 export async function ScheduledExportsTable({ schedules, showActions = false, footer }: Props) {
   const t = await getTranslations("dashScheduledExports");
   const te = await getTranslations("dashExportReports");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
 
   return (
     <DataTable minWidthClassName="min-w-[52rem]" footer={footer}>

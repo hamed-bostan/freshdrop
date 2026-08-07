@@ -1,8 +1,10 @@
 import { isDashboardRole, type User } from "../../entities/User";
-import type { IUserRepository } from "../../repositories/IUserRepository";
 import { AdminRevokeError } from "../../errors/AdminRevokeError";
 import { NotFoundError } from "../../errors/NotFoundError";
+
 import { roleChangeEntry } from "./roleChangeEntry";
+
+import type { IUserRepository } from "../../repositories/IUserRepository";
 
 /**
  * Demote a team member back to a regular customer. The account itself is

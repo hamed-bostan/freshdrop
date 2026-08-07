@@ -1,15 +1,17 @@
+import { ArrowLeftRight, RotateCcw } from "lucide-react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { ArrowLeftRight, RotateCcw } from "lucide-react";
+
 import type { Order, OrderItem } from "@/src/domain/entities/Order";
-import { Icon, Thumbnail } from "@/src/presentation/design-system";
+import { formatDeliveryWindow } from "@/src/lib/formatDeliveryWindow";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDate, formatOrderTime } from "@/src/lib/formatOrderDate";
-import { formatDeliveryWindow } from "@/src/lib/formatDeliveryWindow";
-import { OrderStatusBadge } from "./OrderStatusBadge";
-import { OrderCardActions } from "./OrderCardActions";
+import { Icon, Thumbnail } from "@/src/presentation/design-system";
+
 import { OrderAdjustments } from "./OrderAdjustments";
+import { OrderCardActions } from "./OrderCardActions";
 import { OrderLocationRow } from "./OrderLocationRow";
+import { OrderStatusBadge } from "./OrderStatusBadge";
 
 /** Thumbnails shown before collapsing the rest into a "+N" count. */
 const MAX_VISIBLE_THUMBNAILS = 4;

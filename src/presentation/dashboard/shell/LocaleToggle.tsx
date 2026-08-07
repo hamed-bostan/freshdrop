@@ -1,8 +1,9 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations, useLocale } from "next-intl";
 import { Check, ChevronDown } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
+import * as React from "react";
+
 import { LOCALE_COOKIE_MAX_AGE, LOCALE_COOKIE_NAME, routing, type Locale } from "@/src/i18n/routing";
 import { cn } from "@/src/lib/utils";
 import {
@@ -55,7 +56,7 @@ export function LocaleToggle() {
             "disabled:cursor-not-allowed disabled:opacity-50",
           )}
         >
-          <span>{LOCALE_NAMES[locale as Locale]}</span>
+          <span>{LOCALE_NAMES[locale]}</span>
           <Icon icon={ChevronDown} size="xs" className="text-muted-foreground" />
         </button>
       </DropdownMenuTrigger>

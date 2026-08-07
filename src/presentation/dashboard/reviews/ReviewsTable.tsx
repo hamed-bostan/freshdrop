@@ -1,12 +1,14 @@
-import Image from "next/image";
-import type { ReactNode } from "react";
-import { useLocale, useTranslations } from "next-intl";
 import { Star } from "lucide-react";
-import type { Locale } from "@/src/i18n/routing";
-import type { PublicReview, ReviewStatus } from "@/src/domain/entities/Review";
+import Image from "next/image";
+import { useLocale, useTranslations } from "next-intl";
+
 import type { Product } from "@/src/domain/entities/Product";
-import { formatCompactDateTime } from "@/src/lib/formatOrderDate";
+import type { PublicReview, ReviewStatus } from "@/src/domain/entities/Review";
+import { Link } from "@/src/i18n/navigation";
+import type { Locale } from "@/src/i18n/routing";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { formatCompactDateTime } from "@/src/lib/formatOrderDate";
+import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
 import {
   Avatar,
   Badge,
@@ -20,9 +22,10 @@ import {
   TableRow,
   Thumbnail,
 } from "@/src/presentation/design-system";
-import { Link } from "@/src/i18n/navigation";
-import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
+
 import { ReviewModerationActions } from "./ReviewModerationActions";
+
+import type { ReactNode } from "react";
 
 type ReviewsTableProps = {
   reviews: PublicReview[];

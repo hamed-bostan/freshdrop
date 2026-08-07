@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { SetDefaultDeliveryLocation } from "@/src/domain/use-cases/delivery-locations/SetDefaultDeliveryLocation";
 import { deliveryLocationRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Per-user data, written per request — never statically cached.
 export const dynamic = "force-dynamic";

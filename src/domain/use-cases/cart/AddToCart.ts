@@ -1,7 +1,8 @@
+import { InsufficientStockError } from "../../errors/InsufficientStockError";
+import { NotFoundError } from "../../errors/NotFoundError";
+
 import type { ICartRepository } from "../../repositories/ICartRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
-import { NotFoundError } from "../../errors/NotFoundError";
-import { InsufficientStockError } from "../../errors/InsufficientStockError";
 
 export type AddToCartRequest = {
   userId: string;

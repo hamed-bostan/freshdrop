@@ -1,6 +1,8 @@
-import * as React from "react";
 import { Loader2 } from "lucide-react";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
+
 import { Icon, type IconProps } from "../Icon";
 
 export type SpinnerProps = Omit<IconProps, "icon">;

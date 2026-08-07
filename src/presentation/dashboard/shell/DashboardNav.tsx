@@ -1,10 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+
 import type { Permission } from "@/src/domain/entities/Permission";
 import { Link, usePathname } from "@/src/i18n/navigation";
-import { Icon, focusRing } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
+import { Icon, focusRing } from "@/src/presentation/design-system";
+
 import { isSectionActive, navGroupsFor } from "./sections";
 
 type DashboardNavProps = {

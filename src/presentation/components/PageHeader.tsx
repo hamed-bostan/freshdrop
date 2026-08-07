@@ -1,7 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { ChevronLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { Link, useRouter } from "@/src/i18n/navigation";
 import { Button, Icon } from "@/src/presentation/design-system";
 

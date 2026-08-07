@@ -1,19 +1,20 @@
 "use client";
 
-import * as React from "react";
-import { useLocale, useTranslations } from "next-intl";
 import { AlertTriangle, Bell, Clock, Star, Truck, X, type LucideIcon } from "lucide-react";
-import { roleChangeKind } from "@/src/domain/entities/RoleChange";
+import { useLocale, useTranslations } from "next-intl";
+import * as React from "react";
+
 import { PENDING_ORDER_SLA_HOURS, UNFULFILLED_ORDER_SLA_HOURS } from "@/src/domain/entities/OrderSla";
+import { roleChangeKind } from "@/src/domain/entities/RoleChange";
 import { LOW_STOCK_THRESHOLD } from "@/src/domain/entities/stock";
-import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
-import { Badge, Button, Icon, Popover, PopoverContent, PopoverTrigger, Spinner } from "@/src/presentation/design-system";
-import { activityEntityHref } from "@/src/presentation/dashboard/activity/activityLinks";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
 import { cn } from "@/src/lib/utils";
+import { activityEntityHref } from "@/src/presentation/dashboard/activity/activityLinks";
+import { Badge, Button, Icon, Popover, PopoverContent, PopoverTrigger, Spinner } from "@/src/presentation/design-system";
+
 import { groupByDay, isSameDay, isYesterday } from "./groupByDay";
 import { NotificationPreferencesPanel } from "./NotificationPreferencesPanel";
 import { useNotificationFeed } from "./useNotificationFeed";
@@ -80,7 +81,7 @@ export function NotificationBell(): React.ReactElement {
   const t = useTranslations("dashboard.notifications");
   const tHome = useTranslations("dashHome");
   const tActivity = useTranslations("dashActivity");
-  const locale = useLocale() as Locale;
+  const locale = useLocale();
 
   const [open, setOpen] = React.useState(false);
   const { feed, isLoading, isError, markAllRead, dismiss } = useNotificationFeed();

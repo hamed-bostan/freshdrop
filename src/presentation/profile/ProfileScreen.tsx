@@ -1,11 +1,14 @@
-import Image from "next/image";
 import { Package, Heart, MapPin, CreditCard, Settings, HelpCircle, Shield, Pencil } from "lucide-react";
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
-import type { UserProfile } from "./profile-response-schema";
-import { Avatar, Icon } from "@/src/presentation/design-system";
+
 import { Link } from "@/src/i18n/navigation";
 import { MenuRow, SectionLabel } from "@/src/presentation/components/menu-row";
+import { Avatar, Icon } from "@/src/presentation/design-system";
+
 import { LogoutRow } from "./components/LogoutRow";
+
+import type { UserProfile } from "./profile-response-schema";
 
 interface ProfileScreenProps {
   user: UserProfile;

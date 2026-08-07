@@ -1,5 +1,6 @@
-import { useTranslations } from "next-intl";
 import { MapPin } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { Icon } from "@/src/presentation/design-system";
 
 interface DeliveryAddressRowProps {

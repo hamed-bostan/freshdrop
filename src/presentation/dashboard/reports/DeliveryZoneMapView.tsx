@@ -4,8 +4,10 @@ import "leaflet/dist/leaflet.css";
 
 import * as React from "react";
 import { CircleMarker, MapContainer, TileLayer, Tooltip, useMap } from "react-leaflet";
+
 import type { Locale } from "@/src/i18n/routing";
 import { formatPercent } from "@/src/lib/formatNumber";
+
 import type { DeliveryZonesWire } from "./delivery-zones-response-schema";
 
 type ZoneWithCentroid = DeliveryZonesWire["zones"][number] & { centroid: NonNullable<DeliveryZonesWire["zones"][number]["centroid"]> };

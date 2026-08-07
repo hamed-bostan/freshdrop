@@ -1,11 +1,12 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+
 import type { ReviewStatusCounts } from "@/src/domain/entities/AdminReviewFilters";
-import { focusRing } from "@/src/presentation/design-system/components/shared";
-import { useListParams } from "@/src/presentation/dashboard/list";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
+import { useListParams } from "@/src/presentation/dashboard/list";
+import { focusRing } from "@/src/presentation/design-system/components/shared";
 
 type TabValue = keyof ReviewStatusCounts;
 

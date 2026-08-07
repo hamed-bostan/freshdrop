@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { isoDateSchema, nonNegativeInt, rangeSchema } from "./analytics-wire";
 
 const totals = z.object({ deliveredOrders: nonNegativeInt, onTimeOrders: nonNegativeInt, lateDeliveries: nonNegativeInt, averageFulfillmentMinutes: nonNegativeInt });

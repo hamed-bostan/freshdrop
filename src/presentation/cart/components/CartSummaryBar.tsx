@@ -1,6 +1,7 @@
 import { useLocale, useTranslations } from "next-intl";
-import { Button } from "@/src/presentation/design-system";
+
 import { formatMoney } from "@/src/lib/formatMoney";
+import { Button } from "@/src/presentation/design-system";
 
 interface CartSummaryBarProps {
   total: number;

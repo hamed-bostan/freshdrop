@@ -1,5 +1,6 @@
 import type { SavedCard, Wallet } from "@/src/domain/entities/Wallet";
 import { serverApiGet } from "@/src/lib/api/server-client";
+
 import { savedCardListResponseSchema, walletResponseSchema } from "./wallet-response-schema";
 
 /**

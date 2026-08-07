@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
+
 import type { OrderTracking } from "@/src/domain/entities/OrderTracking";
+
 import { ordersApi } from "./order-api";
 
 /** How often to re-fetch the courier position while a delivery is en route. */
@@ -38,7 +40,7 @@ export function useLiveTracking(initial: OrderTracking): OrderTracking {
     let timer: ReturnType<typeof setTimeout>;
 
     const schedule = (): void => {
-      timer = setTimeout(tick, POLL_INTERVAL_MS);
+      timer = setTimeout(() => void tick(), POLL_INTERVAL_MS);
     };
 
     const tick = async (): Promise<void> => {

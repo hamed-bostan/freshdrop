@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { GetSimilarProducts } from "@/src/domain/use-cases/products/GetSimilarProducts";
 import { productRepository } from "@/src/infrastructure/container";
 import { getRequestLocale } from "@/src/lib/api/request-locale";

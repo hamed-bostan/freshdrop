@@ -1,7 +1,9 @@
+import { promoDiscount } from "@/src/lib/promoDiscount";
+
+import { taxFromGross } from "./TaxSettings";
+
 import type { Product } from "./Product";
 import type { PromoCode } from "./PromoCode";
-import { promoDiscount } from "@/src/lib/promoDiscount";
-import { taxFromGross } from "./TaxSettings";
 
 export type CartItem = {
   product: Product;

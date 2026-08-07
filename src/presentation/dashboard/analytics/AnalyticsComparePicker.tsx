@@ -1,13 +1,15 @@
 "use client";
 
-import * as React from "react";
-import { useSearchParams } from "next/navigation";
 import { GitCompare } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import * as React from "react";
+
 import { usePathname, useRouter } from "@/src/i18n/navigation";
 import type { ComparisonMode } from "@/src/lib/api/analytics-params";
-import { Button, Icon, Input, PopoverClose } from "@/src/presentation/design-system";
-import { ListFilterPopover } from "@/src/presentation/dashboard/list";
 import { cn } from "@/src/lib/utils";
+import { ListFilterPopover } from "@/src/presentation/dashboard/list";
+import { Button, Icon, Input, PopoverClose } from "@/src/presentation/design-system";
+
 import type { CompareOption } from "./compare-preview";
 
 type AnalyticsComparePickerProps = {

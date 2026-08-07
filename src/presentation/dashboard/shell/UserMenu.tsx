@@ -1,9 +1,13 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
-import Image from "next/image";
 import { LogOut } from "lucide-react";
+import Image from "next/image";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
+import type { UserRole } from "@/src/domain/entities/User";
+import { cn } from "@/src/lib/utils";
+import { logout } from "@/src/presentation/auth/actions";
 import {
   Avatar,
   Badge,
@@ -16,9 +20,7 @@ import {
   Icon,
   focusRing,
 } from "@/src/presentation/design-system";
-import { cn } from "@/src/lib/utils";
-import { logout } from "@/src/presentation/auth/actions";
-import type { UserRole } from "@/src/domain/entities/User";
+
 import type { DashboardViewer } from "./viewer";
 
 /** Mirrors `TeamTable`'s role tones — same role, same colour, wherever it's shown. */

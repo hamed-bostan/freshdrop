@@ -1,9 +1,11 @@
 import { useTranslations } from "next-intl";
+
 import type { TeamMember } from "@/src/contracts/team-response-schema";
 import type { ActivityEntryWire } from "@/src/presentation/dashboard/activity/activity-response-schema";
+
 import { GrantAdminForm } from "./GrantAdminForm";
-import { TeamTable } from "./TeamTable";
 import { TeamActivity } from "./TeamActivity";
+import { TeamTable } from "./TeamTable";
 
 type TeamScreenProps = {
   /** Everyone who can reach the dashboard, fetched over the BFF during server render. */

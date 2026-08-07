@@ -1,7 +1,8 @@
 "use client";
 
-import * as React from "react";
 import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { Order } from "@/src/domain/entities/Order";
 import type {
   ReturnItemCondition,
@@ -9,9 +10,10 @@ import type {
   ReturnRequest,
 } from "@/src/domain/entities/Return";
 import { RETURN_ITEM_CONDITIONS, RETURN_RECOVERY_DECISIONS } from "@/src/domain/entities/Return";
-import { Button, FormMessage, Select } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { Button, FormMessage, Select } from "@/src/presentation/design-system";
+
 import { ordersApi } from "./order-api";
 
 type OrderReturnInspectionProps = {

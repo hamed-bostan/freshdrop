@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+
 import { customersServerApi } from "@/src/presentation/dashboard/customers/customer-server-api";
 import { CustomerDetailScreen } from "@/src/presentation/dashboard/customers/CustomerDetailScreen";
 

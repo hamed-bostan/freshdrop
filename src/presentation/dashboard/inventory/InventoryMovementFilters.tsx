@@ -2,6 +2,7 @@
 
 import { CalendarDays } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
+
 import {
   STOCK_MOVEMENT_DIRECTIONS,
   STOCK_MOVEMENT_REASONS,

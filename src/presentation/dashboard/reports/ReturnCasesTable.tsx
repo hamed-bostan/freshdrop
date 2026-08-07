@@ -1,12 +1,13 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
 import { ExternalLink, MoreVertical, Search } from "lucide-react";
+import Image from "next/image";
+import * as React from "react";
+
+import type { ReturnItemCondition, ReturnRecoveryDecision, ReturnRequestStatus } from "@/src/domain/entities/Return";
 import { Link } from "@/src/i18n/navigation";
 import { cn } from "@/src/lib/utils";
 import { DataTable, Icon, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Thumbnail, focusRing } from "@/src/presentation/design-system";
-import type { ReturnItemCondition, ReturnRecoveryDecision, ReturnRequestStatus } from "@/src/domain/entities/Return";
 
 type ReturnStatus = "return_requested" | "refunded" | "cancelled";
 export type ReturnCaseRow = {

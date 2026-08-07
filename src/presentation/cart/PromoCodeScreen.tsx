@@ -1,12 +1,14 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import { Plus, Ticket } from "lucide-react";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
 import { useRouter } from "@/src/i18n/navigation";
-import { Button, Icon, Input } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { Button, Icon, Input } from "@/src/presentation/design-system";
+
 import { PromoCodeOption } from "./components/PromoCodeOption";
 
 interface PromoCodeScreenProps {

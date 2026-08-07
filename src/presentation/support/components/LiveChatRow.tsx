@@ -1,8 +1,10 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { MessagesSquare } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { Icon } from "@/src/presentation/design-system";
+
 import { SupportRow } from "./SupportRow";
 
 /**

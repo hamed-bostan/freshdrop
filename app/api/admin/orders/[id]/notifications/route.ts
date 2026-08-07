@@ -1,4 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { orderNotificationSchema } from "@/src/contracts/order-notification-schema";
 import { NotifyOrderCustomer } from "@/src/domain/use-cases/orders/NotifyOrderCustomer";
 import {
   activityLog,
@@ -7,8 +9,6 @@ import {
   orderRepository,
   userRepository,
 } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
-import { orderNotificationSchema } from "@/src/contracts/order-notification-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -16,6 +16,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 

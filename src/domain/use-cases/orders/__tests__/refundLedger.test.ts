@@ -1,17 +1,20 @@
 import { describe, expect, it, vi } from "vitest";
+
+import { CancelOrder } from "../CancelOrder";
+import { ResolveItemSubstitution } from "../ResolveItemSubstitution";
+import { ResolveOrderReturn } from "../ResolveOrderReturn";
+
 import type { ActivityActor } from "../../../entities/ActivityEntry";
 import type { Order, OrderItem } from "../../../entities/Order";
-import type { NewRefund, IRefundRepository } from "../../../repositories/IRefundRepository";
-import type { IReturnRepository } from "../../../repositories/IReturnRepository";
+import type { IDeliverySlotRepository } from "../../../repositories/IDeliverySlotRepository";
+import type { IOrderNotifier } from "../../../repositories/IOrderNotifier";
 import type { IOrderRepository, OrderStatusTransition } from "../../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../../repositories/IProductRepository";
-import type { IWalletRepository } from "../../../repositories/IWalletRepository";
+import type { NewRefund, IRefundRepository } from "../../../repositories/IRefundRepository";
+import type { IReturnRepository } from "../../../repositories/IReturnRepository";
 import type { IUnitOfWork, TransactionalRepositories } from "../../../repositories/IUnitOfWork";
-import type { IOrderNotifier } from "../../../repositories/IOrderNotifier";
-import type { IDeliverySlotRepository } from "../../../repositories/IDeliverySlotRepository";
-import { CancelOrder } from "../CancelOrder";
-import { ResolveOrderReturn } from "../ResolveOrderReturn";
-import { ResolveItemSubstitution } from "../ResolveItemSubstitution";
+import type { IWalletRepository } from "../../../repositories/IWalletRepository";
+
 
 /** Throws for any method not explicitly overridden — keeps each fake to just what a test exercises. */
 function stub<T extends object>(overrides: Partial<T>): T {

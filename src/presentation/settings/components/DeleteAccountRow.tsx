@@ -1,11 +1,12 @@
 "use client";
 
-import * as React from "react";
 import { Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { ConfirmSheet } from "@/src/presentation/design-system";
-import { MenuRow } from "@/src/presentation/components/menu-row";
+import * as React from "react";
+
 import { logout } from "@/src/presentation/auth/actions";
+import { MenuRow } from "@/src/presentation/components/menu-row";
+import { ConfirmSheet } from "@/src/presentation/design-system";
 import { profilesApi } from "@/src/presentation/profile/profile-api";
 
 /** Destructive "Delete account" row: confirms, deletes the account, then signs out. */

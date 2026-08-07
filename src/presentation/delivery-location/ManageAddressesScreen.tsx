@@ -1,8 +1,10 @@
 import { getTranslations } from "next-intl/server";
-import { Button } from "@/src/presentation/design-system";
-import { PageHeader } from "@/src/presentation/components/PageHeader";
-import { Link } from "@/src/i18n/navigation";
+
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
+import { Link } from "@/src/i18n/navigation";
+import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { Button } from "@/src/presentation/design-system";
+
 import { AddressCard } from "./components/AddressCard";
 
 interface ManageAddressesScreenProps {

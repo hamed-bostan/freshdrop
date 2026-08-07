@@ -1,5 +1,7 @@
 import { getTranslations } from "next-intl/server";
+
 import type { AdminPromoCode } from "@/src/domain/entities/PromoCode";
+
 import { PromoCodeForm } from "./PromoCodeForm";
 
 /**

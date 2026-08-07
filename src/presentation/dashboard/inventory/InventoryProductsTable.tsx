@@ -1,9 +1,14 @@
 import Image from "next/image";
-import type { ReactNode } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
+
 import type { AdminProductSort } from "@/src/domain/entities/AdminProductFilters";
 import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
+import { Link } from "@/src/i18n/navigation";
+import { formatNumber } from "@/src/lib/formatNumber";
+import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
+import { ListSortHeader } from "@/src/presentation/dashboard/list";
+import { AdjustStockButton } from "@/src/presentation/dashboard/products/AdjustStockButton";
 import {
   Badge,
   DataTable,
@@ -15,13 +20,12 @@ import {
   TableRow,
   Thumbnail,
 } from "@/src/presentation/design-system";
-import { ListSortHeader } from "@/src/presentation/dashboard/list";
-import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
-import { Link } from "@/src/i18n/navigation";
-import { formatNumber } from "@/src/lib/formatNumber";
-import { AdjustStockButton } from "@/src/presentation/dashboard/products/AdjustStockButton";
-import type { InventoryView } from "./InventoryTabs";
+
+
 import { InventoryRowActions } from "./InventoryRowActions";
+
+import type { InventoryView } from "./InventoryTabs";
+import type { ReactNode } from "react";
 
 type InventoryProductsTableProps = {
   products: Product[];

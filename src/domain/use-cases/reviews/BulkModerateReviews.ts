@@ -1,8 +1,10 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { singleChange } from "../../entities/ActivityEntry";
+import { ValidationError } from "../../errors/ValidationError";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
 import type { Review, ReviewStatus } from "../../entities/Review";
 import type { IReviewRepository } from "../../repositories/IReviewRepository";
-import { ValidationError } from "../../errors/ValidationError";
+
 
 /** How many reviews one bulk moderation may touch. */
 const MAX_BULK_REVIEWS = 200;

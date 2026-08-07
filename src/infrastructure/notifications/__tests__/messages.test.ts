@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { Order } from "@/src/domain/entities/Order";
+
 import type { NotificationKind } from "@/src/domain/entities/Notification";
 import type { NotificationTemplate, NotificationTemplateKind } from "@/src/domain/entities/NotificationTemplate";
+import type { Order } from "@/src/domain/entities/Order";
 import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
+
 import { buildOrderMessage, type SubstitutionContext } from "../messages";
 
 function order(overrides: Partial<Order> = {}): Order {

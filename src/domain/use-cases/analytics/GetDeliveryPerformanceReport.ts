@@ -1,4 +1,5 @@
 import { granularityFor, previousPeriod, rangeToWire, type DateRange } from "../../entities/Analytics";
+
 import type { DeliveryPerformanceReport } from "../../entities/DeliveryPerformanceReport";
 import type { IAnalyticsRepository } from "../../repositories/IAnalyticsRepository";
 export class GetDeliveryPerformanceReport {

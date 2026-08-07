@@ -1,16 +1,17 @@
 "use client";
 
-import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
+import * as React from "react";
 import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
+
 import type { AnalyticsGranularity, RevenuePoint } from "@/src/domain/entities/Analytics";
 import { getLangDir } from "@/src/i18n/direction";
 import type { Locale } from "@/src/i18n/routing";
 import { formatBucketLabel, formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
-import { ChartContainer, ChartLegend, ChartTooltip, chartColor } from "@/src/presentation/design-system";
 import { ChartSegmentedControl } from "@/src/presentation/dashboard/ChartSegmentedControl";
+import { ChartContainer, ChartLegend, ChartTooltip, chartColor } from "@/src/presentation/design-system";
 
 export type RevenueChartClientProps = {
   compact?: boolean;
@@ -33,7 +34,7 @@ const METRIC_KEYS: Record<Metric, "metricRevenue" | "metricOrders" | "metricAov"
 
 export function RevenueChartClient({ compact = false, points, previousPoints, granularity, range, previousRange }: RevenueChartClientProps) {
   const t = useTranslations("dashAnalytics");
-  const locale = useLocale() as Locale;
+  const locale = useLocale();
   const dir = getLangDir(locale);
   const [metric, setMetric] = React.useState<Metric>("revenue");
   const [interval, setInterval] = React.useState<Interval>("daily");

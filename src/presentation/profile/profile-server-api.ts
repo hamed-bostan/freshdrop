@@ -1,4 +1,5 @@
 import { serverApiGet } from "@/src/lib/api/server-client";
+
 import { userResponseSchema, type UserProfile } from "./profile-response-schema";
 
 /**

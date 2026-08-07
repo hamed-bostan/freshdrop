@@ -1,5 +1,6 @@
-import type { SubstitutionPreference } from "@/src/domain/entities/Order";
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
+import type { SubstitutionPreference } from "@/src/domain/entities/Order";
+
 import type { SlotSelection } from "./components/DeliverySlotPicker";
 
 export const SLOT_STORAGE_KEY = "freshdrop:checkout:slot";

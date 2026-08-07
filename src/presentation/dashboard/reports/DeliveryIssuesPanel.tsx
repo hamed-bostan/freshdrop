@@ -1,15 +1,17 @@
 import { ExternalLink } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 import type { DeliveryIssue } from "@/src/domain/entities/DeliveryIssue";
 import { DELIVERY_ISSUE_STATUSES } from "@/src/domain/entities/DeliveryIssue";
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
 import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
-import { Avatar, DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
 import { ListChoiceFilter, ListSearchInput } from "@/src/presentation/dashboard/list";
-import { DeliveryIssueStatusMenu } from "./DeliveryIssueStatusMenu";
-import { STATUS_LABEL_KEY } from "./DeliveryIssueStatusBadge";
+import { Avatar, DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
+
 import { ISSUE_TYPE_LABEL_KEY } from "./deliveryIssueLabels";
+import { STATUS_LABEL_KEY } from "./DeliveryIssueStatusBadge";
+import { DeliveryIssueStatusMenu } from "./DeliveryIssueStatusMenu";
 
 /**
  * The delivery report's Issues & incidents panel — real logged incidents (see

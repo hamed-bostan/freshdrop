@@ -1,13 +1,14 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import { CreditCard, User, Lock } from "lucide-react";
-import { Button, FormMessage, Icon, Input, PasswordInput, TextField } from "@/src/presentation/design-system";
-import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import { usePathname, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { Button, FormMessage, Icon, Input, PasswordInput, TextField } from "@/src/presentation/design-system";
 import { walletsApi } from "@/src/presentation/wallet/wallet-api";
 
 export default function AddCardScreen() {

@@ -1,8 +1,9 @@
 import { ExternalLink, Info } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 import type { PurchaseFrequency } from "@/src/domain/entities/CustomerInsightsReport";
-import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
+import type { Locale } from "@/src/i18n/routing";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
 import { Icon, focusRing } from "@/src/presentation/design-system";

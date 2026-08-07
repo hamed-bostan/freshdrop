@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
-import { PromoCodeForm } from "@/src/presentation/dashboard/promo-codes/PromoCodeForm";
+
 import { requirePermission } from "@/src/lib/require-permission";
+import { PromoCodeForm } from "@/src/presentation/dashboard/promo-codes/PromoCodeForm";
 
 export default async function CreatePromoCodePage() {
   // The layout only gates on `dashboard.view`; this whole section is a write

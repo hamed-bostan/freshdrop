@@ -1,7 +1,9 @@
-import { useLocale, useTranslations } from "next-intl";
 import { MessageSquareText } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+
 import type { CustomerDetail } from "@/src/domain/entities/CustomerDetail";
 import { formatOrderDate } from "@/src/lib/formatOrderDate";
+
 import { PANEL_CLASS, PanelHeading } from "./PanelHeading";
 
 export function CustomerNotesCard({ customer }: { customer: CustomerDetail }) {

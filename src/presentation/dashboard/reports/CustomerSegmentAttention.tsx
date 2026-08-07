@@ -1,11 +1,13 @@
 import { AlertTriangle, ChevronRight, ExternalLink, Moon, Sparkles } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import type { Locale } from "@/src/i18n/routing";
+
 import { Link } from "@/src/i18n/navigation";
+import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
-import { Icon, focusRing } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
+import { Icon, focusRing } from "@/src/presentation/design-system";
+
 import type { CustomerSegmentsWire } from "./customer-segments-response-schema";
 
 export async function CustomerSegmentAttention({ segments, locale }: { segments: CustomerSegmentsWire["segments"]; locale: Locale }) {

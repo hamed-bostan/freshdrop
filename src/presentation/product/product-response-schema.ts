@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { Product } from "@/src/domain/entities/Product";
 
 /**

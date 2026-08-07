@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
+
 import { DEFAULT_ACTIVITY_LIMIT } from "@/src/domain/entities/ActivityEntry";
+import { requirePermission } from "@/src/lib/require-permission";
+import { activityServerApi } from "@/src/presentation/dashboard/activity/activity-server-api";
+import { categoriesServerApi } from "@/src/presentation/dashboard/categories/category-server-api";
 import { EditProductScreen } from "@/src/presentation/dashboard/products/EditProductScreen";
 import { productsServerApi } from "@/src/presentation/dashboard/products/product-server-api";
-import { categoriesServerApi } from "@/src/presentation/dashboard/categories/category-server-api";
-import { activityServerApi } from "@/src/presentation/dashboard/activity/activity-server-api";
-import { requirePermission } from "@/src/lib/require-permission";
 
 type EditProductPageProps = {
   params: Promise<{ id: string }>;

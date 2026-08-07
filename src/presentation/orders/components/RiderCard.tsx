@@ -1,6 +1,7 @@
+import { MessageSquareText, Phone } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { MessageSquareText, Phone } from "lucide-react";
+
 import type { DeliveryRider } from "@/src/domain/entities/OrderTracking";
 import { Avatar, Button, Icon } from "@/src/presentation/design-system";
 

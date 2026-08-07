@@ -1,9 +1,9 @@
+import { bulkResultSchema, type BulkResult, type ProductBulkAction } from "@/src/contracts/bulk-action-schema";
+import type { ProductFormInput } from "@/src/contracts/product-schema";
+import type { StockAdjustmentInput } from "@/src/contracts/stock-adjustment-schema";
 import type { Product } from "@/src/domain/entities/Product";
 import { apiDelete, apiPatch, apiPost, apiPut } from "@/src/lib/api/client";
 import { productResponseSchema } from "@/src/presentation/product/product-response-schema";
-import type { ProductFormInput } from "@/src/contracts/product-schema";
-import type { StockAdjustmentInput } from "@/src/contracts/stock-adjustment-schema";
-import { bulkResultSchema, type BulkResult, type ProductBulkAction } from "@/src/contracts/bulk-action-schema";
 
 /**
  * Typed client for the product REST *mutations*. UI components call these instead

@@ -1,11 +1,14 @@
-import type { AdminProductFilters, AdminProductSort } from "../../entities/AdminProductFilters";
 import {
   DEFAULT_ADMIN_PRODUCT_DIRECTION,
   DEFAULT_ADMIN_PRODUCT_SORT,
 } from "../../entities/AdminProductFilters";
+
+import { streamAllPages } from "./streamAllPages";
+
+import type { AdminProductFilters, AdminProductSort } from "../../entities/AdminProductFilters";
 import type { Product } from "../../entities/Product";
 import type { IProductRepository } from "../../repositories/IProductRepository";
-import { streamAllPages } from "./streamAllPages";
+
 
 /**
  * Every catalog product matching `filters`, one at a time. Backs

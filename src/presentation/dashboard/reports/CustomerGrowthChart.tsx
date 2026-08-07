@@ -1,19 +1,20 @@
 "use client";
-import * as React from "react";
 import { Info } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import * as React from "react";
 import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
-import type { Locale } from "@/src/i18n/routing";
+
 import { formatBucketLabel, formatShortDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
 import { ChartContainer, ChartTooltip, Icon } from "@/src/presentation/design-system";
+
 import type { CustomerInsightsWire } from "./customer-insights-response-schema";
 
 type Metric = "customers" | "revenue";
 export function CustomerGrowthChart({ report }: { report: CustomerInsightsWire }) {
-  const t = useTranslations("dashCustomerInsights"); const locale = useLocale() as Locale; const [metric, setMetric] = React.useState<Metric>("customers");
+  const t = useTranslations("dashCustomerInsights"); const locale = useLocale(); const [metric, setMetric] = React.useState<Metric>("customers");
   const data = report.growth.map((point, index) => ({ label: formatBucketLabel(point.bucket, report.granularity, locale), newCustomers: metric === "customers" ? point.newCustomers : point.newRevenue, returningCustomers: metric === "customers" ? point.returningCustomers : point.returningRevenue, previousNew: metric === "customers" ? report.previousGrowth[index]?.newCustomers ?? 0 : report.previousGrowth[index]?.newRevenue ?? 0, previousReturning: metric === "customers" ? report.previousGrowth[index]?.returningCustomers ?? 0 : report.previousGrowth[index]?.returningRevenue ?? 0 }));
   const format = (value: number) => metric === "customers" ? formatNumber(value, locale) : formatMoney(value, locale);
   return <section className="min-w-0 rounded-card-lg border border-border bg-background p-4"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="flex items-center gap-1.5 text-body-b5">{t("growthOverTime")}<Icon icon={Info} size="xs" className="text-muted-foreground" /></h2><div className="flex rounded-card-md border border-border p-0.5 text-body-b10"><span className="rounded-card-md bg-accent px-4 py-1 text-primary">{t("daily")}</span><span className="px-4 py-1 text-muted-foreground">{t("weekly")}</span><span className="px-4 py-1 text-muted-foreground">{t("monthly")}</span></div></div>

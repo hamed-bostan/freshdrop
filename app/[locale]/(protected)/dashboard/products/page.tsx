@@ -1,10 +1,10 @@
-import { ProductsScreen } from "@/src/presentation/dashboard/products/ProductsScreen";
-import { productsServerApi } from "@/src/presentation/dashboard/products/product-server-api";
-import { categoriesServerApi } from "@/src/presentation/dashboard/categories/category-server-api";
+import { auth } from "@/auth";
 import { parseAdminProductFilters } from "@/src/lib/api/admin-product-params";
 import { toSearchParams } from "@/src/lib/api/searchParams";
-import { auth } from "@/auth";
 import { sessionHas } from "@/src/lib/require-permission";
+import { categoriesServerApi } from "@/src/presentation/dashboard/categories/category-server-api";
+import { productsServerApi } from "@/src/presentation/dashboard/products/product-server-api";
+import { ProductsScreen } from "@/src/presentation/dashboard/products/ProductsScreen";
 
 // One page of products is fetched during server render over the REST API (BFF)
 // and passed to the presentational screen. Search, filters, sorting and paging

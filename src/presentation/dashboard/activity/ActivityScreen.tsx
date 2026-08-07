@@ -1,11 +1,14 @@
 import { getTranslations } from "next-intl/server";
+
 import {
   ACTIVITY_ENTITY_TYPES,
   FILTERABLE_ACTIVITY_FIELDS,
 } from "@/src/domain/entities/ActivityEntry";
 import type { Page } from "@/src/domain/entities/Pagination";
 import { ListFilterSelect, ListPager, ListToolbar } from "@/src/presentation/dashboard/list";
+
 import { ActivityList } from "./ActivityList";
+
 import type { ActivityActorWire, ActivityEntryWire } from "./activity-response-schema";
 
 type ActivityScreenProps = {

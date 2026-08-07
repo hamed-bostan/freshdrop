@@ -1,5 +1,7 @@
 import { getTranslations } from "next-intl/server";
+
 import type { DeliveryWindow } from "@/src/domain/entities/DeliveryWindow";
+
 import { DeliveryWindowForm } from "./DeliveryWindowForm";
 
 /**

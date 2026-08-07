@@ -1,8 +1,10 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { singleChange } from "../../entities/ActivityEntry";
+import { NotFoundError } from "../../errors/NotFoundError";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
 import type { Review, ReviewStatus } from "../../entities/Review";
 import type { IReviewRepository } from "../../repositories/IReviewRepository";
-import { NotFoundError } from "../../errors/NotFoundError";
+
 
 /**
  * Set a review's moderation status (admin). Approving a review reveals it on the

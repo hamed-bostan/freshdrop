@@ -1,5 +1,6 @@
 import { Ban, CheckCircle2, Info, PackageOpen } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 import type { RefundReportTotals } from "@/src/domain/entities/RefundReport";
 import type { Locale } from "@/src/i18n/routing";
 import { formatNumber } from "@/src/lib/formatNumber";

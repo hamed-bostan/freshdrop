@@ -1,10 +1,13 @@
 import { CircleDollarSign, PackageOpen, Receipt, ShoppingCart } from "lucide-react";
+
 import { percentChange } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
-import type { AnalyticsOverviewWire } from "../analytics/analytics-response-schema";
+
 import { SalesMetricCard } from "./SalesMetricCard";
+
+import type { AnalyticsOverviewWire } from "../analytics/analytics-response-schema";
 
 type SalesMetricGridProps = {
   analytics: AnalyticsOverviewWire;

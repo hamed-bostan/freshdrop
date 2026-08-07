@@ -1,21 +1,26 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import { MapPin, Clock, FileText, LockKeyhole, Building2, Check, Pencil, Phone, ShoppingBasket, Info, ChevronRight, ChevronLeft, ShieldCheck } from "lucide-react";
-import { Link, useRouter } from "@/src/i18n/navigation";
+import { useTranslations , useLocale } from "next-intl";
+import * as React from "react";
+
 import type { Cart } from "@/src/domain/entities/Cart";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
 import type { SavedCard } from "@/src/domain/entities/Wallet";
-import { Button, FormMessage, Textarea } from "@/src/presentation/design-system";
-import { Icon } from "@/src/presentation/design-system";
-import { DeliveryLocationPickerSheet } from "@/src/presentation/delivery-location/DeliveryLocationPickerSheet";
+import { Link, useRouter } from "@/src/i18n/navigation";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { formatMoney } from "@/src/lib/formatMoney";
+import { useCart } from "@/src/presentation/cart/CartProvider";
 import { DeliveryLocationSummary } from "@/src/presentation/delivery-location/components/DeliveryLocationSummary";
+import { DeliveryLocationPickerSheet } from "@/src/presentation/delivery-location/DeliveryLocationPickerSheet";
+import { Button, FormMessage, Textarea , Icon } from "@/src/presentation/design-system";
 import { AddCardRow, PaymentMethodOption, SavedCardOption, paymentMethodLabel } from "@/src/presentation/payment/components";
 import { paymentMethodsApi } from "@/src/presentation/payment/payment-method-api";
-import { localizeApiError } from "@/src/lib/api/localizeApiError";
+
+import { checkoutApi } from "./checkout-api";
+import { maskPhone, walletAmounts } from "./checkoutSession";
 import {
   CheckoutReviewStep,
   CheckoutSection,
@@ -24,11 +29,6 @@ import {
   WalletBalanceToggle,
   type CheckoutStepId,
 } from "./components";
-import { checkoutApi } from "./checkout-api";
-import { useCart } from "@/src/presentation/cart/CartProvider";
-import { formatMoney } from "@/src/lib/formatMoney";
-import { useLocale } from "next-intl";
-import { maskPhone, walletAmounts } from "./checkoutSession";
 import { useCheckoutDraft } from "./useCheckoutDraft";
 
 /** The checkout form's own character cap on the delivery-instructions note. */
@@ -196,7 +196,7 @@ export default function CheckoutScreen({
         clearDraft();
         // The order cleared the cart server-side: resync the shared cart store so
         // the nav badge empties, then navigate and refresh the confirmation RSC.
-        refreshCart();
+        await refreshCart();
         router.push("/cart/checkout/confirmed");
         router.refresh();
       } catch (err) {

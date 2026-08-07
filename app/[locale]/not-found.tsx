@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
-import { Button } from "@/src/presentation/design-system";
+
 import { Link } from "@/src/i18n/navigation";
+import { Button } from "@/src/presentation/design-system";
 
 /**
  * Localized 404 for everything under the `[locale]` segment: pages that call

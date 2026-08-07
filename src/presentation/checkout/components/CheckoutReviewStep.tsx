@@ -1,18 +1,22 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
 import { MapPin, Clock, Wallet, FileText, ShieldCheck, type LucideIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+
 import type { Cart, CartItem } from "@/src/domain/entities/Cart";
-import type { SubstitutionPreference } from "@/src/domain/entities/Order";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
+import type { SubstitutionPreference } from "@/src/domain/entities/Order";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { Icon } from "@/src/presentation/design-system";
+
+import { slotDayLabel, slotName, slotTimeRange } from "../deliverySlotFormat";
+
 import { OrderTotals } from "./OrderTotals";
 import { SubstitutionPreferenceList } from "./SubstitutionPreferenceList";
+
 import type { CheckoutStepId } from "./CheckoutStepper";
 import type { SlotSelection } from "./DeliverySlotPicker";
-import { slotDayLabel, slotName, slotTimeRange } from "../deliverySlotFormat";
 
 interface Props {
   cart: Cart; items: CartItem[]; selectedAddress: DeliveryLocation | undefined; slot: SlotSelection | null;

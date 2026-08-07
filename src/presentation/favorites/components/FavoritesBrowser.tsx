@@ -1,9 +1,11 @@
 "use client";
 
 import * as React from "react";
-import type { Product } from "@/src/domain/entities/Product";
+
 import type { Category } from "@/src/domain/entities/Category";
+import type { Product } from "@/src/domain/entities/Product";
 import { ProductGrid } from "@/src/presentation/product/components";
+
 import { ALL_FILTER, FavoriteFilterTabs } from "./FavoriteFilterTabs";
 
 interface FavoritesBrowserProps {

@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { orderNoteSchema } from "@/src/contracts/order-note-schema";
 import { AddOrderNote } from "@/src/domain/use-cases/orders/AddOrderNote";
 import { ListOrderNotes } from "@/src/domain/use-cases/orders/ListOrderNotes";
 import { orderNoteRepository, orderRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
-import { orderNoteSchema } from "@/src/contracts/order-note-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -11,6 +11,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 

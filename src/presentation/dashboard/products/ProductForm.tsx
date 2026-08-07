@@ -1,13 +1,19 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
-import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+
+import { productFormSchema, type ProductFormInput } from "@/src/contracts/product-schema";
 import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
-import type { ProductTranslationInput } from "@/src/domain/repositories/IProductRepository";
 import { DIETARY_TAGS, PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
+import type { ProductTranslationInput } from "@/src/domain/repositories/IProductRepository";
+import { Link, useRouter } from "@/src/i18n/navigation";
+import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { formErrorMessage } from "@/src/lib/formErrorMessage";
 import {
   Button,
   Field,
@@ -24,11 +30,7 @@ import {
   TextField,
   ToggleChip,
 } from "@/src/presentation/design-system";
-import { Link, useRouter } from "@/src/i18n/navigation";
-import { ApiError } from "@/src/lib/api/ApiError";
-import { localizeApiError } from "@/src/lib/api/localizeApiError";
-import { formErrorMessage } from "@/src/lib/formErrorMessage";
-import { productFormSchema, type ProductFormInput } from "@/src/contracts/product-schema";
+
 import { productsApi } from "./product-api";
 import { ProductImageUpload } from "./ProductImageUpload";
 

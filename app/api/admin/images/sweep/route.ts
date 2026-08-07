@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { SweepOrphanImages } from "@/src/domain/use-cases/images/SweepOrphanImages";
 import { categoryRepository, imageStorageRepository } from "@/src/infrastructure/container";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";

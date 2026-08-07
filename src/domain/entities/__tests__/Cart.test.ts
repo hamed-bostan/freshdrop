@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+
 import { priceCart, type CartItem } from "../Cart";
+
 import type { Product } from "../Product";
 import type { PromoCode } from "../PromoCode";
 

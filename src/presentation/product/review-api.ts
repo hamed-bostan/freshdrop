@@ -1,7 +1,8 @@
+import type { ReviewSubmissionInput } from "@/src/contracts/review-schema";
 import type { PublicReview } from "@/src/domain/entities/Review";
 import { apiPost } from "@/src/lib/api/client";
+
 import { reviewResponseSchema } from "./review-response-schema";
-import type { ReviewSubmissionInput } from "@/src/contracts/review-schema";
 
 /**
  * Typed client for the review REST *mutations*. UI components call these instead of

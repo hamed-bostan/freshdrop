@@ -1,9 +1,10 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { Button, Icon } from "@/src/presentation/design-system";
+import { useTranslations } from "next-intl";
+
 import { cn } from "@/src/lib/utils";
+import { Button, Icon } from "@/src/presentation/design-system";
 
 type SidebarCollapseToggleProps = {
   collapsed: boolean;

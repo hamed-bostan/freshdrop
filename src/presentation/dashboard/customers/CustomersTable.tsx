@@ -1,6 +1,7 @@
+import { ArrowDown, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { ArrowDown, ChevronRight } from "lucide-react";
+
 import {
   customerAverageOrderValue,
   type CustomerOrderSummary,

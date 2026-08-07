@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import type { IDeliveryIssueRepository } from "../../../repositories/IDeliveryIssueRepository";
+
 import { ValidationError } from "../../../errors/ValidationError";
 import { CreateDeliveryIssue } from "../CreateDeliveryIssue";
+
+import type { IDeliveryIssueRepository } from "../../../repositories/IDeliveryIssueRepository";
 
 describe("CreateDeliveryIssue", () => {
   it("rejects a negative delay without touching the repository", async () => {

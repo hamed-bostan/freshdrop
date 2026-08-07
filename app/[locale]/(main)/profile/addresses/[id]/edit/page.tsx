@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
-import { deliveryLocationsServerApi } from "@/src/presentation/delivery-location/delivery-location-server-api";
-import LocationDetailScreen from "@/src/presentation/map/LocationDetailScreen";
-import { DEFAULT_CENTER } from "@/src/presentation/map/constants";
+
 import { isValidGeoPoint, type GeoPoint } from "@/src/domain/entities/Place";
+import { deliveryLocationsServerApi } from "@/src/presentation/delivery-location/delivery-location-server-api";
+import { DEFAULT_CENTER } from "@/src/presentation/map/constants";
+import LocationDetailScreen from "@/src/presentation/map/LocationDetailScreen";
 
 // The address is read from the REST API per request (BFF) — render dynamically.
 export const dynamic = "force-dynamic";

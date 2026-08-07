@@ -1,12 +1,15 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import { CheckCircle2, Download, TriangleAlert, UploadCloud } from "lucide-react";
-import { Button, DataTable, FormMessage, Icon } from "@/src/presentation/design-system";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { Button, DataTable, FormMessage, Icon } from "@/src/presentation/design-system";
+
 import { productImportApi } from "./product-import-api";
+
 import type { ProductImportCommitResponse, ProductImportValidationResponse } from "./product-import-response-schema";
 
 type Phase = "idle" | "validating" | "validated" | "committing" | "done";

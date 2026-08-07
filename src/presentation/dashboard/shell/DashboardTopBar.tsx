@@ -1,11 +1,14 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { CircleHelp, Menu, Search } from "lucide-react";
-import { Button, Icon } from "@/src/presentation/design-system";
+import { useTranslations } from "next-intl";
+
 import { NotificationBell } from "@/src/presentation/dashboard/notifications/NotificationBell";
+import { Button, Icon } from "@/src/presentation/design-system";
+
 import { LocaleToggle } from "./LocaleToggle";
 import { UserMenu } from "./UserMenu";
+
 import type { DashboardViewer } from "./viewer";
 
 type DashboardTopBarProps = {

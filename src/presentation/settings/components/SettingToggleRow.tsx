@@ -1,10 +1,12 @@
 "use client";
 
 import * as React from "react";
-import type { ComponentType } from "react";
-import type { LucideProps } from "lucide-react";
-import { Icon, Switch } from "@/src/presentation/design-system";
+
 import { rowCardClass } from "@/src/presentation/components/menu-row";
+import { Icon, Switch } from "@/src/presentation/design-system";
+
+import type { LucideProps } from "lucide-react";
+import type { ComponentType } from "react";
 
 interface SettingToggleRowProps {
   icon: ComponentType<LucideProps>;

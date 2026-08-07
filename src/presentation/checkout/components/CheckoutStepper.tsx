@@ -1,7 +1,8 @@
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Icon } from "@/src/presentation/design-system";
+
 import { cn } from "@/src/lib/utils";
+import { Icon } from "@/src/presentation/design-system";
 
 export type CheckoutStepId = "delivery" | "payment" | "review";
 

@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
-import { CategoryForm } from "@/src/presentation/dashboard/categories/CategoryForm";
+
 import { requirePermission } from "@/src/lib/require-permission";
+import { CategoryForm } from "@/src/presentation/dashboard/categories/CategoryForm";
 
 export default async function CreateCategoryPage() {
   // The layout only gates on `dashboard.view`; this whole section is a write

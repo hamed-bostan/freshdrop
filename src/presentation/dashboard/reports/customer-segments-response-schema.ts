@@ -1,5 +1,7 @@
 import { z } from "zod";
+
 import type { CustomerSegmentsReport } from "@/src/domain/entities/CustomerSegmentsReport";
+
 import { moneySchema, nonNegativeInt, rangeSchema } from "./analytics-wire";
 
 const segmentId = z.enum(["high_value_loyal", "repeat_buyers", "new_customers", "reactivated", "at_risk", "dormant"]);

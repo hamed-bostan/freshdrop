@@ -1,9 +1,11 @@
 import { Lightbulb } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
+import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
 import { formatPercent } from "@/src/lib/formatNumber";
 import { Icon } from "@/src/presentation/design-system";
-import { Link } from "@/src/i18n/navigation";
+
 import type { CustomerSegmentsWire } from "./customer-segments-response-schema";
 
 export async function CustomerSegmentInsight({ report, locale }: { report: CustomerSegmentsWire; locale: Locale }) {

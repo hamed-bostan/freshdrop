@@ -1,4 +1,5 @@
 import { serverApiGet } from "@/src/lib/api/server-client";
+
 import { paymentReportResponseSchema, type PaymentReportWire } from "./payment-report-response-schema";
 
 export const paymentReportServerApi = {

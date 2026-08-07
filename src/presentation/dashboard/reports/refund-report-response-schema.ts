@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { isoDateSchema, moneySchema, nonNegativeInt, rangeSchema, seriesSchema } from "./analytics-wire";
 
 const totals = z.object({

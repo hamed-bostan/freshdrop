@@ -1,9 +1,10 @@
 import { z } from "zod";
+
+import { orderNoteResponseSchema } from "@/src/contracts/order-note-schema";
 import type { CustomerDetail, CustomerLifetime } from "@/src/domain/entities/CustomerDetail";
 import { USER_ROLES } from "@/src/domain/entities/User";
 import { deliveryLocationResponseSchema } from "@/src/presentation/delivery-location/delivery-location-response-schema";
 import { orderResponseSchema } from "@/src/presentation/orders/order-response-schema";
-import { orderNoteResponseSchema } from "@/src/contracts/order-note-schema";
 import { reviewResponseSchema } from "@/src/presentation/product/review-response-schema";
 import { walletResponseSchema } from "@/src/presentation/wallet/wallet-response-schema";
 

@@ -1,4 +1,5 @@
 import type { AnalyticsGranularity, RevenuePoint } from "@/src/domain/entities/Analytics";
+
 import { RevenueChartClient } from "./RevenueChartClient";
 
 export type RevenueChartProps = {

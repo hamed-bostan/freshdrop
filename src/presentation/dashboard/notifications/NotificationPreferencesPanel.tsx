@@ -1,8 +1,9 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import { Settings } from "lucide-react";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { AdminNotificationAction } from "@/src/domain/entities/AdminNotification";
 import {
   Button,
@@ -13,7 +14,9 @@ import {
   Spinner,
   Switch,
 } from "@/src/presentation/design-system";
+
 import { notificationPreferencesApi } from "./notification-preferences-api";
+
 import type { NotificationPreference } from "./notification-preferences-response-schema";
 
 /** Message key per category — the checkbox label, not the timeline sentence (see `dashActivity.action.*`). */
@@ -47,6 +50,7 @@ export function NotificationPreferencesPanel(): React.ReactElement {
       .then((list) => {
         if (!cancelled) setPreferences(list);
       })
+      .catch(() => undefined)
       .finally(() => {
         if (!cancelled) setIsLoading(false);
       });

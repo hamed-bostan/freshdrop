@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { reviewModerationSchema } from "@/src/contracts/review-moderation-schema";
 import { toPublicReview } from "@/src/domain/entities/Review";
 import { ModerateReview } from "@/src/domain/use-cases/reviews/ModerateReview";
 import { reviewRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
-import { reviewModerationSchema } from "@/src/contracts/review-moderation-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -11,6 +11,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Writes per request — never statically cached.
 export const dynamic = "force-dynamic";

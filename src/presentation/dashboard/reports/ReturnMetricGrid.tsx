@@ -1,11 +1,14 @@
 import { CircleDollarSign, PackageCheck, SearchCheck, TimerReset } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 import { percentChange } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
-import type { RefundReportWire } from "./refund-report-response-schema";
+
 import { SalesMetricCard } from "./SalesMetricCard";
+
+import type { RefundReportWire } from "./refund-report-response-schema";
 
 export async function ReturnMetricGrid({ report, locale }: { report: RefundReportWire; locale: Locale }) {
   const t = await getTranslations("dashRefundReport");

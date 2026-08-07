@@ -8,6 +8,7 @@ import {
   type DateRange,
   type RevenueRankSort,
 } from "../../entities/Analytics";
+
 import type { IAnalyticsRepository } from "../../repositories/IAnalyticsRepository";
 
 /** How many rows the "top products" and "top categories" panels rank, when the caller doesn't say. */

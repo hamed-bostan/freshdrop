@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+
 import { RevokeAdmin } from "@/src/domain/use-cases/team/RevokeAdmin";
 import { userRepository } from "@/src/infrastructure/container";
+import { errorResponse, errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 import { getOwnerSession } from "@/src/lib/require-admin";
 import { isBreakGlassAdmin } from "@/src/lib/require-permission";
-import { errorResponse, errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 
 // Revocation must take effect immediately — never statically cached.
 export const dynamic = "force-dynamic";

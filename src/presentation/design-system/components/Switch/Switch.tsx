@@ -1,8 +1,10 @@
 "use client";
 
-import * as React from "react";
 import { Switch as SwitchPrimitive } from "radix-ui";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
+
 import { focusRingOffset } from "../shared/focusRing";
 import { stillWhenReduced } from "../shared/motion";
 

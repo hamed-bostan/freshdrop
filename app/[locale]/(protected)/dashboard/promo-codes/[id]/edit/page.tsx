@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
+
+import { requirePermission } from "@/src/lib/require-permission";
 import { EditPromoCodeScreen } from "@/src/presentation/dashboard/promo-codes/EditPromoCodeScreen";
 import { promoCodesServerApi } from "@/src/presentation/dashboard/promo-codes/promo-code-server-api";
-import { requirePermission } from "@/src/lib/require-permission";
 
 type EditPromoCodePageProps = {
   params: Promise<{ id: string }>;

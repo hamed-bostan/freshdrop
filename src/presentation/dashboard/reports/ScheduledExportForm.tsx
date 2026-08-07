@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
+
 import type { ScheduledExportFormInput } from "@/src/contracts/scheduled-export-schema";
 import { STORE_TIME_ZONE } from "@/src/domain/entities/Analytics";
 import type { ExportFormat } from "@/src/domain/entities/ExportJob";
@@ -10,8 +11,9 @@ import { Link, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { Button, Checkbox, Chip, ChipGroup, FormMessage, Input, Select } from "@/src/presentation/design-system";
-import { scheduledExportsApi } from "./scheduled-export-api";
+
 import { EXPORT_FORMAT_LABEL, supportsComparison, type ExportReportSummary } from "./export-report-catalog";
+import { scheduledExportsApi } from "./scheduled-export-api";
 
 type Props = { reports: readonly ExportReportSummary[] } & ({ mode: "create" } | { mode: "edit"; schedule: ScheduledExport });
 
@@ -64,10 +66,10 @@ export function ScheduledExportForm({ reports, ...props }: Props) {
     setSubmitting(true);
     setError(null);
     const input: ScheduledExportFormInput = {
-      reportId: report!.id,
+      reportId: report.id,
       format,
-      from: report!.periodCapable && rangeFrom ? rangeFrom : undefined,
-      to: report!.periodCapable && rangeTo ? rangeTo : undefined,
+      from: report.periodCapable && rangeFrom ? rangeFrom : undefined,
+      to: report.periodCapable && rangeTo ? rangeTo : undefined,
       compareWithPrevious: canCompare ? compareWithPrevious : undefined,
       cadence,
       dayOfWeek: cadence === "weekly" ? dayOfWeek : undefined,

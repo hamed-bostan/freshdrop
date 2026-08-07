@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { addCardSchema } from "@/src/contracts/wallet-schema";
 import { AddCard } from "@/src/domain/use-cases/wallet/AddCard";
 import { ListWalletCards } from "@/src/domain/use-cases/wallet/ListWalletCards";
 import { walletRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
-import { addCardSchema } from "@/src/contracts/wallet-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -11,6 +11,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Per-user data — never statically cached.
 export const dynamic = "force-dynamic";

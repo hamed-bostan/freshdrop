@@ -1,6 +1,6 @@
 import { hasCustomAnalyticsRange, parseAnalyticsRange, parseComparisonMode, toDateParam, toInclusiveEndParam } from "@/src/lib/api/analytics-params";
-import { CustomerSegmentsScreen } from "@/src/presentation/dashboard/reports/CustomerSegmentsScreen";
 import { customerSegmentsServerApi } from "@/src/presentation/dashboard/reports/customer-segments-server-api";
+import { CustomerSegmentsScreen } from "@/src/presentation/dashboard/reports/CustomerSegmentsScreen";
 
 export const dynamic = "force-dynamic";
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };

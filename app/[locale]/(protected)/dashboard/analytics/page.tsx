@@ -1,5 +1,3 @@
-import { analyticsServerApi } from "@/src/presentation/dashboard/analytics/analytics-server-api";
-import { AnalyticsScreen } from "@/src/presentation/dashboard/analytics/AnalyticsScreen";
 import {
   hasCustomAnalyticsRange,
   parseAnalyticsRange,
@@ -7,6 +5,8 @@ import {
   toDateParam,
   toInclusiveEndParam,
 } from "@/src/lib/api/analytics-params";
+import { analyticsServerApi } from "@/src/presentation/dashboard/analytics/analytics-server-api";
+import { AnalyticsScreen } from "@/src/presentation/dashboard/analytics/AnalyticsScreen";
 
 // Read from the REST API (BFF) per request, same as the overview it complements.
 export const dynamic = "force-dynamic";

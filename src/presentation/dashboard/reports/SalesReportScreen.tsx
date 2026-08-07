@@ -1,8 +1,8 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import type { Locale } from "@/src/i18n/routing";
+
 import type { ComparisonMode } from "@/src/lib/api/analytics-params";
 import { formatMoney } from "@/src/lib/formatMoney";
-import type { AnalyticsOverviewWire } from "../analytics/analytics-response-schema";
+
 import { ReportHeader } from "./ReportHeader";
 import { SalesCategoryPanel } from "./SalesCategoryPanel";
 import { SalesChannelPanel } from "./SalesChannelPanel";
@@ -11,10 +11,12 @@ import { SalesMetricGrid } from "./SalesMetricGrid";
 import { SalesTrendChart } from "./SalesTrendChart";
 import { TopSellingProductsTable } from "./TopSellingProductsTable";
 
+import type { AnalyticsOverviewWire } from "../analytics/analytics-response-schema";
+
 type Props = { analytics: AnalyticsOverviewWire; from: string; to: string; isCustomRange: boolean; compareMode: ComparisonMode };
 
 export async function SalesReportScreen({ analytics, from, to, isCustomRange, compareMode }: Props) {
-  const t = await getTranslations("dashReports"); const ta = await getTranslations("dashAnalytics"); const locale = await getLocale() as Locale;
+  const t = await getTranslations("dashReports"); const ta = await getTranslations("dashAnalytics"); const locale = await getLocale();
   return <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-4">
     <ReportHeader ariaLabel={t("breadcrumbAria")} parentLabel={t("heading")} currentLabel={t("salesReport")} title={t("salesReport")} subtitle={t("salesReportSubtitle")} from={from} to={to} isCustomRange={isCustomRange} comparisonRange={analytics.previousRange} compareMode={compareMode} exportReports={[{ resource: "orders", label: ta("exportOrdersReport") }, { resource: "products", label: ta("exportProductsReport") }]} />
     <SalesMetricGrid analytics={analytics} locale={locale} labels={{ revenue: ta("kpiNetRevenue"), orders: ta("kpiOrders"), averageOrder: ta("kpiAverageOrder"), units: ta("kpiUnitsSold"), comparison: ta("vsPreviousPeriod"), current: ta("currentPeriod") }} />

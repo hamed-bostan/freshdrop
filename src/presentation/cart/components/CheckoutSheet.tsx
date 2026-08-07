@@ -1,13 +1,15 @@
 "use client";
 
+import { ChevronRight, Ticket } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Dialog, VisuallyHidden } from "radix-ui";
-import { ChevronRight, Ticket } from "lucide-react";
+
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
 import { Link } from "@/src/i18n/navigation";
-import { Button, Icon } from "@/src/presentation/design-system";
-import { cn } from "@/src/lib/utils";
 import { formatMoney } from "@/src/lib/formatMoney";
+import { cn } from "@/src/lib/utils";
+import { Button, Icon } from "@/src/presentation/design-system";
+
 import { isLocalizedPromo } from "../localizedPromos";
 
 interface SummaryRowProps {

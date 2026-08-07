@@ -1,11 +1,12 @@
 import type { Order } from "@/src/domain/entities/Order";
 import type { Page } from "@/src/domain/entities/Pagination";
 import type { ReturnRequest } from "@/src/domain/entities/Return";
+import type { OrderPipelineCounts } from "@/src/domain/use-cases/orders/GetOrderPipelineCounts";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { pageResponseSchema } from "@/src/lib/api/page-response-schema";
 import { serverApiGet } from "@/src/lib/api/server-client";
 import { orderResponseSchema } from "@/src/presentation/orders/order-response-schema";
-import type { OrderPipelineCounts } from "@/src/domain/use-cases/orders/GetOrderPipelineCounts";
+
 import { orderCountsResponseSchema } from "./order-counts-response-schema";
 import { orderMessageDefaultResponseSchema, type OrderMessageDefaultWire } from "./order-message-default-response-schema";
 import { returnRequestOrNullResponseSchema } from "./order-return-response-schema";

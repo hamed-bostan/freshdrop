@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { GetCustomerDetail } from "@/src/domain/use-cases/customers/GetCustomerDetail";
 import {
   deliveryLocationRepository,
@@ -8,8 +9,8 @@ import {
   userRepository,
   walletRepository,
 } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Reads one customer's profile, orders, addresses, wallet and reviews per request —
 // never statically cached.

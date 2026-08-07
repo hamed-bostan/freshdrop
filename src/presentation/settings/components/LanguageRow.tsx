@@ -1,10 +1,12 @@
 "use client";
 
-import * as React from "react";
 import { Globe } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import * as React from "react";
+
 import { LOCALE_COOKIE_MAX_AGE, LOCALE_COOKIE_NAME, routing, type Locale } from "@/src/i18n/routing";
 import { MenuRow } from "@/src/presentation/components/menu-row";
+
 import { PickerSheet } from "./PickerSheet";
 
 // Each language is labelled with its own endonym (its name in its own script), the
@@ -40,7 +42,7 @@ export function LanguageRow() {
 
   return (
     <>
-      <MenuRow icon={Globe} label={t("language")} value={LOCALE_NAMES[locale as Locale]} onClick={() => setOpen(true)} />
+      <MenuRow icon={Globe} label={t("language")} value={LOCALE_NAMES[locale]} onClick={() => setOpen(true)} />
 
       <PickerSheet
         open={open}

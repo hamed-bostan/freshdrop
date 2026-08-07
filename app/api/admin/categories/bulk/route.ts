@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { BulkUpdateCategories } from "@/src/domain/use-cases/categories/BulkUpdateCategories";
-import type { BulkCategoryChange } from "@/src/domain/repositories/ICategoryRepository";
-import { categoryRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
+
 import { categoryBulkRequestSchema, type CategoryBulkAction } from "@/src/contracts/bulk-action-schema";
+import type { BulkCategoryChange } from "@/src/domain/repositories/ICategoryRepository";
+import { BulkUpdateCategories } from "@/src/domain/use-cases/categories/BulkUpdateCategories";
+import { categoryRepository } from "@/src/infrastructure/container";
 import {
   errorResponse,
   errorResponseFromException,
@@ -11,6 +11,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 

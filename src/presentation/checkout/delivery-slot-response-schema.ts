@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
 
 /**

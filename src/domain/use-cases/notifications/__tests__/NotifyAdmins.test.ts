@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { NotifyAdmins } from "../NotifyAdmins";
+
 import type { AdminNotificationAction } from "@/src/domain/entities/AdminNotification";
 import type { NotificationTemplate } from "@/src/domain/entities/NotificationTemplate";
-import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
+import type { User } from "@/src/domain/entities/User";
 import type { IAdminNotificationRepository } from "@/src/domain/repositories/IAdminNotificationRepository";
 import type { IEmailSender, EmailMessage } from "@/src/domain/repositories/IEmailSender";
 import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
-import type { User } from "@/src/domain/entities/User";
+import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
+
+import { NotifyAdmins } from "../NotifyAdmins";
 
 function recipient(overrides: Partial<User> = {}): User {
   return {

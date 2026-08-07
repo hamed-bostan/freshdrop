@@ -1,7 +1,7 @@
 import { hasCustomAnalyticsRange, parseAnalyticsRange, parseComparisonMode, toDateParam, toInclusiveEndParam } from "@/src/lib/api/analytics-params";
 import { customersServerApi } from "@/src/presentation/dashboard/customers/customer-server-api";
-import { RefundsReturnsScreen } from "@/src/presentation/dashboard/reports/RefundsReturnsScreen";
 import { refundReportServerApi } from "@/src/presentation/dashboard/reports/refund-report-server-api";
+import { RefundsReturnsScreen } from "@/src/presentation/dashboard/reports/RefundsReturnsScreen";
 export const dynamic = "force-dynamic";
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 export default async function RefundsReportPage({ searchParams }: Props) {

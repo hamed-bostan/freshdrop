@@ -1,5 +1,5 @@
-import { ProductImportPanel } from "@/src/presentation/dashboard/imports/ProductImportPanel";
 import { requirePermission } from "@/src/lib/require-permission";
+import { ProductImportPanel } from "@/src/presentation/dashboard/imports/ProductImportPanel";
 
 export const dynamic = "force-dynamic";
 

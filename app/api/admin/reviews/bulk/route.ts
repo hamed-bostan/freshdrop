@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { reviewBulkRequestSchema } from "@/src/contracts/bulk-action-schema";
 import { BulkModerateReviews } from "@/src/domain/use-cases/reviews/BulkModerateReviews";
 import { reviewRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
-import { reviewBulkRequestSchema } from "@/src/contracts/bulk-action-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -10,6 +10,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 

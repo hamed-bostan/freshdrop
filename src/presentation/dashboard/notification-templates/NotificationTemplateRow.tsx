@@ -1,23 +1,27 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
-import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+import { useForm, useWatch } from "react-hook-form";
+
+import { notificationTemplateFormSchema, type NotificationTemplateFormInput } from "@/src/contracts/notification-template-schema";
 import {
   NOTIFICATION_TEMPLATE_CHANNEL,
   NOTIFICATION_TEMPLATE_VARS,
   type NotificationTemplateKind,
 } from "@/src/domain/entities/NotificationTemplate";
-import { notificationTemplateFormSchema, type NotificationTemplateFormInput } from "@/src/contracts/notification-template-schema";
-import { render } from "@/src/lib/renderTemplate";
-import { Button, FormMessage, Input, Textarea } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import type { FormErrorsTranslator } from "@/src/lib/formErrorMessage";
-import type { NotificationTemplateWire } from "./notification-template-response-schema";
+import { render } from "@/src/lib/renderTemplate";
+import { Button, FormMessage, Input, Textarea } from "@/src/presentation/design-system";
+
+
 import { notificationTemplatesApi } from "./notification-template-api";
+
+import type { NotificationTemplateWire } from "./notification-template-response-schema";
 
 type NotificationTemplateRowProps = {
   kind: NotificationTemplateKind;

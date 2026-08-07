@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
 import { cn } from "@/src/lib/utils";
+
+import type { ReactNode } from "react";
 
 type ListToolbarProps = {
   /** The search box — first in reading order, and full-width on a narrow viewport. */

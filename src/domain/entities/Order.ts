@@ -1,8 +1,12 @@
-import type { GeoPoint } from "./Place";
-import type { TrackingMilestone } from "./OrderTracking";
-import type { Refund } from "./Refund";
-import { refundedSoFar } from "./Refund";
 import { round2 } from "@/src/lib/money";
+
+import { refundedSoFar } from "./Refund";
+
+import type { TrackingMilestone } from "./OrderTracking";
+import type { GeoPoint } from "./Place";
+import type { Refund } from "./Refund";
+
+
 
 /**
  * Lifecycle status of an order — drives the status badge on the order card.

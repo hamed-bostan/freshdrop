@@ -1,6 +1,7 @@
 "use client";
 
 import { Checkbox } from "@/src/presentation/design-system";
+
 import { useBulkSelection } from "./BulkSelectionProvider";
 
 type BulkSelectAllCheckboxProps = {

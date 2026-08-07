@@ -1,11 +1,14 @@
 import { CircleDollarSign, Repeat2, UserRoundPlus, UsersRound } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 import { percentChange, repeatPurchaseRate } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
-import type { CustomerInsightsWire } from "./customer-insights-response-schema";
+
 import { SalesMetricCard } from "./SalesMetricCard";
+
+import type { CustomerInsightsWire } from "./customer-insights-response-schema";
 
 export async function CustomerMetricGrid({ report, locale }: { report: CustomerInsightsWire; locale: Locale }) {
   const t = await getTranslations("dashCustomerInsights");

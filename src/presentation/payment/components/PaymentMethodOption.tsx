@@ -1,10 +1,13 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { SelectableTile } from "@/src/presentation/design-system";
+
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
-import { PaymentMethodIcon } from "./PaymentMethodIcon";
 import { cn } from "@/src/lib/utils";
+import { SelectableTile } from "@/src/presentation/design-system";
+
+import { PaymentMethodIcon } from "./PaymentMethodIcon";
+
 
 interface PaymentMethodOptionProps {
   method: PaymentMethod;

@@ -1,18 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
+
 import type { Order, PaymentStatus } from "@/src/domain/entities/Order";
 import { orderNetPaid } from "@/src/domain/entities/Order";
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
-import { Badge, Button, DataGridBody, DataGridHeader, DataTable, focusRing, Icon } from "@/src/presentation/design-system";
-import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { cn } from "@/src/lib/utils";
+import { Badge, Button, DataGridBody, DataGridHeader, DataTable, focusRing, Icon } from "@/src/presentation/design-system";
+import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 
 const PAGE_SIZE = 8;
 const CUSTOMER_ORDERS_ROW_GRID =
@@ -30,7 +31,7 @@ type CustomerOrdersPanelProps = { orders: Order[] };
 export function CustomerOrdersPanel({ orders }: CustomerOrdersPanelProps) {
   const t = useTranslations("dashCustomerDetail");
   const tOrders = useTranslations("dashOrders");
-  const locale = useLocale() as Locale;
+  const locale = useLocale();
   const [page, setPage] = useState(1);
   const pages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE));
   const visible = useMemo(() => orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [orders, page]);

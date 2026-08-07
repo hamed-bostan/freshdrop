@@ -1,5 +1,6 @@
 import type { Category } from "@/src/domain/entities/Category";
 import { SectionHeader } from "@/src/presentation/components/SectionHeader";
+
 import { CategoryItem } from "./CategoryItem";
 
 interface CategoryGridProps {

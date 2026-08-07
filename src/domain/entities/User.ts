@@ -1,6 +1,7 @@
 // Value import, and the dependency only goes this way: `Permission.ts` imports
 // `UserRole` as a *type*, which erases, so there is no runtime cycle.
 import { roleHasPermission } from "./Permission";
+
 // Same treatment: a type-only import, so it erases and can't create a runtime
 // cycle even though `AdminNotification.ts` itself imports from `Permission.ts`.
 import type { AdminNotificationAction } from "./AdminNotification";

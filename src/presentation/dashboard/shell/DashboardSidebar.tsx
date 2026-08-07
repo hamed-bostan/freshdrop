@@ -2,6 +2,7 @@
 
 import type { Permission } from "@/src/domain/entities/Permission";
 import { cn } from "@/src/lib/utils";
+
 import { DashboardNav } from "./DashboardNav";
 import { SidebarBrand } from "./SidebarBrand";
 import { SidebarCollapseToggle } from "./SidebarCollapseToggle";

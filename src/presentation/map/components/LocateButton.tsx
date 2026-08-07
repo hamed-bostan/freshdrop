@@ -1,5 +1,6 @@
-import { useTranslations } from "next-intl";
 import { LocateFixed } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { focusRing, Icon } from "@/src/presentation/design-system";
 
 interface LocateButtonProps {

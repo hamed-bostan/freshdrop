@@ -1,6 +1,7 @@
-import type { Prisma } from "@prisma/client";
 import { changedFields, type NewActivityEntry } from "@/src/domain/entities/ActivityEntry";
 import type { AuditHook } from "@/src/domain/repositories/AuditHook";
+
+import type { Prisma } from "@prisma/client";
 
 /**
  * Turn a domain entry into the row `activity_log` stores.

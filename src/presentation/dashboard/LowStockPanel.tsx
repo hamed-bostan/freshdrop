@@ -1,11 +1,11 @@
+import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ChevronRight } from "lucide-react";
+
 import type { Product } from "@/src/domain/entities/Product";
-import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
-import { Icon, Thumbnail } from "@/src/presentation/design-system";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { Icon, Thumbnail } from "@/src/presentation/design-system";
 
 type Props = {
   products: Product[];
@@ -13,7 +13,7 @@ type Props = {
 
 export async function LowStockPanel({ products }: Props) {
   const t = await getTranslations("dashHome");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
   return (
     <section className="rounded-card-lg border border-border p-4">
       <div className="flex items-center justify-between gap-3">

@@ -14,7 +14,7 @@ export class CategoryRepository implements ICategoryRepository {
 
   async getAll(): Promise<Category[]> {
     const res = await fetch(`${this.baseUrl}/categories`);
-    return res.json();
+    return (await res.json()) as Category[];
   }
 
   async listPage(filters: AdminCategoryFilters, page: PageRequest<AdminCategorySort>): Promise<Page<Category>> {
@@ -28,19 +28,19 @@ export class CategoryRepository implements ICategoryRepository {
 
     const res = await fetch(`${this.baseUrl}/categories?${params.toString()}`);
     if (!res.ok) throw new Error("CategoryRepository: listPage failed.");
-    return res.json();
+    return (await res.json()) as Page<Category>;
   }
 
   async getById(id: string): Promise<Category | null> {
     const res = await fetch(`${this.baseUrl}/categories/${id}`);
     if (!res.ok) return null;
-    return res.json();
+    return (await res.json()) as Category;
   }
 
   async getBySlug(slug: string): Promise<Category | null> {
     const res = await fetch(`${this.baseUrl}/categories/slug/${slug}`);
     if (!res.ok) return null;
-    return res.json();
+    return (await res.json()) as Category;
   }
 
   async create(input: NewCategory): Promise<Category> {
@@ -50,7 +50,7 @@ export class CategoryRepository implements ICategoryRepository {
       body: JSON.stringify(input),
     });
     if (!res.ok) throw new Error("CategoryRepository: create failed.");
-    return res.json();
+    return (await res.json()) as Category;
   }
 
   async update(id: string, input: NewCategory): Promise<Category> {
@@ -60,7 +60,7 @@ export class CategoryRepository implements ICategoryRepository {
       body: JSON.stringify(input),
     });
     if (!res.ok) throw new Error("CategoryRepository: update failed.");
-    return res.json();
+    return (await res.json()) as Category;
   }
 
   async delete(id: string): Promise<void> {
@@ -71,7 +71,7 @@ export class CategoryRepository implements ICategoryRepository {
   async getTranslations(id: string): Promise<CategoryTranslationInput[]> {
     const res = await fetch(`${this.baseUrl}/categories/${id}/translations`);
     if (!res.ok) return [];
-    return res.json();
+    return (await res.json()) as CategoryTranslationInput[];
   }
 
   async applyBulkChange(ids: readonly string[], change: BulkCategoryChange): Promise<BulkCategoryUpdate[]> {
@@ -81,6 +81,6 @@ export class CategoryRepository implements ICategoryRepository {
       body: JSON.stringify({ ids, action: { type: change.value ? "activate" : "deactivate" } }),
     });
     if (!res.ok) throw new Error("CategoryRepository: applyBulkChange failed.");
-    return res.json();
+    return (await res.json()) as BulkCategoryUpdate[];
   }
 }

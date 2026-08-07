@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { describe, expect, it, vi } from "vitest";
-import type { StockMovement, StockMovementFilters } from "@/src/domain/entities/StockMovement";
+
 import type { Page, PageRequest } from "@/src/domain/entities/Pagination";
+import type { StockMovement, StockMovementFilters } from "@/src/domain/entities/StockMovement";
 
 const getSessionWith = vi.fn();
 vi.mock("@/src/lib/require-permission", () => ({ getSessionWith: (...args: unknown[]) => getSessionWith(...args) }));

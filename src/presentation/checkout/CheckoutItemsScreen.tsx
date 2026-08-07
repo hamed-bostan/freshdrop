@@ -2,13 +2,15 @@
 
 import { ChevronLeft } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+
 import type { Cart } from "@/src/domain/entities/Cart";
-import { formatMoney } from "@/src/lib/formatMoney";
 import { Link } from "@/src/i18n/navigation";
+import { formatMoney } from "@/src/lib/formatMoney";
 import { Icon } from "@/src/presentation/design-system";
+
 import { checkoutReviewHref } from "./checkoutSession";
-import { useCheckoutSubstitutions } from "./useCheckoutDraft";
 import { CheckoutItemRow } from "./components/CheckoutItemRow";
+import { useCheckoutSubstitutions } from "./useCheckoutDraft";
 
 interface Props { cart: Cart; promoCode?: string }
 

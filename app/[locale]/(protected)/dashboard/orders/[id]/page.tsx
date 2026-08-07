@@ -1,13 +1,14 @@
 import { notFound } from "next/navigation";
-import { DEFAULT_ACTIVITY_LIMIT } from "@/src/domain/entities/ActivityEntry";
-import { ordersServerApi } from "@/src/presentation/dashboard/orders/order-server-api";
-import { customersServerApi } from "@/src/presentation/dashboard/customers/customer-server-api";
-import { activityServerApi } from "@/src/presentation/dashboard/activity/activity-server-api";
-import { OrderDetailScreen } from "@/src/presentation/dashboard/orders/OrderDetailScreen";
+
 import { auth } from "@/auth";
+import { DEFAULT_ACTIVITY_LIMIT } from "@/src/domain/entities/ActivityEntry";
 import { sessionHas } from "@/src/lib/require-permission";
-import { orderNotesServerApi } from "@/src/presentation/dashboard/orders/order-note-server-api";
+import { activityServerApi } from "@/src/presentation/dashboard/activity/activity-server-api";
+import { customersServerApi } from "@/src/presentation/dashboard/customers/customer-server-api";
 import { orderDeliveryIssuesServerApi } from "@/src/presentation/dashboard/orders/order-delivery-issue-server-api";
+import { orderNotesServerApi } from "@/src/presentation/dashboard/orders/order-note-server-api";
+import { ordersServerApi } from "@/src/presentation/dashboard/orders/order-server-api";
+import { OrderDetailScreen } from "@/src/presentation/dashboard/orders/OrderDetailScreen";
 
 // The order is read from the REST API (BFF) per request — never statically cached.
 export const dynamic = "force-dynamic";

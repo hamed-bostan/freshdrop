@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { notificationPreferencesSchema } from "@/src/contracts/notification-preferences-schema";
 import { GetNotificationPreferences } from "@/src/domain/use-cases/notifications/GetNotificationPreferences";
 import { SetNotificationPreferences } from "@/src/domain/use-cases/notifications/SetNotificationPreferences";
 import { userRepository } from "@/src/infrastructure/container";
-import { getSessionWith, sessionRole } from "@/src/lib/require-permission";
-import { notificationPreferencesSchema } from "@/src/contracts/notification-preferences-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -11,6 +11,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith, sessionRole } from "@/src/lib/require-permission";
 
 // Per-admin preference, read/written per request — never statically cached.
 export const dynamic = "force-dynamic";

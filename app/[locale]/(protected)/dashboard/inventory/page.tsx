@@ -1,16 +1,17 @@
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+
+import { auth } from "@/auth";
 import {
   DEFAULT_STOCK_MOVEMENT_DIRECTION,
   DEFAULT_STOCK_MOVEMENT_SORT,
 } from "@/src/domain/entities/StockMovement";
-import { toSearchParams } from "@/src/lib/api/searchParams";
 import { parseAdminProductFilters } from "@/src/lib/api/admin-product-params";
 import { parseAdminStockMovementFilters } from "@/src/lib/api/admin-stock-movement-params";
+import { toSearchParams } from "@/src/lib/api/searchParams";
 import { sessionHas } from "@/src/lib/require-permission";
 import { categoriesServerApi } from "@/src/presentation/dashboard/categories/category-server-api";
-import { InventoryScreen } from "@/src/presentation/dashboard/inventory/InventoryScreen";
 import { inventoryServerApi } from "@/src/presentation/dashboard/inventory/inventory-server-api";
+import { InventoryScreen } from "@/src/presentation/dashboard/inventory/InventoryScreen";
 import type { InventoryView } from "@/src/presentation/dashboard/inventory/InventoryTabs";
 import { productsServerApi } from "@/src/presentation/dashboard/products/product-server-api";
 

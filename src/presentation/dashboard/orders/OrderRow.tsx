@@ -1,16 +1,17 @@
-import { useLocale, useTranslations } from "next-intl";
 import { Store, Truck } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+
+import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import type { Order } from "@/src/domain/entities/Order";
 import { orderNetPaid } from "@/src/domain/entities/Order";
-import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
-import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
-import { TableCell, TableRow } from "@/src/presentation/design-system";
-import { BulkRowCheckbox } from "@/src/presentation/dashboard/bulk";
-import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { maskPhoneNumber } from "@/src/lib/maskPhoneNumber";
+import { BulkRowCheckbox } from "@/src/presentation/dashboard/bulk";
+import { TableCell, TableRow } from "@/src/presentation/design-system";
+import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
+
 import { OrderRowActions } from "./OrderRowActions";
 
 type OrderRowProps = {
@@ -37,7 +38,7 @@ type OrderRowProps = {
  */
 export function OrderRow({ order, customer, canFulfill }: OrderRowProps) {
   const t = useTranslations("dashOrders");
-  const locale = useLocale() as Locale;
+  const locale = useLocale();
 
   const DeliveryIcon = order.deliveryType === "pickup" ? Store : Truck;
 

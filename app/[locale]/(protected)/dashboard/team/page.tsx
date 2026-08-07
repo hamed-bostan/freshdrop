@@ -1,7 +1,7 @@
 import { DEFAULT_ACTIVITY_LIMIT } from "@/src/domain/entities/ActivityEntry";
 import { requireOwner } from "@/src/lib/require-admin";
-import { teamServerApi } from "@/src/presentation/dashboard/team/team-server-api";
 import { activityServerApi } from "@/src/presentation/dashboard/activity/activity-server-api";
+import { teamServerApi } from "@/src/presentation/dashboard/team/team-server-api";
 import { TeamScreen } from "@/src/presentation/dashboard/team/TeamScreen";
 
 // Who holds admin access is read from the REST API (BFF) per request — never

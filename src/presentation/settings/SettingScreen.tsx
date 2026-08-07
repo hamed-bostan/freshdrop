@@ -1,10 +1,12 @@
 "use client";
 
-import * as React from "react";
 import { Bell, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { PageHeader } from "@/src/presentation/components/PageHeader";
+import * as React from "react";
+
 import { MenuRow, SectionLabel } from "@/src/presentation/components/menu-row";
+import { PageHeader } from "@/src/presentation/components/PageHeader";
+
 import { AppearanceRow, LanguageRow, SettingToggleRow } from "./components";
 import { DeleteAccountRow } from "./components/DeleteAccountRow";
 

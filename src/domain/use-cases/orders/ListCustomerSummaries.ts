@@ -1,10 +1,13 @@
-import type { AdminCustomerFilters, AdminCustomerSort } from "../../entities/AdminCustomerFilters";
 import { DEFAULT_ADMIN_CUSTOMER_DIRECTION } from "../../entities/AdminCustomerFilters";
-import type { CustomerOrderSummary } from "../../entities/CustomerOrderSummary";
 import { paginateArray, type Page, type PageRequest } from "../../entities/Pagination";
+
+import { GetCustomerOrderSummaries } from "./GetCustomerOrderSummaries";
+
+import type { AdminCustomerFilters, AdminCustomerSort } from "../../entities/AdminCustomerFilters";
+import type { CustomerOrderSummary } from "../../entities/CustomerOrderSummary";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IUserRepository } from "../../repositories/IUserRepository";
-import { GetCustomerOrderSummaries } from "./GetCustomerOrderSummaries";
+
 
 /**
  * One page of the admin customers list, searched and ordered. Backs

@@ -1,4 +1,3 @@
-import type { Prisma } from "@prisma/client";
 import type {
   ActivityActorOption,
   ActivityChange,
@@ -16,7 +15,10 @@ import type { Page, PageRequest } from "@/src/domain/entities/Pagination";
 import { createPage, toSkipTake } from "@/src/domain/entities/Pagination";
 import type { IActivityLog } from "@/src/domain/repositories/IActivityLog";
 import { prisma } from "@/src/infrastructure/prisma/client";
+
 import { toActivityRow } from "./writeActivityEntry";
+
+import type { Prisma } from "@prisma/client";
 
 /**
  * The activity log backed by PostgreSQL via Prisma. Server-side only (it opens a

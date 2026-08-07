@@ -1,6 +1,7 @@
+import { toUserRole } from "./User";
+
 import type { ActivityChange } from "./ActivityEntry";
 import type { UserRole } from "./User";
-import { toUserRole } from "./User";
 
 /**
  * How to read a `user.roleChanged` entry out of the activity log.

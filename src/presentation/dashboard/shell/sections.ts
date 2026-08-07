@@ -14,8 +14,10 @@ import {
   Users,
   Warehouse,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+
 import type { Permission } from "@/src/domain/entities/Permission";
+
+import type { LucideIcon } from "lucide-react";
 
 /**
  * The dashboard's navigation, as data.

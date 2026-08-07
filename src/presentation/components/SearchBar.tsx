@@ -1,12 +1,14 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import { SlidersHorizontal, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { Product } from "@/src/domain/entities/Product";
 import { useRouter } from "@/src/i18n/navigation";
 import { Button, Icon, Input } from "@/src/presentation/design-system";
 import { useProductSearch } from "@/src/presentation/product/hooks/use-product-search";
+
 import { SearchSuggestions } from "./SearchSuggestions";
 
 /** How many typeahead rows to float under the field; the results page shows the rest. */

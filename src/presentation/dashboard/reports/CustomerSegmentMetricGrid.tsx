@@ -1,11 +1,14 @@
 import { AlertTriangle, CircleDollarSign, UserRoundCheck, UsersRound } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 import { percentChange } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
-import type { CustomerSegmentsWire } from "./customer-segments-response-schema";
+
 import { SalesMetricCard } from "./SalesMetricCard";
+
+import type { CustomerSegmentsWire } from "./customer-segments-response-schema";
 
 export async function CustomerSegmentMetricGrid({ report, locale }: { report: CustomerSegmentsWire; locale: Locale }) {
   const t = await getTranslations("dashCustomerSegments");

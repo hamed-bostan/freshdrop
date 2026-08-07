@@ -1,14 +1,16 @@
 "use client";
 
-import * as React from "react";
+import { ClipboardList, Clock, Command, Package, PercentCircle, Search, Tag, Users, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Dialog, VisuallyHidden } from "radix-ui";
-import { ClipboardList, Clock, Command, Package, PercentCircle, Search, Tag, Users, type LucideIcon } from "lucide-react";
+import * as React from "react";
+
 import type { AdminSearchGroupType } from "@/src/domain/entities/AdminSearchResults";
 import type { Permission } from "@/src/domain/entities/Permission";
 import { useRouter } from "@/src/i18n/navigation";
 import { cn } from "@/src/lib/utils";
 import { Icon, Spinner } from "@/src/presentation/design-system";
+
 import { loadRecentSearches, pushRecentSearch, type RecentSearch } from "./recentSearches";
 import { staticCommandsFor, type StaticCommand } from "./staticCommands";
 import { useAdminSearch } from "./useAdminSearch";

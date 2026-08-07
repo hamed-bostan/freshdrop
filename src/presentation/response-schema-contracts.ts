@@ -1,3 +1,7 @@
+/* eslint-disable import/order -- the `zod` import intentionally sits next to the
+   file's doc comment (it's referenced there), ahead of the local `Simplify`/
+   `Equal`/`Expect` helpers those entity/schema imports below depend on; that
+   split defeats import/order's whole-file grouping. */
 /**
  * Compile-time proof that every response schema describes its entity EXACTLY.
  *
@@ -46,48 +50,47 @@ type Expect<T extends true> = T;
 
 import type { Cart } from "@/src/domain/entities/Cart";
 import type { Category } from "@/src/domain/entities/Category";
-import type { AdminPromoCode } from "@/src/domain/entities/PromoCode";
-import type { DeliveryWindow } from "@/src/domain/entities/DeliveryWindow";
 import type { CustomerDetail, CustomerLifetime } from "@/src/domain/entities/CustomerDetail";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
+import type { DeliveryWindow } from "@/src/domain/entities/DeliveryWindow";
 import type { Order } from "@/src/domain/entities/Order";
 import type { OrderTracking } from "@/src/domain/entities/OrderTracking";
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
 import type { Product } from "@/src/domain/entities/Product";
-import type { PromoCode } from "@/src/domain/entities/PromoCode";
+import type { AdminPromoCode , PromoCode } from "@/src/domain/entities/PromoCode";
 import type { PublicReview } from "@/src/domain/entities/Review";
 import type { SavedCard, Wallet } from "@/src/domain/entities/Wallet";
 import type { CategoryTranslationInput } from "@/src/domain/repositories/ICategoryRepository";
 import type { ProductTranslationInput } from "@/src/domain/repositories/IProductRepository";
 import type { ReorderItemsResult } from "@/src/domain/use-cases/orders/ReorderItems";
 
-import { cartResponseSchema } from "./cart/cart-response-schema";
-import { promoCodeResponseSchema } from "./cart/promo-code-response-schema";
-import { categoryResponseSchema } from "./category/category-response-schema";
-import { deliverySlotDayResponseSchema } from "./checkout/delivery-slot-response-schema";
-import { categoryTranslationResponseSchema } from "./dashboard/categories/category-translation-response-schema";
-import { customerOrderSummaryResponseSchema } from "./dashboard/customers/customer-response-schema";
+import { type cartResponseSchema } from "./cart/cart-response-schema";
+import { type promoCodeResponseSchema } from "./cart/promo-code-response-schema";
+import { type categoryResponseSchema } from "./category/category-response-schema";
+import { type deliverySlotDayResponseSchema } from "./checkout/delivery-slot-response-schema";
 import {
-  customerDetailResponseSchema,
-  customerLifetimeResponseSchema,
-} from "./dashboard/customers/customer-detail-response-schema";
-import { adminPromoCodeResponseSchema } from "./dashboard/promo-codes/promo-code-admin-response-schema";
-import { deliveryWindowResponseSchema } from "./dashboard/delivery-slots/delivery-window-response-schema";
-import { productTranslationResponseSchema } from "./dashboard/products/product-translation-response-schema";
-import {
-  activityEntryResponseSchema,
+  type activityEntryResponseSchema,
   type ActivityEntryWire,
 } from "./dashboard/activity/activity-response-schema";
-import { deliveryLocationResponseSchema } from "./delivery-location/delivery-location-response-schema";
-import { orderResponseSchema, reorderResultResponseSchema } from "./orders/order-response-schema";
-import { orderTrackingResponseSchema } from "./orders/order-tracking-response-schema";
-import { paymentMethodResponseSchema } from "./payment/payment-method-response-schema";
-import { productResponseSchema } from "./product/product-response-schema";
-import { reviewResponseSchema } from "./product/review-response-schema";
-import { userResponseSchema, type UserProfile } from "./profile/profile-response-schema";
-import { savedCardResponseSchema, walletResponseSchema } from "./wallet/wallet-response-schema";
+import { type categoryTranslationResponseSchema } from "./dashboard/categories/category-translation-response-schema";
+import {
+  type customerDetailResponseSchema,
+  type customerLifetimeResponseSchema,
+} from "./dashboard/customers/customer-detail-response-schema";
+import { type customerOrderSummaryResponseSchema } from "./dashboard/customers/customer-response-schema";
+import { type deliveryWindowResponseSchema } from "./dashboard/delivery-slots/delivery-window-response-schema";
+import { type productTranslationResponseSchema } from "./dashboard/products/product-translation-response-schema";
+import { type adminPromoCodeResponseSchema } from "./dashboard/promo-codes/promo-code-admin-response-schema";
+import { type deliveryLocationResponseSchema } from "./delivery-location/delivery-location-response-schema";
+import { type orderResponseSchema, type reorderResultResponseSchema } from "./orders/order-response-schema";
+import { type orderTrackingResponseSchema } from "./orders/order-tracking-response-schema";
+import { type paymentMethodResponseSchema } from "./payment/payment-method-response-schema";
+import { type productResponseSchema } from "./product/product-response-schema";
+import { type reviewResponseSchema } from "./product/review-response-schema";
+import { type userResponseSchema, type UserProfile } from "./profile/profile-response-schema";
+import { type savedCardResponseSchema, type walletResponseSchema } from "./wallet/wallet-response-schema";
 
 export type _Cart = Expect<Equal<z.infer<typeof cartResponseSchema>, Cart>>;
 export type _PromoCode = Expect<Equal<z.infer<typeof promoCodeResponseSchema>, PromoCode>>;

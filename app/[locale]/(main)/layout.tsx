@@ -1,8 +1,9 @@
-import type { ReactNode } from "react";
 import type { Cart } from "@/src/domain/entities/Cart";
-import { MainNav } from "@/src/presentation/layout/MainNav";
-import { CartProvider } from "@/src/presentation/cart/CartProvider";
 import { cartsServerApi } from "@/src/presentation/cart/cart-server-api";
+import { CartProvider } from "@/src/presentation/cart/CartProvider";
+import { MainNav } from "@/src/presentation/layout/MainNav";
+
+import type { ReactNode } from "react";
 
 const EMPTY_CART: Cart = {
   items: [],

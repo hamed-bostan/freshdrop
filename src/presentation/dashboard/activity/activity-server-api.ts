@@ -1,7 +1,8 @@
 import type { ActivityAction, ActivityEntityType } from "@/src/domain/entities/ActivityEntry";
 import type { Page } from "@/src/domain/entities/Pagination";
-import { serverApiGet } from "@/src/lib/api/server-client";
 import { pageResponseSchema } from "@/src/lib/api/page-response-schema";
+import { serverApiGet } from "@/src/lib/api/server-client";
+
 import {
   activityActorListResponseSchema,
   activityEntryListResponseSchema,

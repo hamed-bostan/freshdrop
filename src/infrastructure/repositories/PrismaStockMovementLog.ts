@@ -1,4 +1,5 @@
-import type { Prisma } from "@prisma/client";
+import type { Page, PageRequest } from "@/src/domain/entities/Pagination";
+import { createPage, toSkipTake } from "@/src/domain/entities/Pagination";
 import type {
   StockMovement,
   StockMovementFilters,
@@ -9,10 +10,10 @@ import {
   DEFAULT_STOCK_MOVEMENT_DIRECTION,
   STOCK_MOVEMENT_REASONS,
 } from "@/src/domain/entities/StockMovement";
-import type { Page, PageRequest } from "@/src/domain/entities/Pagination";
-import { createPage, toSkipTake } from "@/src/domain/entities/Pagination";
 import type { IStockMovementLog } from "@/src/domain/repositories/IStockMovementLog";
 import { prisma } from "@/src/infrastructure/prisma/client";
+
+import type { Prisma } from "@prisma/client";
 
 /**
  * Stock movement history backed by PostgreSQL via Prisma. Server-side only (it

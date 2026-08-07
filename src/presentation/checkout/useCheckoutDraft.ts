@@ -1,11 +1,14 @@
 "use client";
 
 import * as React from "react";
-import type { SubstitutionPreference } from "@/src/domain/entities/Order";
+
 import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
+import type { SubstitutionPreference } from "@/src/domain/entities/Order";
 import { useSessionStorageState } from "@/src/lib/hooks/useSessionStorageState";
-import type { SlotSelection } from "./components/DeliverySlotPicker";
+
 import { NOTES_STORAGE_KEY, SLOT_STORAGE_KEY, SUBSTITUTIONS_STORAGE_KEY, firstBookableSlot, reviveSlot, reviveSubstitutions } from "./checkoutSession";
+
+import type { SlotSelection } from "./components/DeliverySlotPicker";
 
 export function useCheckoutSubstitutions() {
   return useSessionStorageState<Record<string, SubstitutionPreference>>(SUBSTITUTIONS_STORAGE_KEY, {}, reviveSubstitutions);

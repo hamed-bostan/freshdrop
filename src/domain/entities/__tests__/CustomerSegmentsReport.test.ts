@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { previousPeriod, type DateRange } from "../Analytics";
 import { classifyCustomerSegment, type CustomerLifetimeStats } from "../CustomerSegmentsReport";
 

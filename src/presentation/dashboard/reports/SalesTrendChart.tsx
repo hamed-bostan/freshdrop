@@ -1,15 +1,17 @@
 "use client";
 
-import * as React from "react";
 import { Info } from "lucide-react";
+import * as React from "react";
 import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
-import type { AnalyticsOverviewWire } from "../analytics/analytics-response-schema";
+
 import type { Locale } from "@/src/i18n/routing";
 import { formatShortDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
-import { ChartContainer, ChartTooltip, Icon } from "@/src/presentation/design-system";
 import { ChartSegmentedControl } from "@/src/presentation/dashboard/ChartSegmentedControl";
+import { ChartContainer, ChartTooltip, Icon } from "@/src/presentation/design-system";
+
+import type { AnalyticsOverviewWire } from "../analytics/analytics-response-schema";
 
 type Metric = "revenue" | "orders";
 type Interval = "day" | "week" | "month";

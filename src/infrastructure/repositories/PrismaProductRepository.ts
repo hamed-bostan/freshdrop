@@ -1,10 +1,14 @@
 import { Prisma } from "@prisma/client";
-import type { Product } from "@/src/domain/entities/Product";
+
 import type { AdminProductFilters, AdminProductSort } from "@/src/domain/entities/AdminProductFilters";
 import { DEFAULT_ADMIN_PRODUCT_DIRECTION } from "@/src/domain/entities/AdminProductFilters";
 import { createPage, toSkipTake, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
-import { LOW_STOCK_THRESHOLD } from "@/src/domain/entities/stock";
+import type { Product } from "@/src/domain/entities/Product";
 import type { ProductFilters, ProductSort } from "@/src/domain/entities/ProductFilters";
+import { LOW_STOCK_THRESHOLD } from "@/src/domain/entities/stock";
+import { InsufficientStockError, type StockShortfall } from "@/src/domain/errors/InsufficientStockError";
+import { NotFoundError } from "@/src/domain/errors/NotFoundError";
+import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import type {
   BulkProductChange,
   BulkProductUpdate,
@@ -15,11 +19,9 @@ import type {
   StockMovementActor,
   StockMovementContext,
 } from "@/src/domain/repositories/IProductRepository";
-import type { AuditHook } from "@/src/domain/repositories/AuditHook";
-import { NotFoundError } from "@/src/domain/errors/NotFoundError";
-import { InsufficientStockError, type StockShortfall } from "@/src/domain/errors/InsufficientStockError";
 import { prisma } from "@/src/infrastructure/prisma/client";
 import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transaction";
+
 import { recordAudit } from "./writeActivityEntry";
 
 /** How many related products the detail screen's "Similar To This Item" rail shows. */

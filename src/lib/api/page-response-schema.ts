@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { Page } from "@/src/domain/entities/Pagination";
 
 /**

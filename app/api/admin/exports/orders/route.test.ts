@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { describe, expect, it, vi } from "vitest";
-import type { Order } from "@/src/domain/entities/Order";
+
 import type { AdminOrderFilters } from "@/src/domain/entities/AdminOrderFilters";
+import type { Order } from "@/src/domain/entities/Order";
 import type { Page, PageRequest } from "@/src/domain/entities/Pagination";
 
 const getSessionWith = vi.fn();

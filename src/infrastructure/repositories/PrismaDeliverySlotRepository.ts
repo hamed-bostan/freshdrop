@@ -1,15 +1,17 @@
 import { Prisma } from "@prisma/client";
+
 import type { DeliveryWindow } from "@/src/domain/entities/DeliveryWindow";
+import { NotFoundError } from "@/src/domain/errors/NotFoundError";
+import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError";
+import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import {
   bookedCountKey,
   type DeliveryWindowInput,
   type IDeliverySlotRepository,
 } from "@/src/domain/repositories/IDeliverySlotRepository";
-import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError";
-import type { AuditHook } from "@/src/domain/repositories/AuditHook";
-import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { prisma } from "@/src/infrastructure/prisma/client";
 import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transaction";
+
 import { recordAudit } from "./writeActivityEntry";
 
 /**

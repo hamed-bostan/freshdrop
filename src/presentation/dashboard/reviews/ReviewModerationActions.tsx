@@ -1,8 +1,9 @@
 "use client";
 
-import * as React from "react";
 import { Check, EllipsisVertical, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { ReviewStatus } from "@/src/domain/entities/Review";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
@@ -15,6 +16,7 @@ import {
   FormMessage,
   Icon,
 } from "@/src/presentation/design-system";
+
 import { reviewsApi } from "./review-api";
 
 type ModerationDecision = Exclude<ReviewStatus, "pending">;

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { EllipsisVertical, Pencil, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
+
+import { useRouter } from "@/src/i18n/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +13,7 @@ import {
   DropdownMenuSeparator,
   Icon,
 } from "@/src/presentation/design-system";
-import { useRouter } from "@/src/i18n/navigation";
+
 import { DeleteCategoryButton } from "./DeleteCategoryButton";
 
 type CategoryRowActionsProps = {

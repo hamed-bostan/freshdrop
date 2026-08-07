@@ -1,13 +1,16 @@
 import { AlertTriangle, CheckCircle2, ExternalLink, Info, MapPin, TimerOff, Truck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 import { percentChange } from "@/src/domain/entities/Analytics";
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
 import { DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
+
 import { DeliveryZoneMapClient } from "./DeliveryZoneMapClient";
-import type { DeliveryZonesWire } from "./delivery-zones-response-schema";
 import { SalesMetricCard } from "./SalesMetricCard";
+
+import type { DeliveryZonesWire } from "./delivery-zones-response-schema";
 
 type Props = { report: DeliveryZonesWire; locale: Locale };
 

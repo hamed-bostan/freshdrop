@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
+
 import { ListActivityActors } from "@/src/domain/use-cases/activity/ListActivityActors";
 import { activityLog } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
-import { isOwner } from "@/src/lib/require-admin";
 import { visibleActivityEntityTypes } from "@/src/lib/api/activity-visibility";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { isOwner } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 

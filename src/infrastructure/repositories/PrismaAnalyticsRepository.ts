@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+
 import {
   makeTotals,
   previousPeriod,
@@ -15,17 +16,17 @@ import {
   type TopCategory,
   type TopProduct,
 } from "@/src/domain/entities/Analytics";
-import type { PaymentIssue, PaymentReportTotals } from "@/src/domain/entities/PaymentReport";
-import type { RefundCase, RefundReasonCount, RefundReportTotals, ReturnBreakdown } from "@/src/domain/entities/RefundReport";
-import { RETURN_ITEM_CONDITIONS, RETURN_RECOVERY_DECISIONS, type ReturnItemCondition, type ReturnRecoveryDecision, type ReturnRequestStatus } from "@/src/domain/entities/Return";
+import type { CustomerGrowthPoint, PurchaseFrequency, RetentionCohort } from "@/src/domain/entities/CustomerInsightsReport";
+import type { CustomerSegmentAssignment, CustomerSegmentId, CustomerSegmentPerformance, CustomerSegmentTransition } from "@/src/domain/entities/CustomerSegmentsReport";
 import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, DeliveryWindowPerformance, LateDelivery } from "@/src/domain/entities/DeliveryPerformanceReport";
 import type { DeliveryZonePerformance } from "@/src/domain/entities/DeliveryZonesReport";
 import type { DriverPerformance } from "@/src/domain/entities/DriverPerformance";
-import type { CustomerGrowthPoint, PurchaseFrequency, RetentionCohort } from "@/src/domain/entities/CustomerInsightsReport";
-import type { CustomerSegmentAssignment, CustomerSegmentId, CustomerSegmentPerformance, CustomerSegmentTransition } from "@/src/domain/entities/CustomerSegmentsReport";
-import type { RefundKind } from "@/src/domain/entities/Refund";
 import { ORDER_STATUSES, type OrderStatus } from "@/src/domain/entities/Order";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
+import type { PaymentIssue, PaymentReportTotals } from "@/src/domain/entities/PaymentReport";
+import type { RefundKind } from "@/src/domain/entities/Refund";
+import type { RefundCase, RefundReasonCount, RefundReportTotals, ReturnBreakdown } from "@/src/domain/entities/RefundReport";
+import { RETURN_ITEM_CONDITIONS, RETURN_RECOVERY_DECISIONS, type ReturnItemCondition, type ReturnRecoveryDecision, type ReturnRequestStatus } from "@/src/domain/entities/Return";
 import type { IAnalyticsRepository } from "@/src/domain/repositories/IAnalyticsRepository";
 import { prisma } from "@/src/infrastructure/prisma/client";
 import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transaction";

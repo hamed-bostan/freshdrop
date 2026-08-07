@@ -1,9 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { GetFavorites } from "@/src/domain/use-cases/favorites/GetFavorites";
 import { favoriteRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Per-user data, read per request — never statically cached.
 export const dynamic = "force-dynamic";

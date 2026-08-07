@@ -1,14 +1,16 @@
 "use client";
 
-import * as React from "react";
-import { useLocale, useTranslations } from "next-intl";
 import { StickyNote } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { OrderNote } from "@/src/domain/entities/OrderNote";
 import { MAX_ORDER_NOTE_LENGTH } from "@/src/domain/entities/OrderNote";
-import { Avatar, Button, Icon, Textarea } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { formatOrderDate } from "@/src/lib/formatOrderDate";
+import { Avatar, Button, Icon, Textarea } from "@/src/presentation/design-system";
+
 import { ordersApi } from "./order-api";
 
 type OrderNotesPanelProps = {

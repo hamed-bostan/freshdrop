@@ -4,7 +4,9 @@ import "leaflet/dist/leaflet.css";
 
 import * as React from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
+
 import type { GeoPoint } from "@/src/domain/entities/Place";
+
 import { CenterPin } from "./CenterPin";
 
 interface LocationPreviewMapProps {

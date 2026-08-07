@@ -1,7 +1,8 @@
 "use client";
 
-import * as React from "react";
 import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { Category } from "@/src/domain/entities/Category";
 import type { ProductFilters } from "@/src/domain/entities/ProductFilters";
 import { DIETARY_TAGS, PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";

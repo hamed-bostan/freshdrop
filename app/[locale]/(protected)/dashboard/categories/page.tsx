@@ -1,8 +1,8 @@
-import { CategoriesScreen } from "@/src/presentation/dashboard/categories/CategoriesScreen";
-import { categoriesServerApi } from "@/src/presentation/dashboard/categories/category-server-api";
 import { parseAdminCategoryFilters } from "@/src/lib/api/admin-category-params";
 import { toSearchParams } from "@/src/lib/api/searchParams";
 import { requirePermission } from "@/src/lib/require-permission";
+import { CategoriesScreen } from "@/src/presentation/dashboard/categories/CategoriesScreen";
+import { categoriesServerApi } from "@/src/presentation/dashboard/categories/category-server-api";
 
 // Categories are fetched during server render over the REST API (BFF) and passed to
 // the presentational screen. Search and status filters live in the query string, so

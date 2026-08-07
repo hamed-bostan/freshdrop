@@ -1,10 +1,11 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Leaf } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { Link } from "@/src/i18n/navigation";
-import { Icon, focusRing } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
+import { Icon, focusRing } from "@/src/presentation/design-system";
 
 type SidebarBrandProps = {
   /** Icon-only mark for the collapsed rail — the wordmark has nowhere to go at 40px. */

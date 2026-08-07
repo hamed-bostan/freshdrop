@@ -1,6 +1,7 @@
-import type { ZodError } from "zod";
 import { productImportRowSchema, type ResolvedProductImportRow } from "../../../contracts/product-import-schema";
 import { ValidationError } from "../../errors/ValidationError";
+
+import type { ZodError } from "zod";
 
 /** How many data rows one import file may carry, separate from `MAX_BULK_PRODUCTS` — imports are naturally larger than a selected page. */
 export const MAX_IMPORT_ROWS = 500;

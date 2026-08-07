@@ -1,8 +1,10 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { activityValue } from "../../entities/ActivityEntry";
+import { ValidationError } from "../../errors/ValidationError";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
 import type { Product } from "../../entities/Product";
 import type { IProductRepository, NewProduct } from "../../repositories/IProductRepository";
-import { ValidationError } from "../../errors/ValidationError";
+
 
 export class CreateProduct {
   constructor(

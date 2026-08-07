@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { EditCategoryScreen } from "@/src/presentation/dashboard/categories/EditCategoryScreen";
-import { categoriesServerApi } from "@/src/presentation/dashboard/categories/category-server-api";
+
 import { requirePermission } from "@/src/lib/require-permission";
+import { categoriesServerApi } from "@/src/presentation/dashboard/categories/category-server-api";
+import { EditCategoryScreen } from "@/src/presentation/dashboard/categories/EditCategoryScreen";
 
 type EditCategoryPageProps = {
   params: Promise<{ id: string }>;

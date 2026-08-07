@@ -1,8 +1,10 @@
 import { getTranslations } from "next-intl/server";
+
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import type { Page } from "@/src/domain/entities/Pagination";
-import { ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
 import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvLink";
+import { ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
+
 import { CustomersTable } from "./CustomersTable";
 
 type CustomersScreenProps = {

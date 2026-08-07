@@ -1,5 +1,6 @@
 import type { AdminNotificationAction } from "@/src/domain/entities/AdminNotification";
 import { apiGet, apiPut } from "@/src/lib/api/client";
+
 import {
   notificationPreferencesResponseSchema,
   setNotificationPreferencesResponseSchema,

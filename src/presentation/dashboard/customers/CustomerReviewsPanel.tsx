@@ -1,8 +1,9 @@
 import { useLocale, useTranslations } from "next-intl";
+
 import type { PublicReview, ReviewStatus } from "@/src/domain/entities/Review";
 import { Link } from "@/src/i18n/navigation";
-import { Badge, RatingStars } from "@/src/presentation/design-system";
 import { formatOrderDate } from "@/src/lib/formatOrderDate";
+import { Badge, RatingStars } from "@/src/presentation/design-system";
 
 /** Moderation state → badge tone. Mirrors the moderation queue's own mapping. */
 const STATUS_VARIANT: Record<ReviewStatus, "success" | "warning" | "neutral"> = {

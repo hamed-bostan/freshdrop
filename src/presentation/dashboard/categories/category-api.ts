@@ -1,8 +1,8 @@
+import { bulkResultSchema, type BulkResult, type CategoryBulkAction } from "@/src/contracts/bulk-action-schema";
+import type { CategoryFormInput } from "@/src/contracts/category-schema";
 import type { Category } from "@/src/domain/entities/Category";
 import { apiDelete, apiPatch, apiPost, apiPut } from "@/src/lib/api/client";
 import { categoryResponseSchema } from "@/src/presentation/category/category-response-schema";
-import type { CategoryFormInput } from "@/src/contracts/category-schema";
-import { bulkResultSchema, type BulkResult, type CategoryBulkAction } from "@/src/contracts/bulk-action-schema";
 
 /**
  * Typed client for the category REST *mutations*. UI components call these instead

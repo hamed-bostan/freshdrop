@@ -1,10 +1,10 @@
-import { ordersServerApi } from "@/src/presentation/dashboard/orders/order-server-api";
-import { customersServerApi } from "@/src/presentation/dashboard/customers/customer-server-api";
-import { OrdersScreen } from "@/src/presentation/dashboard/orders/OrdersScreen";
+import { auth } from "@/auth";
 import { parseAdminOrderFilters } from "@/src/lib/api/admin-order-params";
 import { toSearchParams } from "@/src/lib/api/searchParams";
-import { auth } from "@/auth";
 import { sessionHas } from "@/src/lib/require-permission";
+import { customersServerApi } from "@/src/presentation/dashboard/customers/customer-server-api";
+import { ordersServerApi } from "@/src/presentation/dashboard/orders/order-server-api";
+import { OrdersScreen } from "@/src/presentation/dashboard/orders/OrdersScreen";
 
 // Orders are read from the REST API (BFF) per request — never statically cached.
 export const dynamic = "force-dynamic";

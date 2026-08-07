@@ -1,6 +1,8 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
+
 import { PrismaAnalyticsRepository } from "../../PrismaAnalyticsRepository";
+
 import { getTestPrisma, resetTestDatabase } from "./test-db";
 
 /**

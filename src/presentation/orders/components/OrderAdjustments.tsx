@@ -1,4 +1,5 @@
 import { useLocale, useTranslations } from "next-intl";
+
 import type { Order } from "@/src/domain/entities/Order";
 import { orderShippingRefunded } from "@/src/domain/entities/Order";
 import { formatMoney, formatMoneySum } from "@/src/lib/formatMoney";

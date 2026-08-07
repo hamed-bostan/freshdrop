@@ -1,5 +1,6 @@
-import type { DeliveryWindow } from "../../entities/DeliveryWindow";
 import { formatWindowRange } from "../../entities/DeliveryWindow";
+
+import type { DeliveryWindow } from "../../entities/DeliveryWindow";
 import type { DeliveryWindowInput } from "../../repositories/IDeliverySlotRepository";
 
 /**

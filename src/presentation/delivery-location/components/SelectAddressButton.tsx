@@ -1,9 +1,12 @@
 "use client";
 
 import * as React from "react";
+
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
 import { useRouter } from "@/src/i18n/navigation";
+
 import { deliveryLocationsApi } from "../delivery-location-api";
+
 import { DeliveryLocationSummary } from "./DeliveryLocationSummary";
 
 type SelectAddressButtonProps = {

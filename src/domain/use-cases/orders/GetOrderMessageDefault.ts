@@ -1,8 +1,10 @@
-import { orderConfirmedRenderVars } from "../../entities/NotificationTemplate";
-import type { IOrderRepository } from "../../repositories/IOrderRepository";
-import type { INotificationTemplateRepository } from "../../repositories/INotificationTemplateRepository";
-import { NotFoundError } from "../../errors/NotFoundError";
 import { render } from "@/src/lib/renderTemplate";
+
+import { orderConfirmedRenderVars } from "../../entities/NotificationTemplate";
+import { NotFoundError } from "../../errors/NotFoundError";
+
+import type { INotificationTemplateRepository } from "../../repositories/INotificationTemplateRepository";
+import type { IOrderRepository } from "../../repositories/IOrderRepository";
 
 /** The feature's stated first-time value — a missing/unedited `message_default` row falls back to this. */
 const FALLBACK = { subject: "Update on your order", body: "" };

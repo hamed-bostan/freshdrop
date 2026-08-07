@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
+
+import { GetCustomerSegmentsReport } from "../GetCustomerSegmentsReport";
+
 import type { DateRange } from "../../../entities/Analytics";
 import type { IAnalyticsRepository } from "../../../repositories/IAnalyticsRepository";
-import { GetCustomerSegmentsReport } from "../GetCustomerSegmentsReport";
 
 describe("GetCustomerSegmentsReport", () => {
   it("compares deterministic segment aggregates from equal-length periods", async () => {
@@ -10,7 +12,7 @@ describe("GetCustomerSegmentsReport", () => {
     const previous = [{ ...current[0], customers: 8, revenue: 600 }, { ...current[1], customers: 5 }];
     const transitions = [{ fromSegment: "at_risk" as const, toSegment: "reactivated" as const, customers: 2 }];
     const repository = {
-      snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository as IAnalyticsRepository),
+      snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository),
       customerSegmentPerformance: vi.fn().mockResolvedValueOnce(current).mockResolvedValueOnce(previous),
       customerSegmentTransitions: vi.fn().mockResolvedValue(transitions),
     } as unknown as IAnalyticsRepository;

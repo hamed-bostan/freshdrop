@@ -1,10 +1,12 @@
 import { getLocale, getTranslations } from "next-intl/server";
+
 import { roleChangeKind } from "@/src/domain/entities/RoleChange";
-import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
-import { DataTable } from "@/src/presentation/design-system";
 import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
+import { DataTable } from "@/src/presentation/design-system";
+
 import { activityEntityHref } from "./activityLinks";
+
 import type { ActivityEntryWire } from "./activity-response-schema";
 
 type ActivityListProps = {
@@ -32,7 +34,7 @@ type ActivityListProps = {
  */
 export async function ActivityList({ entries, showEntity = true }: ActivityListProps) {
   const t = await getTranslations("dashActivity");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
 
   return (
     <DataTable>

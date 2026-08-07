@@ -1,6 +1,7 @@
-import type { IStockAlertRepository } from "../../repositories/IStockAlertRepository";
-import type { IProductRepository } from "../../repositories/IProductRepository";
 import { NotFoundError } from "../../errors/NotFoundError";
+
+import type { IProductRepository } from "../../repositories/IProductRepository";
+import type { IStockAlertRepository } from "../../repositories/IStockAlertRepository";
 
 /**
  * Register the user to be notified when a product is back in stock. The product

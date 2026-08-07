@@ -1,5 +1,6 @@
 import { previousPeriod, rangeToWire, type DateRange } from "../../entities/Analytics";
 import { CUSTOMER_SEGMENT_IDS, type CustomerSegmentPerformance, type CustomerSegmentsReport } from "../../entities/CustomerSegmentsReport";
+
 import type { IAnalyticsRepository } from "../../repositories/IAnalyticsRepository";
 
 export class GetCustomerSegmentsReport {

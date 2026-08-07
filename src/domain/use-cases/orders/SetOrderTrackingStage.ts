@@ -1,11 +1,12 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { diffFields } from "../../entities/ActivityEntry";
-import type { Order, OrderStatus } from "../../entities/Order";
-import type { TrackingMilestone } from "../../entities/OrderTracking";
-import type { IOrderRepository } from "../../repositories/IOrderRepository";
-import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
+import type { Order, OrderStatus } from "../../entities/Order";
+import type { TrackingMilestone } from "../../entities/OrderTracking";
+import type { IOrderNotifier } from "../../repositories/IOrderNotifier";
+import type { IOrderRepository } from "../../repositories/IOrderRepository";
 
 /**
  * Advance (or rewind) an order's delivery milestone — the write behind the admin

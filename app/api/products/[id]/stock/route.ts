@@ -1,4 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { stockAdjustmentSchema } from "@/src/contracts/stock-adjustment-schema";
 import { AdjustStock } from "@/src/domain/use-cases/products/AdjustStock";
 import { GetStockMovements } from "@/src/domain/use-cases/products/GetStockMovements";
 import {
@@ -11,8 +13,6 @@ import {
   emailSender,
   notificationTemplateRepository,
 } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
-import { stockAdjustmentSchema } from "@/src/contracts/stock-adjustment-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -20,6 +20,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Stock is read and written per request — never statically cached.
 export const dynamic = "force-dynamic";

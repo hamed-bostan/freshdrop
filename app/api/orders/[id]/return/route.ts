@@ -1,4 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { orderReturnDecisionSchema, orderReturnRequestSchema } from "@/src/contracts/order-return-schema";
 import { RequestOrderReturn } from "@/src/domain/use-cases/orders/RequestOrderReturn";
 import { ResolveOrderReturn } from "@/src/domain/use-cases/orders/ResolveOrderReturn";
 import {
@@ -11,9 +13,6 @@ import {
   emailSender,
   notificationTemplateRepository,
 } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
-import { getUserSession } from "@/src/lib/require-auth";
-import { orderReturnDecisionSchema, orderReturnRequestSchema } from "@/src/contracts/order-return-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -21,6 +20,8 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Mutates order/stock/wallet state — never statically cached.
 export const dynamic = "force-dynamic";

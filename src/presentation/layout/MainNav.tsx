@@ -1,12 +1,13 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
 import { Home, LayoutGrid, ShoppingCart, User, type LucideIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+
 import { Link, usePathname } from "@/src/i18n/navigation";
-import { Icon } from "@/src/presentation/design-system";
-import { cn } from "@/src/lib/utils";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { cn } from "@/src/lib/utils";
 import { useCart } from "@/src/presentation/cart/CartProvider";
+import { Icon } from "@/src/presentation/design-system";
 
 interface NavItem {
   href: string;

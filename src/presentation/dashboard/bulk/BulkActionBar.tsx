@@ -1,8 +1,10 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
 import { X } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
+
 import { Button, Icon } from "@/src/presentation/design-system";
+
 import { useBulkSelection } from "./BulkSelectionProvider";
 
 type BulkActionBarProps = {

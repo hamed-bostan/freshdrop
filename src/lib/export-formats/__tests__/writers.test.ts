@@ -1,9 +1,11 @@
 import ExcelJS from "exceljs";
 import { describe, expect, it } from "vitest";
+
 import { writeCsv } from "../csv-writer";
 import { writePdf } from "../pdf-writer";
-import type { ReportDataset } from "../report-dataset";
 import { writeXlsx } from "../xlsx-writer";
+
+import type { ReportDataset } from "../report-dataset";
 
 async function* rowsOf(rows: readonly (readonly (string | number)[])[]): AsyncGenerator<readonly (string | number)[]> {
   for (const row of rows) yield row;

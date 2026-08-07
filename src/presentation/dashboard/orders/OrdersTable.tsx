@@ -1,7 +1,8 @@
 import { getTranslations } from "next-intl/server";
-import type { ReactNode } from "react";
-import type { Order } from "@/src/domain/entities/Order";
+
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
+import type { Order } from "@/src/domain/entities/Order";
+import { BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
 import {
   DataTable,
   Table,
@@ -9,8 +10,10 @@ import {
   TableHead,
   TableHeader,
 } from "@/src/presentation/design-system";
-import { BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
+
 import { OrderRow } from "./OrderRow";
+
+import type { ReactNode } from "react";
 
 type OrdersTableProps = {
   orders: Order[];

@@ -1,9 +1,11 @@
 import { Box, CircleHelp, PackageCheck, RotateCcw, Tags, Trash2, Truck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 import type { ReturnItemCondition, ReturnRecoveryDecision } from "@/src/domain/entities/Return";
 import type { Locale } from "@/src/i18n/routing";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { Icon } from "@/src/presentation/design-system";
+
 import type { RefundReportWire } from "./refund-report-response-schema";
 
 const CONDITION_TONE: Record<ReturnItemCondition | "not_recorded", string> = {

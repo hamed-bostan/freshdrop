@@ -1,7 +1,8 @@
 "use client";
 
-import * as React from "react";
 import { Dialog, VisuallyHidden } from "radix-ui";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
 
 /**

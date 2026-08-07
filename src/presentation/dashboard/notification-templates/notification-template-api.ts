@@ -1,6 +1,7 @@
-import { apiPut } from "@/src/lib/api/client";
-import type { NotificationTemplateKind } from "@/src/domain/entities/NotificationTemplate";
 import type { NotificationTemplateFormInput } from "@/src/contracts/notification-template-schema";
+import type { NotificationTemplateKind } from "@/src/domain/entities/NotificationTemplate";
+import { apiPut } from "@/src/lib/api/client";
+
 import { notificationTemplateResponseSchema, type NotificationTemplateWire } from "./notification-template-response-schema";
 
 /**

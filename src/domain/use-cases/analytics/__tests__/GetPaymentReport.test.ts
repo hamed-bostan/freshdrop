@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
+
+import { GetPaymentReport } from "../GetPaymentReport";
+
 import type { DateRange } from "../../../entities/Analytics";
 import type { IAnalyticsRepository } from "../../../repositories/IAnalyticsRepository";
-import { GetPaymentReport } from "../GetPaymentReport";
 
 const currentTotals = {
   paidRevenue: 240,
@@ -24,7 +26,7 @@ describe("GetPaymentReport", () => {
       .mockResolvedValueOnce({ ...currentTotals, paidRevenue: 120 });
     const point = { bucket: range.from.toISOString(), revenue: 240, orders: 4 };
     const repository = {
-      snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository as IAnalyticsRepository),
+      snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository),
       paymentTotals,
       paymentSeries: vi.fn().mockResolvedValue([point]),
       comparePaymentSeries: vi.fn().mockResolvedValue([{ ...point, revenue: 120 }]),

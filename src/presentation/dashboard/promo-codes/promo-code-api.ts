@@ -1,6 +1,7 @@
+import type { PromoCodeFormInput } from "@/src/contracts/promo-code-schema";
 import type { AdminPromoCode } from "@/src/domain/entities/PromoCode";
 import { apiPatch, apiPost, apiPut } from "@/src/lib/api/client";
-import type { PromoCodeFormInput } from "@/src/contracts/promo-code-schema";
+
 import { adminPromoCodeResponseSchema } from "./promo-code-admin-response-schema";
 
 /**

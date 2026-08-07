@@ -1,12 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import type { Cart } from "@/src/domain/entities/Cart";
-import { GetCart } from "@/src/domain/use-cases/cart/GetCart";
 import { ClearCart } from "@/src/domain/use-cases/cart/ClearCart";
+import { GetCart } from "@/src/domain/use-cases/cart/GetCart";
 import { FindPromoCode } from "@/src/domain/use-cases/promo-codes/FindPromoCode";
 import { cartRepository, promoCodeRepository, taxSettingsRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // The cart (and any applied discount) is per-user, read per request — never cached.
 export const dynamic = "force-dynamic";

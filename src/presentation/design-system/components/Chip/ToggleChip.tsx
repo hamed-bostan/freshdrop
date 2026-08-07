@@ -1,8 +1,10 @@
 "use client";
 
-import * as React from "react";
 import { Toggle as TogglePrimitive } from "radix-ui";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
+
 import { chipShapeStyles, chipToggleStateStyles } from "./chipStyles";
 
 export type ToggleChipProps = React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root>;

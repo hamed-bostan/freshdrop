@@ -1,9 +1,11 @@
-import type { User } from "../../entities/User";
-import type { IUserRepository } from "../../repositories/IUserRepository";
-import type { ITeamNotifier } from "../../repositories/ITeamNotifier";
 import { AdminRevokeError } from "../../errors/AdminRevokeError";
 import { NotFoundError } from "../../errors/NotFoundError";
+
 import { roleChangeEntry } from "./roleChangeEntry";
+
+import type { User } from "../../entities/User";
+import type { ITeamNotifier } from "../../repositories/ITeamNotifier";
+import type { IUserRepository } from "../../repositories/IUserRepository";
 
 /**
  * Hand ownership of the store to another team member.

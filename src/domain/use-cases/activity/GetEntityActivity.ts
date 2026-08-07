@@ -1,5 +1,6 @@
-import type { ActivityEntityType, ActivityEntry } from "../../entities/ActivityEntry";
 import { clampActivityLimit } from "../../entities/ActivityEntry";
+
+import type { ActivityEntityType, ActivityEntry } from "../../entities/ActivityEntry";
 import type { IActivityLog } from "../../repositories/IActivityLog";
 
 /**

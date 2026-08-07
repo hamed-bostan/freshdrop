@@ -1,4 +1,3 @@
-import { getLocale, getTranslations } from "next-intl/server";
 import {
   AlertTriangle,
   ChevronRight,
@@ -11,34 +10,38 @@ import {
   Truck,
   Users,
 } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+
 import {
   ANALYTICS_RANGE_PRESETS,
   percentChange,
 } from "@/src/domain/entities/Analytics";
-import type { Order } from "@/src/domain/entities/Order";
-import { orderNetPaid } from "@/src/domain/entities/Order";
-import { PENDING_ORDER_SLA_HOURS, UNFULFILLED_ORDER_SLA_HOURS } from "@/src/domain/entities/OrderSla";
-import { LOW_STOCK_THRESHOLD } from "@/src/domain/entities/stock";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
+import { orderNetPaid } from "@/src/domain/entities/Order";
+import type { Order } from "@/src/domain/entities/Order";
+import { PENDING_ORDER_SLA_HOURS, UNFULFILLED_ORDER_SLA_HOURS } from "@/src/domain/entities/OrderSla";
 import type { Product } from "@/src/domain/entities/Product";
+import { LOW_STOCK_THRESHOLD } from "@/src/domain/entities/stock";
 import { Link } from "@/src/i18n/navigation";
-import type { Locale } from "@/src/i18n/routing";
-import { DataGridBody, DataGridHeader, DataTable, Icon, focusRing } from "@/src/presentation/design-system";
-import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { cn } from "@/src/lib/utils";
-import type { AttentionItem } from "./attention/AttentionItem";
-import { NeedsAttentionPanel } from "./attention/NeedsAttentionPanel";
-import { StatCard } from "./StatCard";
-import type { AnalyticsOverviewWire } from "./analytics/analytics-response-schema";
+import { DataGridBody, DataGridHeader, DataTable, Icon, focusRing } from "@/src/presentation/design-system";
+import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
+
+
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./analytics/AnalyticsRangePicker";
-import { RevenueChart } from "./analytics/RevenueChart";
 import { OrderStatusBreakdown } from "./analytics/OrderStatusBreakdown";
-import { LowStockPanel } from "./LowStockPanel";
+import { RevenueChart } from "./analytics/RevenueChart";
+import { NeedsAttentionPanel } from "./attention/NeedsAttentionPanel";
 import { buildDashboardOverviewViewModel } from "./dashboard-overview-view-model";
+import { LowStockPanel } from "./LowStockPanel";
+import { StatCard } from "./StatCard";
+
+import type { AnalyticsOverviewWire } from "./analytics/analytics-response-schema";
+import type { AttentionItem } from "./attention/AttentionItem";
 
 
 
@@ -130,7 +133,7 @@ export async function DashboardOverviewScreen({
   const t = await getTranslations("dashHome");
   const tOrders = await getTranslations("dashOrders");
   const tAnalytics = await getTranslations("dashAnalytics");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
 
   const { totals, previousTotals } = analytics;
   const viewModel = buildDashboardOverviewViewModel(analytics);

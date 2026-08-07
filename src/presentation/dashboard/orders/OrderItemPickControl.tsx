@@ -1,18 +1,20 @@
 "use client";
 
-import * as React from "react";
+import { PackageX, RotateCcw } from "lucide-react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { PackageX, RotateCcw } from "lucide-react";
+import * as React from "react";
+
 import type { OrderItem } from "@/src/domain/entities/Order";
 import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
-import { Button, focusRing, FormMessage, Icon, Thumbnail } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { formatMoney } from "@/src/lib/formatMoney";
-import { ordersApi } from "./order-api";
 import { cn } from "@/src/lib/utils";
+import { Button, focusRing, FormMessage, Icon, Thumbnail } from "@/src/presentation/design-system";
+
+import { ordersApi } from "./order-api";
 
 type OrderItemPickControlProps = {
   orderId: string;

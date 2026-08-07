@@ -1,5 +1,6 @@
-import type { NewPromoCode } from "../../repositories/IPromoCodeRepository";
 import { ValidationError } from "../../errors/ValidationError";
+
+import type { NewPromoCode } from "../../repositories/IPromoCodeRepository";
 
 /**
  * The campaign invariants, shared by create and update so the two can't drift

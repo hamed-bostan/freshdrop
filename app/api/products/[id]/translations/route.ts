@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { GetProductTranslations } from "@/src/domain/use-cases/products/GetProductTranslations";
 import { productRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 

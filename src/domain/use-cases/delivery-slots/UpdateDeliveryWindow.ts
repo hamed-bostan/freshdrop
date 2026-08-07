@@ -1,11 +1,13 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { diffFields } from "../../entities/ActivityEntry";
-import type { DeliveryWindow } from "../../entities/DeliveryWindow";
-import type { DeliveryWindowInput, IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
-import { assertValidDeliveryWindow } from "./deliveryWindowRules";
+
 import { deliveryWindowSnapshot } from "./deliveryWindowActivity";
+import { assertValidDeliveryWindow } from "./deliveryWindowRules";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
+import type { DeliveryWindow } from "../../entities/DeliveryWindow";
+import type { DeliveryWindowInput, IDeliverySlotRepository } from "../../repositories/IDeliverySlotRepository";
 
 /**
  * Edit a delivery window's hours, capacity or display order. The id is not

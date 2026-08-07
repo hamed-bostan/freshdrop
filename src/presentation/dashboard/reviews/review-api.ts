@@ -1,8 +1,8 @@
+import { bulkResultSchema, type BulkResult } from "@/src/contracts/bulk-action-schema";
+import type { ReviewModerationInput } from "@/src/contracts/review-moderation-schema";
 import type { PublicReview } from "@/src/domain/entities/Review";
 import { apiPatch } from "@/src/lib/api/client";
 import { reviewResponseSchema } from "@/src/presentation/product/review-response-schema";
-import type { ReviewModerationInput } from "@/src/contracts/review-moderation-schema";
-import { bulkResultSchema, type BulkResult } from "@/src/contracts/bulk-action-schema";
 
 /**
  * Typed client for the review moderation *mutations*. UI components call these

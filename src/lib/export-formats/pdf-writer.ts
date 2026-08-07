@@ -1,5 +1,7 @@
 import path from "node:path";
+
 import PDFDocument from "pdfkit";
+
 import type { ReportDataset } from "./report-dataset";
 import type { WrittenFile } from "./written-file";
 

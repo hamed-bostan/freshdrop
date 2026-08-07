@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { nonNegativeInt, rangeSchema } from "./analytics-wire";
 
 const zone = z.object({ zone: z.string(), orders: nonNegativeInt, onTimeRate: z.number(), previousOnTimeRate: z.number().nullable(), lateDeliveries: nonNegativeInt, averageFulfillmentMinutes: nonNegativeInt, centroid: z.object({ latitude: z.number(), longitude: z.number() }).nullable() });

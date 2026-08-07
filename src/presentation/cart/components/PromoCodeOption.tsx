@@ -1,8 +1,10 @@
 import { useTranslations } from "next-intl";
+
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
 import { cn } from "@/src/lib/utils";
-import { isLocalizedPromo } from "../localizedPromos";
 import { focusRing } from "@/src/presentation/design-system";
+
+import { isLocalizedPromo } from "../localizedPromos";
 
 interface PromoCodeOptionProps {
   promo: PromoCode;

@@ -1,15 +1,16 @@
 "use client";
 
-import * as React from "react";
-import { useLocale, useTranslations } from "next-intl";
 import { Check, Minus, Plus } from "lucide-react";
-import { usePathname, useRouter } from "@/src/i18n/navigation";
-import { Button, Icon } from "@/src/presentation/design-system";
+import { useLocale, useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { Product } from "@/src/domain/entities/Product";
+import { usePathname, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
 import { useCart } from "@/src/presentation/cart/CartProvider";
+import { Button, Icon } from "@/src/presentation/design-system";
 
 /** Upper bound for a single line's quantity (the server enforces the same cap). */
 const MAX_QUANTITY = 99;

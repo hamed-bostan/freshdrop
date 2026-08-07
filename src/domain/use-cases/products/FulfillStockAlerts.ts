@@ -1,6 +1,6 @@
 import type { Product } from "../../entities/Product";
-import type { IStockAlertRepository } from "../../repositories/IStockAlertRepository";
 import type { IStockAlertNotifier } from "../../repositories/IStockAlertNotifier";
+import type { IStockAlertRepository } from "../../repositories/IStockAlertRepository";
 
 /**
  * Notify a product's back-in-stock subscribers and clear them.

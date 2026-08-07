@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
+
 import { permanentRedirect } from "@/src/i18n/navigation";
-import { categoriesServerApi } from "@/src/presentation/category/category-server-api";
 import { categoryHref } from "@/src/presentation/category/category-path";
+import { categoriesServerApi } from "@/src/presentation/category/category-server-api";
 
 interface CategoryRedirectPageProps {
   // Named `id` to match the `[id]/[slug]` segment below it, but a legacy

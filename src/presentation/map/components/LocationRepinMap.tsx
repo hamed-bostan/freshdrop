@@ -1,9 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
+
 import type { GeoPoint } from "@/src/domain/entities/Place";
 import { Skeleton } from "@/src/presentation/design-system";
+
 import { DEFAULT_ZOOM, type MapViewCommand } from "../constants";
+
 import { CenterPin } from "./CenterPin";
 
 // Leaflet needs `window`, so the map is client-only and loaded lazily — the same

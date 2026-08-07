@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import {
   ACTIVITY_SORTS,
   DEFAULT_ACTIVITY_DIRECTION,
@@ -9,15 +10,15 @@ import {
 import { GetEntityActivity } from "@/src/domain/use-cases/activity/GetEntityActivity";
 import { ListActivity } from "@/src/domain/use-cases/activity/ListActivity";
 import { activityLog } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
-import { isOwner } from "@/src/lib/require-admin";
-import { parseAdminActivityFilters } from "@/src/lib/api/admin-activity-params";
 import {
   canReadActivityEntityType,
   visibleActivityEntityTypes,
 } from "@/src/lib/api/activity-visibility";
+import { parseAdminActivityFilters } from "@/src/lib/api/admin-activity-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { isOwner } from "@/src/lib/require-admin";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Reads the audit trail per request — an audit trail that showed a cached past
 // would be worthless.

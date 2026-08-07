@@ -1,5 +1,5 @@
-import type { ReturnItemCondition, ReturnRecoveryDecision, ReturnRequest } from "../entities/Return";
 import type { AuditHook } from "./AuditHook";
+import type { ReturnItemCondition, ReturnRecoveryDecision, ReturnRequest } from "../entities/Return";
 
 /** One line about to be written alongside a new `ReturnRequest`. */
 export type NewReturnItem = {

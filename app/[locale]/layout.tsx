@@ -1,14 +1,16 @@
-import type { Metadata } from "next";
 import { Inter, Vazirmatn } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import type { ReactNode } from "react";
-import { getLangDir } from "@/src/i18n/direction";
-import { DirectionProvider } from "@/src/presentation/components/DirectionProvider";
-import { CurrencyProvider } from "@/src/presentation/components/CurrencyProvider";
+
 import { resolveUsdToToman } from "@/src/config/exchange-rate";
+import { getLangDir } from "@/src/i18n/direction";
 import { routing } from "@/src/i18n/routing";
+import { CurrencyProvider } from "@/src/presentation/components/CurrencyProvider";
+import { DirectionProvider } from "@/src/presentation/components/DirectionProvider";
+
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import "@/src/styles/globals.css";
 
 const inter = Inter({

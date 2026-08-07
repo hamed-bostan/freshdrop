@@ -1,9 +1,10 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { Calendar } from "lucide-react";
-import { usePathname, useRouter } from "@/src/i18n/navigation";
+import { useSearchParams } from "next/navigation";
+
 import { DEFAULT_ANALYTICS_PRESET } from "@/src/domain/entities/Analytics";
+import { usePathname, useRouter } from "@/src/i18n/navigation";
 import { Icon, Input, Select } from "@/src/presentation/design-system";
 
 /**

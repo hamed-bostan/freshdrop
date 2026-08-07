@@ -1,9 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { deliveryWindowFormSchema } from "@/src/contracts/delivery-window-schema";
+import { DeleteDeliveryWindow } from "@/src/domain/use-cases/delivery-slots/DeleteDeliveryWindow";
 import { GetDeliveryWindowById } from "@/src/domain/use-cases/delivery-slots/GetDeliveryWindowById";
 import { UpdateDeliveryWindow } from "@/src/domain/use-cases/delivery-slots/UpdateDeliveryWindow";
-import { DeleteDeliveryWindow } from "@/src/domain/use-cases/delivery-slots/DeleteDeliveryWindow";
 import { deliverySlotRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import {
   errorResponse,
   errorResponseFromException,
@@ -11,7 +12,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
-import { deliveryWindowFormSchema } from "@/src/contracts/delivery-window-schema";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Looked up and written per request — never statically cached.
 export const dynamic = "force-dynamic";

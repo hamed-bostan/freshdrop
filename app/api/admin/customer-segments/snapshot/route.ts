@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { SnapshotCustomerSegments } from "@/src/domain/use-cases/analytics/SnapshotCustomerSegments";
 import { analyticsRepository, customerSegmentSnapshotRepository } from "@/src/infrastructure/container";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";

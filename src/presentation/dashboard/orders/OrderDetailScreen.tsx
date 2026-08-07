@@ -1,30 +1,34 @@
+import { ChevronLeft, ArrowLeftRight, RotateCcw } from "lucide-react";
 import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ChevronLeft, ArrowLeftRight, RotateCcw } from "lucide-react";
+
+import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
+import type { DeliveryIssue } from "@/src/domain/entities/DeliveryIssue";
 import type { Order } from "@/src/domain/entities/Order";
 import { isPicking, orderNetPaid } from "@/src/domain/entities/Order";
-import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
+import type { OrderNote } from "@/src/domain/entities/OrderNote";
 import type { ReturnRequest } from "@/src/domain/entities/Return";
 import { Link } from "@/src/i18n/navigation";
-import { Icon, Thumbnail } from "@/src/presentation/design-system";
-import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { formatOrderDate } from "@/src/lib/formatOrderDate";
-import { deliverySteps, isAdvanceable, nextStage } from "./orderStages";
+import type { ActivityEntryWire } from "@/src/presentation/dashboard/activity/activity-response-schema";
+import { ActivityPanel } from "@/src/presentation/dashboard/activity/ActivityPanel";
+import { Icon, Thumbnail } from "@/src/presentation/design-system";
+import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
+
+import { OrderCommsPanel } from "./OrderCommsPanel";
+import { OrderDeliveryIssuesPanel } from "./OrderDeliveryIssuesPanel";
 import { OrderDeliveryTracker } from "./OrderDeliveryTracker";
-import { OrderStageAdvance } from "./OrderStageAdvance";
+import { OrderItemPickControl } from "./OrderItemPickControl";
+import { OrderNotesPanel } from "./OrderNotesPanel";
+import { OrderRefundControl } from "./OrderRefundControl";
 import { OrderReturnControl } from "./OrderReturnControl";
 import { OrderReturnInspection } from "./OrderReturnInspection";
-import { OrderRefundControl } from "./OrderRefundControl";
-import { OrderItemPickControl } from "./OrderItemPickControl";
-import { OrderCommsPanel } from "./OrderCommsPanel";
-import { OrderNotesPanel } from "./OrderNotesPanel";
-import { OrderDeliveryIssuesPanel } from "./OrderDeliveryIssuesPanel";
-import { ActivityPanel } from "@/src/presentation/dashboard/activity/ActivityPanel";
-import type { ActivityEntryWire } from "@/src/presentation/dashboard/activity/activity-response-schema";
-import type { OrderNote } from "@/src/domain/entities/OrderNote";
-import type { DeliveryIssue } from "@/src/domain/entities/DeliveryIssue";
+import { OrderStageAdvance } from "./OrderStageAdvance";
+import { deliverySteps, isAdvanceable, nextStage } from "./orderStages";
+
+
 import type { OrderMessageDefaultWire } from "./order-message-default-response-schema";
 
 type OrderDetailScreenProps = {

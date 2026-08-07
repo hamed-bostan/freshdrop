@@ -1,4 +1,3 @@
-import type { Prisma } from "@prisma/client";
 import type {
   ReturnItem,
   ReturnItemCondition,
@@ -6,15 +5,18 @@ import type {
   ReturnRequest,
   ReturnRequestStatus,
 } from "@/src/domain/entities/Return";
+import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import type {
   IReturnRepository,
   NewReturnRequest,
   ReturnItemInspection,
 } from "@/src/domain/repositories/IReturnRepository";
-import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import { prisma } from "@/src/infrastructure/prisma/client";
 import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transaction";
+
 import { recordAudit } from "./writeActivityEntry";
+
+import type { Prisma } from "@prisma/client";
 
 /**
  * The return/RMA ledger, backed by PostgreSQL via Prisma. Server-side only —

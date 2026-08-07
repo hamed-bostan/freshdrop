@@ -1,5 +1,6 @@
-import type { Session } from "next-auth";
 import { getSessionWith, requirePermission, sessionHas } from "./require-permission";
+
+import type { Session } from "next-auth";
 
 /**
  * Owner-specific guards, kept under their own names because "owner" is a real

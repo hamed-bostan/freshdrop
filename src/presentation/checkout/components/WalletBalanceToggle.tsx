@@ -2,8 +2,10 @@
 
 import { Wallet, Sparkles } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Icon, Switch } from "@/src/presentation/design-system";
+
 import { formatMoney } from "@/src/lib/formatMoney";
+import { Icon, Switch } from "@/src/presentation/design-system";
+
 import { walletAmounts } from "../checkoutSession";
 
 interface WalletBalanceToggleProps {

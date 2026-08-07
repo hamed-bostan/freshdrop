@@ -1,14 +1,16 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import { Eye, EyeOff } from "lucide-react";
-import type { Category } from "@/src/domain/entities/Category";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { ProductBulkAction } from "@/src/contracts/bulk-action-schema";
-import { Button, Icon, Select } from "@/src/presentation/design-system";
+import type { Category } from "@/src/domain/entities/Category";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { useBulkSelection } from "@/src/presentation/dashboard/bulk";
+import { Button, Icon, Select } from "@/src/presentation/design-system";
+
 import { productsApi } from "./product-api";
 
 type ProductBulkActionsProps = {

@@ -1,8 +1,10 @@
 "use client";
 
-import * as React from "react";
 import { RadioGroup as RadioGroupPrimitive } from "radix-ui";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
+
 import { chipRadioStateStyles, chipShapeStyles } from "./chipStyles";
 
 export type ChipGroupProps = React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>;

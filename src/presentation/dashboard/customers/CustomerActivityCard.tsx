@@ -1,9 +1,11 @@
-import { useLocale, useTranslations } from "next-intl";
 import { CircleDollarSign, ClipboardList, Star, WalletCards, type LucideIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+
 import type { CustomerDetail } from "@/src/domain/entities/CustomerDetail";
-import { Icon, RatingStars } from "@/src/presentation/design-system";
-import { formatMoney } from "@/src/lib/formatMoney";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
+import { formatMoney } from "@/src/lib/formatMoney";
+import { Icon, RatingStars } from "@/src/presentation/design-system";
+
 import { PANEL_CLASS } from "./PanelHeading";
 
 type ActivityItem = {

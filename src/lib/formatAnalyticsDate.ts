@@ -1,5 +1,5 @@
-import type { Locale } from "@/src/i18n/routing";
 import type { AnalyticsGranularity } from "@/src/domain/entities/Analytics";
+import type { Locale } from "@/src/i18n/routing";
 
 // Compact, deterministic date labels for the analytics surfaces — chart axis ticks
 // and the "which days am I looking at" caption under the period picker.

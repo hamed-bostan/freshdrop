@@ -1,18 +1,20 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
-import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+
+import { categoryFormSchema, type CategoryFormInput } from "@/src/contracts/category-schema";
 import type { Category } from "@/src/domain/entities/Category";
 import type { CategoryTranslationInput } from "@/src/domain/repositories/ICategoryRepository";
-import { Button, Field, FormMessage, Input, RequiredMark, Switch, Tabs, TabsContent, TabsList, TabsTrigger, TextField } from "@/src/presentation/design-system";
 import { Link, useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { formErrorMessage } from "@/src/lib/formErrorMessage";
 import { slugify } from "@/src/lib/slugify";
-import { categoryFormSchema, type CategoryFormInput } from "@/src/contracts/category-schema";
+import { Button, Field, FormMessage, Input, RequiredMark, Switch, Tabs, TabsContent, TabsList, TabsTrigger, TextField } from "@/src/presentation/design-system";
+
 import { categoriesApi } from "./category-api";
 import { IconUpload } from "./IconUpload";
 

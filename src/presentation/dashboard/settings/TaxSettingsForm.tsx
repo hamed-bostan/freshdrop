@@ -1,16 +1,19 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, FormMessage, Input, Switch, TextField } from "@/src/presentation/design-system";
+
+import { taxSettingsFormSchema, type TaxSettingsFormInput } from "@/src/contracts/tax-settings-schema";
 import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { formErrorMessage } from "@/src/lib/formErrorMessage";
-import { taxSettingsFormSchema, type TaxSettingsFormInput } from "@/src/contracts/tax-settings-schema";
-import type { TaxSettingsWire } from "./tax-settings-response-schema";
+import { Button, FormMessage, Input, Switch, TextField } from "@/src/presentation/design-system";
+
 import { taxSettingsApi } from "./tax-settings-api";
+
+import type { TaxSettingsWire } from "./tax-settings-response-schema";
 
 type TaxSettingsFormProps = {
   /** The current row, fetched over the BFF during server render. */

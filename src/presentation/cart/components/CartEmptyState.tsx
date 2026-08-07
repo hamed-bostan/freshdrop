@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+
 import { EmptyState } from "@/src/presentation/design-system";
 import { emptyCart } from "@/src/shared/assets/images";
 

@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
+
 import type { Category } from "@/src/domain/entities/Category";
 import type { CategoryTranslationInput } from "@/src/domain/repositories/ICategoryRepository";
+
 import { CategoryForm } from "./CategoryForm";
 
 /**

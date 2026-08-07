@@ -1,13 +1,14 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import { Heart } from "lucide-react";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import { usePathname, useRouter } from "@/src/i18n/navigation";
-import { Button, Icon } from "@/src/presentation/design-system";
 import { ApiError } from "@/src/lib/api/ApiError";
-import { favoritesApi } from "@/src/presentation/favorites/favorite-api";
 import { cn } from "@/src/lib/utils";
+import { Button, Icon } from "@/src/presentation/design-system";
+import { favoritesApi } from "@/src/presentation/favorites/favorite-api";
 
 interface FavoriteToggleProps {
   productId: string;

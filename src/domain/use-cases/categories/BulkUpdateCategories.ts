@@ -1,8 +1,10 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { singleChange } from "../../entities/ActivityEntry";
+import { ValidationError } from "../../errors/ValidationError";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
 import type { Category } from "../../entities/Category";
 import type { BulkCategoryChange, ICategoryRepository } from "../../repositories/ICategoryRepository";
-import { ValidationError } from "../../errors/ValidationError";
+
 
 /** How many categories one bulk action may touch. */
 const MAX_BULK_CATEGORIES = 200;

@@ -1,15 +1,17 @@
 "use client";
 
-import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Button, FormMessage } from "@/src/presentation/design-system";
-import { PageHeader } from "@/src/presentation/components/PageHeader";
+import * as React from "react";
+
 import type { PaymentMethod, PaymentMethodGroup } from "@/src/domain/entities/PaymentMethod";
 import type { SavedCard } from "@/src/domain/entities/Wallet";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
-import { paymentMethodsApi } from "./payment-method-api";
+import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { Button, FormMessage } from "@/src/presentation/design-system";
+
 import { PaymentMethodOption, SavedCardOption, AddCardRow } from "./components";
+import { paymentMethodsApi } from "./payment-method-api";
 
 /** Sections render in this fixed order; the title is a UI concern, not domain data. */
 const SECTIONS: { group: PaymentMethodGroup; titleKey: "sectionCash" | "sectionWallet" | "sectionCard" | "sectionOptions" }[] = [

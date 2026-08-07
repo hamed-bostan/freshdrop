@@ -1,4 +1,5 @@
 import type { Locale } from "@/src/i18n/routing";
+
 import { formatNumber } from "./formatNumber";
 
 /**

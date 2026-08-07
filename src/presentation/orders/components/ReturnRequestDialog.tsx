@@ -1,9 +1,12 @@
 "use client";
 
-import * as React from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
+import * as React from "react";
+
+import type { OrderReturnRequestInput } from "@/src/contracts/order-return-schema";
 import type { Order } from "@/src/domain/entities/Order";
+import { formatMoney } from "@/src/lib/formatMoney";
 import {
   Button,
   Checkbox,
@@ -14,8 +17,6 @@ import {
   Textarea,
   Thumbnail,
 } from "@/src/presentation/design-system";
-import { formatMoney } from "@/src/lib/formatMoney";
-import type { OrderReturnRequestInput } from "@/src/contracts/order-return-schema";
 
 type ReturnRequestDialogProps = {
   order: Order;

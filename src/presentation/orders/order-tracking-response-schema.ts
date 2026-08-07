@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { OrderTracking } from "@/src/domain/entities/OrderTracking";
 
 /**

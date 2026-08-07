@@ -1,10 +1,12 @@
 import { ArrowRight, ExternalLink, UsersRound } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
+import type { CustomerSegmentId } from "@/src/domain/entities/CustomerSegmentsReport";
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { Icon } from "@/src/presentation/design-system";
-import type { CustomerSegmentId } from "@/src/domain/entities/CustomerSegmentsReport";
+
 import type { CustomerSegmentsWire } from "./customer-segments-response-schema";
 
 const MAX_CARDS = 4;

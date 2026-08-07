@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
-import { Button } from "@/src/presentation/design-system";
+
 import { Link } from "@/src/i18n/navigation";
+import { Button } from "@/src/presentation/design-system";
 
 /** Shown when the customer id names nobody (the page called `notFound()`). */
 export default async function CustomerNotFound() {

@@ -1,5 +1,6 @@
 import type { Cart } from "@/src/domain/entities/Cart";
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
+
 import { CartBrowser } from "./components";
 
 interface CartScreenProps {

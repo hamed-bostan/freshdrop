@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
 
 /**

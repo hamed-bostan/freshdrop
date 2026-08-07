@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+
 import type { OrderStatus } from "@/src/domain/entities/Order";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
 import { Badge, type BadgeProps } from "@/src/presentation/design-system";

@@ -1,5 +1,5 @@
-import type { DeliveryWindow } from "../entities/DeliveryWindow";
 import type { AuditHook } from "./AuditHook";
+import type { DeliveryWindow } from "../entities/DeliveryWindow";
 
 /** Key for a per-(date, window) booking count: `${date}#${windowId}`. */
 export function bookedCountKey(date: string, windowId: string): string {

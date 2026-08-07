@@ -1,5 +1,6 @@
-import { useLocale, useTranslations } from "next-intl";
 import { Wallet } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+
 import { formatMoney, formatMoneySum } from "@/src/lib/formatMoney";
 import { Icon } from "@/src/presentation/design-system";
 

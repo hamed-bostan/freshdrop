@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
+
+import { GetCustomerInsightsReport } from "../GetCustomerInsightsReport";
+
 import type { DateRange } from "../../../entities/Analytics";
 import type { IAnalyticsRepository } from "../../../repositories/IAnalyticsRepository";
-import { GetCustomerInsightsReport } from "../GetCustomerInsightsReport";
 
 describe("GetCustomerInsightsReport", () => {
   it("builds all customer panels from one consistent current and previous snapshot", async () => {
@@ -9,7 +11,7 @@ describe("GetCustomerInsightsReport", () => {
     const totals = { revenue: 600, orders: 6, units: 12, customers: 4, averageOrderValue: 100 };
     const segments = { totalCustomers: 4, newCustomers: 2, returningCustomers: 2, repeatCustomers: 3 };
     const repository = {
-      snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository as IAnalyticsRepository),
+      snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository),
       totals: vi.fn().mockResolvedValueOnce(totals).mockResolvedValueOnce({ ...totals, revenue: 400 }),
       customerSegments: vi.fn().mockResolvedValueOnce(segments).mockResolvedValueOnce({ ...segments, newCustomers: 1, returningCustomers: 3 }),
       customerGrowthSeries: vi.fn().mockResolvedValue([{ bucket: range.from.toISOString(), newCustomers: 2, returningCustomers: 2, newRevenue: 200, returningRevenue: 400 }]),

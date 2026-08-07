@@ -1,9 +1,11 @@
 import { headers } from "next/headers";
 import { getLocale } from "next-intl/server";
-import type { ZodType } from "zod";
+
 import { ApiError } from "./ApiError";
 import { defaultMessageForStatus, type ErrorEnvelope } from "./normalizeAxiosError";
 import { badResponseError, parseApiResponse } from "./parseApiResponse";
+
+import type { ZodType } from "zod";
 
 /**
  * Server-side REST client for React Server Components (the BFF pattern): the

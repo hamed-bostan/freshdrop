@@ -1,6 +1,7 @@
+import { ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
-import { ShoppingCart } from "lucide-react";
+
 import { Button, Icon } from "@/src/presentation/design-system";
 import { heroBanner } from "@/src/shared/assets/images";
 

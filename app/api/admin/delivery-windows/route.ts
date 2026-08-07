@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { GetDeliveryWindows } from "@/src/domain/use-cases/delivery-slots/GetDeliveryWindows";
+
+import { newDeliveryWindowSchema } from "@/src/contracts/delivery-window-schema";
 import { CreateDeliveryWindow } from "@/src/domain/use-cases/delivery-slots/CreateDeliveryWindow";
+import { GetDeliveryWindows } from "@/src/domain/use-cases/delivery-slots/GetDeliveryWindows";
 import { deliverySlotRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import {
   errorResponse,
   errorResponseFromException,
@@ -10,7 +11,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
-import { newDeliveryWindowSchema } from "@/src/contracts/delivery-window-schema";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Reads and writes the window catalog per request — never statically cached.
 export const dynamic = "force-dynamic";

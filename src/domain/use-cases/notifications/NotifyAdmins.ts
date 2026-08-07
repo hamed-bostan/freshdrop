@@ -4,8 +4,8 @@ import { roleHasPermission } from "@/src/domain/entities/Permission";
 import { DASHBOARD_ROLES } from "@/src/domain/entities/User";
 import type { IAdminNotificationRepository } from "@/src/domain/repositories/IAdminNotificationRepository";
 import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
-import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
 import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
+import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
 import { render } from "@/src/lib/renderTemplate";
 
 /** Plain-English email copy per category — the same un-i18n'd, internal-ops style `TeamNotifier` already uses. Fallback for a missing/never-seeded template row (see {@link NotifyAdmins.emailCopy}). */

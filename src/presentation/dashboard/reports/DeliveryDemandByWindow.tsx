@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 import type { DeliveryWindowPerformance } from "@/src/domain/entities/DeliveryPerformanceReport";
 import type { Locale } from "@/src/i18n/routing";
 import { formatNumber } from "@/src/lib/formatNumber";

@@ -12,10 +12,11 @@ import type { IStockMovementLog } from "@/src/domain/repositories/IStockMovement
 import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
 import { writeCsv } from "@/src/lib/export-formats/csv-writer";
 import { exportContentType, exportObjectPath } from "@/src/lib/export-formats/export-file-naming";
-import type { ReportDataset, ReportSection } from "@/src/lib/export-formats/report-dataset";
 import { writePdf } from "@/src/lib/export-formats/pdf-writer";
-import { writeXlsx } from "@/src/lib/export-formats/xlsx-writer";
+import type { ReportDataset, ReportSection } from "@/src/lib/export-formats/report-dataset";
 import type { WrittenFile } from "@/src/lib/export-formats/written-file";
+import { writeXlsx } from "@/src/lib/export-formats/xlsx-writer";
+
 import { buildCustomersDataset } from "./datasets/CustomersDataset";
 import { buildInventoryDataset } from "./datasets/InventoryDataset";
 import { buildOrdersDataset } from "./datasets/OrdersDataset";
@@ -52,7 +53,7 @@ export class RunExportJob {
 
   async execute(jobId: string): Promise<void> {
     const job = await this.deps.jobs.getById(jobId);
-    if (!job || job.status !== "processing") return;
+    if (job?.status !== "processing") return;
 
     try {
       const dataset = await this.buildDataset(job);

@@ -1,10 +1,12 @@
 import { getTranslations } from "next-intl/server";
+
 import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
 import type { ProductFilters } from "@/src/domain/entities/ProductFilters";
 import { hasProductSearchCriteria } from "@/src/domain/entities/ProductFilters";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { ProductGrid } from "@/src/presentation/product/components";
+
 import { SearchExperience } from "./components/SearchExperience";
 
 interface SearchResultsScreenProps {

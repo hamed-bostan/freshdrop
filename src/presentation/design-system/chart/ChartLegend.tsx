@@ -1,8 +1,10 @@
 "use client";
 
 import * as React from "react";
-import type { DefaultLegendContentProps, LegendPayload } from "recharts";
+
 import { cn } from "@/src/lib/utils";
+
+import type { DefaultLegendContentProps, LegendPayload } from "recharts";
 
 export type ChartLegendProps = DefaultLegendContentProps & { className?: string };
 

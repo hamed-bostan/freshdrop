@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
+
 import { GetOrderById } from "@/src/domain/use-cases/orders/GetOrderById";
 import { orderRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import {
   errorResponse,
   errorResponseFromException,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Reads one order per request — never statically cached.
 export const dynamic = "force-dynamic";

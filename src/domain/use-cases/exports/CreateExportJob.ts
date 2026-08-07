@@ -1,6 +1,6 @@
 import type { ExportFormat, ExportJob, ExportJobParams, ExportJobReportId, ExportJobSource } from "@/src/domain/entities/ExportJob";
-import type { IExportJobRepository } from "@/src/domain/repositories/IExportJobRepository";
 import { ValidationError } from "@/src/domain/errors/ValidationError";
+import type { IExportJobRepository } from "@/src/domain/repositories/IExportJobRepository";
 
 export type CreateExportJobRequest = {
   reportId: ExportJobReportId;

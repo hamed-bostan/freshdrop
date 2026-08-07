@@ -1,5 +1,6 @@
 import type { Product } from "@/src/domain/entities/Product";
 import { apiGet } from "@/src/lib/api/client";
+
 import { productListResponseSchema } from "./product-response-schema";
 
 /**

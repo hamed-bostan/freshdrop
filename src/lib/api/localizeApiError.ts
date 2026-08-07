@@ -1,5 +1,6 @@
-import type { useTranslations } from "next-intl";
 import { ApiError } from "./ApiError";
+
+import type { useTranslations } from "next-intl";
 
 /**
  * Client-side localization of REST failures. The API speaks machine codes —

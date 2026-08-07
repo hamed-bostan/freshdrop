@@ -1,5 +1,6 @@
 import type { PublicReview } from "@/src/domain/entities/Review";
 import { serverApiGet } from "@/src/lib/api/server-client";
+
 import { reviewListResponseSchema } from "./review-response-schema";
 
 /**

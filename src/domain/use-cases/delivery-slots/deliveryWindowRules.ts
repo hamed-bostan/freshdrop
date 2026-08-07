@@ -1,5 +1,6 @@
-import type { DeliveryWindowInput } from "../../repositories/IDeliverySlotRepository";
 import { ValidationError } from "../../errors/ValidationError";
+
+import type { DeliveryWindowInput } from "../../repositories/IDeliverySlotRepository";
 
 /**
  * The delivery-window invariants, shared by create and update so the two can't

@@ -1,11 +1,13 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { activityValue } from "../../entities/ActivityEntry";
-import type { ICategoryRepository } from "../../repositories/ICategoryRepository";
-import type { IImageStorageRepository } from "../../repositories/IImageStorageRepository";
-import { ValidationError } from "../../errors/ValidationError";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ResourceInUseError } from "../../errors/ResourceInUseError";
+import { ValidationError } from "../../errors/ValidationError";
+
 import { categorySnapshot } from "./categoryActivity";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
+import type { ICategoryRepository } from "../../repositories/ICategoryRepository";
+import type { IImageStorageRepository } from "../../repositories/IImageStorageRepository";
 
 export class DeleteCategory {
   constructor(

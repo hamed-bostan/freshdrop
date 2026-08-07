@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { resolvedProductImportRowSchema } from "@/src/contracts/product-import-schema";
 
 /** What the client got back from the file it uploaded, plus a per-row error list. Only the frontend reads this shape, so it stays colocated with the feature rather than in `contracts/`. */

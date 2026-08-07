@@ -1,4 +1,3 @@
-import { getLocale, getTranslations } from "next-intl/server";
 import {
   ArrowDown,
   ArrowUp,
@@ -16,14 +15,17 @@ import {
   ChevronRight,
   type LucideIcon,
 } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+
 import { percentChange, type OrderStatusCount } from "@/src/domain/entities/Analytics";
 import type { OrderStatus } from "@/src/domain/entities/Order";
-import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
-import { Icon } from "@/src/presentation/design-system";
+import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
 import { StatSparkline } from "@/src/presentation/dashboard/StatSparkline";
+import { Icon } from "@/src/presentation/design-system";
+
 import type { AnalyticsOverviewWire } from "./analytics-response-schema";
 
 type Kpi = {
@@ -40,7 +42,7 @@ type Kpi = {
 
 export async function AnalyticsKpiStrip({ analytics }: { analytics: AnalyticsOverviewWire }) {
   const t = await getTranslations("dashAnalytics");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
   const { totals, previousTotals, customerSegments, previousCustomerSegments } = analytics;
   const totalStatuses = analytics.statusBreakdown.reduce((sum, item) => sum + item.orders, 0);
   const refunded = countStatus(analytics.statusBreakdown, "refunded");
@@ -94,7 +96,7 @@ export async function PriorityActionsCard({ analytics }: { analytics: AnalyticsO
 
 export async function AnalyticsInsights({ analytics }: { analytics: AnalyticsOverviewWire }) {
   const t = await getTranslations("dashAnalytics");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
   const revenueChange = percentChange(analytics.totals.revenue, analytics.previousTotals.revenue);
   const aovChange = percentChange(analytics.totals.averageOrderValue, analytics.previousTotals.averageOrderValue);
   const totalStatuses = analytics.statusBreakdown.reduce((sum, item) => sum + item.orders, 0);

@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
+
 import type { TrackingStep } from "@/src/domain/entities/OrderTracking";
 import { cn } from "@/src/lib/utils";
+
 import { STAGE_LABEL_KEYS } from "./orderStages";
 
 type OrderDeliveryTrackerProps = {

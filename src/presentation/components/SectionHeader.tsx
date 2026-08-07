@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+
 import { Link } from "@/src/i18n/navigation";
 import { cn } from "@/src/lib/utils";
 

@@ -1,13 +1,17 @@
-import type { AdminCustomerFilters, AdminCustomerSort } from "../../entities/AdminCustomerFilters";
 import {
   DEFAULT_ADMIN_CUSTOMER_DIRECTION,
   DEFAULT_ADMIN_CUSTOMER_SORT,
 } from "../../entities/AdminCustomerFilters";
+import { ListCustomerSummaries } from "../orders/ListCustomerSummaries";
+
+import { streamAllPages } from "./streamAllPages";
+
+import type { AdminCustomerFilters, AdminCustomerSort } from "../../entities/AdminCustomerFilters";
 import type { CustomerOrderSummary } from "../../entities/CustomerOrderSummary";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IUserRepository } from "../../repositories/IUserRepository";
-import { ListCustomerSummaries } from "../orders/ListCustomerSummaries";
-import { streamAllPages } from "./streamAllPages";
+
+
 
 /**
  * Every customer matching `filters`, ranked by spend, one at a time. Backs

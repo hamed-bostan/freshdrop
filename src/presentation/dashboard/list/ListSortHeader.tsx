@@ -1,11 +1,13 @@
 "use client";
 
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
+
 import type { SortDirection } from "@/src/domain/entities/Pagination";
-import { Icon, TableHead } from "@/src/presentation/design-system";
-import { focusRing } from "@/src/presentation/design-system/components/shared";
 import { mergePageParams } from "@/src/lib/api/pagination-params";
 import { cn } from "@/src/lib/utils";
+import { Icon, TableHead } from "@/src/presentation/design-system";
+import { focusRing } from "@/src/presentation/design-system/components/shared";
+
 import { useListParams } from "./useListParams";
 
 type ListSortHeaderProps<TSort extends string> = {

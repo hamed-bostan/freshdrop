@@ -1,9 +1,11 @@
 "use client";
 
-import * as React from "react";
 import { SunMoon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import { MenuRow } from "@/src/presentation/components/menu-row";
+
 import { PickerSheet } from "./PickerSheet";
 
 type Appearance = "system" | "light" | "dark";

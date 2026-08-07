@@ -1,7 +1,9 @@
 import { timingSafeEqual } from "node:crypto";
-import type { NextRequest } from "next/server";
+
 import type { Permission } from "@/src/domain/entities/Permission";
 import { getSessionWith } from "@/src/lib/require-permission";
+
+import type { NextRequest } from "next/server";
 
 /**
  * Shared authorization check for cron-triggered admin routes (customer-segments/snapshot,

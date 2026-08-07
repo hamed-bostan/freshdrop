@@ -1,10 +1,13 @@
-import type { ComponentType } from "react";
-import type { LucideProps } from "lucide-react";
 import { ChevronRight } from "lucide-react";
+
 import { Link } from "@/src/i18n/navigation";
-import { Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
+import { Icon } from "@/src/presentation/design-system";
+
 import { rowCardClass, rowInteractiveClass } from "./rowStyles";
+
+import type { LucideProps } from "lucide-react";
+import type { ComponentType } from "react";
 
 interface MenuRowProps {
   icon: ComponentType<LucideProps>;

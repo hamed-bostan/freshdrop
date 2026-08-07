@@ -1,6 +1,8 @@
 import { ArrowDown, ArrowUp, Info, type LucideIcon } from "lucide-react";
+
 import type { Locale } from "@/src/i18n/routing";
 import { Icon } from "@/src/presentation/design-system";
+
 import { StatSparkline } from "../StatSparkline";
 
 type SalesMetricCardProps = {

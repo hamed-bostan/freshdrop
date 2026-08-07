@@ -1,14 +1,17 @@
 "use client";
 
 import * as React from "react";
-import type { ReactNode } from "react";
+
 import type { Permission } from "@/src/domain/entities/Permission";
 import { CommandPalette } from "@/src/presentation/dashboard/search/CommandPalette";
+
 import { DashboardSidebar } from "./DashboardSidebar";
 import { DashboardTopBar } from "./DashboardTopBar";
 import { NavDrawer } from "./NavDrawer";
 import { SIDEBAR_COLLAPSED_COOKIE_MAX_AGE, SIDEBAR_COLLAPSED_COOKIE_NAME } from "./sidebarCollapseCookie";
+
 import type { DashboardViewer } from "./viewer";
+import type { ReactNode } from "react";
 
 type DashboardShellProps = {
   permissions: readonly Permission[];

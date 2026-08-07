@@ -1,9 +1,11 @@
 import { z } from "zod";
+
 import {
   ADMIN_STOCK_FILTERS,
   ADMIN_VISIBILITY_FILTERS,
   type AdminProductFilters,
 } from "@/src/domain/entities/AdminProductFilters";
+
 import { trimmedTextParamSchema } from "./trimmed-text-param";
 
 /**

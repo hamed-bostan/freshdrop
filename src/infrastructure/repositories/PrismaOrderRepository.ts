@@ -1,4 +1,7 @@
 import { Prisma } from "@prisma/client";
+
+import type { AdminOrderFilters, AdminOrderSort } from "@/src/domain/entities/AdminOrderFilters";
+import { DEFAULT_ADMIN_ORDER_DIRECTION } from "@/src/domain/entities/AdminOrderFilters";
 import type {
   DeliveryType,
   ItemSubstitution,
@@ -9,25 +12,24 @@ import type {
   PaymentStatus,
   SubstitutionPreference,
 } from "@/src/domain/entities/Order";
-import type { Refund } from "@/src/domain/entities/Refund";
 import { pipelinePredicate } from "@/src/domain/entities/OrderPipelineStage";
-import type { AdminOrderFilters, AdminOrderSort } from "@/src/domain/entities/AdminOrderFilters";
-import { DEFAULT_ADMIN_ORDER_DIRECTION } from "@/src/domain/entities/AdminOrderFilters";
-import { createPage, toSkipTake, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
+import { createPage, toSkipTake, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
+import type { Refund } from "@/src/domain/entities/Refund";
+import { NotFoundError } from "@/src/domain/errors/NotFoundError";
+import type { AuditHook } from "@/src/domain/repositories/AuditHook";
 import type {
   IOrderRepository,
   NewOrder,
   OrderStatusTransition,
   OrderTrackingUpdate,
 } from "@/src/domain/repositories/IOrderRepository";
-import type { AuditHook } from "@/src/domain/repositories/AuditHook";
-import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { prisma } from "@/src/infrastructure/prisma/client";
 import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transaction";
-import { recordAudit } from "./writeActivityEntry";
-import { toRefund } from "./PrismaRefundRepository";
+
 import { PrismaOrderStatusEventLog } from "./PrismaOrderStatusEventLog";
+import { toRefund } from "./PrismaRefundRepository";
+import { recordAudit } from "./writeActivityEntry";
 
 /** Items are always read in their authored order so the order card's thumbnails stay stable. */
 const ITEMS_INCLUDE = { items: { orderBy: { position: "asc" } } } as const;

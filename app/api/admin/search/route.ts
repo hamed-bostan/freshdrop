@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
-import type { Locale } from "@/src/i18n/routing";
+
 import { ADMIN_SEARCH_GROUP_LIMIT, type AdminSearchGroupType } from "@/src/domain/entities/AdminSearchResults";
 import { SearchAdmin } from "@/src/domain/use-cases/search/SearchAdmin";
+import type { Locale } from "@/src/i18n/routing";
 import {
   categoryRepository,
   orderRepository,
@@ -24,7 +25,7 @@ type Group = { type: AdminSearchGroupType; items: Hit[] };
 
 /** Non-empty display text joined by " · ", so a missing part doesn't leave a stray separator. */
 function joinTruthy(parts: (string | null | undefined)[]): string {
-  return parts.filter((part): part is string => Boolean(part && part.trim())).join(" · ");
+  return parts.filter((part): part is string => Boolean(part?.trim())).join(" · ");
 }
 
 /**

@@ -1,7 +1,9 @@
-import type { IOrderRepository } from "../../repositories/IOrderRepository";
-import type { ICartRepository } from "../../repositories/ICartRepository";
-import type { IProductRepository } from "../../repositories/IProductRepository";
 import { NotFoundError } from "../../errors/NotFoundError";
+
+import type { ICartRepository } from "../../repositories/ICartRepository";
+import type { IOrderRepository } from "../../repositories/IOrderRepository";
+import type { IProductRepository } from "../../repositories/IProductRepository";
+
 
 export type ReorderItemsInput = {
   /** The user reordering — the order must belong to them. */
@@ -37,7 +39,7 @@ export class ReorderItems {
     const order = await this.orderRepo.getById(orderId);
     // Scope to the owner: a mismatched owner is reported as "not found" so an
     // order's existence isn't leaked to another user.
-    if (!order || order.userId !== userId) throw new NotFoundError("order", orderId);
+    if (order?.userId !== userId) throw new NotFoundError("order", orderId);
 
     let added = 0;
     let skipped = 0;

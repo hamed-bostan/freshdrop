@@ -1,13 +1,16 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import { Mail, Send } from "lucide-react";
-import type { Order } from "@/src/domain/entities/Order";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { OrderNotificationInput } from "@/src/contracts/order-notification-schema";
-import { Button, Icon, Input, Textarea } from "@/src/presentation/design-system";
+import type { Order } from "@/src/domain/entities/Order";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { Button, Icon, Input, Textarea } from "@/src/presentation/design-system";
+
 import { ordersApi } from "./order-api";
+
 import type { OrderMessageDefaultWire } from "./order-message-default-response-schema";
 
 type OrderCommsPanelProps = {

@@ -1,5 +1,7 @@
 import { z } from "zod";
+
 import type { CustomerInsightsReport } from "@/src/domain/entities/CustomerInsightsReport";
+
 import { isoDateSchema, moneySchema, nonNegativeInt, rangeSchema } from "./analytics-wire";
 
 const totals = z.object({ revenue: moneySchema, orders: nonNegativeInt, units: nonNegativeInt, customers: nonNegativeInt, averageOrderValue: moneySchema });

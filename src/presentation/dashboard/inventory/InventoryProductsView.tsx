@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+
 import {
   ADMIN_STOCK_FILTERS,
   type AdminProductFilters,
@@ -13,8 +14,10 @@ import {
   ListSearchInput,
   ListToolbar,
 } from "@/src/presentation/dashboard/list";
+
 import { InventoryBulkRestock } from "./InventoryBulkRestock";
 import { InventoryProductsTable } from "./InventoryProductsTable";
+
 import type { InventoryView } from "./InventoryTabs";
 
 type InventoryProductsViewProps = {

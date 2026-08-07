@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { issueRefundSchema } from "@/src/contracts/refund-schema";
 import { IssueRefund } from "@/src/domain/use-cases/refunds/IssueRefund";
 import { orderRepository, unitOfWork } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
-import { issueRefundSchema } from "@/src/contracts/refund-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -10,6 +10,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Mutates order/wallet state — never statically cached.
 export const dynamic = "force-dynamic";

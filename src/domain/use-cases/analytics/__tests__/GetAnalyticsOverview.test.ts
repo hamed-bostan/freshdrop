@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
+
+import { GetAnalyticsOverview } from "../GetAnalyticsOverview";
+
 import type { DateRange } from "../../../entities/Analytics";
 import type { IAnalyticsRepository } from "../../../repositories/IAnalyticsRepository";
-import { GetAnalyticsOverview } from "../GetAnalyticsOverview";
 
 const currentTotals = { revenue: 600, orders: 6, units: 12, customers: 4, averageOrderValue: 100 };
 const segments = { totalCustomers: 4, newCustomers: 2, returningCustomers: 2, repeatCustomers: 3 };
@@ -12,7 +14,7 @@ function buildRepository(range: DateRange) {
   const topProducts = vi.fn().mockResolvedValue([]);
   const topCategories = vi.fn().mockResolvedValue([]);
   const repository = {
-    snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository as IAnalyticsRepository),
+    snapshot: <T>(work: (analytics: IAnalyticsRepository) => Promise<T>) => work(repository),
     totals,
     revenueSeries: vi.fn().mockResolvedValue([point]),
     compareRevenueSeries: vi.fn().mockResolvedValue([{ ...point, revenue: 400 }]),

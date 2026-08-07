@@ -1,5 +1,6 @@
-import { getTranslations } from "next-intl/server";
 import { Info } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+
 import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { Icon } from "@/src/presentation/design-system";

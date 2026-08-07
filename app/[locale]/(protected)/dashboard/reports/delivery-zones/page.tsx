@@ -1,6 +1,6 @@
 import { hasCustomAnalyticsRange, parseAnalyticsRange, parseComparisonMode, toDateParam, toInclusiveEndParam } from "@/src/lib/api/analytics-params";
-import { DeliveryZonesScreen } from "@/src/presentation/dashboard/reports/DeliveryZonesScreen";
 import { deliveryZonesServerApi } from "@/src/presentation/dashboard/reports/delivery-zones-server-api";
+import { DeliveryZonesScreen } from "@/src/presentation/dashboard/reports/DeliveryZonesScreen";
 
 export const dynamic = "force-dynamic";
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };

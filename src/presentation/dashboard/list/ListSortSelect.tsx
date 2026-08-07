@@ -1,8 +1,9 @@
 "use client";
 
 import type { SortDirection } from "@/src/domain/entities/Pagination";
-import { Select } from "@/src/presentation/design-system";
 import { mergePageParams } from "@/src/lib/api/pagination-params";
+import { Select } from "@/src/presentation/design-system";
+
 import { useListParams } from "./useListParams";
 
 export type ListSortOption<TSort extends string> = {

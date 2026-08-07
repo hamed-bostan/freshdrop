@@ -1,9 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { parseCsv } from "@/src/lib/csv";
+
 import { ValidateProductImport } from "@/src/domain/use-cases/imports/ValidateProductImport";
 import { categoryRepository, productRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import { errorResponse, errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { parseCsv } from "@/src/lib/csv";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 

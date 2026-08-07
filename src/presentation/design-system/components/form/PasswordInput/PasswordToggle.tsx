@@ -1,9 +1,11 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Eye, EyeOff } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { cn } from "@/src/lib/utils";
 import { Icon } from "@/src/presentation/design-system/components/Icon";
+
 import { focusRing } from "../../shared/focusRing";
 
 type PasswordToggleProps = {

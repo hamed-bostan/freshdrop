@@ -1,10 +1,11 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
-import { Chip, ChipGroup, focusRing, Icon } from "@/src/presentation/design-system";
+import { useTranslations } from "next-intl";
+
 import type { DeliveryLocationKind } from "@/src/domain/entities/DeliveryLocation";
 import { cn } from "@/src/lib/utils";
+import { Chip, ChipGroup, focusRing, Icon } from "@/src/presentation/design-system";
 
 /** The presets shown as chips; "other" is reached via the add button. */
 const PRESETS: { kind: DeliveryLocationKind; labelKey: "presetHome" | "presetOffice" | "presetGym" }[] = [

@@ -1,11 +1,13 @@
-import { getLocale, getTranslations } from "next-intl/server";
 import { AlertCircle, Bike, ClipboardList, ShoppingBag } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+
+
 import type { OrderPipelineCounts } from "@/src/domain/use-cases/orders/GetOrderPipelineCounts";
 import { Link } from "@/src/i18n/navigation";
-import type { Locale } from "@/src/i18n/routing";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
+
+import type { LucideIcon } from "lucide-react";
 
 type OrdersSummaryCardsProps = {
   counts: OrderPipelineCounts;
@@ -37,7 +39,7 @@ type OrdersSummaryCardsProps = {
  */
 export async function OrdersSummaryCards({ counts }: OrdersSummaryCardsProps) {
   const t = await getTranslations("dashOrders");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
 
   const cards: {
     key: string;

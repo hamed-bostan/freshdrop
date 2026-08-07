@@ -1,5 +1,7 @@
 import { getTranslations } from "next-intl/server";
+
 import { ActivityList } from "./ActivityList";
+
 import type { ActivityEntryWire } from "./activity-response-schema";
 
 type ActivityPanelProps = {

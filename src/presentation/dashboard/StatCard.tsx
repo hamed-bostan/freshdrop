@@ -1,9 +1,12 @@
-import type { LucideIcon } from "lucide-react";
 import { Minus, TrendingDown, TrendingUp } from "lucide-react";
-import { focusRing, Icon } from "@/src/presentation/design-system";
+
 import { Link } from "@/src/i18n/navigation";
 import { cn } from "@/src/lib/utils";
+import { focusRing, Icon } from "@/src/presentation/design-system";
+
 import { StatSparkline } from "./StatSparkline";
+
+import type { LucideIcon } from "lucide-react";
 
 /**
  * Colour tone of the icon badge — one per KPI so each tile reads at a glance

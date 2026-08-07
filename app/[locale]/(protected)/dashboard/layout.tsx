@@ -1,10 +1,12 @@
-import type { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+
 import { requirePermission, sessionPermissions } from "@/src/lib/require-permission";
 import { DashboardShell } from "@/src/presentation/dashboard/shell/DashboardShell";
-import { dashboardViewerFor } from "@/src/presentation/dashboard/shell/viewer";
 import { SIDEBAR_COLLAPSED_COOKIE_NAME } from "@/src/presentation/dashboard/shell/sidebarCollapseCookie";
+import { dashboardViewerFor } from "@/src/presentation/dashboard/shell/viewer";
+
+import type { ReactNode } from "react";
 
 /**
  * Shell for the dashboard. Gates the whole `/dashboard` tree on `dashboard.view`,

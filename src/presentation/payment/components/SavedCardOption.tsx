@@ -1,9 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { SelectableTile } from "@/src/presentation/design-system";
-import { cn } from "@/src/lib/utils";
+
 import type { SavedCard } from "@/src/domain/entities/Wallet";
+import { cn } from "@/src/lib/utils";
+import { SelectableTile } from "@/src/presentation/design-system";
 
 interface SavedCardOptionProps {
   card: SavedCard;

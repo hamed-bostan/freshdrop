@@ -1,7 +1,9 @@
 import { getTranslations } from "next-intl/server";
+
 import type { Order } from "@/src/domain/entities/Order";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { SearchBar } from "@/src/presentation/components/SearchBar";
+
 import { OrdersBrowser, OrdersEmptyState } from "./components";
 
 interface OrdersScreenProps {

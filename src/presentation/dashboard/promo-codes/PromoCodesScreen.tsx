@@ -1,15 +1,16 @@
-import { getTranslations } from "next-intl/server";
 import { Plus } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+
+import type { Page } from "@/src/domain/entities/Pagination";
 import {
   PROMO_CODE_STATUSES,
   type AdminPromoCodeFilters,
   type PromoCodeStatus,
-} from "@/src/domain/entities/PromoCode";
-import type { Page } from "@/src/domain/entities/Pagination";
-import type { AdminPromoCode } from "@/src/domain/entities/PromoCode";
-import { Button, Icon } from "@/src/presentation/design-system";
-import { ListFilterSelect, ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
+ type AdminPromoCode } from "@/src/domain/entities/PromoCode";
 import { Link } from "@/src/i18n/navigation";
+import { ListFilterSelect, ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
+import { Button, Icon } from "@/src/presentation/design-system";
+
 import { PromoCodesTable } from "./PromoCodesTable";
 
 type PromoCodesScreenProps = {

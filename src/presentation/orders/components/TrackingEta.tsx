@@ -1,5 +1,6 @@
-import { useTranslations } from "next-intl";
 import { Bike, PackageCheck, Clock, type LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import type { TrackingMilestone, TrackingStep } from "@/src/domain/entities/OrderTracking";
 import { Icon } from "@/src/presentation/design-system";
 

@@ -1,9 +1,11 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { MAX_ORDER_NOTE_LENGTH, type OrderNote } from "../../entities/OrderNote";
-import type { IOrderNoteRepository } from "../../repositories/IOrderNoteRepository";
-import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
+import type { IOrderNoteRepository } from "../../repositories/IOrderNoteRepository";
+import type { IOrderRepository } from "../../repositories/IOrderRepository";
+
 
 /**
  * Leave an internal note on an order. Requires `orders.note`, which every dashboard

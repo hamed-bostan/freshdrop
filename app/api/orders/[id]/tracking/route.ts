@@ -1,4 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { orderTrackingStageSchema } from "@/src/contracts/order-tracking-schema";
 import { GetOrderTracking } from "@/src/domain/use-cases/orders/GetOrderTracking";
 import { SetOrderTrackingStage } from "@/src/domain/use-cases/orders/SetOrderTrackingStage";
 import {
@@ -6,9 +8,6 @@ import {
   orderTrackingRepository,
   orderNotifier,
 } from "@/src/infrastructure/container";
-import { getSessionWith, sessionHas } from "@/src/lib/require-permission";
-import { getUserSession } from "@/src/lib/require-auth";
-import { orderTrackingStageSchema } from "@/src/contracts/order-tracking-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -16,6 +15,8 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
+import { getSessionWith, sessionHas } from "@/src/lib/require-permission";
 
 // Per-user data, read per request — never statically cached.
 export const dynamic = "force-dynamic";

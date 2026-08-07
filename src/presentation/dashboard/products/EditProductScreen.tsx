@@ -1,12 +1,16 @@
 import { getTranslations } from "next-intl/server";
+
 import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
 import type { ProductTranslationInput } from "@/src/domain/repositories/IProductRepository";
+import type { ActivityEntryWire } from "@/src/presentation/dashboard/activity/activity-response-schema";
+import { ActivityPanel } from "@/src/presentation/dashboard/activity/ActivityPanel";
+
 import { ProductForm } from "./ProductForm";
 import { StockMovementHistory } from "./StockMovementHistory";
+
 import type { StockMovementEntry } from "./stock-movement-response-schema";
-import { ActivityPanel } from "@/src/presentation/dashboard/activity/ActivityPanel";
-import type { ActivityEntryWire } from "@/src/presentation/dashboard/activity/activity-response-schema";
+
 
 /**
  * Edit screen. Presentational: the page fetches the product (and the category

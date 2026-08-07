@@ -1,8 +1,10 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { singleChange } from "../../entities/ActivityEntry";
+import { ValidationError } from "../../errors/ValidationError";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
 import type { Product } from "../../entities/Product";
 import type { BulkProductChange, IProductRepository } from "../../repositories/IProductRepository";
-import { ValidationError } from "../../errors/ValidationError";
+
 
 /** How many products one bulk action may touch. */
 const MAX_BULK_PRODUCTS = 200;

@@ -1,15 +1,18 @@
 "use client";
 
-import { Dialog, VisuallyHidden } from "radix-ui";
-import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Dialog, VisuallyHidden } from "radix-ui";
+
 import type { Permission } from "@/src/domain/entities/Permission";
-import { Button, Icon } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
+import { Button, Icon } from "@/src/presentation/design-system";
+
 import { DashboardNav } from "./DashboardNav";
 import { SidebarBrand } from "./SidebarBrand";
 import { UserCard } from "./UserCard";
 import { ViewStoreLink } from "./ViewStoreLink";
+
 import type { DashboardViewer } from "./viewer";
 
 type NavDrawerProps = {

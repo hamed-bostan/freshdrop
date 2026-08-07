@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { taxSettingsFormSchema } from "@/src/contracts/tax-settings-schema";
 import { GetTaxSettings } from "@/src/domain/use-cases/settings/GetTaxSettings";
 import { UpdateTaxSettings } from "@/src/domain/use-cases/settings/UpdateTaxSettings";
 import { taxSettingsRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
-import { taxSettingsFormSchema } from "@/src/contracts/tax-settings-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -11,6 +11,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // The rate can change at any time — never statically cached.
 export const dynamic = "force-dynamic";

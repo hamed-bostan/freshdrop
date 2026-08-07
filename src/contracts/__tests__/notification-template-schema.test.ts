@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { notificationTemplateFormSchema } from "../notification-template-schema";
 
 describe("notificationTemplateFormSchema", () => {

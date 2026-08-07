@@ -1,9 +1,11 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { activityValue } from "../../entities/ActivityEntry";
-import type { IProductRepository } from "../../repositories/IProductRepository";
-import { ValidationError } from "../../errors/ValidationError";
 import { NotFoundError } from "../../errors/NotFoundError";
+import { ValidationError } from "../../errors/ValidationError";
+
 import { productSnapshot } from "./productActivity";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
+import type { IProductRepository } from "../../repositories/IProductRepository";
 
 export class DeleteProduct {
   constructor(

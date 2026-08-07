@@ -1,7 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Delete } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { focusRing, Icon } from "@/src/presentation/design-system";
 
 const KEYS: { digit: string; letters?: string }[] = [

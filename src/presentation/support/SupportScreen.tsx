@@ -1,9 +1,12 @@
-import type { ComponentType } from "react";
-import { getTranslations } from "next-intl/server";
 import { type LucideProps, Phone, Mail } from "lucide-react";
-import { Icon, WhatsappIcon, InstagramIcon, YoutubeIcon } from "@/src/presentation/design-system";
+import { getTranslations } from "next-intl/server";
+
 import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { Icon, WhatsappIcon, InstagramIcon, YoutubeIcon } from "@/src/presentation/design-system";
+
 import { SupportSection, SupportRow, LiveChatRow } from "./components";
+
+import type { ComponentType } from "react";
 
 interface SocialLink {
   labelKey: "socialWhatsapp" | "socialInstagram" | "socialYoutube";

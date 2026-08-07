@@ -1,5 +1,5 @@
-import type { AdminPromoCode, AdminPromoCodeFilters, AdminPromoCodeSort } from "../../entities/PromoCode";
 import type { Page, PageRequest } from "../../entities/Pagination";
+import type { AdminPromoCode, AdminPromoCodeFilters, AdminPromoCodeSort } from "../../entities/PromoCode";
 import type { IPromoCodeRepository } from "../../repositories/IPromoCodeRepository";
 
 /**

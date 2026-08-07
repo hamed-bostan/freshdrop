@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { IsFavorite } from "@/src/domain/use-cases/favorites/IsFavorite";
+
 import { AddFavorite } from "@/src/domain/use-cases/favorites/AddFavorite";
+import { IsFavorite } from "@/src/domain/use-cases/favorites/IsFavorite";
 import { RemoveFavorite } from "@/src/domain/use-cases/favorites/RemoveFavorite";
 import { favoriteRepository, productRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Per-user data — never statically cached.
 export const dynamic = "force-dynamic";

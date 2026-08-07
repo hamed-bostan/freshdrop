@@ -1,10 +1,12 @@
 "use client";
 
-import * as React from "react";
 import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { Order, OrderPhase } from "@/src/domain/entities/Order";
-import { OrderTabs } from "./OrderTabs";
+
 import { OrderCard } from "./OrderCard";
+import { OrderTabs } from "./OrderTabs";
 
 interface OrdersBrowserProps {
   orders: Order[];

@@ -1,5 +1,6 @@
-import type { LucideIcon } from "lucide-react";
 import { Icon } from "@/src/presentation/design-system";
+
+import type { LucideIcon } from "lucide-react";
 
 /** Shared card chrome for the customer detail page's sidebar panels. */
 export const PANEL_CLASS = "rounded-card-lg border border-border bg-background p-4";

@@ -1,6 +1,7 @@
-import * as React from "react";
-import { type LucideProps } from "lucide-react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { type LucideProps } from "lucide-react";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
 
 const iconVariants = cva("shrink-0", {

@@ -1,5 +1,6 @@
-import type { Locale } from "@/src/i18n/routing";
 import type { Order } from "@/src/domain/entities/Order";
+import type { Locale } from "@/src/i18n/routing";
+
 import { WINDOW_MINUTES, faJalaliDate, faWindowTime } from "./deliveryWindowFormat";
 
 // The order carries the booked slot as machine refs (`deliveryDate` + `deliveryWindowId`)

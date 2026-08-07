@@ -1,7 +1,7 @@
+import type { AuditHook } from "./AuditHook";
 import type { AdminCategoryFilters, AdminCategorySort } from "../entities/AdminCategoryFilters";
 import type { Category } from "../entities/Category";
 import type { Page, PageRequest } from "../entities/Pagination";
-import type { AuditHook } from "./AuditHook";
 
 /** One locale's content override for a category — the admin-authored translated `name`. */
 export type CategoryTranslationInput = {

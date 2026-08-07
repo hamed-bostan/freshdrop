@@ -1,12 +1,14 @@
 "use client";
 
-import * as React from "react";
+import { User, ImagePlus, Images, Camera, Trash2, type LucideIcon } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { User, ImagePlus, Images, Camera, Trash2, type LucideIcon } from "lucide-react";
-import { Avatar, focusRing, FormMessage, Icon, Sheet, SheetClose, SheetContent, SheetTrigger, Spinner } from "@/src/presentation/design-system";
+import * as React from "react";
+
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { cn } from "@/src/lib/utils";
+import { Avatar, focusRing, FormMessage, Icon, Sheet, SheetClose, SheetContent, SheetTrigger, Spinner } from "@/src/presentation/design-system";
+
 import { profilesApi } from "../profile-api";
 
 const ACCEPT = "image/png,image/jpeg,image/webp,image/avif";

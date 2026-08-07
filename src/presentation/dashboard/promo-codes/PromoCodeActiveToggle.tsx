@@ -1,11 +1,13 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import { Power, PowerOff } from "lucide-react";
-import { Button, ConfirmSheet, Icon } from "@/src/presentation/design-system";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { Button, ConfirmSheet, Icon } from "@/src/presentation/design-system";
+
 import { promoCodesApi } from "./promo-code-api";
 
 type PromoCodeActiveToggleProps = {

@@ -1,6 +1,6 @@
+import { toSearchParams } from "@/src/lib/api/searchParams";
 import { activityServerApi } from "@/src/presentation/dashboard/activity/activity-server-api";
 import { ActivityScreen } from "@/src/presentation/dashboard/activity/ActivityScreen";
-import { toSearchParams } from "@/src/lib/api/searchParams";
 
 // The log is read from the REST API (BFF) per request — an audit trail that
 // showed a cached past would be worthless.

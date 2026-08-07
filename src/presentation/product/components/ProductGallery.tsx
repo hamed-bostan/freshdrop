@@ -1,15 +1,18 @@
 "use client";
 
-import * as React from "react";
 import Image from "next/image";
 import { useLocale } from "next-intl";
+import * as React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import type { Swiper as SwiperType } from "swiper";
+
 import "swiper/css";
 import { getLangDir } from "@/src/i18n/direction";
 import { cn } from "@/src/lib/utils";
 import { stillWhenReduced } from "@/src/presentation/design-system";
+
 import { FavoriteToggle } from "./FavoriteToggle";
+
+import type { Swiper as SwiperType } from "swiper";
 
 interface ProductGalleryProps {
   images: string[];

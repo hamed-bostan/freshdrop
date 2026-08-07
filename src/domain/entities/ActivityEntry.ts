@@ -250,7 +250,12 @@ export function activityValue(value: unknown): string | null {
   if (value == null) return null;
   if (typeof value === "boolean") return value ? "true" : "false";
   if (value instanceof Date) return value.toISOString();
-  const text = String(value).trim();
+  // A plain object/array reaching here (not expected in practice — activity
+  // fields are scalars) would otherwise stringify to the useless
+  // "[object Object]" via `String()` — routed through `JSON.stringify` instead;
+  // what reaches `String()` below is a scalar.
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+  const text = (typeof value === "object" ? JSON.stringify(value) : String(value)).trim();
   return text === "" ? null : text;
 }
 

@@ -1,9 +1,9 @@
 import { useLocale, useTranslations } from "next-intl";
+
 import { roleChangeKind } from "@/src/domain/entities/RoleChange";
-import type { Locale } from "@/src/i18n/routing";
 import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
-import { DataTable } from "@/src/presentation/design-system";
 import type { ActivityEntryWire } from "@/src/presentation/dashboard/activity/activity-response-schema";
+import { DataTable } from "@/src/presentation/design-system";
 
 type TeamActivityProps = {
   /** Recent `user.roleChanged` entries from the activity log, newest first. */
@@ -26,7 +26,7 @@ type TeamActivityProps = {
  */
 export function TeamActivity({ changes }: TeamActivityProps) {
   const t = useTranslations("dashTeam");
-  const locale = useLocale() as Locale;
+  const locale = useLocale();
 
   return (
     <section className="flex flex-col gap-3">

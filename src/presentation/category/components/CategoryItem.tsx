@@ -1,6 +1,7 @@
 import Image from "next/image";
-import { Link } from "@/src/i18n/navigation";
+
 import type { Category } from "@/src/domain/entities/Category";
+import { Link } from "@/src/i18n/navigation";
 import { categoryHref } from "@/src/presentation/category/category-path";
 import { Thumbnail } from "@/src/presentation/design-system";
 

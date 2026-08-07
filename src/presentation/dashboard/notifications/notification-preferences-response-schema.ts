@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { ADMIN_NOTIFICATION_ACTIONS } from "@/src/domain/entities/AdminNotification";
 
 /** One category the preferences panel can offer, paired with whether the viewer has opted into email for it. */

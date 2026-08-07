@@ -1,11 +1,12 @@
 import { ExternalLink, Info } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 import type { DeliveryWindowPerformance as DeliveryWindow } from "@/src/domain/entities/DeliveryPerformanceReport";
-import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
+import type { Locale } from "@/src/i18n/routing";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
-import { DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, focusRing } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
+import { DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, focusRing } from "@/src/presentation/design-system";
 
 export async function DeliveryWindowPerformance({ windows, locale }: { windows: DeliveryWindow[]; locale: Locale }) {
   const t = await getTranslations("dashDeliveryReport");

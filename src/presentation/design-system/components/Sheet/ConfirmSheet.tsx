@@ -2,8 +2,10 @@
 
 import { useTranslations } from "next-intl";
 import { Dialog } from "radix-ui";
-import { Sheet, SheetClose, SheetContent } from "./Sheet";
+
 import { Button } from "../Button";
+
+import { Sheet, SheetClose, SheetContent } from "./Sheet";
 
 type ConfirmSheetProps = {
   open: boolean;

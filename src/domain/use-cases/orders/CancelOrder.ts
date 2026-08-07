@@ -1,9 +1,11 @@
-import type { Order } from "../../entities/Order";
 import { isCancellable } from "../../entities/Order";
-import type { IOrderRepository } from "../../repositories/IOrderRepository";
-import type { IUnitOfWork } from "../../repositories/IUnitOfWork";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
+
+import type { Order } from "../../entities/Order";
+import type { IOrderRepository } from "../../repositories/IOrderRepository";
+import type { IUnitOfWork } from "../../repositories/IUnitOfWork";
+
 
 export type CancelOrderInput = {
   /** The user cancelling — the order must belong to them. */
@@ -38,7 +40,7 @@ export class CancelOrder {
   async execute({ userId, orderId }: CancelOrderInput): Promise<Order> {
     const order = await this.orderRepo.getById(orderId);
     // Owner mismatch is reported as "not found" so we don't leak the order's existence.
-    if (!order || order.userId !== userId) throw new NotFoundError("order", orderId);
+    if (order?.userId !== userId) throw new NotFoundError("order", orderId);
 
     if (!isCancellable(order)) {
       throw new ValidationError("order", "This order can no longer be cancelled.");

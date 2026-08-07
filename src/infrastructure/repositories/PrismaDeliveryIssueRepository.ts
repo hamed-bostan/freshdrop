@@ -1,4 +1,5 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
+
 import type { DateRange } from "@/src/domain/entities/Analytics";
 import type { DeliveryIssue, DeliveryIssueStatus, DeliveryIssueType, NewDeliveryIssue } from "@/src/domain/entities/DeliveryIssue";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";

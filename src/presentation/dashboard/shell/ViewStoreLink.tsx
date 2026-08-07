@@ -1,10 +1,11 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { ExternalLink } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { Link } from "@/src/i18n/navigation";
-import { Icon, focusRing } from "@/src/presentation/design-system";
 import { cn } from "@/src/lib/utils";
+import { Icon, focusRing } from "@/src/presentation/design-system";
 
 type ViewStoreLinkProps = {
   /** Icon-only for the collapsed rail. */

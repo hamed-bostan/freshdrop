@@ -1,9 +1,9 @@
-import { reviewsServerApi } from "@/src/presentation/dashboard/reviews/review-server-api";
-import { productsServerApi } from "@/src/presentation/dashboard/products/product-server-api";
-import { ReviewsScreen } from "@/src/presentation/dashboard/reviews/ReviewsScreen";
-import { toSearchParams } from "@/src/lib/api/searchParams";
 import { auth } from "@/auth";
+import { toSearchParams } from "@/src/lib/api/searchParams";
 import { sessionHas } from "@/src/lib/require-permission";
+import { productsServerApi } from "@/src/presentation/dashboard/products/product-server-api";
+import { reviewsServerApi } from "@/src/presentation/dashboard/reviews/review-server-api";
+import { ReviewsScreen } from "@/src/presentation/dashboard/reviews/ReviewsScreen";
 
 // Reviews are read from the REST API (BFF) per request — never statically cached.
 export const dynamic = "force-dynamic";

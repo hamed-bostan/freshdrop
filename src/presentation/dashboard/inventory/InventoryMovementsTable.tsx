@@ -1,12 +1,13 @@
 import Image from "next/image";
-import type { ReactNode } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
+
 import type { Product } from "@/src/domain/entities/Product";
 import type { StockMovementReason } from "@/src/domain/entities/StockMovement";
-import type { Locale } from "@/src/i18n/routing";
 import { Link } from "@/src/i18n/navigation";
-import { formatCompactDateTime } from "@/src/lib/formatOrderDate";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { formatCompactDateTime } from "@/src/lib/formatOrderDate";
+import { ListSortHeader } from "@/src/presentation/dashboard/list";
+import type { StockMovementEntry } from "@/src/presentation/dashboard/products/stock-movement-response-schema";
 import {
   Badge,
   DataTable,
@@ -18,8 +19,8 @@ import {
   TableRow,
   Thumbnail,
 } from "@/src/presentation/design-system";
-import { ListSortHeader } from "@/src/presentation/dashboard/list";
-import type { StockMovementEntry } from "@/src/presentation/dashboard/products/stock-movement-response-schema";
+
+import type { ReactNode } from "react";
 
 type InventoryMovementsTableProps = {
   movements: StockMovementEntry[];
@@ -49,7 +50,7 @@ export async function InventoryMovementsTable({
 }: InventoryMovementsTableProps) {
   const t = await getTranslations("dashInventory");
   const tProducts = await getTranslations("dashProducts");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
   const productsById = new Map(products.map((product) => [product.id, product]));
 
   return (

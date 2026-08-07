@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { GetOrderMessageDefault } from "../GetOrderMessageDefault";
-import type { Order } from "@/src/domain/entities/Order";
-import type { IOrderRepository } from "@/src/domain/repositories/IOrderRepository";
-import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
+
 import type { NotificationTemplate } from "@/src/domain/entities/NotificationTemplate";
+import type { Order } from "@/src/domain/entities/Order";
+import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
+import type { IOrderRepository } from "@/src/domain/repositories/IOrderRepository";
+
+import { GetOrderMessageDefault } from "../GetOrderMessageDefault";
+
 
 function order(overrides: Partial<Order> = {}): Order {
   return {

@@ -1,18 +1,21 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { Cart } from "@/src/domain/entities/Cart";
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
 import { useRouter } from "@/src/i18n/navigation";
-import { ConfirmSheet, Icon } from "@/src/presentation/design-system";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { ConfirmSheet, Icon } from "@/src/presentation/design-system";
+
 import { cartsApi } from "../cart-api";
 import { useCart } from "../CartProvider";
+
+import { CartEmptyState } from "./CartEmptyState";
 import { CartItemCard } from "./CartItemCard";
 import { CartSummaryBar } from "./CartSummaryBar";
-import { CartEmptyState } from "./CartEmptyState";
 import { CheckoutSheet } from "./CheckoutSheet";
 
 /** Upper bound for a single line's quantity (the server enforces the same cap). */

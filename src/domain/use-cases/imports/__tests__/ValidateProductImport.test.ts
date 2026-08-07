@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { ValidateProductImport } from "../ValidateProductImport";
+
 import { ValidationError } from "../../../errors/ValidationError";
+import { ValidateProductImport } from "../ValidateProductImport";
 
 const HEADER = [
   "id",

@@ -1,7 +1,7 @@
+import type { AuditHook } from "./AuditHook";
 import type { AdminReviewFilters, AdminReviewSort, ReviewPage } from "../entities/AdminReviewFilters";
 import type { PageRequest } from "../entities/Pagination";
 import type { Review, ReviewStatus } from "../entities/Review";
-import type { AuditHook } from "./AuditHook";
 
 /**
  * A new review to persist. The id, timestamp and moderation status are assigned by

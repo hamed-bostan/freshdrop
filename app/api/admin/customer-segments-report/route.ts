@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { GetCustomerSegmentsReport } from "@/src/domain/use-cases/analytics/GetCustomerSegmentsReport";
 import { analyticsRepository } from "@/src/infrastructure/container";
 import { parseAnalyticsRange, parseComparisonRange } from "@/src/lib/api/analytics-params";

@@ -1,11 +1,14 @@
 import { useTranslations } from "next-intl";
+
 import {
   NOTIFICATION_TEMPLATE_KINDS,
   type NotificationTemplateKind,
 } from "@/src/domain/entities/NotificationTemplate";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/src/presentation/design-system";
-import type { NotificationTemplateWire } from "./notification-template-response-schema";
+
 import { NotificationTemplateRow } from "./NotificationTemplateRow";
+
+import type { NotificationTemplateWire } from "./notification-template-response-schema";
 
 type NotificationTemplateEditorProps = {
   /** All 12 rows, fetched over the BFF during server render. */
@@ -42,8 +45,10 @@ const SAMPLE_VARS: Record<NotificationTemplateKind, Record<string, string>> = {
   item_substituted: { ORDER: "AB12CD", ITEM: "Organic Milk 1L", REPLACEMENT: "Oat Milk 1L" },
   item_refunded: { ORDER: "AB12CD", ITEM: "Organic Milk 1L" },
   order_cancelled_out_of_stock: { ORDER: "AB12CD" },
-  "order.placed": { LABEL: "Order #AB12CD" },
-  "order.returnRequested": { LABEL: "Order #AB12CD" },
+  // Not "#AB12CD" — the `#`+hex-digits shape reads as a color literal to the
+  // raw-color lint rule below, even though this is just an order code.
+  "order.placed": { LABEL: "Order #ORD2043" },
+  "order.returnRequested": { LABEL: "Order #ORD2043" },
   "review.submitted": {},
   "product.stockDepleted": { LABEL: "Organic Milk 1L" },
   message_default: { ORDER: "AB12CD", WINDOW: " for delivery Tomorrow, 6:00 – 8:00 PM" },

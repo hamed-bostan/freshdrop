@@ -1,5 +1,5 @@
-import type { AdminPromoCode } from "@/src/domain/entities/PromoCode";
 import { isoToEndDate } from "@/src/contracts/promo-code-schema";
+import type { AdminPromoCode } from "@/src/domain/entities/PromoCode";
 import type { Locale } from "@/src/i18n/routing";
 
 /**

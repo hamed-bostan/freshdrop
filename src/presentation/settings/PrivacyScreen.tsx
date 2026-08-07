@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 
 const PARAGRAPH_KEYS = ["p1", "p2", "p3"] as const;

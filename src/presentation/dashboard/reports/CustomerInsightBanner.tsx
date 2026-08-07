@@ -1,10 +1,12 @@
 import { Lightbulb } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
+import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatPercent } from "@/src/lib/formatNumber";
 import { Icon } from "@/src/presentation/design-system";
-import { Link } from "@/src/i18n/navigation";
+
 import type { CustomerInsightsWire } from "./customer-insights-response-schema";
 
 export async function CustomerInsightBanner({ report, locale }: { report: CustomerInsightsWire; locale: Locale }) {

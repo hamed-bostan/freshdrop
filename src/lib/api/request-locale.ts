@@ -1,5 +1,6 @@
-import type { NextRequest } from "next/server";
 import { routing } from "@/src/i18n/routing";
+
+import type { NextRequest } from "next/server";
 
 /**
  * Resolve the caller's target locale from the request's `Accept-Language` header —

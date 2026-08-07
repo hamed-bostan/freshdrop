@@ -1,5 +1,6 @@
-import type { DeliveryIssue, DeliveryIssueType } from "../../entities/DeliveryIssue";
 import { ValidationError } from "../../errors/ValidationError";
+
+import type { DeliveryIssue, DeliveryIssueType } from "../../entities/DeliveryIssue";
 import type { IDeliveryIssueRepository } from "../../repositories/IDeliveryIssueRepository";
 
 /**

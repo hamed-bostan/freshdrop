@@ -1,16 +1,19 @@
-import type { Order } from "../../entities/Order";
-import { isReturnable, refundForLineValue, RETURN_WINDOW_DAYS } from "../../entities/Order";
 import { round2 } from "@/src/lib/money";
-import type { IOrderRepository } from "../../repositories/IOrderRepository";
-import type { IUnitOfWork } from "../../repositories/IUnitOfWork";
-import type { IUserRepository } from "../../repositories/IUserRepository";
-import type { IAdminNotificationRepository } from "../../repositories/IAdminNotificationRepository";
-import type { IEmailSender } from "../../repositories/IEmailSender";
-import type { INotificationTemplateRepository } from "../../repositories/INotificationTemplateRepository";
-import type { NewReturnItem } from "../../repositories/IReturnRepository";
+
+import { isReturnable, refundForLineValue, RETURN_WINDOW_DAYS } from "../../entities/Order";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { ValidationError } from "../../errors/ValidationError";
 import { NotifyAdmins } from "../notifications/NotifyAdmins";
+
+import type { Order } from "../../entities/Order";
+import type { IAdminNotificationRepository } from "../../repositories/IAdminNotificationRepository";
+import type { IEmailSender } from "../../repositories/IEmailSender";
+import type { INotificationTemplateRepository } from "../../repositories/INotificationTemplateRepository";
+import type { IOrderRepository } from "../../repositories/IOrderRepository";
+import type { NewReturnItem } from "../../repositories/IReturnRepository";
+import type { IUnitOfWork } from "../../repositories/IUnitOfWork";
+import type { IUserRepository } from "../../repositories/IUserRepository";
+
 
 /** One line the customer is asking to return, by the order item it's on. */
 export type RequestOrderReturnItemInput = {
@@ -57,7 +60,7 @@ export class RequestOrderReturn {
   async execute({ userId, orderId, reason, items }: RequestOrderReturnInput): Promise<Order> {
     const order = await this.orderRepo.getById(orderId);
     // Owner mismatch is reported as "not found" so we don't leak the order's existence.
-    if (!order || order.userId !== userId) throw new NotFoundError("order", orderId);
+    if (order?.userId !== userId) throw new NotFoundError("order", orderId);
 
     if (!isReturnable(order)) {
       throw new ValidationError(

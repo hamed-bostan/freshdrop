@@ -1,9 +1,11 @@
-import { PLACEHOLDER_USER_NAME, type GrantableRole, type User } from "../../entities/User";
 import { isPlausiblePhone, normalizePhone } from "../../entities/Phone";
-import type { IUserRepository } from "../../repositories/IUserRepository";
-import type { ITeamNotifier } from "../../repositories/ITeamNotifier";
+import { PLACEHOLDER_USER_NAME, type GrantableRole, type User } from "../../entities/User";
 import { ValidationError } from "../../errors/ValidationError";
+
 import { roleChangeEntry } from "./roleChangeEntry";
+
+import type { ITeamNotifier } from "../../repositories/ITeamNotifier";
+import type { IUserRepository } from "../../repositories/IUserRepository";
 
 /** Who to promote, and where to tell them about it. */
 export type GrantAdminCommand = {

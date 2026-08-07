@@ -1,8 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { FilterTab, FilterTabs } from "@/src/presentation/design-system";
+
 import type { OrderPhase } from "@/src/domain/entities/Order";
+import { FilterTab, FilterTabs } from "@/src/presentation/design-system";
 
 const TABS: { value: OrderPhase; labelKey: "tabCurrent" | "tabPrevious" }[] = [
   { value: "current", labelKey: "tabCurrent" },

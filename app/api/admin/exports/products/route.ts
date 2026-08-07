@@ -1,13 +1,14 @@
-import type { NextRequest } from "next/server";
 import { singleChange } from "@/src/domain/entities/ActivityEntry";
 import { ADMIN_PRODUCT_SORTS, DEFAULT_ADMIN_PRODUCT_SORT } from "@/src/domain/entities/AdminProductFilters";
 import { buildProductsDataset } from "@/src/domain/use-cases/exports/datasets/ProductsDataset";
 import { activityLog, productRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminProductFilters } from "@/src/lib/api/admin-product-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 import { csvFilename, csvResponse, csvStream } from "@/src/lib/csv";
+import { getSessionWith } from "@/src/lib/require-permission";
+
+import type { NextRequest } from "next/server";
 
 // A snapshot of the live catalog, per request.
 export const dynamic = "force-dynamic";

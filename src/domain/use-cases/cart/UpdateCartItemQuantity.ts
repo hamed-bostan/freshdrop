@@ -1,7 +1,8 @@
+import { InsufficientStockError } from "../../errors/InsufficientStockError";
+import { NotFoundError } from "../../errors/NotFoundError";
+
 import type { ICartRepository } from "../../repositories/ICartRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
-import { NotFoundError } from "../../errors/NotFoundError";
-import { InsufficientStockError } from "../../errors/InsufficientStockError";
 
 /** Upper bound for a single line's quantity (mirrors the cart UI's stepper cap). */
 const MAX_QUANTITY = 99;

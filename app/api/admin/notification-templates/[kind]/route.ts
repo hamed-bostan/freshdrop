@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { UpdateNotificationTemplate } from "@/src/domain/use-cases/notifications/UpdateNotificationTemplate";
-import { NOTIFICATION_TEMPLATE_KINDS, type NotificationTemplateKind } from "@/src/domain/entities/NotificationTemplate";
+
 import { notificationTemplateFormSchema } from "@/src/contracts/notification-template-schema";
+import { NOTIFICATION_TEMPLATE_KINDS, type NotificationTemplateKind } from "@/src/domain/entities/NotificationTemplate";
+import { UpdateNotificationTemplate } from "@/src/domain/use-cases/notifications/UpdateNotificationTemplate";
 import { notificationTemplateRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import {
   errorResponse,
   errorResponseFromException,
@@ -11,6 +11,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 

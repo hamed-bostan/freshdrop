@@ -1,14 +1,17 @@
+import { ValidationError } from "../../errors/ValidationError";
+import { CreateProduct } from "../products/CreateProduct";
+import { UpdateProduct } from "../products/UpdateProduct";
+
+import { MAX_IMPORT_ROWS } from "./ValidateProductImport";
+
+import type { ResolvedProductImportRow } from "../../../contracts/product-import-schema";
 import type { ActivityActor } from "../../entities/ActivityEntry";
 import type { Product } from "../../entities/Product";
 import type { ICategoryRepository } from "../../repositories/ICategoryRepository";
 import type { IProductRepository, NewProduct } from "../../repositories/IProductRepository";
-import type { IStockAlertRepository } from "../../repositories/IStockAlertRepository";
 import type { IStockAlertNotifier } from "../../repositories/IStockAlertNotifier";
-import type { ResolvedProductImportRow } from "../../../contracts/product-import-schema";
-import { ValidationError } from "../../errors/ValidationError";
-import { CreateProduct } from "../products/CreateProduct";
-import { UpdateProduct } from "../products/UpdateProduct";
-import { MAX_IMPORT_ROWS } from "./ValidateProductImport";
+import type { IStockAlertRepository } from "../../repositories/IStockAlertRepository";
+
 
 export type ProductImportCommitError = { line: number; message: string };
 

@@ -2,11 +2,14 @@
 
 import { ChevronDown, ShoppingBasket } from "lucide-react";
 import { useTranslations } from "next-intl";
+
 import type { CartItem } from "@/src/domain/entities/Cart";
 import type { SubstitutionPreference } from "@/src/domain/entities/Order";
 import { Link } from "@/src/i18n/navigation";
 import { Icon } from "@/src/presentation/design-system";
+
 import { checkoutItemsHref } from "../checkoutSession";
+
 import { CheckoutItemRow } from "./CheckoutItemRow";
 
 type Props = { items: CartItem[]; value: Record<string, SubstitutionPreference>; promoCode?: string; };

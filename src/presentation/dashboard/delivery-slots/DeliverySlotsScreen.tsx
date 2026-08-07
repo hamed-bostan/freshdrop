@@ -1,11 +1,12 @@
-import { getLocale, getTranslations } from "next-intl/server";
 import { Plus } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+
 import type { DeliveryWindow } from "@/src/domain/entities/DeliveryWindow";
 import { SLOT_HORIZON_DAYS } from "@/src/domain/use-cases/delivery-slots/GetDeliverySlots";
-import type { Locale } from "@/src/i18n/routing";
+import { Link } from "@/src/i18n/navigation";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { Button, Icon } from "@/src/presentation/design-system";
-import { Link } from "@/src/i18n/navigation";
+
 import { DeliveryWindowsTable } from "./DeliveryWindowsTable";
 
 type DeliverySlotsScreenProps = {
@@ -26,7 +27,7 @@ export async function DeliverySlotsScreen({ windows }: DeliverySlotsScreenProps)
   const t = await getTranslations("dashDeliverySlots");
   // A bare `{days}` argument is interpolated verbatim, so the numeral is localized
   // here rather than left Latin inside a Persian sentence.
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
 
   return (
     <div className="flex flex-col gap-6">

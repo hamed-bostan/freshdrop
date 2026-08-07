@@ -1,5 +1,3 @@
-import Image from "next/image";
-import { getLocale, getTranslations } from "next-intl/server";
 import {
   CalendarDays,
   Check,
@@ -11,15 +9,19 @@ import {
   ShoppingBag,
   type LucideIcon,
 } from "lucide-react";
+import Image from "next/image";
+import { getLocale, getTranslations } from "next-intl/server";
+
 import type { CustomerDetail } from "@/src/domain/entities/CustomerDetail";
 import { isDashboardRole } from "@/src/domain/entities/User";
 import { Link } from "@/src/i18n/navigation";
-import { Avatar, Badge, Button, Icon } from "@/src/presentation/design-system";
+import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { formatOrderDate } from "@/src/lib/formatOrderDate";
-import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
+import { Avatar, Badge, Button, Icon } from "@/src/presentation/design-system";
+
 import { CustomerActivityCard } from "./CustomerActivityCard";
 import { CustomerAddressesCard } from "./CustomerAddressesCard";
 import { CustomerNotesCard } from "./CustomerNotesCard";

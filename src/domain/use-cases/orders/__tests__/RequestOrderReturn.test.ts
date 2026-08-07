@@ -1,14 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
+
+import { ValidationError } from "../../../errors/ValidationError";
+import { RequestOrderReturn } from "../RequestOrderReturn";
+
 import type { Order, OrderItem } from "../../../entities/Order";
-import type { IOrderRepository, OrderStatusTransition } from "../../../repositories/IOrderRepository";
-import type { IUnitOfWork, TransactionalRepositories } from "../../../repositories/IUnitOfWork";
-import type { NewReturnRequest, IReturnRepository } from "../../../repositories/IReturnRepository";
-import type { IUserRepository } from "../../../repositories/IUserRepository";
 import type { IAdminNotificationRepository } from "../../../repositories/IAdminNotificationRepository";
 import type { IEmailSender } from "../../../repositories/IEmailSender";
 import type { INotificationTemplateRepository } from "../../../repositories/INotificationTemplateRepository";
-import { ValidationError } from "../../../errors/ValidationError";
-import { RequestOrderReturn } from "../RequestOrderReturn";
+import type { IOrderRepository, OrderStatusTransition } from "../../../repositories/IOrderRepository";
+import type { NewReturnRequest, IReturnRepository } from "../../../repositories/IReturnRepository";
+import type { IUnitOfWork, TransactionalRepositories } from "../../../repositories/IUnitOfWork";
+import type { IUserRepository } from "../../../repositories/IUserRepository";
 
 /** Throws for any method not explicitly overridden — keeps each fake to just what a test exercises. */
 function stub<T extends object>(overrides: Partial<T>): T {

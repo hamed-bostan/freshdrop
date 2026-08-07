@@ -1,6 +1,7 @@
+import { NotFoundError } from "../../errors/NotFoundError";
+
 import type { IFavoriteRepository } from "../../repositories/IFavoriteRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
-import { NotFoundError } from "../../errors/NotFoundError";
 
 export class AddFavorite {
   constructor(

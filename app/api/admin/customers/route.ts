@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import {
   ADMIN_CUSTOMER_SORTS,
   DEFAULT_ADMIN_CUSTOMER_DIRECTION,
@@ -6,10 +7,10 @@ import {
 } from "@/src/domain/entities/AdminCustomerFilters";
 import { ListCustomerSummaries } from "@/src/domain/use-cases/orders/ListCustomerSummaries";
 import { orderRepository, userRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import { parseAdminCustomerFilters } from "@/src/lib/api/admin-customer-params";
 import { parsePageRequest } from "@/src/lib/api/pagination-params";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Aggregates the order history per request — never statically cached.
 export const dynamic = "force-dynamic";

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+
 import { GetOrderPipelineCounts } from "@/src/domain/use-cases/orders/GetOrderPipelineCounts";
 import { analyticsRepository } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Counts the queue as it is per request — never statically cached.
 export const dynamic = "force-dynamic";

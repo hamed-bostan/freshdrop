@@ -1,9 +1,9 @@
 import { getLocale, getTranslations } from "next-intl/server";
+
 import type { OrderStatusCount } from "@/src/domain/entities/Analytics";
 import type { OrderStatus } from "@/src/domain/entities/Order";
 import type { OrderPipelineStage } from "@/src/domain/entities/OrderPipelineStage";
 import { Link } from "@/src/i18n/navigation";
-import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 
@@ -82,7 +82,7 @@ const STATUS_LABEL_KEYS = {
 export async function OrderStatusBreakdown({ breakdown, compact = false }: OrderStatusBreakdownProps) {
   const t = await getTranslations("dashAnalytics");
   const tOrders = await getTranslations("dashOrders");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
 
   const total = breakdown.reduce((sum, slice) => sum + slice.orders, 0);
   // Statuses nothing landed in are dropped from the *list* but kept in the total

@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
 import { requireAuth } from "@/src/lib/require-auth";
+
+import type { ReactNode } from "react";
 
 /**
  * Account area — requires a session. Unauthenticated visitors are redirected to

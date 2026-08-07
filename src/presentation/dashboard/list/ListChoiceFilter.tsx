@@ -1,10 +1,13 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { PopoverClose } from "@/src/presentation/design-system";
+
 import { cn } from "@/src/lib/utils";
+import { PopoverClose } from "@/src/presentation/design-system";
+
 import { ListFilterPopover } from "./ListFilterPopover";
 import { useListParams } from "./useListParams";
+
 import type { ListFilterOption } from "./ListFilterSelect";
 
 type ListChoiceFilterProps = {

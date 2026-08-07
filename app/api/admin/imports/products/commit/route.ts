@@ -1,13 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { ImportProducts } from "@/src/domain/use-cases/imports/ImportProducts";
+
 import { commitProductImportSchema } from "@/src/contracts/product-import-schema";
+import { ImportProducts } from "@/src/domain/use-cases/imports/ImportProducts";
 import {
   categoryRepository,
   productRepository,
   stockAlertNotifier,
   stockAlertRepository,
 } from "@/src/infrastructure/container";
-import { getSessionWith } from "@/src/lib/require-permission";
 import {
   errorResponse,
   errorResponseFromException,
@@ -15,6 +15,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 

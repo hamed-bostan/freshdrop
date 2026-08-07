@@ -1,14 +1,15 @@
-import { getLocale, getTranslations } from "next-intl/server";
 import { ChevronRight } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+
 import { ANALYTICS_RANGE_PRESETS } from "@/src/domain/entities/Analytics";
 import { Link } from "@/src/i18n/navigation";
-import type { Locale } from "@/src/i18n/routing";
 import { wireRangeToParams, type ComparisonMode } from "@/src/lib/api/analytics-params";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
+
 import { AnalyticsComparePicker } from "../analytics/AnalyticsComparePicker";
 import { AnalyticsExportMenu } from "../analytics/AnalyticsExportMenu";
-import { resolveComparePreviews } from "../analytics/compare-preview";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "../analytics/AnalyticsRangePicker";
+import { resolveComparePreviews } from "../analytics/compare-preview";
 
 type ReportHeaderProps = {
   ariaLabel: string;
@@ -26,7 +27,7 @@ type ReportHeaderProps = {
 
 export async function ReportHeader({ ariaLabel, parentLabel, currentLabel, title, subtitle, from, to, isCustomRange, comparisonRange, compareMode, exportReports }: ReportHeaderProps) {
   const ta = await getTranslations("dashAnalytics");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
   const { from: activeFrom, to: activeTo } = wireRangeToParams(comparisonRange);
   const previews = resolveComparePreviews(from, to, locale);
   const compareOptions = [

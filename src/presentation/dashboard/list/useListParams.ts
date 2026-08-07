@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import { useCallback } from "react";
+
 import { usePathname, useRouter } from "@/src/i18n/navigation";
 
 /**

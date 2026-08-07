@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { Refund } from "../Refund";
-import type { Order } from "../Order";
+
 import { orderNetPaid, orderRecognizedRevenue, orderRefundedTotal, orderShippingRefunded } from "../Order";
+
+import type { Order } from "../Order";
+import type { Refund } from "../Refund";
 
 function refund(overrides: Partial<Refund> & Pick<Refund, "amount">): Refund {
   return {

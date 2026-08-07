@@ -3,8 +3,9 @@ import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSu
 import type { Page } from "@/src/domain/entities/Pagination";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
-import { customerOrderSummaryPageResponseSchema } from "./customer-response-schema";
+
 import { customerDetailResponseSchema } from "./customer-detail-response-schema";
+import { customerOrderSummaryPageResponseSchema } from "./customer-response-schema";
 
 /**
  * Server-side customer-analytics reads for the admin dashboard (BFF). Returns the

@@ -1,10 +1,11 @@
+import { Star } from "lucide-react";
 import Image from "next/image";
 import { useLocale } from "next-intl";
-import { Star } from "lucide-react";
-import { Avatar, Icon } from "@/src/presentation/design-system";
-import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
-import { formatRating } from "@/src/lib/formatNumber";
+
 import type { PublicReview } from "@/src/domain/entities/Review";
+import { formatRating } from "@/src/lib/formatNumber";
+import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
+import { Avatar, Icon } from "@/src/presentation/design-system";
 
 interface ReviewItemProps {
   review: PublicReview;

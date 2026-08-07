@@ -1,10 +1,12 @@
-import type { ActivityActor } from "../../entities/ActivityEntry";
 import { activityValue } from "../../entities/ActivityEntry";
-import type { Category } from "../../entities/Category";
-import type { ICategoryRepository, NewCategory } from "../../repositories/ICategoryRepository";
 import { UniqueConstraintError } from "../../errors/UniqueConstraintError";
 import { ValidationError } from "../../errors/ValidationError";
+
 import { categorySnapshot } from "./categoryActivity";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
+import type { Category } from "../../entities/Category";
+import type { ICategoryRepository, NewCategory } from "../../repositories/ICategoryRepository";
 
 export class CreateCategory {
   constructor(

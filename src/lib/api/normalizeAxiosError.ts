@@ -1,5 +1,6 @@
-import type { AxiosError } from "axios";
 import { ApiError, type FieldErrors } from "./ApiError";
+
+import type { AxiosError } from "axios";
 
 /** The JSON error envelope every REST route handler returns on failure. */
 export type ErrorEnvelope = {

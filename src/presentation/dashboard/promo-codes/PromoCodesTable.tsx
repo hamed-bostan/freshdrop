@@ -1,5 +1,6 @@
-import { getLocale, getTranslations } from "next-intl/server";
 import { Pencil } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+
 import {
   DEFAULT_ADMIN_PROMO_CODE_DIRECTION,
   DEFAULT_ADMIN_PROMO_CODE_SORT,
@@ -7,8 +8,9 @@ import {
   type AdminPromoCode,
   type PromoCodeStatus,
 } from "@/src/domain/entities/PromoCode";
-import type { Locale } from "@/src/i18n/routing";
+import { Link } from "@/src/i18n/navigation";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { ListSortHeader } from "@/src/presentation/dashboard/list";
 import {
   Badge,
   Button,
@@ -21,8 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/presentation/design-system";
-import { ListSortHeader } from "@/src/presentation/dashboard/list";
-import { Link } from "@/src/i18n/navigation";
+
 import { PromoCodeActiveToggle } from "./PromoCodeActiveToggle";
 import { promoValidityLabel } from "./promoValidity";
 
@@ -56,7 +57,7 @@ const STATUS_LABEL_KEYS = {
  */
 export async function PromoCodesTable({ promoCodes }: PromoCodesTableProps) {
   const t = await getTranslations("dashPromoCodes");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
   const now = new Date();
 
   const sortDefaults = {

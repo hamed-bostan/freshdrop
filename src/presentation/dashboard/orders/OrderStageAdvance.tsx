@@ -1,13 +1,15 @@
 "use client";
 
-import * as React from "react";
 import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
-import { Button, FormMessage } from "@/src/presentation/design-system";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
-import { STAGE_LABEL_KEYS } from "./orderStages";
+import { Button, FormMessage } from "@/src/presentation/design-system";
+
 import { ordersApi } from "./order-api";
+import { STAGE_LABEL_KEYS } from "./orderStages";
 
 type OrderStageAdvanceProps = {
   orderId: string;

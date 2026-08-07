@@ -1,7 +1,9 @@
 import { getTranslations } from "next-intl/server";
+
 import type { Product } from "@/src/domain/entities/Product";
 import type { PublicReview } from "@/src/domain/entities/Review";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
+
 import {
   ProductGallery,
   ProductInfoAccordion,

@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { SavedCard, Wallet } from "@/src/domain/entities/Wallet";
 
 /**

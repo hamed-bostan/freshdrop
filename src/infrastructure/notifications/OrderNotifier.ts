@@ -1,9 +1,10 @@
-import type { Order } from "@/src/domain/entities/Order";
 import type { NotificationKind, NotificationRecipient } from "@/src/domain/entities/Notification";
+import type { Order } from "@/src/domain/entities/Order";
 import type { INotificationChannel } from "@/src/domain/repositories/INotificationChannel";
+import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
 import type { IOrderNotifier } from "@/src/domain/repositories/IOrderNotifier";
 import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
-import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
+
 import { buildOrderMessage, type SubstitutionContext } from "./messages";
 
 /**

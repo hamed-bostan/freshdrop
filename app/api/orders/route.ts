@@ -1,8 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { GetOrders } from "@/src/domain/use-cases/orders/GetOrders";
-import { CreateOrder } from "@/src/domain/use-cases/orders/CreateOrder";
+
+import { placeOrderSchema } from "@/src/contracts/checkout-schema";
 import { GetCart } from "@/src/domain/use-cases/cart/GetCart";
 import { GetDeliveryLocations } from "@/src/domain/use-cases/delivery-locations/GetDeliveryLocations";
+import { CreateOrder } from "@/src/domain/use-cases/orders/CreateOrder";
+import { GetOrders } from "@/src/domain/use-cases/orders/GetOrders";
 import { FindPromoCode } from "@/src/domain/use-cases/promo-codes/FindPromoCode";
 import {
   orderRepository,
@@ -19,9 +21,7 @@ import {
   taxSettingsRepository,
   notificationTemplateRepository,
 } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
-import { placeOrderSchema } from "@/src/contracts/checkout-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -29,6 +29,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Per-user data, read per request — never statically cached.
 export const dynamic = "force-dynamic";

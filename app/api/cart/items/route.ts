@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { addToCartSchema } from "@/src/contracts/cart-schema";
 import { AddToCart } from "@/src/domain/use-cases/cart/AddToCart";
 import { cartRepository, productRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
-import { addToCartSchema } from "@/src/contracts/cart-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -10,6 +10,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Per-user data — never statically cached.
 export const dynamic = "force-dynamic";

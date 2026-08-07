@@ -2,6 +2,8 @@
 
 import { EllipsisVertical, ExternalLink, Pencil } from "lucide-react";
 import { useTranslations } from "next-intl";
+
+import { useRouter } from "@/src/i18n/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +11,6 @@ import {
   DropdownMenuItem,
   Icon,
 } from "@/src/presentation/design-system";
-import { useRouter } from "@/src/i18n/navigation";
 
 type InventoryRowActionsProps = {
   id: string;

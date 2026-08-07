@@ -1,11 +1,13 @@
 import { getTranslations } from "next-intl/server";
+
 import type { PublicReviewPage } from "@/src/domain/entities/AdminReviewFilters";
 import type { Product } from "@/src/domain/entities/Product";
-import { ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
-import { ReviewStatusTabs } from "./ReviewStatusTabs";
 import { BulkActionBar, BulkSelectionProvider } from "@/src/presentation/dashboard/bulk";
+import { ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
+
 import { ReviewBulkActions } from "./ReviewBulkActions";
 import { ReviewsTable } from "./ReviewsTable";
+import { ReviewStatusTabs } from "./ReviewStatusTabs";
 
 type ReviewsScreenProps = {
   /** One page of the queue, plus the per-status counts the tabs display. */

@@ -1,7 +1,8 @@
-import type { AdminPromoCode } from "@/src/domain/entities/PromoCode";
 import type { Page } from "@/src/domain/entities/Pagination";
+import type { AdminPromoCode } from "@/src/domain/entities/PromoCode";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
+
 import {
   adminPromoCodePageResponseSchema,
   adminPromoCodeResponseSchema,

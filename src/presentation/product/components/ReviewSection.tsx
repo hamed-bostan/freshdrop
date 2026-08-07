@@ -1,7 +1,9 @@
 import { getTranslations } from "next-intl/server";
+
 import type { PublicReview } from "@/src/domain/entities/Review";
-import { ReviewItem } from "./ReviewItem";
+
 import { AddReviewFlow } from "./AddReviewFlow";
+import { ReviewItem } from "./ReviewItem";
 
 interface ReviewSectionProps {
   productId: string;

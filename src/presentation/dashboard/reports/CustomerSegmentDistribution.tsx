@@ -1,8 +1,10 @@
 import { Info } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 import type { Locale } from "@/src/i18n/routing";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
 import { Icon } from "@/src/presentation/design-system";
+
 import type { CustomerSegmentsWire } from "./customer-segments-response-schema";
 
 const COLORS = ["var(--color-primary)", "var(--color-muted-foreground)", "var(--color-info-foreground)", "var(--color-secondary)", "var(--color-warning-foreground)", "var(--color-destructive)"];

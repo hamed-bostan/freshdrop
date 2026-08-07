@@ -1,5 +1,7 @@
 import * as React from "react";
+
 import { notificationsApi } from "./notification-api";
+
 import type { NotificationFeedResponse } from "./notification-response-schema";
 
 /** How often the badge refreshes in the background — frequent enough to feel live, rare enough to be free. */
@@ -46,7 +48,7 @@ export function useNotificationFeed(): {
     let timer: ReturnType<typeof setTimeout>;
 
     const schedule = (): void => {
-      timer = setTimeout(tick, POLL_INTERVAL_MS);
+      timer = setTimeout(() => void tick(), POLL_INTERVAL_MS);
     };
 
     async function tick(): Promise<void> {
@@ -56,9 +58,11 @@ export function useNotificationFeed(): {
       if (!cancelled) schedule();
     }
 
-    load().then(() => {
-      if (!cancelled) schedule();
-    });
+    load()
+      .then(() => {
+        if (!cancelled) schedule();
+      })
+      .catch(() => undefined);
 
     return () => {
       cancelled = true;

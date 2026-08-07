@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+
 import { useRouter } from "@/src/i18n/navigation";
 
 /** How often to re-check while a job is still generating. */

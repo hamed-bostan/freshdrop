@@ -1,10 +1,11 @@
-import { getLocale, getTranslations } from "next-intl/server";
 import { CheckCircle2, ChevronRight } from "lucide-react";
-import { Badge, focusRing, Icon } from "@/src/presentation/design-system";
+import { getLocale, getTranslations } from "next-intl/server";
+
 import { Link } from "@/src/i18n/navigation";
-import type { Locale } from "@/src/i18n/routing";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
+import { Badge, focusRing, Icon } from "@/src/presentation/design-system";
+
 import type { AttentionItem } from "./AttentionItem";
 
 type NeedsAttentionPanelProps = {
@@ -34,7 +35,7 @@ const TONE_TINT: Record<AttentionItem["tone"], string> = {
  */
 export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
   const t = await getTranslations("dashHome");
-  const locale = (await getLocale()) as Locale;
+  const locale = (await getLocale());
 
   const active = items.filter((item) => item.count > 0);
   // Only shown when *some* but not all categories need a look — the columns
