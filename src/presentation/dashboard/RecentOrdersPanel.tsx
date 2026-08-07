@@ -73,7 +73,7 @@ export async function RecentOrdersPanel({ orders, customersById }: RecentOrdersP
                       <span className="block truncate font-mono text-body-b6 text-foreground">
                         #{order.orderNumber}
                       </span>
-                      <span className="block truncate text-body-b8 text-muted-foreground">
+                      <span className="block truncate text-body-b7 text-foreground">
                         {customer?.name ?? order.userId}
                       </span>
                     </span>
@@ -82,7 +82,7 @@ export async function RecentOrdersPanel({ orders, customersById }: RecentOrdersP
                       <span className="text-body-b7 text-foreground">
                         {formatMoney(orderNetPaid(order, order.refunds), locale)}
                       </span>
-                      <span className="text-body-b9 text-muted-foreground">
+                      <span className="text-body-b8 text-muted-foreground">
                         {formatOrderDateShort(order.placedAt, locale)}
                       </span>
                     </span>

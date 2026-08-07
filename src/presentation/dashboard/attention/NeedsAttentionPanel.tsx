@@ -77,7 +77,7 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
                 <Icon icon={item.icon} size="sm" />
               </div>
               <div className="min-w-0">
-                <p className="text-body-b6 text-foreground">{item.title}</p>
+                <p className="text-body-b7 text-foreground">{item.title}</p>
                 <p className="text-body-b8 text-muted-foreground">{item.detail}</p>
               </div>
               <span className="hidden items-center gap-1 text-body-b9 text-primary sm:inline-flex">{item.ctaLabel}<Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" /></span>
@@ -89,7 +89,7 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
           <div className="flex size-10 items-center justify-center rounded-full bg-success text-success-foreground">
             <Icon icon={CheckCircle2} size="sm" />
           </div>
-          <p className="text-body-b6 text-foreground">{t("attentionAllClearTitle")}</p>
+          <p className="text-body-b7 text-foreground">{t("attentionAllClearTitle")}</p>
           <p className="text-body-b8 text-muted-foreground">{t("attentionAllClearBody")}</p>
         </div>
       )}
