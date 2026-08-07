@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, ExternalLink, Info, MapPin, TimerOff, Truck } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ExternalLink, Info, MapPin, TimerOff, TrendingUp, Truck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { percentChange } from "@/src/domain/entities/Analytics";
@@ -7,7 +7,7 @@ import type { Locale } from "@/src/i18n/routing";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
 import { DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
 
-import { DeliveryZoneMapClient } from "./DeliveryZoneMapClient";
+import { DeliveryZoneCoverageCard } from "./DeliveryZoneCoverageCard";
 import { SalesMetricCard } from "./SalesMetricCard";
 
 import type { DeliveryZonesWire } from "./delivery-zones-response-schema";
@@ -29,13 +29,8 @@ export async function DeliveryZoneMetrics({ report, locale }: Props) {
 
 export async function DeliveryZoneMap({ report, locale }: Props) {
   const t = await getTranslations("dashDeliveryReport");
-  return <section className="rounded-card-lg border border-border bg-background p-3">
-    <div className="flex items-center justify-between"><h2 className="text-body-b5">{t("zoneCoverageDemand")}</h2></div>
-    <div className="relative mt-2 h-[245px] overflow-hidden rounded-card-md border border-border" aria-label={t("zoneMapAria")}>
-      <DeliveryZoneMapClient zones={report.zones} ordersLabel={t("orders")} onTimeLabel={t("onTimeShort")} locale={locale} />
-    </div>
-    <p className="mt-2 text-label-l1 text-muted-foreground">{t("zoneMapLegend")}</p>
-  </section>;
+  const labels = { title: t("zoneCoverageDemand"), map: t("map"), list: t("list"), demand: t("demand"), onTime: t("onTimeShort"), orders: t("orders"), lowDemand: t("lowDemand"), highDemand: t("highDemand"), onTimeLegend: t("zoneMapLegend"), mapAria: t("zoneMapAria") };
+  return <DeliveryZoneCoverageCard zones={report.zones} locale={locale} labels={labels} />;
 }
 
 export async function DeliveryZonePerformance({ report, locale }: Props) {
@@ -71,6 +66,9 @@ export async function DeliveryZoneAlerts({ report, locale }: Props) {
       icon: AlertTriangle,
       tone: alert.severity === "critical" ? "text-destructive bg-error" : "text-warning-foreground bg-warning/15",
     })),
+    ...(report.demandAlert
+      ? [{ key: `${report.demandAlert.zone}-demand`, title: t("demandIncreasing", { zone: report.demandAlert.zone }), detail: t("demandDetail", { percent: Math.round(report.demandAlert.growthRate * 100) }), badge: t("monitor"), icon: TrendingUp, tone: "text-info-foreground bg-info" }]
+      : []),
     ...(strongest && strongest.onTimeRate >= 0.95
       ? [{ key: `${strongest.zone}-healthy`, title: t("zonePerformingWell", { zone: strongest.zone }), detail: t("onTimeDetail", { rate: formatPercent(strongest.onTimeRate, locale) }), badge: t("healthy"), icon: CheckCircle2, tone: "text-primary bg-accent" }]
       : []),

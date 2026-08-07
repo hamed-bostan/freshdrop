@@ -11,9 +11,9 @@ describe("GetDeliveryZonesReport", () => {
   const range: DateRange = { from: new Date("2026-07-02T00:00:00.000Z"), to: new Date("2026-08-01T00:00:00.000Z") };
 
   const zones: DeliveryZonePerformance[] = [
-    { zone: "Toronto", orders: 100, onTimeRate: 0.95, previousOnTimeRate: 0.9, lateDeliveries: 5, averageFulfillmentMinutes: 40, centroid: { latitude: 43.6, longitude: -79.4 } },
-    { zone: "Mississauga", orders: 20, onTimeRate: 0.6, previousOnTimeRate: 0.8, lateDeliveries: 8, averageFulfillmentMinutes: 55, centroid: null },
-    { zone: "Unspecified", orders: 5, onTimeRate: 1, previousOnTimeRate: null, lateDeliveries: 0, averageFulfillmentMinutes: 30, centroid: null },
+    { zone: "Toronto", orders: 100, onTimeRate: 0.95, previousOnTimeRate: 0.9, previousOrders: 95, lateDeliveries: 5, averageFulfillmentMinutes: 40, centroid: { latitude: 43.6, longitude: -79.4 } },
+    { zone: "Mississauga", orders: 20, onTimeRate: 0.6, previousOnTimeRate: 0.8, previousOrders: 18, lateDeliveries: 8, averageFulfillmentMinutes: 55, centroid: null },
+    { zone: "Unspecified", orders: 5, onTimeRate: 1, previousOnTimeRate: null, previousOrders: null, lateDeliveries: 0, averageFulfillmentMinutes: 30, centroid: null },
   ];
 
   const previousTotals: DeliveryPerformanceTotals = { deliveredOrders: 110, onTimeOrders: 90, lateDeliveries: 12, averageFulfillmentMinutes: 45 };
@@ -53,5 +53,20 @@ describe("GetDeliveryZonesReport", () => {
     const result = await new GetDeliveryZonesReport(repositoryWith(healthy)).execute(range);
 
     expect(result.alerts).toHaveLength(0);
+  });
+
+  it("flags the zone with the sharpest order growth as a demand alert", async () => {
+    const surging = zones.map((zone) => zone.zone === "Toronto" ? { ...zone, orders: 150, previousOrders: 100 } : zone);
+    const result = await new GetDeliveryZonesReport(repositoryWith(surging)).execute(range);
+
+    expect(result.demandAlert).toMatchObject({ zone: "Toronto", orders: 150, previousOrders: 100, growthRate: 0.5 });
+  });
+
+  it("excludes a zone already flagged critical/warning from the demand alert, and ignores growth below the threshold", async () => {
+    // Mississauga is already flagged (onTimeRate 0.6); its growth shouldn't double up as a demand alert too.
+    const surging = zones.map((zone) => zone.zone === "Mississauga" ? { ...zone, orders: 30, previousOrders: 20 } : zone);
+    const result = await new GetDeliveryZonesReport(repositoryWith(surging)).execute(range);
+
+    expect(result.demandAlert).toBeNull();
   });
 });

@@ -6,6 +6,7 @@ import type { Locale } from "@/src/i18n/routing";
 import { Skeleton } from "@/src/presentation/design-system";
 
 import type { DeliveryZonesWire } from "./delivery-zones-response-schema";
+import type { ZoneMapMetric } from "./DeliveryZoneMapView";
 
 // Leaflet is client-only; load the map lazily and keep it out of the SSR bundle.
 const DeliveryZoneMapView = dynamic(
@@ -18,8 +19,9 @@ type DeliveryZoneMapClientProps = {
   ordersLabel: string;
   onTimeLabel: string;
   locale: Locale;
+  metric: ZoneMapMetric;
 };
 
-export function DeliveryZoneMapClient({ zones, ordersLabel, onTimeLabel, locale }: DeliveryZoneMapClientProps) {
-  return <DeliveryZoneMapView zones={zones} ordersLabel={ordersLabel} onTimeLabel={onTimeLabel} locale={locale} />;
+export function DeliveryZoneMapClient({ zones, ordersLabel, onTimeLabel, locale, metric }: DeliveryZoneMapClientProps) {
+  return <DeliveryZoneMapView zones={zones} ordersLabel={ordersLabel} onTimeLabel={onTimeLabel} locale={locale} metric={metric} />;
 }

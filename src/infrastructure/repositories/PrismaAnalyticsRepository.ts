@@ -604,6 +604,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
         previous_stats AS (
           SELECT
             COALESCE(city, 'Unspecified') AS zone,
+            COUNT(*)::int AS orders,
             COUNT(*) FILTER (WHERE due_at IS NOT NULL AND delivered_at <= due_at)::double precision
               / NULLIF(COUNT(*) FILTER (WHERE due_at IS NOT NULL), 0) AS rate
           FROM previous_deliveries
@@ -617,7 +618,8 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
         c."averageFulfillmentMinutes",
         c."centroidLat",
         c."centroidLng",
-        p.rate AS "previousOnTimeRate"
+        p.rate AS "previousOnTimeRate",
+        p.orders AS "previousOrders"
       FROM current_stats c
       LEFT JOIN previous_stats p USING (zone)
       ORDER BY c.orders DESC
@@ -628,6 +630,7 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
       orders: row.orders,
       onTimeRate: row.onTimeRate,
       previousOnTimeRate: row.previousOnTimeRate,
+      previousOrders: row.previousOrders,
       lateDeliveries: row.lateDeliveries,
       averageFulfillmentMinutes: row.averageFulfillmentMinutes,
       centroid: row.centroidLat != null && row.centroidLng != null ? { latitude: row.centroidLat, longitude: row.centroidLng } : null,
@@ -1079,7 +1082,7 @@ type RefundCaseRow = Omit<RefundCase, "kind" | "status" | "activityAt" | "return
 type DeliveryTotalsRow = DeliveryPerformanceTotals;
 type DeliveryPointRow = Omit<DeliveryPerformancePoint, "bucket"> & { bucket: Date };
 type LateDeliveryRow = Omit<LateDelivery, "deliveredAt"> & { deliveredAt: Date };
-type DeliveryZonePerformanceRow = { zone: string; orders: number; onTimeRate: number; lateDeliveries: number; averageFulfillmentMinutes: number; centroidLat: number | null; centroidLng: number | null; previousOnTimeRate: number | null };
+type DeliveryZonePerformanceRow = { zone: string; orders: number; onTimeRate: number; lateDeliveries: number; averageFulfillmentMinutes: number; centroidLat: number | null; centroidLng: number | null; previousOnTimeRate: number | null; previousOrders: number | null };
 type DriverPerformanceRow = DriverPerformance;
 
 function emptyPaymentTotals(): PaymentReportTotals {
