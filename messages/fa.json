@@ -933,7 +933,7 @@
     "customerInsightsDescription": "رفتار مشتری، حفظ مشتری، ارزش طول عمر و موارد دیگر.",
     "customerSegments": "بخش‌بندی مشتریان",
     "customerSegmentsDescription": "مشتریان را بر اساس بخش‌ها و گروه‌ها تحلیل کنید.",
-    "exportReports": "خروجی گزارش‌ها",
+    "exportReports": "مرکز خروجی گزارش‌ها",
     "exportReportsDescription": "گزارش‌ها را با فرمت CSV دانلود کنید.",
     "needSomethingElse": "گزارش دیگری نیاز دارید؟",
     "requestDescription": "گزارش موردنظرتان را پیدا نکردید؟ به ما اطلاع دهید تا آن را بسازیم.",
@@ -1045,7 +1045,7 @@
     "segmentMovement": "جابه‌جایی بین بخش‌ها", "independentTransitions": "انتقال‌های مستقل این دوره", "movementCollectingData": "پس از ثبت اسنپ‌شات‌های روزانه در ابتدا و انتهای این دوره، جابه‌جایی بین بخش‌ها اینجا نمایش داده می‌شود.", "higherValueMoved": "{count} مشتری به بخش باارزش‌تری منتقل شدند.", "viewMovementDetails": "مشاهده جزئیات جابه‌جایی"
   },
   "dashExportReports": {
-    "reports": "گزارش‌ها", "heading": "خروجی گزارش‌ها", "subtitle": "نسخهٔ CSV تازه از داده‌های فروشگاه دریافت کنید.", "breadcrumbAria": "مسیر صفحه", "quickHeading": "خروجی‌های سریع", "export": "خروجی",
+    "reports": "گزارش‌ها", "heading": "مرکز خروجی گزارش‌ها", "subtitle": "نسخهٔ CSV تازه از داده‌های فروشگاه دریافت کنید.", "breadcrumbAria": "مسیر صفحه", "quickHeading": "خروجی‌های سریع", "export": "خروجی",
     "customHeading": "ایجاد خروجی سفارشی", "customDescription": "یک مجموعه‌داده انتخاب کنید و نسخه‌ای تازه از اطلاعات جاری فروشگاه دریافت کنید.", "reportLabel": "گزارش", "generate": "ایجاد خروجی",
     "dateRange": "بازهٔ زمانی", "compareWith": "مقایسه با", "noComparison": "هیچ‌کدام", "previousPeriod": "دورهٔ قبل", "formatLabel": "قالب فایل", "formatDescription": "فایل CSV با UTF-8 ساخته می‌شود و در Excel، Numbers و Google Sheets به‌درستی باز می‌شود.",
     "dataSections": "بخش‌های داده", "comparisonSection": "مقایسه با دورهٔ قبل", "secureLinkNote": "لینک‌های دانلود امضا شده‌اند و پس از ۷ روز منقضی می‌شوند.", "reset": "بازنشانی",
