@@ -55,7 +55,7 @@ export function DashboardShell({ permissions, viewer, initialSidebarCollapsed, c
         <main className="min-w-0 flex-1 px-4 py-5 lg:px-5">{children}</main>
       </div>
 
-      <NavDrawer open={navOpen} onOpenChange={setNavOpen} permissions={permissions} viewer={viewer} />
+      <NavDrawer open={navOpen} onOpenChange={setNavOpen} permissions={permissions} />
       <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} permissions={permissions} viewerId={viewer.id} />
     </div>
   );

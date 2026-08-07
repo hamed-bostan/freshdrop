@@ -10,25 +10,22 @@ import { Button, Icon } from "@/src/presentation/design-system";
 
 import { DashboardNav } from "./DashboardNav";
 import { SidebarBrand } from "./SidebarBrand";
-import { UserCard } from "./UserCard";
 import { ViewStoreLink } from "./ViewStoreLink";
-
-import type { DashboardViewer } from "./viewer";
 
 type NavDrawerProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   permissions: readonly Permission[];
-  viewer: DashboardViewer;
 };
 
 /**
  * The dashboard's nav, drawer-style, for viewports too narrow for a persistent
  * sidebar (below `lg`). Same content as the desktop rail — brand, grouped nav,
- * user card, "View store" — so there is never a second, drifting copy of the
- * section list to keep in sync.
+ * "View store" — so there is never a second, drifting copy of the section
+ * list to keep in sync. The profile card is desktop-rail only; the drawer
+ * skips it to keep the mobile nav compact.
  */
-export function NavDrawer({ open, onOpenChange, permissions, viewer }: NavDrawerProps) {
+export function NavDrawer({ open, onOpenChange, permissions }: NavDrawerProps) {
   const t = useTranslations("dashboard");
   const tDs = useTranslations("ds");
 
@@ -75,7 +72,6 @@ export function NavDrawer({ open, onOpenChange, permissions, viewer }: NavDrawer
             <DashboardNav permissions={permissions} onNavigate={close} />
           </div>
 
-          <UserCard viewer={viewer} />
           <ViewStoreLink onNavigate={close} />
         </Dialog.Content>
       </Dialog.Portal>
