@@ -4,23 +4,35 @@ import { ANALYTICS_RANGE_PRESETS, percentChange } from "@/src/domain/entities/An
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
+import { type ComparisonMode, wireRangeToParams } from "@/src/lib/api/analytics-params";
+import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
-import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { Icon } from "@/src/presentation/design-system";
 import { StatSparkline } from "../StatSparkline";
+import { AnalyticsComparePicker } from "../analytics/AnalyticsComparePicker";
 import { AnalyticsExportMenu } from "../analytics/AnalyticsExportMenu";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "../analytics/AnalyticsRangePicker";
+import { resolveComparePreviews } from "../analytics/compare-preview";
 import { PaymentIssuesTable } from "./PaymentIssuesTable";
 import type { PaymentReportWire } from "./payment-report-response-schema";
 import { PaymentTrendChart } from "./PaymentTrendChart";
 
-type Props = { report: PaymentReportWire; customers: CustomerOrderSummary[]; from: string; to: string; isCustomRange: boolean };
+type Props = { report: PaymentReportWire; customers: CustomerOrderSummary[]; from: string; to: string; isCustomRange: boolean; compareMode: ComparisonMode };
 
-export async function PaymentSummaryScreen({ report, customers, from, to, isCustomRange }: Props) {
+export async function PaymentSummaryScreen({ report, customers, from, to, isCustomRange, compareMode }: Props) {
   const t = await getTranslations("dashPaymentReport");
   const ta = await getTranslations("dashAnalytics");
   const locale = (await getLocale()) as Locale;
+  const { from: activeFrom, to: activeTo } = wireRangeToParams(report.previousRange);
+  const previews = resolveComparePreviews(from, to, locale);
+  const compareOptions = [
+    { value: "none" as const, label: ta("compareNone"), subtitle: ta("compareNoneBody") },
+    { value: "previous" as const, label: ta("comparePrevious"), subtitle: ta("rangeCaption", { from: previews.previous.formattedFrom, to: previews.previous.formattedTo }) },
+    { value: "previousYear" as const, label: ta("comparePreviousYear"), subtitle: ta("rangeCaption", { from: previews.previousYear.formattedFrom, to: previews.previousYear.formattedTo }) },
+    { value: "custom" as const, label: ta("compareCustom"), subtitle: ta("compareCustomBody") },
+  ];
+  const compareTriggerLabel = compareMode === "none" ? ta("compareNone") : ta("comparisonPeriod", { from: formatMediumDate(activeFrom, locale), to: formatMediumDate(activeTo, locale) });
   const customerById = new Map(customers.map((customer) => [customer.userId, customer]));
   const issuesWithCustomerName = report.issues.map((issue) => ({ ...issue, customerName: customerById.get(issue.userId)?.name ?? issue.userId }));
   const gross = report.totals.walletAmount + report.totals.externalAmount;
@@ -38,7 +50,7 @@ export async function PaymentSummaryScreen({ report, customers, from, to, isCust
   ];
 
   return <div className="flex flex-col gap-3">
-    <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between"><div><nav className="mb-1 flex items-center gap-2 text-body-b10 text-muted-foreground" aria-label={t("breadcrumbAria")}><Link href="/dashboard/reports" className="hover:text-primary">{t("reports")}</Link><span>/</span><span>{t("heading")}</span></nav><h1 className="text-heading-h2 text-foreground">{t("heading")}</h1><p className="mt-1 text-body-b8 text-muted-foreground">{t("referenceSubtitle")}</p></div><div className="flex flex-wrap items-center gap-2 xl:justify-end"><AnalyticsRangePicker presetLabel={ta("rangeLabel")} presetOptions={[...ANALYTICS_RANGE_PRESETS.map((preset) => ({ value: preset, label: ta(`preset.${preset}`) })), { value: CUSTOM_RANGE_VALUE, label: ta("presetCustom") }]} fromLabel={ta("rangeFrom")} toLabel={ta("rangeTo")} from={from} to={to} isCustom={isCustomRange} /><div className="flex h-10 items-center rounded-input border border-border px-4 text-body-b8">{ta("comparisonPeriod", { from: formatMediumDate(report.previousRange.from, locale), to: formatMediumDate(report.previousRange.to, locale) })}</div><AnalyticsExportMenu label={ta("exportHeading")} reports={[{ resource: "orders", label: ta("exportOrdersReport") }, { resource: "customers", label: ta("exportCustomersReport") }]} from={from} to={to} /></div></header>
+    <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between"><div><nav className="mb-1 flex items-center gap-2 text-body-b10 text-muted-foreground" aria-label={t("breadcrumbAria")}><Link href="/dashboard/reports" className="hover:text-primary">{t("reports")}</Link><span>/</span><span>{t("heading")}</span></nav><h1 className="text-heading-h2 text-foreground">{t("heading")}</h1><p className="mt-1 text-body-b8 text-muted-foreground">{t("referenceSubtitle")}</p></div><div className="flex flex-wrap items-center gap-2 xl:justify-end"><AnalyticsRangePicker presetLabel={ta("rangeLabel")} presetOptions={[...ANALYTICS_RANGE_PRESETS.map((preset) => ({ value: preset, label: ta(`preset.${preset}`) })), { value: CUSTOM_RANGE_VALUE, label: ta("presetCustom") }]} fromLabel={ta("rangeFrom")} toLabel={ta("rangeTo")} from={from} to={to} isCustom={isCustomRange} /><AnalyticsComparePicker mode={compareMode} triggerLabel={compareTriggerLabel} heading={ta("compareLabel")} options={compareOptions} fromLabel={ta("rangeFrom")} toLabel={ta("rangeTo")} applyLabel={ta("compareApply")} cancelLabel={ta("compareCancel")} activeFrom={activeFrom} activeTo={activeTo} previousPeriodFrom={previews.previous.from} previousPeriodTo={previews.previous.to} /><AnalyticsExportMenu label={ta("exportHeading")} reports={[{ resource: "orders", label: ta("exportOrdersReport") }, { resource: "customers", label: ta("exportCustomersReport") }]} from={from} to={to} /></div></header>
 
     <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{metrics.map((metric) => <article key={metric.key} className="flex min-h-36 flex-col rounded-card-lg border border-border bg-background p-4"><div className="flex items-center gap-3"><span className={`flex size-10 items-center justify-center rounded-full ${metric.tone}`}><Icon icon={metric.icon} size="sm" /></span><div><p className="text-body-b10 text-muted-foreground">{metric.label}</p><p className="text-heading-h3">{metric.value}</p></div></div><Delta value={metric.delta} inverse={metric.inverse} points={metric.points} locale={locale} label={t("vsPreviousPeriod")} /><div className="mt-auto"><StatSparkline values={metric.values} color={metric.color} heightClassName="h-7" /></div></article>)}</section>
 

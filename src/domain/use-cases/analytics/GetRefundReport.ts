@@ -9,8 +9,8 @@ const REASON_LIMIT = 5;
 export class GetRefundReport {
   constructor(private readonly analytics: IAnalyticsRepository) {}
 
-  async execute(range: DateRange): Promise<RefundReport> {
-    const previous = previousPeriod(range);
+  async execute(range: DateRange, comparisonRange?: DateRange): Promise<RefundReport> {
+    const previous = comparisonRange ?? previousPeriod(range);
     const granularity = granularityFor(range);
     const [totals, previousTotals, series, previousSeries, reasons, cases, returnBreakdown] = await this.analytics.snapshot((repository) => Promise.all([
       repository.refundTotals(range), repository.refundTotals(previous),

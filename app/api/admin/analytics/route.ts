@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { GetAnalyticsOverview } from "@/src/domain/use-cases/analytics/GetAnalyticsOverview";
 import { analyticsRepository } from "@/src/infrastructure/container";
 import { getSessionWith } from "@/src/lib/require-permission";
-import { parseAnalyticsRange, parseRankLimit, parseRevenueRankSort } from "@/src/lib/api/analytics-params";
+import { parseAnalyticsRange, parseComparisonRange, parseRankLimit, parseRevenueRankSort } from "@/src/lib/api/analytics-params";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
 
 // Aggregates over a period that usually ends "now" — a cached answer here is a
@@ -14,8 +14,10 @@ export const dynamic = "force-dynamic";
  * period, plus the equally-long period before it to compare against. Admin only.
  *
  * Query params: `range` (a preset: `7d`, `30d`, `90d`, `12m`) or `from` + `to`
- * (`YYYY-MM-DD`, inclusive of both days); `productSort`/`categorySort` (`revenue`
- * or `units`) for the two ranked panels; `rankLimit` for how many rows those
+ * (`YYYY-MM-DD`, inclusive of both days); `compare` (`previous`, `previousYear`
+ * or `custom`, with `compareFrom`/`compareTo` for the latter) for the baseline
+ * the deltas measure against; `productSort`/`categorySort` (`revenue` or
+ * `units`) for the two ranked panels; `rankLimit` for how many rows those
  * panels return (defaults to the overview's compact size). Any of these left
  * absent falls back to its default; any of them present but invalid is a 400
  * (see `analytics-params.ts`).
@@ -39,11 +41,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const productsSort = parseRevenueRankSort(params, "productSort");
     const categoriesSort = parseRevenueRankSort(params, "categorySort");
     const rankLimit = parseRankLimit(params, 5);
+    const comparisonRange = parseComparisonRange(params, range);
     const overview = await new GetAnalyticsOverview(analyticsRepository).execute(range, {
       productsSort,
       categoriesSort,
       rankLimit,
-    });
+    }, comparisonRange);
     return NextResponse.json(overview);
   } catch (error) {
     return errorResponseFromException(error, "GET /api/admin/analytics failed");

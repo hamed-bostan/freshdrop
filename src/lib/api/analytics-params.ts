@@ -4,6 +4,8 @@ import {
   DEFAULT_ANALYTICS_PRESET,
   DEFAULT_REVENUE_RANK_SORT,
   presetRange,
+  previousPeriod,
+  previousYearRange,
   REVENUE_RANK_SORTS,
   type AnalyticsRangePreset,
   type DateRange,
@@ -117,6 +119,81 @@ export function hasCustomAnalyticsRange(params: URLSearchParams): boolean {
   return Boolean(from && to && parseCalendarDate(from) && parseCalendarDate(to));
 }
 
+/**
+ * What a report's "Compare" control measures a period against. `previous` (the
+ * default) is the equally-long period immediately before; `previousYear` is the
+ * same days a year earlier; `custom` names its own `compareFrom`/`compareTo` pair,
+ * independent of the main period's own preset-vs-custom choice; `none` is the
+ * picker's own "hide the comparison" state.
+ *
+ * `none` is accepted here purely so the URL round-trips without a 400 — it isn't
+ * given a distinct branch in {@link parseComparisonRange} below, which resolves it
+ * exactly like `previous`. Reports still receive a real baseline; no use-case or
+ * route change is needed for the picker to offer the option. Making "no
+ * comparison" actually suppress a report's deltas and comparison series is a
+ * separate, larger change to every report screen, not yet made.
+ */
+export const COMPARISON_MODES = ["previous", "previousYear", "custom", "none"] as const;
+export type ComparisonMode = (typeof COMPARISON_MODES)[number];
+
+const DEFAULT_COMPARISON_MODE: ComparisonMode = "previous";
+const comparisonModeSchema = z.enum(COMPARISON_MODES).optional();
+
+/** The comparison mode a query string names off `compare`. Throws for a present but unrecognised value; defaults when absent. */
+export function parseComparisonMode(params: URLSearchParams): ComparisonMode {
+  return comparisonModeSchema.parse(params.get("compare") ?? undefined) ?? DEFAULT_COMPARISON_MODE;
+}
+
+const comparisonRangeSchema = z
+  .object({
+    compare: comparisonModeSchema,
+    compareFrom: z.string().optional(),
+    compareTo: z.string().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.compare !== "custom") return;
+    if (!value.compareFrom) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["compareFrom"], message: "Required when `compare=custom`." });
+    if (!value.compareTo) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["compareTo"], message: "Required when `compare=custom`." });
+    if (!value.compareFrom || !value.compareTo) return;
+    const from = parseCalendarDate(value.compareFrom);
+    const to = parseCalendarDate(value.compareTo);
+    if (!from) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["compareFrom"], message: "Expected a real YYYY-MM-DD calendar date." });
+    if (!to) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["compareTo"], message: "Expected a real YYYY-MM-DD calendar date." });
+    if (from && to && to.getTime() < from.getTime()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["compareTo"], message: "Must be on or after `compareFrom`." });
+    }
+  });
+
+/**
+ * Resolve the period a report compares `range` against, off `compare` (a
+ * {@link ComparisonMode}) and, for `custom`, `compareFrom`/`compareTo`
+ * (`YYYY-MM-DD`, both required, inclusive of both days like the main range).
+ *
+ * Deliberately a second query-string read rather than a field the caller derives:
+ * the comparison baseline is its own choice, independent of whether the main
+ * period is a preset or a custom span, the same way `AnalyticsRangePicker` and
+ * this function's own `compare` param stay orthogonal to `range`/`from`/`to`.
+ */
+export function parseComparisonRange(params: URLSearchParams, range: DateRange): DateRange {
+  const query = comparisonRangeSchema.parse({
+    compare: params.get("compare") ?? undefined,
+    compareFrom: params.get("compareFrom") ?? undefined,
+    compareTo: params.get("compareTo") ?? undefined,
+  });
+  const mode = query.compare ?? DEFAULT_COMPARISON_MODE;
+
+  if (mode === "previousYear") return previousYearRange(range);
+
+  if (mode === "custom" && query.compareFrom && query.compareTo) {
+    const from = parseCalendarDate(query.compareFrom)!;
+    const to = parseCalendarDate(query.compareTo)!;
+    const end = new Date(to.getTime() + DAY_MS);
+    return clampSpan({ from, to: end });
+  }
+
+  return previousPeriod(range);
+}
+
 /** Serialise a preset selection — omitting the default, so an untouched URL stays clean. */
 export function buildAnalyticsPresetParams(preset: AnalyticsRangePreset): URLSearchParams {
   const params = new URLSearchParams();
@@ -166,6 +243,40 @@ export function toDateParam(at: Date): string {
  */
 export function toInclusiveEndParam(range: DateRange): string {
   return toDateParam(new Date(range.to.getTime() - DAY_MS));
+}
+
+/**
+ * A `DateRange` as the inclusive `YYYY-MM-DD` pair a picker displays — pairing
+ * `toDateParam`/`toInclusiveEndParam`, which every caller that needs both
+ * bounds of a resolved period (rather than just its end) would otherwise
+ * repeat individually.
+ */
+export function toInclusiveParams(range: DateRange): { from: string; to: string } {
+  return { from: toDateParam(range.from), to: toInclusiveEndParam(range) };
+}
+
+/**
+ * A wire range's `{from, to}` (ISO instants, half-open) as the inclusive
+ * `YYYY-MM-DD` pair a picker's trigger reads — the same conversion as
+ * {@link toInclusiveParams}, applied to a report's own
+ * `previousRange`/`comparisonRange` instead of a `DateRange` already in hand.
+ * `ReportHeader` and `PaymentSummaryScreen` (the one report that renders its
+ * own header rather than delegating to `ReportHeader`) both need this.
+ */
+export function wireRangeToParams(range: { from: string; to: string }): { from: string; to: string } {
+  return toInclusiveParams({ from: new Date(range.from), to: new Date(range.to) });
+}
+
+/**
+ * The exclusive `DateRange` an inclusive `YYYY-MM-DD` pair names — the inverse
+ * of {@link toInclusiveParams}. Unlike {@link parseAnalyticsRange} this does no
+ * validation: callers pass an already-resolved period (a report's own `from`/
+ * `to`, never raw user input) back through here to run comparison arithmetic —
+ * `previousPeriod`/`previousYearRange` — against it, for the "Compare" panel's
+ * previews.
+ */
+export function toExclusiveDateRange(from: string, to: string): DateRange {
+  return { from: new Date(`${from}T00:00:00.000Z`), to: new Date(`${nextCalendarDay(to)}T00:00:00.000Z`) };
 }
 
 /**

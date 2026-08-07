@@ -1,10 +1,13 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { ANALYTICS_RANGE_PRESETS } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
+import { wireRangeToParams, type ComparisonMode } from "@/src/lib/api/analytics-params";
 import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import type { AnalyticsOverviewWire } from "./analytics-response-schema";
+import { AnalyticsComparePicker } from "./AnalyticsComparePicker";
 import { AnalyticsExportMenu } from "./AnalyticsExportMenu";
 import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "./AnalyticsRangePicker";
+import { resolveComparePreviews } from "./compare-preview";
 import { RevenueChart } from "./RevenueChart";
 import { TopPerformancePanel } from "./TopPerformancePanel";
 import {
@@ -18,11 +21,21 @@ type AnalyticsScreenProps = {
   from: string;
   to: string;
   isCustomRange: boolean;
+  compareMode: ComparisonMode;
 };
 
-export async function AnalyticsScreen({ analytics, from, to, isCustomRange }: AnalyticsScreenProps) {
+export async function AnalyticsScreen({ analytics, from, to, isCustomRange, compareMode }: AnalyticsScreenProps) {
   const t = await getTranslations("dashAnalytics");
   const locale = (await getLocale()) as Locale;
+  const { from: activeFrom, to: activeTo } = wireRangeToParams(analytics.previousRange);
+  const previews = resolveComparePreviews(from, to, locale);
+  const compareOptions = [
+    { value: "none" as const, label: t("compareNone"), subtitle: t("compareNoneBody") },
+    { value: "previous" as const, label: t("comparePrevious"), subtitle: t("rangeCaption", { from: previews.previous.formattedFrom, to: previews.previous.formattedTo }) },
+    { value: "previousYear" as const, label: t("comparePreviousYear"), subtitle: t("rangeCaption", { from: previews.previousYear.formattedFrom, to: previews.previousYear.formattedTo }) },
+    { value: "custom" as const, label: t("compareCustom"), subtitle: t("compareCustomBody") },
+  ];
+  const compareTriggerLabel = compareMode === "none" ? t("compareNone") : t("comparisonPeriod", { from: formatMediumDate(activeFrom, locale), to: formatMediumDate(activeTo, locale) });
   return (
     <div className="flex flex-col gap-4 pb-2">
       <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -40,9 +53,20 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange }: An
             to={to}
             isCustom={isCustomRange}
           />
-          <div className="flex h-10 items-center rounded-input border border-border px-4 text-body-b8 text-foreground">
-            {t("comparisonPeriod", { from: formatMediumDate(analytics.previousRange.from, locale), to: formatMediumDate(analytics.previousRange.to, locale) })}
-          </div>
+          <AnalyticsComparePicker
+            mode={compareMode}
+            triggerLabel={compareTriggerLabel}
+            heading={t("compareLabel")}
+            options={compareOptions}
+            fromLabel={t("rangeFrom")}
+            toLabel={t("rangeTo")}
+            applyLabel={t("compareApply")}
+            cancelLabel={t("compareCancel")}
+            activeFrom={activeFrom}
+            activeTo={activeTo}
+            previousPeriodFrom={previews.previous.from}
+            previousPeriodTo={previews.previous.to}
+          />
           <AnalyticsExportMenu
             label={t("exportHeading")}
             reports={[

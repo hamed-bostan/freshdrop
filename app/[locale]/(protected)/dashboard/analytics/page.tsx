@@ -3,6 +3,7 @@ import { AnalyticsScreen } from "@/src/presentation/dashboard/analytics/Analytic
 import {
   hasCustomAnalyticsRange,
   parseAnalyticsRange,
+  parseComparisonMode,
   toDateParam,
   toInclusiveEndParam,
 } from "@/src/lib/api/analytics-params";
@@ -30,6 +31,7 @@ export default async function DashboardAnalyticsPage({ searchParams }: Dashboard
       from={toDateParam(range.from)}
       to={toInclusiveEndParam(range)}
       isCustomRange={hasCustomAnalyticsRange(params)}
+      compareMode={parseComparisonMode(params)}
     />
   );
 }

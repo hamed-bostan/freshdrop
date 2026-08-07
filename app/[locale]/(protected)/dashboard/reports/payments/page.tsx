@@ -1,4 +1,4 @@
-import { hasCustomAnalyticsRange, parseAnalyticsRange, toDateParam, toInclusiveEndParam } from "@/src/lib/api/analytics-params";
+import { hasCustomAnalyticsRange, parseAnalyticsRange, parseComparisonMode, toDateParam, toInclusiveEndParam } from "@/src/lib/api/analytics-params";
 import { customersServerApi } from "@/src/presentation/dashboard/customers/customer-server-api";
 import { PaymentSummaryScreen } from "@/src/presentation/dashboard/reports/PaymentSummaryScreen";
 import { paymentReportServerApi } from "@/src/presentation/dashboard/reports/payment-report-server-api";
@@ -12,5 +12,5 @@ export default async function PaymentReportPage({ searchParams }: PaymentReportP
   const range = parseAnalyticsRange(params);
   const report = await paymentReportServerApi.get(params);
   const customers = await customersServerApi.listByIds([...new Set(report.issues.map((issue) => issue.userId))]);
-  return <PaymentSummaryScreen report={report} customers={customers.items} from={toDateParam(range.from)} to={toInclusiveEndParam(range)} isCustomRange={hasCustomAnalyticsRange(params)} />;
+  return <PaymentSummaryScreen report={report} customers={customers.items} from={toDateParam(range.from)} to={toInclusiveEndParam(range)} isCustomRange={hasCustomAnalyticsRange(params)} compareMode={parseComparisonMode(params)} />;
 }

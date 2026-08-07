@@ -35,15 +35,17 @@ export type RevenueRankSortOptions = {
  * queries themselves are independent, so they run together — ten aggregates over
  * the same indexed range, in parallel, rather than in sequence.
  *
- * The baseline is chosen here rather than by the caller. "Compared to what" is a
- * property of the comparison, not of the request; letting the query string carry
- * its own baseline would make every delta on the page unverifiable from the URL.
+ * The baseline defaults to the equally-long period immediately before `range`,
+ * but the caller may pass its own `comparisonRange` — the report's "Compare"
+ * control resolves one off the query string (`compare=previousYear` or an
+ * explicit `compareFrom`/`compareTo`) rather than this use-case guessing at it,
+ * so the chosen baseline stays a fact readable from the URL, not an implicit one.
  */
 export class GetAnalyticsOverview {
   constructor(private readonly analytics: IAnalyticsRepository) {}
 
-  async execute(range: DateRange, sort: RevenueRankSortOptions = {}): Promise<AnalyticsOverview> {
-    const previous = previousPeriod(range);
+  async execute(range: DateRange, sort: RevenueRankSortOptions = {}, comparisonRange?: DateRange): Promise<AnalyticsOverview> {
+    const previous = comparisonRange ?? previousPeriod(range);
     const previousYear = previousYearRange(range);
     const granularity = granularityFor(range);
     const productsSort = sort.productsSort ?? DEFAULT_REVENUE_RANK_SORT;

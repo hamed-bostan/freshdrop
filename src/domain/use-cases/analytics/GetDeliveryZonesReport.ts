@@ -10,8 +10,8 @@ const ZONE_LIMIT = 8;
 export class GetDeliveryZonesReport {
   constructor(private readonly analytics: IAnalyticsRepository) {}
 
-  async execute(range: DateRange): Promise<DeliveryZonesReport> {
-    const previous = previousPeriod(range);
+  async execute(range: DateRange, comparisonRange?: DateRange): Promise<DeliveryZonesReport> {
+    const previous = comparisonRange ?? previousPeriod(range);
     const [zones, previousTotals] = await this.analytics.snapshot((repo) => Promise.all([
       repo.deliveryZonePerformance(range, previous, ZONE_LIMIT),
       repo.deliveryTotals(previous),

@@ -5,8 +5,8 @@ import type { IAnalyticsRepository } from "../../repositories/IAnalyticsReposito
 export class GetCustomerSegmentsReport {
   constructor(private readonly analytics: IAnalyticsRepository) {}
 
-  async execute(range: DateRange): Promise<CustomerSegmentsReport> {
-    const previous = previousPeriod(range);
+  async execute(range: DateRange, comparisonRange?: DateRange): Promise<CustomerSegmentsReport> {
+    const previous = comparisonRange ?? previousPeriod(range);
     const [currentRows, previousRows, transitions] = await this.analytics.snapshot((repository) => Promise.all([
       repository.customerSegmentPerformance(range), repository.customerSegmentPerformance(previous), repository.customerSegmentTransitions(range),
     ]));

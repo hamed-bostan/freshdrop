@@ -8,8 +8,8 @@ const COHORT_LIMIT = 5;
 export class GetCustomerInsightsReport {
   constructor(private readonly analytics: IAnalyticsRepository) {}
 
-  async execute(range: DateRange): Promise<CustomerInsightsReport> {
-    const previous = previousPeriod(range);
+  async execute(range: DateRange, comparisonRange?: DateRange): Promise<CustomerInsightsReport> {
+    const previous = comparisonRange ?? previousPeriod(range);
     const granularity = granularityFor(range);
     const [totals, previousTotals, segments, previousSegments, growth, previousGrowth, frequency, cohorts] = await this.analytics.snapshot((repository) => Promise.all([
       repository.totals(range), repository.totals(previous), repository.customerSegments(range), repository.customerSegments(previous),

@@ -1,5 +1,4 @@
-import { previousPeriod, rangeToWire } from "@/src/domain/entities/Analytics";
-import { hasCustomAnalyticsRange, parseAnalyticsRange, toDateParam, toInclusiveEndParam } from "@/src/lib/api/analytics-params";
+import { hasCustomAnalyticsRange, parseAnalyticsRange, parseComparisonMode, toDateParam, toInclusiveEndParam } from "@/src/lib/api/analytics-params";
 import { analyticsServerApi } from "@/src/presentation/dashboard/analytics/analytics-server-api";
 import { SalesReportScreen } from "@/src/presentation/dashboard/reports/SalesReportScreen";
 
@@ -11,5 +10,5 @@ export default async function SalesReportPage({ searchParams }: Props) {
   const range = parseAnalyticsRange(params);
   const analyticsParams = new URLSearchParams(params);
   analyticsParams.set("rankLimit", "5");
-  return <SalesReportScreen analytics={await analyticsServerApi.getOverview(analyticsParams)} from={toDateParam(range.from)} to={toInclusiveEndParam(range)} isCustomRange={hasCustomAnalyticsRange(params)} comparisonRange={rangeToWire(previousPeriod(range))} />;
+  return <SalesReportScreen analytics={await analyticsServerApi.getOverview(analyticsParams)} from={toDateParam(range.from)} to={toInclusiveEndParam(range)} isCustomRange={hasCustomAnalyticsRange(params)} compareMode={parseComparisonMode(params)} />;
 }

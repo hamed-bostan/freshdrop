@@ -13,8 +13,8 @@ const PAYMENT_ISSUE_LIMIT = 5;
 export class GetPaymentReport {
   constructor(private readonly analytics: IAnalyticsRepository) {}
 
-  async execute(range: DateRange): Promise<PaymentReport> {
-    const previous = previousPeriod(range);
+  async execute(range: DateRange, comparisonRange?: DateRange): Promise<PaymentReport> {
+    const previous = comparisonRange ?? previousPeriod(range);
     const granularity = granularityFor(range);
     const [totals, previousTotals, series, previousSeries, issues] =
       await this.analytics.snapshot((analytics) =>

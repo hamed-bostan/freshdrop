@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { hasCustomAnalyticsRange, parseAnalyticsRange, toDateParam, toInclusiveEndParam } from "@/src/lib/api/analytics-params";
+import { hasCustomAnalyticsRange, parseAnalyticsRange, parseComparisonMode, toDateParam, toInclusiveEndParam } from "@/src/lib/api/analytics-params";
 import { sessionHas } from "@/src/lib/require-permission";
 import { deliveryIssuesServerApi } from "@/src/presentation/dashboard/reports/delivery-issues-server-api";
 import { DeliveryPerformanceScreen } from "@/src/presentation/dashboard/reports/DeliveryPerformanceScreen";
@@ -41,6 +41,7 @@ export default async function Page({ searchParams }: Props) {
       from={toDateParam(range.from)}
       to={toInclusiveEndParam(range)}
       isCustomRange={hasCustomAnalyticsRange(params)}
+      compareMode={parseComparisonMode(params)}
     />
   );
 }

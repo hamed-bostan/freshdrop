@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
+import type { ComparisonMode } from "@/src/lib/api/analytics-params";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { cn } from "@/src/lib/utils";
@@ -18,9 +19,9 @@ import { ReturnProcessingStatus } from "./ReturnProcessingStatus";
 import { ReturnReasonsPanel } from "./ReturnReasonsPanel";
 
 type RefundView = "overview" | "items";
-type Props = { report: RefundReportWire; customers: CustomerOrderSummary[]; from: string; to: string; isCustomRange: boolean; view: RefundView; queryString: string };
+type Props = { report: RefundReportWire; customers: CustomerOrderSummary[]; from: string; to: string; isCustomRange: boolean; compareMode: ComparisonMode; view: RefundView; queryString: string };
 
-export async function RefundsReturnsScreen({ report, customers, from, to, isCustomRange, view, queryString }: Props) {
+export async function RefundsReturnsScreen({ report, customers, from, to, isCustomRange, compareMode, view, queryString }: Props) {
   const t = await getTranslations("dashRefundReport");
   const ta = await getTranslations("dashAnalytics");
   const locale = await getLocale() as Locale;
@@ -48,7 +49,7 @@ export async function RefundsReturnsScreen({ report, customers, from, to, isCust
   const recoveryLabels = { heading: t("inspectionRecoveryQueue"), search: t("searchReturns"), allConditions: t("allConditions"), allStatuses: t("allStatuses"), viewAll: t("viewAll"), product: t("product"), order: t("order"), condition: t("condition"), received: t("received"), inspectionStatus: t("inspectionStatus"), recoveryDecision: t("recoveryDecision"), value: t("valueColumn"), action: t("action"), awaitingInspection: t("awaitingInspection"), inspected: t("inspected"), inReview: t("inReview"), pending: t("pending"), restock: t("restock"), discount: t("discount"), returnToSupplier: t("returnToSupplier"), dispose: t("dispose"), inspect: t("inspect"), confirm: t("confirm"), review: t("review"), complete: t("complete"), showing: t("showingOpenItems", { first: "__FIRST__", last: "__LAST__", total: "__TOTAL__" }).replace("__FIRST__", "{first}").replace("__LAST__", "{last}").replace("__TOTAL__", "{total}"), previousPage: t("previousPage"), nextPage: t("nextPage"), unopened: t("unopened"), resellable: t("resellable"), damaged: t("damaged"), expired: t("expired"), missingParts: t("missingParts"), pendingDecision: t("pendingDecision"), notRecorded: t("notRecorded") };
 
   return <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-4">
-    <ReportHeader ariaLabel={t("breadcrumbAria")} parentLabel={t("reports")} currentLabel={t("heading")} title={t("heading")} subtitle={t("combinedSubtitle")} from={from} to={to} isCustomRange={isCustomRange} comparisonRange={report.previousRange} exportReports={[{ resource: "orders", label: ta("exportOrdersReport") }]} />
+    <ReportHeader ariaLabel={t("breadcrumbAria")} parentLabel={t("reports")} currentLabel={t("heading")} title={t("heading")} subtitle={t("combinedSubtitle")} from={from} to={to} isCustomRange={isCustomRange} comparisonRange={report.previousRange} compareMode={compareMode} exportReports={[{ resource: "orders", label: ta("exportOrdersReport") }]} />
     <nav className="flex border-b border-border" aria-label={t("viewTabsLabel")}><ReportTab active={view === "overview"} href={viewHref(queryString, "overview")} label={t("overview")} /><ReportTab active={view === "items"} href={viewHref(queryString, "items")} label={t("itemsRecovery")} /></nav>
     {view === "overview" ? <>
       <RefundOverviewMetricGrid report={report} locale={locale} />
