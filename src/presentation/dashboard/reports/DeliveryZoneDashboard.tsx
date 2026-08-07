@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, ExternalLink, Info, MapPin, TimerOff, TrendingUp, Truck } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ExternalLink, MapPin, TimerOff, TrendingUp, Truck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { percentChange } from "@/src/domain/entities/Analytics";
@@ -45,15 +45,6 @@ export async function DeliveryZonePerformance({ report, locale }: Props) {
   </section>;
 }
 
-export async function DeliveryZoneDemand({ report, locale }: Props) {
-  const t = await getTranslations("dashDeliveryReport");
-  const max = Math.max(...report.zones.map((zone) => zone.orders), 1);
-  return <section className="rounded-card-lg border border-border bg-background p-4">
-    <h2 className="flex items-center gap-1.5 text-body-b5">{t("ordersByZone")}<Icon icon={Info} size="xs" /></h2>
-    <div className="mt-3 space-y-3">{report.zones.map((zone) => <div key={zone.zone} className="grid grid-cols-[4rem_1fr] items-center gap-3 text-body-b10"><span className="truncate">{zone.zone}</span><Bar width={(zone.orders / max) * 96} label={formatNumber(zone.orders, locale)} /></div>)}</div>
-  </section>;
-}
-
 export async function DeliveryZoneAlerts({ report, locale }: Props) {
   const t = await getTranslations("dashDeliveryReport");
   const strongest = report.zones.length ? [...report.zones].sort((a, b) => b.onTimeRate - a.onTimeRate)[0] : undefined;
@@ -81,4 +72,3 @@ export async function DeliveryZoneAlerts({ report, locale }: Props) {
 }
 
 function Footer({ href, label }: { href: string; label: string }) { return <Link href={href} className="mt-auto flex items-center gap-2 border-t border-border pt-3 text-body-b8 font-medium text-primary">{label}<Icon icon={ExternalLink} size="xs" /></Link>; }
-function Bar({ width, label }: { width: number; label: string }) { return <div className="flex items-center gap-2"><span className="h-1.5 rounded-full bg-primary" style={{ width: `${Math.max(width, 4)}%` }} /><span className="text-label-l1">{label}</span></div>; }
