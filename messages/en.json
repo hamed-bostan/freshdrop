@@ -678,6 +678,14 @@
     "signOutMessage": "You'll need to sign in again to get back to the dashboard.",
     "collapseSidebar": "Collapse sidebar",
     "expandSidebar": "Expand sidebar",
+    "bottomNav": {
+      "dashboard": "Dashboard",
+      "orders": "Orders",
+      "products": "Products",
+      "analytics": "Analytics",
+      "more": "More",
+      "moreAria": "More options"
+    },
     "search": {
       "trigger": "Search",
       "shortcutHint": "⌘K",
