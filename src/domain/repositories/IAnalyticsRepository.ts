@@ -12,7 +12,7 @@ import type {
 } from "../entities/Analytics";
 import type { CustomerGrowthPoint, PurchaseFrequency, RetentionCohort } from "../entities/CustomerInsightsReport";
 import type { CustomerSegmentAssignment, CustomerSegmentPerformance, CustomerSegmentTransition } from "../entities/CustomerSegmentsReport";
-import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, DeliveryWindowPerformance, LateDelivery } from "../entities/DeliveryPerformanceReport";
+import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, LateDelivery } from "../entities/DeliveryPerformanceReport";
 import type { DeliveryZonePerformance } from "../entities/DeliveryZonesReport";
 import type { DriverPerformance } from "../entities/DriverPerformance";
 import type { PaymentIssue, PaymentReportTotals } from "../entities/PaymentReport";
@@ -171,11 +171,10 @@ export type IAnalyticsRefundRepository = {
   returnBreakdown(range: DateRange): Promise<ReturnBreakdown>;
 };
 
-/** Aggregates for delivery performance: totals, series, windows, lateness and zones. */
+/** Aggregates for delivery performance: totals, series, lateness and zones. */
 export type IAnalyticsDeliveryRepository = {
   deliveryTotals(range: DateRange): Promise<DeliveryPerformanceTotals>;
   deliverySeries(range: DateRange, granularity: AnalyticsGranularity): Promise<DeliveryPerformancePoint[]>;
-  deliveryWindows(range: DateRange, previousRange: DateRange, limit: number): Promise<DeliveryWindowPerformance[]>;
   lateDeliveries(range: DateRange, limit: number): Promise<LateDelivery[]>;
 
   /** Delivery performance grouped by delivery-zone (settlement/city), ranked by order volume. */

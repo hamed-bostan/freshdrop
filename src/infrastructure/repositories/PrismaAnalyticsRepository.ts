@@ -18,7 +18,7 @@ import {
 } from "@/src/domain/entities/Analytics";
 import type { CustomerGrowthPoint, PurchaseFrequency, RetentionCohort } from "@/src/domain/entities/CustomerInsightsReport";
 import type { CustomerSegmentAssignment, CustomerSegmentId, CustomerSegmentPerformance, CustomerSegmentTransition } from "@/src/domain/entities/CustomerSegmentsReport";
-import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, DeliveryWindowPerformance, LateDelivery } from "@/src/domain/entities/DeliveryPerformanceReport";
+import type { DeliveryPerformancePoint, DeliveryPerformanceTotals, LateDelivery } from "@/src/domain/entities/DeliveryPerformanceReport";
 import type { DeliveryZonePerformance } from "@/src/domain/entities/DeliveryZonesReport";
 import type { DriverPerformance } from "@/src/domain/entities/DriverPerformance";
 import { ORDER_STATUSES, type OrderStatus } from "@/src/domain/entities/Order";
@@ -565,54 +565,6 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
     return rows.map((row) => ({ ...row, bucket: row.bucket.toISOString() }));
   }
 
-  async deliveryWindows(range: DateRange, previousRange: DateRange, limit: number): Promise<DeliveryWindowPerformance[]> {
-    return this.db.$queryRaw<DeliveryWindowRow[]>(Prisma.sql`
-      WITH
-        current_deliveries AS (${deliveryEvents(range)}),
-        previous_deliveries AS (${deliveryEvents(previousRange)}),
-        current_stats AS (
-          SELECT
-            COALESCE(window_id, window_label, 'unscheduled') AS id,
-            COALESCE(
-              (ARRAY_AGG(window_label ORDER BY delivered_at DESC)
-                FILTER (WHERE window_label IS NOT NULL))[1],
-              'Unscheduled'
-            ) AS label,
-            COUNT(*)::int AS orders,
-            COALESCE(
-              COUNT(*) FILTER (WHERE due_at IS NOT NULL AND delivered_at <= due_at)::double precision
-                / NULLIF(COUNT(*) FILTER (WHERE due_at IS NOT NULL), 0),
-              0
-            ) AS "onTimeRate",
-            COALESCE(ROUND(AVG(fulfillment_minutes)), 0)::int AS "averageFulfillmentMinutes"
-          FROM current_deliveries
-          -- The ID is the domain identity. Labels are snapshots on orders and may
-          -- differ after a window is renamed, so grouping by both duplicates one
-          -- logical window and produces duplicate React keys in report consumers.
-          GROUP BY 1
-        ),
-        previous_stats AS (
-          SELECT
-            COALESCE(window_id, window_label, 'unscheduled') AS id,
-            COUNT(*) FILTER (WHERE due_at IS NOT NULL AND delivered_at <= due_at)::double precision
-              / NULLIF(COUNT(*) FILTER (WHERE due_at IS NOT NULL), 0) AS rate
-          FROM previous_deliveries
-          GROUP BY 1
-        )
-      SELECT
-        c.id,
-        c.label,
-        c.orders,
-        c."onTimeRate",
-        c."averageFulfillmentMinutes",
-        p.rate AS "previousOnTimeRate"
-      FROM current_stats c
-      LEFT JOIN previous_stats p USING (id)
-      ORDER BY c.orders DESC
-      LIMIT ${Math.max(1, Math.min(limit, 10))}
-    `);
-  }
-
   async lateDeliveries(range: DateRange, limit: number): Promise<LateDelivery[]> {
     const rows = await this.db.$queryRaw<LateDeliveryRow[]>(Prisma.sql`SELECT order_id AS "orderId", order_number AS "orderNumber", user_id AS "userId", COALESCE(window_label, 'Unscheduled') AS "windowLabel", GREATEST(0, ROUND(EXTRACT(EPOCH FROM (delivered_at - due_at)) / 60))::int AS "delayMinutes", delivered_at AS "deliveredAt", COALESCE(city, 'Unspecified') AS zone FROM (${deliveryEvents(range)}) deliveries WHERE due_at IS NOT NULL AND delivered_at > due_at ORDER BY delivered_at DESC LIMIT ${Math.max(1, Math.min(limit, 20))}`);
     return rows.map((row) => ({ ...row, deliveredAt: row.deliveredAt.toISOString() }));
@@ -1126,7 +1078,6 @@ type RefundReasonRow = Omit<RefundReasonCount, "kind"> & { kind: string };
 type RefundCaseRow = Omit<RefundCase, "kind" | "status" | "activityAt" | "returnStatus" | "condition" | "recoveryDecision"> & { kind: string | null; status: string; activityAt: Date; returnStatus: string | null; condition: string | null; recoveryDecision: string | null };
 type DeliveryTotalsRow = DeliveryPerformanceTotals;
 type DeliveryPointRow = Omit<DeliveryPerformancePoint, "bucket"> & { bucket: Date };
-type DeliveryWindowRow = DeliveryWindowPerformance;
 type LateDeliveryRow = Omit<LateDelivery, "deliveredAt"> & { deliveredAt: Date };
 type DeliveryZonePerformanceRow = { zone: string; orders: number; onTimeRate: number; lateDeliveries: number; averageFulfillmentMinutes: number; centroidLat: number | null; centroidLng: number | null; previousOnTimeRate: number | null };
 type DriverPerformanceRow = DriverPerformance;
