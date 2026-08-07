@@ -375,7 +375,7 @@ export async function DashboardOverviewScreen({
                     <span className="truncate text-body-b7 text-foreground">
                       {customer?.name ?? order.userId}
                     </span>
-                    <OrderStatusBadge status={order.status} stage={order.stage} size="sm" />
+                    <OrderStatusBadge status={order.status} stage={order.stage} context="admin" size="sm" />
                     <span className="flex flex-col whitespace-nowrap text-body-b8 text-muted-foreground">
                       <span className="text-foreground">{formatOrderDateShort(order.placedAt, locale)}</span>
                       {formatOrderTime(order.placedAt, locale)}
