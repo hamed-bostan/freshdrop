@@ -39,9 +39,11 @@ import { NeedsAttentionPanel } from "./attention/NeedsAttentionPanel";
 import { buildDashboardOverviewViewModel } from "./dashboard-overview-view-model";
 import { LowStockPanel } from "./LowStockPanel";
 import { StatCard } from "./StatCard";
+import { StatCardCarousel } from "./StatCardCarousel";
 
 import type { AnalyticsOverviewWire } from "./analytics/analytics-response-schema";
 import type { AttentionItem } from "./attention/AttentionItem";
+import type { StatCardProps } from "./StatCard";
 
 
 
@@ -161,6 +163,48 @@ export async function DashboardOverviewScreen({
 
   const comparisonLabel = tAnalytics("vsPrevious", { days: viewModel.comparisonDays });
 
+  // Built once and fed to both layouts below — the grid (`sm:` and up) and the
+  // swipeable carousel (mobile only) render the exact same four tiles, so a
+  // number can never read differently depending on viewport width.
+  const statCards: StatCardProps[] = [
+    {
+      icon: DollarSign,
+      tone: "brand",
+      value: formatMoney(totals.revenue, locale),
+      label: tAnalytics("kpiRevenue"),
+      deltaLabel: comparisonLabel,
+      ...delta(totals.revenue, previousTotals.revenue),
+      trendValues: viewModel.revenue.trendValues,
+    },
+    {
+      icon: ClipboardList,
+      tone: "info",
+      value: formatNumber(totals.orders, locale),
+      label: tAnalytics("kpiOrders"),
+      deltaLabel: comparisonLabel,
+      ...delta(totals.orders, previousTotals.orders),
+      trendValues: viewModel.orders.trendValues,
+    },
+    {
+      icon: Receipt,
+      tone: "warning",
+      value: formatMoney(totals.averageOrderValue, locale),
+      label: tAnalytics("kpiAverageOrder"),
+      deltaLabel: comparisonLabel,
+      ...delta(totals.averageOrderValue, previousTotals.averageOrderValue),
+      trendValues: viewModel.averageOrder.trendValues,
+    },
+    {
+      icon: Users,
+      tone: "danger",
+      value: formatNumber(analytics.customerSegments.newCustomers, locale),
+      label: tAnalytics("newCustomers"),
+      deltaLabel: comparisonLabel,
+      ...delta(analytics.customerSegments.newCustomers, analytics.previousCustomerSegments.newCustomers),
+      trendValues: viewModel.newCustomers.trendValues,
+    },
+  ];
+
   // Repeat rate is a share, not a count, so it gets its own null-aware formatting
   // and delta rather than reusing `delta()` directly on the raw numbers — a
   // period with no customers has no rate to report at all (see
@@ -275,43 +319,16 @@ export async function DashboardOverviewScreen({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          icon={DollarSign}
-          tone="brand"
-          value={formatMoney(totals.revenue, locale)}
-          label={tAnalytics("kpiRevenue")}
-          deltaLabel={comparisonLabel}
-          {...delta(totals.revenue, previousTotals.revenue)}
-          trendValues={viewModel.revenue.trendValues}
-        />
-        <StatCard
-          icon={ClipboardList}
-          tone="info"
-          value={formatNumber(totals.orders, locale)}
-          label={tAnalytics("kpiOrders")}
-          deltaLabel={comparisonLabel}
-          {...delta(totals.orders, previousTotals.orders)}
-          trendValues={viewModel.orders.trendValues}
-        />
-        <StatCard
-          icon={Receipt}
-          tone="warning"
-          value={formatMoney(totals.averageOrderValue, locale)}
-          label={tAnalytics("kpiAverageOrder")}
-          deltaLabel={comparisonLabel}
-          {...delta(totals.averageOrderValue, previousTotals.averageOrderValue)}
-          trendValues={viewModel.averageOrder.trendValues}
-        />
-        <StatCard
-          icon={Users}
-          tone="danger"
-          value={formatNumber(analytics.customerSegments.newCustomers, locale)}
-          label={tAnalytics("newCustomers")}
-          deltaLabel={comparisonLabel}
-          {...delta(analytics.customerSegments.newCustomers, analytics.previousCustomerSegments.newCustomers)}
-          trendValues={viewModel.newCustomers.trendValues}
-        />
+      {/* Below `sm`: one tile per swipe with dot pagination — four full-width
+          stacked cards would push everything else below the fold before the
+          page says anything actionable. `sm` and up: the plain grid. */}
+      <div className="sm:hidden">
+        <StatCardCarousel cards={statCards} />
+      </div>
+      <div className="hidden gap-4 sm:grid sm:grid-cols-2 xl:grid-cols-4">
+        {statCards.map((card) => (
+          <StatCard key={card.label} {...card} />
+        ))}
       </div>
 
       {/* One consolidated strip for everything that names something to *do*, kept

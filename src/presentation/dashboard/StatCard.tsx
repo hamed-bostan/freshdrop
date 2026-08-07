@@ -23,7 +23,7 @@ const TONE_STYLES: Record<StatCardTone, string> = {
   danger: "bg-error text-error-foreground",
 };
 
-type StatCardProps = {
+export type StatCardProps = {
   /** The headline metric, already formatted for the active locale (money, count, …). */
   value: string;
   /** What the metric measures — sits at the top of the tile, opposite the icon. */
