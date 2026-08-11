@@ -106,9 +106,9 @@ export async function OrderStatusBreakdown({ breakdown, compact = false }: Order
       </div>
 
       {total > 0 ? (
-        <div className="mt-3 grid items-center gap-4 sm:grid-cols-[minmax(8rem,.85fr)_minmax(10rem,1fr)]">
-          <div className="relative mx-auto flex size-32 items-center justify-center rounded-full" style={{ background: `conic-gradient(${donutStops})` }} aria-hidden>
-            <div className="flex size-[5.5rem] flex-col items-center justify-center rounded-full bg-background"><strong className="text-heading-h3">{formatNumber(total, locale)}</strong><span className="text-body-b10 text-muted-foreground">{t("totalLabel")}</span></div>
+        <div className="mt-3 grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-4 sm:grid-cols-[minmax(8rem,.85fr)_minmax(10rem,1fr)]">
+          <div className="relative mx-auto flex size-28 items-center justify-center rounded-full sm:size-32" style={{ background: `conic-gradient(${donutStops})` }} aria-hidden>
+            <div className="flex size-[4.75rem] flex-col items-center justify-center rounded-full bg-background sm:size-[5.5rem]"><strong className="text-heading-h3">{formatNumber(total, locale)}</strong><span className="text-body-b10 text-muted-foreground">{t("totalLabel")}</span></div>
           </div>
 
           <ul className="flex flex-col gap-1.5">

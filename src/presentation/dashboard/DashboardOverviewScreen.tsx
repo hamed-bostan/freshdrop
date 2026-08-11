@@ -249,14 +249,14 @@ export async function DashboardOverviewScreen({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-3 sm:flex-col sm:gap-4 lg:flex-row">
+        <div className="min-w-0">
           <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
-          <p className="text-body-b7 text-muted-foreground">{t("subtitle")}</p>
+          <p className="whitespace-nowrap text-body-b7 text-muted-foreground sm:whitespace-normal">{t("subtitle")}</p>
           {/* The days actually covered, spelled out. A dashboard headed only "Last
               30 days" makes every number on it unverifiable; this is the line that
               lets someone reconcile a tile against the orders list. */}
-          <p className="mt-1 inline text-body-b9 text-muted-foreground">
+          <p className="mt-1 hidden text-body-b9 text-muted-foreground sm:inline">
             {tAnalytics("rangeCaption", {
               from: formatMediumDate(analytics.range.from, locale),
               to: formatMediumDate(analytics.range.to, locale),
@@ -265,12 +265,12 @@ export async function DashboardOverviewScreen({
           {/* Every KPI tile below states its move as "vs previous N days" without
               saying which days those were — this line names the baseline period
               those percentages are actually computed against. */}
-          <p className="ms-2 inline text-body-b8 text-muted-foreground before:me-2 before:content-['•']">
+          <p className="ms-2 hidden text-body-b8 text-muted-foreground before:me-2 before:content-['•'] sm:inline">
             {t("comparedToPreviousPeriod")}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+        <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
           {/* The overview keeps the KPIs and the period chart; everything else
               analytics can show (the full status breakdown, exports, and the
               rankings past the top five) moved to its own page — this is the
@@ -294,7 +294,7 @@ export async function DashboardOverviewScreen({
             href="/dashboard/analytics"
             className={cn(
               focusRing,
-              "inline-flex h-10 items-center rounded-input px-2 text-body-b9 text-primary transition-colors hover:bg-muted",
+              "hidden h-10 items-center rounded-input px-2 text-body-b9 text-primary transition-colors hover:bg-muted sm:inline-flex",
             )}
           >
             {t("viewFullAnalytics")}

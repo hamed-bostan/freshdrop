@@ -49,7 +49,7 @@ export async function RecentOrdersPanel({ orders, customersById }: RecentOrdersP
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-body-b5 text-foreground">{t("recentOrders")}</h2>
         <Link href="/dashboard/orders" className="inline-flex items-center gap-1 text-body-b8 text-primary hover:underline">
-          {t("viewAll")}
+          {t("viewAllOrders")}
           <Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" />
         </Link>
       </div>

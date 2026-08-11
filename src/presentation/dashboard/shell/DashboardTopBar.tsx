@@ -1,8 +1,9 @@
 "use client";
 
-import { CircleHelp, Menu, Search } from "lucide-react";
+import { CircleHelp, Leaf, Menu, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { Link } from "@/src/i18n/navigation";
 import { NotificationBell } from "@/src/presentation/dashboard/notifications/NotificationBell";
 import { Button, Icon } from "@/src/presentation/design-system";
 
@@ -29,7 +30,12 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-background px-4">
-      <Button variant="ghost" iconOnly size="sm" aria-label={t("openNav")} onClick={onOpenNav} className="lg:hidden">
+      <Link href="/dashboard" className="flex items-center gap-2 text-xl font-bold text-foreground sm:hidden">
+        <Icon icon={Leaf} size="md" className="text-primary" />
+        <span>freshDrop</span>
+      </Link>
+
+      <Button variant="ghost" iconOnly size="sm" aria-label={t("openNav")} onClick={onOpenNav} className="hidden sm:inline-flex lg:hidden">
         <Icon icon={Menu} size="sm" />
       </Button>
 
@@ -58,7 +64,7 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
 
       <div className="flex-1" />
 
-      <Button variant="ghost" iconOnly size="sm" aria-label={t("help")} asChild>
+      <Button variant="ghost" iconOnly size="sm" aria-label={t("help")} className="hidden sm:inline-flex" asChild>
         <a href="mailto:support@yourapp.com">
           <Icon icon={CircleHelp} size="sm" />
         </a>
@@ -66,7 +72,9 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
 
       <NotificationBell />
 
-      <LocaleToggle />
+      <div className="hidden sm:block">
+        <LocaleToggle />
+      </div>
 
       <UserMenu viewer={viewer} />
     </header>

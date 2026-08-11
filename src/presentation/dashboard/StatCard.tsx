@@ -138,7 +138,7 @@ export function StatCard({
     </>
   );
 
-  const frame = "flex h-full min-h-32 flex-col justify-between gap-1 rounded-card-lg border border-border p-4";
+  const frame = "flex h-full min-h-32 flex-col justify-between gap-1 rounded-card-lg border border-border p-3 sm:p-4";
 
   if (href) {
     return (

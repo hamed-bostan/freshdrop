@@ -106,7 +106,7 @@ export function AnalyticsRangePicker({
           aria-label={presetLabel}
           value={isCustom ? CUSTOM_RANGE_VALUE : (searchParams.get("range") ?? DEFAULT_ANALYTICS_PRESET)}
           onChange={(event) => selectPreset(event.target.value)}
-          className="w-auto ps-9"
+          className="w-40 ps-9 sm:w-auto"
         >
           {presetOptions.map((option) => (
             <option key={option.value} value={option.value}>

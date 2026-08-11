@@ -54,7 +54,7 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
             {formatNumber(active.length, locale)}
           </Badge>
         ) : null}
-        <Link href="/dashboard/activity" className="ms-auto inline-flex items-center gap-1 text-body-b8 text-primary hover:underline">{t("viewAllAlerts")}<Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" /></Link>
+        <Link href="/dashboard/activity" className="ms-auto hidden items-center gap-1 text-body-b8 text-primary hover:underline sm:inline-flex">{t("viewAllAlerts")}<Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" /></Link>
       </div>
 
       {active.length > 0 ? (
@@ -80,7 +80,7 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
                 <p className="text-body-b7 text-foreground">{item.title}</p>
                 <p className="text-body-b8 text-muted-foreground">{item.detail}</p>
               </div>
-              <span className="hidden items-center gap-1 text-body-b9 text-primary sm:inline-flex">{item.ctaLabel}<Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" /></span>
+              <span className="inline-flex items-center gap-1 whitespace-nowrap text-body-b10 text-primary sm:text-body-b9">{item.ctaLabel}<Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" /></span>
             </Link>
           ))}
         </div>

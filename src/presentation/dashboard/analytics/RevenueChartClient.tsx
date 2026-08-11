@@ -57,14 +57,15 @@ export function RevenueChartClient({ compact = false, points, previousPoints, gr
 
   return <section className="rounded-card-lg border border-border bg-background p-4">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <h2 className="text-body-b5 text-foreground">{t("chartOverview")}</h2>
+      <h2 className="text-body-b5 text-foreground"><span className="sm:hidden">{t("revenueChart")}</span><span className="hidden sm:inline">{t("chartOverview")}</span></h2>
+      {compact ? <p className="text-body-b8 text-muted-foreground sm:hidden">{t("chartTotal", { amount: formatMetric(metric, total, locale) })}</p> : null}
       {!compact ? <ChartSegmentedControl value={interval} options={["daily", "weekly", "monthly"]} label={t("intervalLabel")} onChange={setInterval} getLabel={(key) => t(key)} /> : null}
     </div>
     {!compact && periodPeak > 0 ? <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
       <ChartSegmentedControl value={metric} options={["revenue", "orders", "aov"]} label={t("metricLabel")} onChange={setMetric} getLabel={(key) => t(key === "revenue" ? "metricNetSales" : METRIC_KEYS[key])} emphasis />
       <ChartLegend payload={legend} className="m-0 justify-start" />
     </div> : null}
-    {compact && periodPeak > 0 ? <ChartLegend payload={legend} className="mt-2 justify-start" /> : null}
+    {compact && periodPeak > 0 ? <ChartLegend payload={legend} className="mt-2 hidden justify-start sm:flex" /> : null}
     {periodPeak > 0 ? <>
       <div className="mt-4" aria-hidden><ChartContainer height={compact ? 150 : 220} dir={dir}>
         <LineChart data={data} margin={{ top: 6, right: 8, bottom: 0, left: 0 }}>

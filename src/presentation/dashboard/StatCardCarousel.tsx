@@ -42,11 +42,13 @@ export function StatCardCarousel({ children }: StatCardCarouselProps) {
     <div>
       <Swiper
         dir={getLangDir(locale)}
+        slidesPerView="auto"
+        spaceBetween={12}
         onSlideChange={(instance: SwiperType) => setActiveIndex(instance.activeIndex)}
         className="w-full"
       >
         {cards.map((card, index) => (
-          <SwiperSlide key={index}>{card}</SwiperSlide>
+          <SwiperSlide key={index} className="!w-[84%]">{card}</SwiperSlide>
         ))}
       </Swiper>
 
