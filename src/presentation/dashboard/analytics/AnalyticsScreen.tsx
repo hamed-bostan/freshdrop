@@ -45,7 +45,7 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange, comp
           <h1 className="text-heading-h2 text-foreground">{t("overviewHeading")}</h1>
           <p className="mt-1 text-body-b10 text-muted-foreground">{t("metricsOverviewSubtitle")}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+        <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center xl:justify-end">
           <AnalyticsRangePicker
             presetLabel={t("rangeLabel")}
             presetOptions={[...ANALYTICS_RANGE_PRESETS.map((preset) => ({ value: preset, label: t(`preset.${preset}`) })), { value: CUSTOM_RANGE_VALUE, label: t("presetCustom") }]}
@@ -56,6 +56,7 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange, comp
             isCustom={isCustomRange}
           />
           <AnalyticsComparePicker
+            className="h-11 w-full justify-between sm:h-10 sm:w-auto"
             mode={compareMode}
             triggerLabel={compareTriggerLabel}
             heading={t("compareLabel")}
@@ -70,6 +71,7 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange, comp
             previousPeriodTo={previews.previous.to}
           />
           <AnalyticsExportMenu
+            className="w-full sm:w-auto"
             label={t("exportHeading")}
             reports={[
               { resource: "orders", label: t("exportOrdersReport") },

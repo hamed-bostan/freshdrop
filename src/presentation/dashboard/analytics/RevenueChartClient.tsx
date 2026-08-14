@@ -59,12 +59,13 @@ export function RevenueChartClient({ compact = false, points, previousPoints, gr
 
   return <DashboardPanel className="h-full">
     <DashboardPanelHeader
+      className="flex-col items-stretch sm:flex-row sm:items-center"
       title={compact ? t("revenueChart") : t("chartOverview")}
       action={compact
         ? <p className="text-body-b8 text-foreground">{t("chartTotal", { amount: formatMetric(metric, total, locale) })}</p>
         : <ChartSegmentedControl value={interval} options={["daily", "weekly", "monthly"]} label={t("intervalLabel")} onChange={setInterval} getLabel={(key) => t(key)} />}
     />
-    {!compact && periodPeak > 0 ? <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+    {!compact && periodPeak > 0 ? <div className="mt-3 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
       <ChartSegmentedControl value={metric} options={["revenue", "orders", "aov"]} label={t("metricLabel")} onChange={setMetric} getLabel={(key) => t(key === "revenue" ? "metricNetSales" : METRIC_KEYS[key])} emphasis />
       <ChartLegend payload={legend} className="m-0 justify-start" />
     </div> : null}

@@ -23,6 +23,8 @@ type ListFilterPopoverProps = {
   children: React.ReactNode;
   /** Width of the panel. Defaults to a single column of options. */
   contentClassName?: string;
+  /** Layout overrides for the trigger, such as a full-width phone toolbar. */
+  triggerClassName?: string;
 };
 
 /**
@@ -50,6 +52,7 @@ export function ListFilterPopover({
   icon,
   children,
   contentClassName,
+  triggerClassName,
 }: ListFilterPopoverProps) {
   const active = isActive ?? (value != null);
 
@@ -65,10 +68,11 @@ export function ListFilterPopover({
           active
             ? "border-primary bg-accent text-primary"
             : "border-border bg-background text-foreground hover:bg-accent",
+          triggerClassName,
         )}
       >
         {icon}
-        <span>{label}</span>
+        <span className="min-w-0 truncate">{label}</span>
         {value != null ? (
           <>
             <span aria-hidden className="text-border">
@@ -81,7 +85,7 @@ export function ListFilterPopover({
             depending on the panel being visible on screen. */}
         <ChevronDown
           aria-hidden
-          className="size-4 transition-transform duration-150 group-data-[state=open]:rotate-180"
+          className="size-4 shrink-0 transition-transform duration-150 group-data-[state=open]:rotate-180"
         />
       </PopoverTrigger>
 

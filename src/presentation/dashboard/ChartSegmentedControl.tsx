@@ -14,7 +14,7 @@ type ChartSegmentedControlProps<T extends string> = {
 /** Shared chart toggle used by report and overview charts. */
 export function ChartSegmentedControl<T extends string>({ value, options, label, onChange, getLabel, emphasis = false }: ChartSegmentedControlProps<T>) {
   return (
-    <div className="flex rounded-card-md border border-border p-0.5" role="group" aria-label={label}>
+    <div className="flex w-full rounded-card-md border border-border p-0.5 sm:w-auto" role="group" aria-label={label}>
       {options.map((option) => (
         <button
           key={option}
@@ -22,7 +22,7 @@ export function ChartSegmentedControl<T extends string>({ value, options, label,
           aria-pressed={value === option}
           onClick={() => onChange(option)}
           className={cn(
-            "rounded-card-md px-3 text-body-b10",
+            "min-h-11 min-w-0 flex-1 rounded-card-md px-3 text-body-b10 sm:min-h-0 sm:flex-none",
             emphasis ? "py-1.5 font-semibold" : "py-1 font-medium",
             value === option ? "bg-accent text-primary shadow-sm" : "text-muted-foreground hover:text-foreground",
           )}

@@ -94,7 +94,7 @@ export function AnalyticsRangePicker({
   }
 
   return (
-    <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
+    <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
       <div className="relative w-full sm:w-auto">
         <Icon
           icon={Calendar}
@@ -129,7 +129,7 @@ export function AnalyticsRangePicker({
             // you'll get.
             max={to}
             onChange={(event) => setBound("from", event.target.value)}
-            className="w-auto"
+            className="w-full sm:w-auto"
             inputClassName="px-3"
           />
           <Input
@@ -139,7 +139,7 @@ export function AnalyticsRangePicker({
             value={to}
             min={from}
             onChange={(event) => setBound("to", event.target.value)}
-            className="w-auto"
+            className="w-full sm:w-auto"
             inputClassName="px-3"
           />
         </>

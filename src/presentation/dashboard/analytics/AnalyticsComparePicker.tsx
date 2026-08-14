@@ -13,6 +13,8 @@ import { Button, Icon, Input, PopoverClose } from "@/src/presentation/design-sys
 import type { CompareOption } from "./compare-preview";
 
 type AnalyticsComparePickerProps = {
+  /** Responsive layout overrides for the popover trigger. */
+  className?: string;
   /** Which baseline the report is actually measured against right now. */
   mode: ComparisonMode;
   /** The trigger's own text, already formatted — "Compare: Jun 2 – Jul 1, 2026" or "No comparison". */
@@ -51,6 +53,7 @@ type AnalyticsComparePickerProps = {
  * not two.
  */
 export function AnalyticsComparePicker({
+  className,
   mode,
   triggerLabel,
   heading,
@@ -65,7 +68,7 @@ export function AnalyticsComparePicker({
   previousPeriodTo,
 }: AnalyticsComparePickerProps) {
   return (
-    <ListFilterPopover label={triggerLabel} isActive={mode !== "none"} icon={<Icon icon={GitCompare} size="xs" />} contentClassName="w-72">
+    <ListFilterPopover label={triggerLabel} isActive={mode !== "none"} icon={<Icon icon={GitCompare} size="xs" />} contentClassName="w-72" triggerClassName={className}>
       <ComparePanel
         mode={mode}
         heading={heading}
@@ -83,7 +86,7 @@ export function AnalyticsComparePicker({
   );
 }
 
-type ComparePanelProps = Omit<AnalyticsComparePickerProps, "triggerLabel">;
+type ComparePanelProps = Omit<AnalyticsComparePickerProps, "className" | "triggerLabel">;
 
 /**
  * The draft: which mode, and (only for Custom) which two dates. Split out so it

@@ -23,6 +23,7 @@ import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
+import { StatCardCarousel } from "@/src/presentation/dashboard/StatCardCarousel";
 import { StatSparkline } from "@/src/presentation/dashboard/StatSparkline";
 import { Icon } from "@/src/presentation/design-system";
 
@@ -60,25 +61,54 @@ export async function AnalyticsKpiStrip({ analytics }: { analytics: AnalyticsOve
     { key: "customers", label: t("activeCustomers"), value: formatNumber(customerSegments.totalCustomers, locale), icon: Users, tone: "bg-success text-success-foreground", delta: percentChange(customerSegments.totalCustomers, previousCustomerSegments.totalCustomers), trend: [previousCustomerSegments.totalCustomers, customerSegments.totalCustomers] },
   ];
 
+  const cards = kpis.map((kpi) => (
+    <KpiCard
+      key={kpi.key}
+      kpi={kpi}
+      locale={locale}
+      previousPeriodLabel={t("vsPreviousPeriod")}
+      currentPeriodLabel={t("currentPeriod")}
+    />
+  ));
+
   return (
-    <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-      {kpis.map((kpi) => {
-        const percent = kpi.delta === null ? null : Math.round(kpi.delta * 1000) / 10;
-        const positive = percent !== null && (kpi.invertDelta ? percent <= 0 : percent >= 0);
-        return (
-          <article key={kpi.key} className="flex min-h-36 min-w-0 flex-col rounded-card-lg border border-border bg-background p-4">
-            <div className="flex items-center gap-3">
-              <span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${kpi.tone}`}><Icon icon={kpi.icon} size="sm" /></span>
-              <div className="min-w-0"><p className="truncate text-body-b10 text-muted-foreground">{kpi.label}</p><p className="truncate text-heading-h3 text-foreground">{kpi.value}</p></div>
-            </div>
-            <p className="mt-3 flex min-h-5 items-center gap-1 text-body-b10">
-              {percent !== null ? <><Icon icon={percent >= 0 ? ArrowUp : ArrowDown} size="xs" className={positive ? "text-success-foreground" : "text-destructive"} /><span className={positive ? "font-semibold text-success-foreground" : "font-semibold text-destructive"}>{formatSignedPercent(percent, locale)}</span><span className="truncate text-muted-foreground">{t("vsPreviousPeriod")}</span></> : <span className="text-muted-foreground">{t("currentPeriod")}</span>}
-            </p>
-            <div className="mt-auto">{kpi.trend ? <StatSparkline values={kpi.trend} positive={positive || percent === null} /> : <div className="h-9" />}</div>
-          </article>
-        );
-      })}
-    </section>
+    <>
+      <div className="sm:hidden">
+        <StatCardCarousel>{cards}</StatCardCarousel>
+      </div>
+      <section className="hidden gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {cards}
+      </section>
+    </>
+  );
+}
+
+function KpiCard({ kpi, locale, previousPeriodLabel, currentPeriodLabel }: { kpi: Kpi; locale: Locale; previousPeriodLabel: string; currentPeriodLabel: string }) {
+  const percent = kpi.delta === null ? null : Math.round(kpi.delta * 1000) / 10;
+  const positive = percent !== null && (kpi.invertDelta ? percent <= 0 : percent >= 0);
+
+  return (
+    <article className="flex min-h-36 min-w-0 flex-col rounded-card-lg border border-border bg-background p-4">
+      <div className="flex items-center gap-3">
+        <span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${kpi.tone}`}>
+          <Icon icon={kpi.icon} size="sm" />
+        </span>
+        <div className="min-w-0">
+          <p className="truncate text-body-b10 text-muted-foreground">{kpi.label}</p>
+          <p className="truncate text-heading-h3 text-foreground">{kpi.value}</p>
+        </div>
+      </div>
+      <p className="mt-3 flex min-h-5 items-center gap-1 text-body-b10">
+        {percent !== null ? (
+          <>
+            <Icon icon={percent >= 0 ? ArrowUp : ArrowDown} size="xs" className={positive ? "text-success-foreground" : "text-destructive"} />
+            <span className={positive ? "font-semibold text-success-foreground" : "font-semibold text-destructive"}>{formatSignedPercent(percent, locale)}</span>
+            <span className="truncate text-muted-foreground">{previousPeriodLabel}</span>
+          </>
+        ) : <span className="text-muted-foreground">{currentPeriodLabel}</span>}
+      </p>
+      <div className="mt-auto">{kpi.trend ? <StatSparkline values={kpi.trend} positive={positive || percent === null} /> : <div className="h-9" />}</div>
+    </article>
   );
 }
 
@@ -91,7 +121,26 @@ export async function PriorityActionsCard({ analytics }: { analytics: AnalyticsO
     { icon: TriangleAlert, tone: "bg-warning text-warning-foreground", title: t("priorityRefunds"), body: t("priorityRefundsBody", { count: returns }), badge: t("priorityAttention"), badgeTone: "bg-warning text-warning-foreground" },
     { icon: CreditCard, tone: "bg-info text-info-foreground", title: t("priorityPayments", { count: processing }), body: t("priorityPaymentsBody"), badge: t("priorityMonitor"), badgeTone: "bg-info text-info-foreground" },
   ];
-  return <section className="rounded-card-lg border border-border bg-background p-4"><h2 className="text-body-b5 text-foreground">{t("priorityActions")}</h2><ul className="mt-3 divide-y divide-border overflow-hidden rounded-card-md border border-border">{actions.map((action) => <li key={action.title} className="flex items-center gap-3 p-3"><span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${action.tone}`}><Icon icon={action.icon} size="sm" /></span><div className="min-w-0 flex-1"><p className="truncate text-body-b10 font-semibold text-foreground">{action.title}</p><p className="truncate text-body-b10 text-muted-foreground">{action.body}</p></div><span className={`rounded-card-md px-3 py-1 text-label-l4 font-semibold ${action.badgeTone}`}>{action.badge}</span><Icon icon={ChevronRight} size="xs" className="text-muted-foreground rtl:rotate-180" /></li>)}</ul></section>;
+  return (
+    <section className="rounded-card-lg border border-border bg-background p-4">
+      <h2 className="text-body-b5 text-foreground">{t("priorityActions")}</h2>
+      <ul className="mt-3 flex flex-col gap-2">
+        {actions.map((action) => (
+          <li key={action.title} className="flex items-center gap-3 rounded-card-md border border-border p-3">
+            <span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${action.tone}`}>
+              <Icon icon={action.icon} size="sm" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="line-clamp-2 text-body-b7 font-semibold text-foreground">{action.title}</p>
+              <p className="line-clamp-1 text-body-b10 text-muted-foreground">{action.body}</p>
+              <span className={`mt-1 inline-flex rounded-card-md px-2 py-1 text-label-l2 font-semibold ${action.badgeTone}`}>{action.badge}</span>
+            </div>
+            <Icon icon={ChevronRight} size="xs" className="shrink-0 text-muted-foreground rtl:rotate-180" />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }
 
 export async function AnalyticsInsights({ analytics }: { analytics: AnalyticsOverviewWire }) {
@@ -107,10 +156,37 @@ export async function AnalyticsInsights({ analytics }: { analytics: AnalyticsOve
     { icon: ArrowUp, tone: "bg-accent text-primary", title: revenueChange === null ? t("insightRevenueCurrent") : t("insightRevenue", { percent: Math.abs(Math.round(revenueChange * 100)) }), body: revenueChange === null ? t("insightRevenueCurrentBody", { current: formatMoney(analytics.totals.revenue, locale) }) : t("insightRevenueBody", { current: formatMoney(analytics.totals.revenue, locale), previous: formatMoney(analytics.previousTotals.revenue, locale) }) },
     { icon: aovChange !== null && aovChange >= 0 ? ArrowUp : ArrowDown, tone: "bg-info text-info-foreground", title: aovChange === null ? t("insightAovCurrent") : t("insightAov", { direction: aovChange >= 0 ? t("increased") : t("decreased"), percent: Math.abs(Math.round(aovChange * 100)) }), body: aovChange === null ? t("insightAovCurrentBody", { current: formatMoney(placedAverage, locale) }) : t("insightAovBody", { current: formatMoney(analytics.totals.averageOrderValue, locale), previous: formatMoney(analytics.previousTotals.averageOrderValue, locale) }) },
     { icon: ClipboardList, tone: "bg-warning text-warning-foreground", title: t("insightProcessing", { percent: totalStatuses > 0 ? Math.round((processing / totalStatuses) * 100) : 0 }), body: t("insightProcessingBody", { count: processing, total: totalStatuses }) },
-    ...(top ? [{ icon: Star, tone: "bg-muted text-secondary", title: t("insightTopSeller", { name: top.name }), body: t("insightTopSellerBody", { revenue: formatMoney(top.revenue, locale), units: top.units }) }] : []),
+    ...(top ? [{ icon: Star, tone: "bg-muted text-secondary", title: t("insightTopSeller", { name: top.name }), body: t("insightTopSellerBody", { revenue: formatMoney(top.revenue, locale), units: top.units }), mobileHidden: true }] : []),
   ];
 
-  return <section className="h-full rounded-card-lg border border-border bg-background p-4"><div className="flex items-center justify-between"><h2 className="flex items-center gap-2 text-body-b5"><Icon icon={Star} size="xs" className="text-info-foreground" />{t("insights")}</h2><Link href="/dashboard/analytics" className="text-body-b10 text-primary">{t("viewAll")}</Link></div><ul className="mt-3 flex flex-col gap-2.5">{items.map((item) => <li key={item.title} className="flex gap-2.5"><span className={`flex size-8 shrink-0 items-center justify-center rounded-full ${item.tone}`}><Icon icon={item.icon} size="xs" /></span><div className="min-w-0"><p className="truncate text-body-b10 font-semibold text-foreground">{item.title}</p><p className="mt-0.5 line-clamp-1 text-body-b10 text-muted-foreground">{item.body}</p></div></li>)}</ul></section>;
+  return (
+    <section className="flex h-full flex-col rounded-card-lg border border-border bg-background p-4">
+      <div className="flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-body-b5">
+          <Icon icon={Star} size="xs" className="hidden text-info-foreground sm:block" />
+          {t("insights")}
+        </h2>
+        <Link href="/dashboard/analytics" className="hidden text-body-b10 text-primary sm:block">{t("viewAll")}</Link>
+      </div>
+      <ul className="mt-3 divide-y divide-border sm:flex sm:flex-col sm:gap-2.5 sm:divide-y-0">
+        {items.map((item) => (
+          <li key={item.title} className={`items-center gap-3 py-3 first:pt-0 last:pb-0 sm:items-start sm:gap-2.5 sm:py-0 ${"mobileHidden" in item ? "hidden sm:flex" : "flex"}`}>
+            <span className={`flex size-10 shrink-0 items-center justify-center rounded-full sm:size-8 ${item.tone}`}>
+              <Icon icon={item.icon} size="xs" />
+            </span>
+            <div className="min-w-0">
+              <p className="line-clamp-2 text-body-b7 font-semibold text-foreground sm:truncate sm:text-body-b10">{item.title}</p>
+              <p className="mt-0.5 line-clamp-2 text-body-b10 text-muted-foreground sm:line-clamp-1">{item.body}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <Link href="/dashboard/analytics" className="mt-3 flex items-center justify-between border-t border-border pt-3 text-body-b8 font-semibold text-primary sm:hidden">
+        {t("viewAll")}
+        <Icon icon={ChevronRight} size="xs" className="rtl:rotate-180" />
+      </Link>
+    </section>
+  );
 }
 
 function countStatus(items: OrderStatusCount[], status: OrderStatus): number { return items.find((item) => item.status === status)?.orders ?? 0; }
