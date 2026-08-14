@@ -76,7 +76,7 @@ export async function AnalyticsKpiStrip({ analytics }: { analytics: AnalyticsOve
       <div className="sm:hidden">
         <StatCardCarousel>{cards}</StatCardCarousel>
       </div>
-      <section className="hidden gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <section className="hidden gap-3 sm:grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
         {cards}
       </section>
     </>
@@ -89,21 +89,21 @@ function KpiCard({ kpi, locale, previousPeriodLabel, currentPeriodLabel }: { kpi
 
   return (
     <article className="flex min-h-36 min-w-0 flex-col rounded-card-lg border border-border bg-background p-4">
-      <div className="flex items-center gap-3">
-        <span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${kpi.tone}`}>
+      <div className="flex items-center gap-3 md:gap-2 xl:gap-3">
+        <span className={`flex size-10 shrink-0 items-center justify-center rounded-full md:size-9 xl:size-10 ${kpi.tone}`}>
           <Icon icon={kpi.icon} size="sm" />
         </span>
         <div className="min-w-0">
-          <p className="truncate text-body-b10 text-muted-foreground">{kpi.label}</p>
+          <p className="truncate text-body-b10 text-muted-foreground md:overflow-visible md:text-clip md:whitespace-normal xl:overflow-hidden xl:text-ellipsis xl:whitespace-nowrap">{kpi.label}</p>
           <p className="truncate text-heading-h3 text-foreground">{kpi.value}</p>
         </div>
       </div>
-      <p className="mt-3 flex min-h-5 items-center gap-1 text-body-b10">
+      <p className="mt-3 flex min-h-5 items-center gap-1 text-body-b10 md:flex-wrap md:items-start xl:flex-nowrap xl:items-center">
         {percent !== null ? (
           <>
             <Icon icon={percent >= 0 ? ArrowUp : ArrowDown} size="xs" className={positive ? "text-success-foreground" : "text-destructive"} />
             <span className={positive ? "font-semibold text-success-foreground" : "font-semibold text-destructive"}>{formatSignedPercent(percent, locale)}</span>
-            <span className="truncate text-muted-foreground">{previousPeriodLabel}</span>
+            <span className="truncate text-muted-foreground md:overflow-visible md:text-clip md:whitespace-normal xl:overflow-hidden xl:text-ellipsis xl:whitespace-nowrap">{previousPeriodLabel}</span>
           </>
         ) : <span className="text-muted-foreground">{currentPeriodLabel}</span>}
       </p>
@@ -133,8 +133,9 @@ export async function PriorityActionsCard({ analytics }: { analytics: AnalyticsO
             <div className="min-w-0 flex-1">
               <p className="line-clamp-2 text-body-b7 font-semibold text-foreground">{action.title}</p>
               <p className="line-clamp-1 text-body-b10 text-muted-foreground">{action.body}</p>
-              <span className={`mt-1 inline-flex rounded-card-md px-2 py-1 text-label-l2 font-semibold ${action.badgeTone}`}>{action.badge}</span>
+              <span className={`mt-1 inline-flex rounded-card-md px-2 py-1 text-label-l2 font-semibold md:hidden ${action.badgeTone}`}>{action.badge}</span>
             </div>
+            <span className={`hidden min-w-20 justify-center rounded-card-md px-2 py-1 text-label-l2 font-semibold md:inline-flex ${action.badgeTone}`}>{action.badge}</span>
             <Icon icon={ChevronRight} size="xs" className="shrink-0 text-muted-foreground rtl:rotate-180" />
           </li>
         ))}
@@ -163,25 +164,25 @@ export async function AnalyticsInsights({ analytics }: { analytics: AnalyticsOve
     <section className="flex h-full flex-col rounded-card-lg border border-border bg-background p-4">
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-body-b5">
-          <Icon icon={Star} size="xs" className="hidden text-info-foreground sm:block" />
+          <Icon icon={Star} size="xs" className="hidden text-info-foreground xl:block" />
           {t("insights")}
         </h2>
-        <Link href="/dashboard/analytics" className="hidden text-body-b10 text-primary sm:block">{t("viewAll")}</Link>
+        <Link href="/dashboard/analytics" className="hidden text-body-b10 text-primary xl:block">{t("viewAll")}</Link>
       </div>
-      <ul className="mt-3 divide-y divide-border sm:flex sm:flex-col sm:gap-2.5 sm:divide-y-0">
+      <ul className="mt-3 divide-y divide-border sm:flex sm:flex-col sm:gap-2.5 sm:divide-y-0 md:grid md:grid-cols-3 md:gap-0 md:divide-x md:rtl:divide-x-reverse xl:flex xl:divide-x-0">
         {items.map((item) => (
-          <li key={item.title} className={`items-center gap-3 py-3 first:pt-0 last:pb-0 sm:items-start sm:gap-2.5 sm:py-0 ${"mobileHidden" in item ? "hidden sm:flex" : "flex"}`}>
+          <li key={item.title} className={`items-center gap-3 py-3 first:pt-0 last:pb-0 sm:items-start sm:gap-2.5 sm:py-0 md:px-4 md:py-4 md:first:ps-0 md:first:pt-4 md:last:pe-0 md:last:pb-4 xl:px-0 xl:py-0 xl:first:pt-0 xl:last:pb-0 ${"mobileHidden" in item ? "hidden xl:flex" : "flex"}`}>
             <span className={`flex size-10 shrink-0 items-center justify-center rounded-full sm:size-8 ${item.tone}`}>
               <Icon icon={item.icon} size="xs" />
             </span>
             <div className="min-w-0">
-              <p className="line-clamp-2 text-body-b7 font-semibold text-foreground sm:truncate sm:text-body-b10">{item.title}</p>
-              <p className="mt-0.5 line-clamp-2 text-body-b10 text-muted-foreground sm:line-clamp-1">{item.body}</p>
+              <p className="line-clamp-2 text-body-b7 font-semibold text-foreground sm:truncate sm:text-body-b10 md:line-clamp-2 md:text-clip md:whitespace-normal md:text-body-b7 xl:truncate xl:text-body-b10">{item.title}</p>
+              <p className="mt-0.5 line-clamp-2 text-body-b10 text-muted-foreground sm:line-clamp-1 md:line-clamp-2 xl:line-clamp-1">{item.body}</p>
             </div>
           </li>
         ))}
       </ul>
-      <Link href="/dashboard/analytics" className="mt-3 flex items-center justify-between border-t border-border pt-3 text-body-b8 font-semibold text-primary sm:hidden">
+      <Link href="/dashboard/analytics" className="mt-3 flex items-center justify-between border-t border-border pt-3 text-body-b8 font-semibold text-primary sm:hidden md:flex md:justify-end md:gap-2 xl:hidden">
         {t("viewAll")}
         <Icon icon={ChevronRight} size="xs" className="rtl:rotate-180" />
       </Link>

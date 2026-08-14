@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 
 import { DEFAULT_ANALYTICS_PRESET } from "@/src/domain/entities/Analytics";
 import { usePathname, useRouter } from "@/src/i18n/navigation";
+import { cn } from "@/src/lib/utils";
 import { Icon, Input, Select } from "@/src/presentation/design-system";
 
 /**
@@ -14,6 +15,10 @@ import { Icon, Input, Select } from "@/src/presentation/design-system";
 export const CUSTOM_RANGE_VALUE = "custom";
 
 type AnalyticsRangePickerProps = {
+  /** Responsive placement for the whole picker in a page-level action grid. */
+  className?: string;
+  /** Responsive width for the preset trigger itself. */
+  triggerClassName?: string;
   /** Accessible name for the preset select. */
   presetLabel: string;
   /** Labels for each preset and for the custom option, resolved server-side. */
@@ -46,6 +51,8 @@ type AnalyticsRangePickerProps = {
  * to "custom" starts from those thirty days instead of from an empty pair of boxes.
  */
 export function AnalyticsRangePicker({
+  className,
+  triggerClassName,
   presetLabel,
   presetOptions,
   fromLabel,
@@ -94,8 +101,8 @@ export function AnalyticsRangePicker({
   }
 
   return (
-    <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-      <div className="relative w-full sm:w-auto">
+    <div className={cn("flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end", className)}>
+      <div className={cn("relative w-full sm:w-auto", triggerClassName)}>
         <Icon
           icon={Calendar}
           size="xs"
@@ -106,7 +113,7 @@ export function AnalyticsRangePicker({
           aria-label={presetLabel}
           value={isCustom ? CUSTOM_RANGE_VALUE : (searchParams.get("range") ?? DEFAULT_ANALYTICS_PRESET)}
           onChange={(event) => selectPreset(event.target.value)}
-          className="h-11 w-full ps-9 sm:w-auto"
+          className={cn("h-11 w-full ps-9 sm:w-auto", triggerClassName)}
         >
           {presetOptions.map((option) => (
             <option key={option.value} value={option.value}>
