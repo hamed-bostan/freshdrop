@@ -64,7 +64,7 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
               key={item.key}
               href={item.href}
               className={cn(
-                "grid min-h-20 grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-4 px-5 py-3 transition-colors hover:bg-muted md:grid-cols-[auto_1fr_auto]",
+                "flex min-h-20 items-center gap-4 px-4 py-3 transition-colors hover:bg-muted sm:px-5",
                 focusRing,
               )}
             >
@@ -80,7 +80,7 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
                 <p className="text-body-b8 text-foreground">{item.title}</p>
                 <p className="text-body-b10 text-muted-foreground">{item.detail}</p>
               </div>
-              <span className="inline-flex size-11 items-center justify-center gap-1 whitespace-nowrap rounded-input text-body-b8 text-primary md:size-auto md:justify-start"><span className="hidden md:inline">{item.ctaLabel}</span><Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" /></span>
+              <span className="inline-flex size-11 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-input text-body-b8 text-primary md:h-auto md:w-auto md:justify-start"><span className="hidden md:inline">{item.ctaLabel}</span><Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" /></span>
             </Link>
           ))}
         </div>

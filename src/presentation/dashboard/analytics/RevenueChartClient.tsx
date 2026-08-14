@@ -13,6 +13,8 @@ import { formatNumber } from "@/src/lib/formatNumber";
 import { ChartSegmentedControl } from "@/src/presentation/dashboard/ChartSegmentedControl";
 import { ChartContainer, ChartLegend, ChartTooltip, chartColor } from "@/src/presentation/design-system";
 
+import { DashboardPanel, DashboardPanelHeader } from "../DashboardPanel";
+
 export type RevenueChartClientProps = {
   compact?: boolean;
   points: RevenuePoint[];
@@ -55,12 +57,13 @@ export function RevenueChartClient({ compact = false, points, previousPoints, gr
     { value: `${formatMediumDate(previousRange.from, locale)} – ${formatMediumDate(previousRange.to, locale)}`, color: "var(--color-chart-6)" },
   ];
 
-  return <section className="rounded-card-lg border border-border bg-background p-5">
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <h2 className="text-body-b1 text-foreground">{compact ? t("revenueChart") : t("chartOverview")}</h2>
-      {compact ? <p className="text-body-b8 text-foreground">{t("chartTotal", { amount: formatMetric(metric, total, locale) })}</p> : null}
-      {!compact ? <ChartSegmentedControl value={interval} options={["daily", "weekly", "monthly"]} label={t("intervalLabel")} onChange={setInterval} getLabel={(key) => t(key)} /> : null}
-    </div>
+  return <DashboardPanel className="h-full">
+    <DashboardPanelHeader
+      title={compact ? t("revenueChart") : t("chartOverview")}
+      action={compact
+        ? <p className="text-body-b8 text-foreground">{t("chartTotal", { amount: formatMetric(metric, total, locale) })}</p>
+        : <ChartSegmentedControl value={interval} options={["daily", "weekly", "monthly"]} label={t("intervalLabel")} onChange={setInterval} getLabel={(key) => t(key)} />}
+    />
     {!compact && periodPeak > 0 ? <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
       <ChartSegmentedControl value={metric} options={["revenue", "orders", "aov"]} label={t("metricLabel")} onChange={setMetric} getLabel={(key) => t(key === "revenue" ? "metricNetSales" : METRIC_KEYS[key])} emphasis />
       <ChartLegend payload={legend} className="m-0 justify-start" />
@@ -79,7 +82,7 @@ export function RevenueChartClient({ compact = false, points, previousPoints, gr
       </ChartContainer></div>
       <p className="sr-only">{t("chartSummary", { metric: t(METRIC_KEYS[metric]), count: data.length, total: formatMetric(metric, total, locale), bestDate: best?.label ?? "", bestAmount: best ? formatMetric(metric, best.current, locale) : "" })}</p>
     </> : <p className="mt-6 pb-6 text-center text-body-b7 text-muted-foreground">{t("chartEmpty")}</p>}
-  </section>;
+  </DashboardPanel>;
 }
 
 function aggregatePoints(points: RevenuePoint[], size: number): RevenuePoint[] {

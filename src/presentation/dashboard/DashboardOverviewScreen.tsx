@@ -32,7 +32,7 @@ import { OrderStatusBreakdown } from "./analytics/OrderStatusBreakdown";
 import { RevenueChart } from "./analytics/RevenueChart";
 import { NeedsAttentionPanel } from "./attention/NeedsAttentionPanel";
 import { buildDashboardOverviewViewModel } from "./dashboard-overview-view-model";
-import { DASHBOARD_SPLIT_GRID_CLASS } from "./dashboardLayout";
+import { DashboardSplitGrid } from "./DashboardSplitGrid";
 import { LowStockPanel } from "./LowStockPanel";
 import { RecentOrdersPanel } from "./RecentOrdersPanel";
 import { StatCard } from "./StatCard";
@@ -253,7 +253,7 @@ export async function DashboardOverviewScreen({
     <div className="@container flex flex-col gap-4">
       <div className="flex flex-col gap-3 md:mb-1 md:flex-row md:items-end md:justify-between md:gap-6">
         <div className="min-w-0">
-          <h1 className="text-[1.875rem] font-bold leading-10 text-foreground">{t("heading")}</h1>
+          <h1 className="text-heading-h1 text-foreground">{t("heading")}</h1>
           <p className="whitespace-nowrap text-body-b6 text-muted-foreground sm:whitespace-normal">{t("subtitle")}</p>
           {/* The days actually covered, spelled out. A dashboard headed only "Last
               30 days" makes every number on it unverifiable; this is the line that
@@ -328,8 +328,8 @@ export async function DashboardOverviewScreen({
           through a snapshot. */}
       <NeedsAttentionPanel items={attentionItems} />
 
-      <div className={DASHBOARD_SPLIT_GRID_CLASS}>
-        <RevenueChart
+      <DashboardSplitGrid
+        primary={<RevenueChart
           compact
           points={analytics.revenueSeries}
           previousPoints={analytics.previousSeries}
@@ -338,14 +338,14 @@ export async function DashboardOverviewScreen({
           range={analytics.range}
           previousRange={analytics.previousRange}
           previousYearRange={analytics.previousYearRange}
-        />
-        <OrderStatusBreakdown compact breakdown={analytics.statusBreakdown} />
-      </div>
+        />}
+        secondary={<OrderStatusBreakdown compact breakdown={analytics.statusBreakdown} />}
+      />
 
-      <div className={DASHBOARD_SPLIT_GRID_CLASS}>
-        <RecentOrdersPanel orders={recentOrders} customersById={recentOrderCustomersById} />
-        <LowStockPanel products={lowStockProducts} />
-      </div>
+      <DashboardSplitGrid
+        primary={<RecentOrdersPanel orders={recentOrders} customersById={recentOrderCustomersById} />}
+        secondary={<LowStockPanel products={lowStockProducts} />}
+      />
     </div>
   );
 }

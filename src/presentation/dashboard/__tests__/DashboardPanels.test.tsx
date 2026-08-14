@@ -100,16 +100,18 @@ describe("dashboard overview panels", () => {
     expect(html.match(/scope="col"/g)).toHaveLength(6);
     expect(html).toContain("View order 64");
     expect(html).toContain("2026");
-    expect(mobileMarkup).not.toContain("2026");
+    expect(mobileMarkup).toContain("2026");
+    expect(html).not.toContain("min-w-[");
   });
 
-  it("gives each inventory action a unique accessible name and limits mobile rows", async () => {
+  it("gives each inventory action a unique accessible name without viewport-specific row dimensions", async () => {
     const html = renderToStaticMarkup(await LowStockPanel({ products }));
 
     expect(html).toContain('aria-label="Manage Lemon Iced Tea inventory"');
     expect(html).toContain('aria-label="Manage Sauvignon Blanc inventory"');
     expect(html).toContain('aria-label="Manage Bananas inventory"');
-    expect(html).toContain("hidden sm:grid");
+    expect(html).not.toContain("grid-cols-[");
+    expect(html).not.toContain("min-h-[");
     expect(html).toContain("View all inventory");
   });
 });

@@ -42,7 +42,7 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
       <button
         type="button"
         onClick={onOpenSearch}
-        className="hidden h-11 w-[42vw] max-w-[24.375rem] items-center gap-2 rounded-card-md border border-transparent bg-input-filled px-4 text-start text-body-b2 text-input-placeholder transition-colors hover:border-border hover:bg-muted-strong md:flex"
+        className="hidden h-11 w-full max-w-sm items-center gap-2 rounded-card-md border border-transparent bg-input-filled px-4 text-start text-body-b2 text-input-placeholder transition-colors hover:border-border hover:bg-muted-strong md:flex"
       >
         <Icon icon={Search} size="sm" />
         <span className="flex-1 truncate">{t("search.adminTrigger")}</span>

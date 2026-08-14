@@ -9,6 +9,8 @@ import { formatNumber } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
 import { focusRing } from "@/src/presentation/design-system";
 
+import { DashboardPanel, DashboardPanelHeader } from "../DashboardPanel";
+
 type OrderStatusBreakdownProps = {
   /** Condensed operational summary for the dashboard; Analytics retains richer figures. */
   compact?: boolean;
@@ -96,46 +98,60 @@ export async function OrderStatusBreakdown({ breakdown, compact = false }: Order
     return { stops: [...result.stops, `${STATUS_COLORS[slice.status]} ${result.cursor}% ${end}%`], cursor: end };
   }, { stops: [], cursor: 0 }).stops.join(", ");
 
+  const responsiveLayout = compact
+    ? {
+        grid: "@sm/status:grid-cols-2",
+        summary: "@sm/status:hidden",
+        donut: "@sm/status:flex",
+        list: "@sm/status:gap-1.5 @sm/status:divide-y-0 @sm/status:border-t-0",
+      }
+    : {
+        grid: "@2xl/status:grid-cols-2",
+        summary: "@2xl/status:hidden",
+        donut: "@2xl/status:flex",
+        list: "@2xl/status:gap-1.5 @2xl/status:divide-y-0 @2xl/status:border-t-0",
+      };
+
   return (
-    <section className="rounded-card-lg border border-border p-5">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-body-b1 text-foreground">{t("statusBreakdown")}</h2>
-        {!compact ? (
+    <DashboardPanel className="@container/status flex h-full flex-col">
+      <DashboardPanelHeader
+        title={t("statusBreakdown")}
+        action={!compact ? (
           <p className="text-body-b8 text-muted-foreground">
             {t("ordersTotal", { count: formatNumber(total, locale) })}
           </p>
-        ) : null}
-      </div>
+        ) : undefined}
+      />
 
       {total > 0 ? (
-        <div className="mt-4 grid gap-4 md:min-h-56 md:grid-cols-[10rem_minmax(0,1fr)] md:items-center">
-          <div className="grid gap-2.5 md:hidden">
+        <div className={cn("mt-4 grid flex-1 items-center gap-4", responsiveLayout.grid)}>
+          <div className={cn("grid gap-2", responsiveLayout.summary)}>
             <div className="flex items-baseline justify-between gap-4">
               <strong className="text-heading-h2 text-foreground">{formatNumber(total, locale)}</strong>
               <span className="text-body-b10 text-muted-foreground">{t("totalLabel")}</span>
             </div>
-            <div className="flex h-2.5 overflow-hidden rounded-pill bg-muted" aria-hidden>
+            <div className="flex h-2 overflow-hidden rounded-pill bg-muted" aria-hidden>
               {present.map((slice) => (
                 <span key={slice.status} className={STATUS_BARS[slice.status]} style={{ flexGrow: slice.orders }} />
               ))}
             </div>
           </div>
-          <div className="relative mx-auto hidden size-40 items-center justify-center rounded-full md:flex" style={{ background: `conic-gradient(${donutStops})` }} aria-hidden>
-            <div className="flex size-[6.5rem] flex-col items-center justify-center rounded-full bg-background"><strong className="text-heading-h2">{formatNumber(total, locale)}</strong><span className="text-body-b10 text-muted-foreground">{t("totalLabel")}</span></div>
+          <div className={cn("relative mx-auto hidden size-40 items-center justify-center rounded-full", responsiveLayout.donut)} style={{ background: `conic-gradient(${donutStops})` }} aria-hidden>
+            <div className="flex size-24 flex-col items-center justify-center rounded-full bg-background"><strong className="text-heading-h2">{formatNumber(total, locale)}</strong><span className="text-body-b10 text-muted-foreground">{t("totalLabel")}</span></div>
           </div>
 
-          <ul className="flex flex-col divide-y divide-border border-t border-border md:gap-1.5 md:divide-y-0 md:border-t-0">
+          <ul className={cn("flex flex-col divide-y divide-border border-t border-border", responsiveLayout.list)}>
             {present.map((slice) => (
               <li key={slice.status}>
                 <Link
                   href={`/dashboard/orders?pipeline=${STATUS_PIPELINE[slice.status]}`}
                   className={cn(
                     focusRing,
-                    "flex min-h-13 items-center gap-3 rounded-card-md px-1 py-1 transition-colors hover:bg-muted md:min-h-9 md:px-0",
+                    "flex min-h-11 items-center gap-3 rounded-card-md px-1 py-1 transition-colors hover:bg-muted",
                   )}
                 >
                   <span className={`size-2.5 shrink-0 rounded-full ${STATUS_BARS[slice.status]}`} />
-                  <span className="min-w-0 flex-1 whitespace-nowrap text-body-b6 text-foreground">
+                  <span className="min-w-0 flex-1 text-body-b6 text-foreground">
                     {tOrders(STATUS_LABEL_KEYS[slice.status])}
                   </span>
                   {!compact ? (
@@ -147,7 +163,7 @@ export async function OrderStatusBreakdown({ breakdown, compact = false }: Order
                     {formatNumber(slice.orders, locale)}
                   </span>
                   {!compact ? (
-                    <span className="w-20 text-end text-body-b9 text-muted-foreground">
+                    <span className="whitespace-nowrap text-end text-body-b9 text-muted-foreground">
                       {formatMoney(slice.revenue, locale)}
                     </span>
                   ) : null}
@@ -159,6 +175,6 @@ export async function OrderStatusBreakdown({ breakdown, compact = false }: Order
       ) : (
         <p className="mt-6 pb-6 text-center text-body-b7 text-muted-foreground">{t("noOrders")}</p>
       )}
-    </section>
+    </DashboardPanel>
   );
 }

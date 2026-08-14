@@ -20,6 +20,8 @@ import {
 } from "@/src/presentation/design-system";
 import { OrderStatusBadge } from "@/src/presentation/orders/components/OrderStatusBadge";
 
+import { DashboardPanel, DashboardPanelHeader } from "./DashboardPanel";
+
 type RecentOrdersPanelProps = {
   /** The latest few orders — a page, not the history. */
   orders: Order[];
@@ -45,22 +47,25 @@ export async function RecentOrdersPanel({ orders, customersById }: RecentOrdersP
     href: `/dashboard/orders/${order.id}` as const,
     viewLabel: tOrders("viewOrderAria", { id: order.orderNumber }),
     amount: formatMoney(orderNetPaid(order, order.refunds), locale),
+    placedDate: formatOrderDateShort(order.placedAt, locale),
     placed: `${formatOrderDateShort(order.placedAt, locale)} ${formatOrderTime(order.placedAt, locale)}`,
   }));
 
   return (
-    <section className="rounded-card-lg border border-border p-5">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-body-b1 text-foreground">{t("recentOrders")}</h2>
-        <Link href="/dashboard/orders" className="inline-flex items-center gap-1 text-body-b8 text-primary hover:underline">
-          {t("viewAllOrders")}
-          <Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" />
-        </Link>
-      </div>
+    <DashboardPanel className="@container/orders h-full">
+      <DashboardPanelHeader
+        title={t("recentOrders")}
+        action={(
+          <Link href="/dashboard/orders" className="inline-flex items-center gap-1 text-body-b8 text-primary hover:underline">
+            {t("viewAllOrders")}
+            <Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" />
+          </Link>
+        )}
+      />
 
       {orders.length > 0 ? (
         <>
-          <ul className="mt-2 divide-y divide-border sm:hidden">
+          <ul className="mt-2 divide-y divide-border @xl/orders:hidden">
             {rows.map((row) => {
               const { order } = row;
               return (
@@ -69,7 +74,7 @@ export async function RecentOrdersPanel({ orders, customersById }: RecentOrdersP
                     href={row.href}
                     className={cn(
                       focusRing,
-                      "flex items-center gap-2 py-2.5 transition-colors hover:bg-surface-sunken/50",
+                      "flex min-h-20 items-center gap-3 py-3 transition-colors hover:bg-surface-sunken/50",
                     )}
                   >
                     <span className="min-w-0 flex-1">
@@ -80,11 +85,14 @@ export async function RecentOrdersPanel({ orders, customersById }: RecentOrdersP
                         {row.customerName}
                       </span>
                     </span>
-                    <OrderStatusBadge status={order.status} stage={order.stage} context="admin" size="sm" />
-                    <span className="flex shrink-0 flex-col items-end whitespace-nowrap text-end">
+                    <span className="flex shrink-0 flex-col items-end gap-1 whitespace-nowrap text-end">
+                      <OrderStatusBadge status={order.status} stage={order.stage} context="admin" size="sm" />
                       <span className="text-body-b7 text-foreground">
                         {row.amount}
                       </span>
+                      <time dateTime={order.placedAt} className="text-body-b10 text-muted-foreground">
+                        {row.placedDate}
+                      </time>
                     </span>
                     <Icon icon={ChevronRight} size="xs" className="shrink-0 text-muted-foreground rtl:-scale-x-100" />
                   </Link>
@@ -93,29 +101,29 @@ export async function RecentOrdersPanel({ orders, customersById }: RecentOrdersP
             })}
           </ul>
 
-          <div className="mt-3 hidden overflow-x-auto sm:block">
-            <Table className="min-w-[35rem] table-fixed text-body-b10">
+          <div className="mt-3 hidden overflow-x-auto @xl/orders:block">
+            <Table className="text-body-b10">
               <TableHeader className="border-b border-border bg-transparent">
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-[14%] px-2 py-3">{tOrders("colOrder")}</TableHead>
-                  <TableHead className="w-[20%] px-2 py-3">{tOrders("colCustomer")}</TableHead>
-                  <TableHead className="w-[20%] px-2 py-3">{tOrders("colStatus")}</TableHead>
-                  <TableHead className="w-[13%] px-2 py-3 text-end">{tOrders("colTotal")}</TableHead>
-                  <TableHead className="w-[28%] px-2 py-3">{tOrders("colPlaced")}</TableHead>
-                  <TableHead className="w-12 px-2 py-3"><span className="sr-only">{tOrders("colAction")}</span></TableHead>
+                  <TableHead>{tOrders("colOrder")}</TableHead>
+                  <TableHead>{tOrders("colCustomer")}</TableHead>
+                  <TableHead>{tOrders("colStatus")}</TableHead>
+                  <TableHead className="text-end">{tOrders("colTotal")}</TableHead>
+                  <TableHead>{tOrders("colPlaced")}</TableHead>
+                  <TableHead><span className="sr-only">{tOrders("colAction")}</span></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.map((row) => {
                   const { order } = row;
                   return (
-                    <TableRow key={order.id} className="h-16">
-                      <TableCell className="truncate px-2 py-3 font-mono text-foreground">#{order.orderNumber}</TableCell>
-                      <TableCell className="truncate px-2 py-3 text-foreground">{row.customerName}</TableCell>
-                      <TableCell className="px-2 py-3"><OrderStatusBadge status={order.status} stage={order.stage} context="admin" size="sm" /></TableCell>
-                      <TableCell className="whitespace-nowrap px-2 py-3 text-end text-foreground">{row.amount}</TableCell>
-                      <TableCell className="whitespace-nowrap px-2 py-3 text-foreground">{row.placed}</TableCell>
-                      <TableCell className="px-0 py-2 text-end">
+                    <TableRow key={order.id}>
+                      <TableCell className="font-mono text-foreground">#{order.orderNumber}</TableCell>
+                      <TableCell className="max-w-40 truncate text-foreground">{row.customerName}</TableCell>
+                      <TableCell><OrderStatusBadge status={order.status} stage={order.stage} context="admin" size="sm" /></TableCell>
+                      <TableCell className="whitespace-nowrap text-end text-foreground">{row.amount}</TableCell>
+                      <TableCell className="whitespace-nowrap text-foreground">{row.placed}</TableCell>
+                      <TableCell className="p-0 text-end">
                         <Link
                           href={row.href}
                           aria-label={row.viewLabel}
@@ -134,6 +142,6 @@ export async function RecentOrdersPanel({ orders, customersById }: RecentOrdersP
       ) : (
         <p className="mt-4 text-body-b7 text-muted-foreground">{t("noRecentOrders")}</p>
       )}
-    </section>
+    </DashboardPanel>
   );
 }

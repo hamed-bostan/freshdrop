@@ -34,8 +34,8 @@ export function DashboardSidebar({ permissions, collapsed, onToggleCollapsed }: 
   return (
     <aside
       className={cn(
-        "sticky top-0 hidden h-dvh shrink-0 flex-col border-e border-border bg-background md:flex md:w-[82px]",
-        collapsed ? "xl:w-[82px]" : "xl:w-64",
+        "sticky top-0 hidden h-dvh w-20 shrink-0 flex-col border-e border-border bg-background md:flex",
+        collapsed ? "xl:w-20" : "xl:w-64",
       )}
     >
       {/* The `md`–`xl` tier: always the icon-only rail, no toggle — there's nowhere to put one. */}
