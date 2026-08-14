@@ -47,7 +47,6 @@ export async function RecentOrdersPanel({ orders, customersById }: RecentOrdersP
     href: `/dashboard/orders/${order.id}` as const,
     viewLabel: tOrders("viewOrderAria", { id: order.orderNumber }),
     amount: formatMoney(orderNetPaid(order, order.refunds), locale),
-    placedDate: formatOrderDateShort(order.placedAt, locale),
     placed: `${formatOrderDateShort(order.placedAt, locale)} ${formatOrderTime(order.placedAt, locale)}`,
   }));
 
@@ -90,9 +89,6 @@ export async function RecentOrdersPanel({ orders, customersById }: RecentOrdersP
                       <span className="text-body-b7 text-foreground">
                         {row.amount}
                       </span>
-                      <time dateTime={order.placedAt} className="text-body-b10 text-muted-foreground">
-                        {row.placedDate}
-                      </time>
                     </span>
                     <Icon icon={ChevronRight} size="xs" className="shrink-0 text-muted-foreground rtl:-scale-x-100" />
                   </Link>

@@ -76,7 +76,7 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
               >
                 <Icon icon={item.icon} size="sm" />
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-body-b8 text-foreground">{item.title}</p>
                 <p className="text-body-b10 text-muted-foreground">{item.detail}</p>
               </div>

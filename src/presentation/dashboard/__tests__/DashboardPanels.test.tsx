@@ -100,7 +100,7 @@ describe("dashboard overview panels", () => {
     expect(html.match(/scope="col"/g)).toHaveLength(6);
     expect(html).toContain("View order 64");
     expect(html).toContain("2026");
-    expect(mobileMarkup).toContain("2026");
+    expect(mobileMarkup).not.toContain("2026");
     expect(html).not.toContain("min-w-[");
   });
 
