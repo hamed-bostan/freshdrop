@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import * as React from "react";
-import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, Line, Tooltip, XAxis, YAxis } from "recharts";
 
 import type { AnalyticsGranularity, RevenuePoint } from "@/src/domain/entities/Analytics";
 import { getLangDir } from "@/src/i18n/direction";
@@ -55,27 +55,27 @@ export function RevenueChartClient({ compact = false, points, previousPoints, gr
     { value: `${formatMediumDate(previousRange.from, locale)} – ${formatMediumDate(previousRange.to, locale)}`, color: "var(--color-chart-6)" },
   ];
 
-  return <section className="rounded-card-lg border border-border bg-background p-4">
+  return <section className="rounded-card-lg border border-border bg-background p-5">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <h2 className="text-body-b5 text-foreground"><span className="sm:hidden">{t("revenueChart")}</span><span className="hidden sm:inline">{t("chartOverview")}</span></h2>
-      {compact ? <p className="text-body-b8 text-muted-foreground sm:hidden">{t("chartTotal", { amount: formatMetric(metric, total, locale) })}</p> : null}
+      <h2 className="text-body-b1 text-foreground">{compact ? t("revenueChart") : t("chartOverview")}</h2>
+      {compact ? <p className="text-body-b8 text-foreground">{t("chartTotal", { amount: formatMetric(metric, total, locale) })}</p> : null}
       {!compact ? <ChartSegmentedControl value={interval} options={["daily", "weekly", "monthly"]} label={t("intervalLabel")} onChange={setInterval} getLabel={(key) => t(key)} /> : null}
     </div>
     {!compact && periodPeak > 0 ? <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
       <ChartSegmentedControl value={metric} options={["revenue", "orders", "aov"]} label={t("metricLabel")} onChange={setMetric} getLabel={(key) => t(key === "revenue" ? "metricNetSales" : METRIC_KEYS[key])} emphasis />
       <ChartLegend payload={legend} className="m-0 justify-start" />
     </div> : null}
-    {compact && periodPeak > 0 ? <ChartLegend payload={legend} className="mt-2 hidden justify-start sm:flex" /> : null}
+    {compact && periodPeak > 0 ? <ChartLegend payload={legend} className="mt-4 hidden justify-start sm:flex" /> : null}
     {periodPeak > 0 ? <>
-      <div className="mt-4" aria-hidden><ChartContainer height={compact ? 150 : 220} dir={dir}>
-        <LineChart data={data} margin={{ top: 6, right: 8, bottom: 0, left: 0 }}>
+      <div className="mt-4" aria-hidden><ChartContainer height={compact ? 210 : 220} dir={dir}>
+        <AreaChart data={data} margin={{ top: 6, right: 8, bottom: 0, left: 0 }}>
           <CartesianGrid vertical={false} stroke="var(--color-border)" />
           <XAxis dataKey="label" axisLine={false} tickLine={false} interval="preserveStartEnd" reversed={dir === "rtl"} tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }} />
           <YAxis axisLine={false} tickLine={false} width={58} tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }} tickFormatter={(value: number) => formatMetric(metric, value, locale)} />
           <Tooltip cursor={{ stroke: "var(--color-border)" }} content={(props) => <ChartTooltip {...props} renderContent={() => { const point = props.payload?.[0]?.payload as ChartDatum | undefined; return point ? <div className="space-y-1"><p className="text-muted-foreground">{point.label}</p><p>{t("tooltipCurrent", { amount: formatMetric(metric, point.current, locale) })}</p><p className="text-muted-foreground">{t("tooltipPrevious", { amount: formatMetric(metric, point.compare, locale) })}</p></div> : null; }} />} />
-          <Line type="monotone" dataKey="current" stroke={chartColor(0)} strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} isAnimationActive={false} />
+          <Area type="monotone" dataKey="current" stroke={chartColor(0)} fill={chartColor(0)} fillOpacity={0.08} strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} isAnimationActive={false} />
           <Line type="monotone" dataKey="compare" stroke="var(--color-chart-6)" strokeWidth={2} strokeDasharray="6 5" dot={false} isAnimationActive={false} />
-        </LineChart>
+        </AreaChart>
       </ChartContainer></div>
       <p className="sr-only">{t("chartSummary", { metric: t(METRIC_KEYS[metric]), count: data.length, total: formatMetric(metric, total, locale), bestDate: best?.label ?? "", bestAmount: best ? formatMetric(metric, best.current, locale) : "" })}</p>
     </> : <p className="mt-6 pb-6 text-center text-body-b7 text-muted-foreground">{t("chartEmpty")}</p>}

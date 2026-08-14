@@ -65,7 +65,7 @@ export function DashboardNav({ permissions, collapsed = false, onNavigate }: Das
                 className={cn(
                   "flex items-center gap-3 rounded-pill text-body-b7 transition-colors",
                   focusRing,
-                  collapsed ? "justify-center px-0 py-2" : "px-3 py-2",
+                  collapsed ? "min-h-11 justify-center px-0 py-2" : "px-3 py-2",
                   active
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-surface-sunken hover:text-foreground",

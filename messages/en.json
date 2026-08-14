@@ -688,6 +688,7 @@
     },
     "search": {
       "trigger": "Search",
+      "adminTrigger": "Search freshDrop admin",
       "shortcutHint": "⌘K",
       "dialogTitle": "Search",
       "placeholder": "Search orders, products, customers…",
@@ -755,12 +756,13 @@
     "viewAll": "View all",
     "viewAllOrders": "View all orders",
     "viewFullAnalytics": "View full analytics",
-    "noRecentOrders": "No orders yet."
-    ,"lowStockProducts": "Low-stock products"
-    ,"viewAllInventory": "View all inventory"
-    ,"unitsRemaining": "{count} units remaining"
-    ,"manage": "Manage"
-    ,"noLowStock": "Inventory levels look healthy."
+    "noRecentOrders": "No orders yet.",
+    "lowStockProducts": "Low-stock products",
+    "viewAllInventory": "View all inventory",
+    "unitsRemaining": "{count} units remaining",
+    "manage": "Manage",
+    "manageProductAria": "Manage {product} inventory",
+    "noLowStock": "Inventory levels look healthy."
   },
   "dashAnalytics": {
     "pageHeading": "Analytics",
@@ -1499,6 +1501,7 @@
     "refundChosen": "The customer chose a refund if this item is unavailable.",
     "refundThisItem": "Refund this item",
     "colTotal": "Total",
+    "colAction": "Action",
     "viewOrderAria": "View order {id}",
     "backToOrders": "Back to orders",
     "orderNumber": "Order {id}",

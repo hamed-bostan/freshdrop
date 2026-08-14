@@ -94,19 +94,19 @@ export function AnalyticsRangePicker({
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
-      <div className="relative">
+    <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
+      <div className="relative w-full sm:w-auto">
         <Icon
           icon={Calendar}
           size="xs"
           className="pointer-events-none absolute start-3 top-1/2 z-10 -translate-y-1/2 text-icon-muted"
         />
         <Select
-          size="sm"
+          size="md"
           aria-label={presetLabel}
           value={isCustom ? CUSTOM_RANGE_VALUE : (searchParams.get("range") ?? DEFAULT_ANALYTICS_PRESET)}
           onChange={(event) => selectPreset(event.target.value)}
-          className="w-40 ps-9 sm:w-auto"
+          className="h-11 w-full ps-9 sm:w-auto"
         >
           {presetOptions.map((option) => (
             <option key={option.value} value={option.value}>

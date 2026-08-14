@@ -44,8 +44,8 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
 
   return (
     <section className="rounded-card-lg border border-border">
-      <div className="flex items-center gap-3 p-4 pb-0">
-        <h2 className="text-body-b5 text-foreground">{t("attentionHeading")}</h2>
+      <div className="flex items-center gap-3 p-5 pb-1">
+        <h2 className="text-body-b1 text-foreground">{t("attentionHeading")}</h2>
         {/* Counts the *categories* needing a look, not the sum of their items — "2
             things need you" is what an operator scanning the header wants, not a
             number that conflates 25 low-stock products with 1 stale order. */}
@@ -58,29 +58,29 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
       </div>
 
       {active.length > 0 ? (
-        <div className="mt-2 grid divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
+        <div className="mt-3 grid divide-y divide-border xl:grid-cols-2 xl:divide-x xl:divide-y-0">
           {active.map((item) => (
             <Link
               key={item.key}
               href={item.href}
               className={cn(
-                "grid grid-cols-[auto_1fr_auto] items-center gap-3 p-4 transition-colors hover:bg-muted",
+                "grid min-h-20 grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-4 px-5 py-3 transition-colors hover:bg-muted md:grid-cols-[auto_1fr_auto]",
                 focusRing,
               )}
             >
               <div
                 className={cn(
-                  "flex size-10 shrink-0 items-center justify-center rounded-full",
+                  "flex size-11 shrink-0 items-center justify-center rounded-full md:size-10",
                   TONE_TINT[item.tone],
                 )}
               >
                 <Icon icon={item.icon} size="sm" />
               </div>
               <div className="min-w-0">
-                <p className="text-body-b7 text-foreground">{item.title}</p>
-                <p className="text-body-b8 text-muted-foreground">{item.detail}</p>
+                <p className="text-body-b8 text-foreground">{item.title}</p>
+                <p className="text-body-b10 text-muted-foreground">{item.detail}</p>
               </div>
-              <span className="inline-flex items-center gap-1 whitespace-nowrap text-body-b10 text-primary sm:text-body-b9">{item.ctaLabel}<Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" /></span>
+              <span className="inline-flex size-11 items-center justify-center gap-1 whitespace-nowrap rounded-input text-body-b8 text-primary md:size-auto md:justify-start"><span className="hidden md:inline">{item.ctaLabel}</span><Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" /></span>
             </Link>
           ))}
         </div>

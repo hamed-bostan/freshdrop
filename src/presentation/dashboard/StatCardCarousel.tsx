@@ -48,7 +48,7 @@ export function StatCardCarousel({ children }: StatCardCarouselProps) {
         className="w-full"
       >
         {cards.map((card, index) => (
-          <SwiperSlide key={index} className="!w-[84%]">{card}</SwiperSlide>
+          <SwiperSlide key={index} className="!w-[calc(100%-1.5rem)]">{card}</SwiperSlide>
         ))}
       </Swiper>
 

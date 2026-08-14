@@ -1,5 +1,3 @@
-import { Minus, TrendingDown, TrendingUp } from "lucide-react";
-
 import { Link } from "@/src/i18n/navigation";
 import { cn } from "@/src/lib/utils";
 import { focusRing, Icon } from "@/src/presentation/design-system";
@@ -60,6 +58,8 @@ export type StatCardProps = {
   deltaLabel?: string;
   /** Optional period series rendered as a compact, non-interactive trend line. */
   trendValues?: number[];
+  /** Uses the reference's neutral AOV treatment instead of a success/error trend colour. */
+  neutralTrend?: boolean;
 };
 
 /**
@@ -67,10 +67,10 @@ export type StatCardProps = {
  * and gets a dash rather than an arrow: "no change" is information, and drawing
  * it in a trend colour makes a still metric look like a moving one.
  */
-const DELTA_STYLES: Record<"up" | "down" | "flat", { icon: LucideIcon; className: string; badgeClassName: string }> = {
-  up: { icon: TrendingUp, className: "text-success-foreground", badgeClassName: "bg-success text-success-foreground" },
-  down: { icon: TrendingDown, className: "text-error-foreground", badgeClassName: "bg-error text-error-foreground" },
-  flat: { icon: Minus, className: "text-muted-foreground", badgeClassName: "bg-muted text-muted-foreground" },
+const DELTA_STYLES: Record<"up" | "down" | "flat", { mark: string; className: string }> = {
+  up: { mark: "↑", className: "text-success-foreground" },
+  down: { mark: "↓", className: "text-error-foreground" },
+  flat: { mark: "−", className: "text-muted-foreground" },
 };
 
 /**
@@ -93,13 +93,14 @@ export function StatCard({
   deltaTone = "flat",
   deltaLabel,
   trendValues,
+  neutralTrend = false,
 }: StatCardProps) {
   const trend = DELTA_STYLES[deltaTone];
 
   const content = (
     <>
       <div className="flex items-start justify-between gap-3">
-        <p className="text-body-b7 text-muted-foreground">{label}</p>
+        <p className="text-body-b7 font-normal text-foreground">{label}</p>
         {!trendValues ? <div
           className={cn(
             "flex size-10 shrink-0 items-center justify-center rounded-full",
@@ -110,35 +111,30 @@ export function StatCard({
         </div> : null}
       </div>
       <div>
-        <p className="text-heading-h2 text-foreground">{value}</p>
+        <p className="text-heading-h2 text-foreground xl:text-heading-h1">{value}</p>
         {delta ? (
-          // The change lives in its own tinted pill so the direction reads at a
-          // glance; what it's measured against sits beside it in plain muted
+          // The change uses its directional icon and semantic colour so it reads
+          // at a glance; what it's measured against sits beside it in plain muted
           // text — a "+12%" with no stated baseline is the most common way a
           // dashboard misleads, because every reader supplies a different one.
           <p className="mt-2 flex flex-wrap items-center gap-1.5">
-            <span
-              className={cn(
-                "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-body-b11",
-                trend.badgeClassName,
-              )}
-            >
-              <Icon icon={trend.icon} size="xs" />
+            <span className={cn("inline-flex items-center gap-1 text-body-b12", neutralTrend ? "text-muted-foreground" : trend.className)}>
+              <span aria-hidden>{neutralTrend && deltaTone === "down" ? "↓" : trend.mark}</span>
               {delta}
             </span>
-            {deltaLabel ? <span className="text-body-b8 text-muted-foreground">{deltaLabel}</span> : null}
+            {deltaLabel ? <span className="text-body-b10 text-muted-foreground">{deltaLabel}</span> : null}
           </p>
         ) : deltaLabel ? (
           <p className="mt-1 text-body-b9 text-muted-foreground">{deltaLabel}</p>
         ) : hint ? (
           <p className="mt-2 text-body-b8 text-muted-foreground">{hint}</p>
         ) : null}
-        {trendValues ? <div className="mt-1"><StatSparkline values={trendValues} positive={deltaTone !== "down"} /></div> : null}
+        {trendValues ? <div className="mt-2"><StatSparkline values={trendValues} positive color={neutralTrend ? "var(--color-muted-foreground)" : "var(--color-primary)"} heightClassName="h-12" /></div> : null}
       </div>
     </>
   );
 
-  const frame = "flex h-full min-h-32 flex-col justify-between gap-1 rounded-card-lg border border-border p-3 sm:p-4";
+  const frame = "flex h-full min-h-40 flex-col justify-between gap-1 overflow-hidden rounded-card-lg border border-border bg-background p-5";
 
   if (href) {
     return (

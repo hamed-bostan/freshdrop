@@ -18,10 +18,10 @@ type DashboardSidebarProps = {
 };
 
 /**
- * Persistent left rail for `lg` and up (below that, `NavDrawer` takes over).
+ * Persistent left rail for `md` and up (below that, `NavDrawer` takes over).
  *
  * Two independent things decide how narrow it is:
- *  - Between `lg` and `xl` it's *always* the icon-only rail — there just isn't
+ *  - Between `md` and `xl` it's *always* the icon-only rail — there just isn't
  *    room for labels yet, and that's a plain breakpoint with no state behind it.
  *  - At `xl`+ there's room for the full labelled rail, but a reader with a lot
  *    of screen may still prefer the narrow look, so `collapsed` (persisted via
@@ -34,11 +34,11 @@ export function DashboardSidebar({ permissions, collapsed, onToggleCollapsed }: 
   return (
     <aside
       className={cn(
-        "sticky top-0 hidden h-dvh shrink-0 flex-col border-e border-border bg-background lg:flex lg:w-[76px]",
-        collapsed ? "xl:w-[76px]" : "xl:w-64",
+        "sticky top-0 hidden h-dvh shrink-0 flex-col border-e border-border bg-background md:flex md:w-[82px]",
+        collapsed ? "xl:w-[82px]" : "xl:w-64",
       )}
     >
-      {/* The `lg`–`xl` tier: always the icon-only rail, no toggle — there's nowhere to put one. */}
+      {/* The `md`–`xl` tier: always the icon-only rail, no toggle — there's nowhere to put one. */}
       <div className="flex h-full flex-col xl:hidden">
         <SidebarBrand collapsed />
         <div className="flex-1 overflow-y-auto px-3 py-2">

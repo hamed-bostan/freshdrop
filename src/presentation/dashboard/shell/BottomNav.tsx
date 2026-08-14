@@ -45,7 +45,7 @@ type BottomNavProps = {
  * hamburger does, so the full, permission-filtered section list still lives
  * in one place.
  *
- * Hidden at `lg` and up, the same breakpoint the persistent rail takes over
+ * Hidden at `md` and up, the same breakpoint the persistent rail takes over
  * at, so exactly one of the two navigations is ever on screen.
  */
 export function BottomNav({ onOpenMore }: BottomNavProps) {
@@ -55,7 +55,7 @@ export function BottomNav({ onOpenMore }: BottomNavProps) {
   return (
     <nav
       className={cn(
-        "fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-border bg-background lg:hidden",
+        "fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-border bg-background md:hidden",
         "pb-[env(safe-area-inset-bottom)]",
       )}
     >

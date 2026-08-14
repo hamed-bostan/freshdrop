@@ -6,6 +6,8 @@ import type { OrderPipelineStage } from "@/src/domain/entities/OrderPipelineStag
 import { Link } from "@/src/i18n/navigation";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { cn } from "@/src/lib/utils";
+import { focusRing } from "@/src/presentation/design-system";
 
 type OrderStatusBreakdownProps = {
   /** Condensed operational summary for the dashboard; Analytics retains richer figures. */
@@ -95,9 +97,9 @@ export async function OrderStatusBreakdown({ breakdown, compact = false }: Order
   }, { stops: [], cursor: 0 }).stops.join(", ");
 
   return (
-    <section className="rounded-card-lg border border-border p-4">
+    <section className="rounded-card-lg border border-border p-5">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-body-b5 text-foreground">{t("statusBreakdown")}</h2>
+        <h2 className="text-body-b1 text-foreground">{t("statusBreakdown")}</h2>
         {!compact ? (
           <p className="text-body-b8 text-muted-foreground">
             {t("ordersTotal", { count: formatNumber(total, locale) })}
@@ -106,20 +108,34 @@ export async function OrderStatusBreakdown({ breakdown, compact = false }: Order
       </div>
 
       {total > 0 ? (
-        <div className="mt-3 grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-4 sm:grid-cols-[minmax(8rem,.85fr)_minmax(10rem,1fr)]">
-          <div className="relative mx-auto flex size-28 items-center justify-center rounded-full sm:size-32" style={{ background: `conic-gradient(${donutStops})` }} aria-hidden>
-            <div className="flex size-[4.75rem] flex-col items-center justify-center rounded-full bg-background sm:size-[5.5rem]"><strong className="text-heading-h3">{formatNumber(total, locale)}</strong><span className="text-body-b10 text-muted-foreground">{t("totalLabel")}</span></div>
+        <div className="mt-4 grid gap-4 md:min-h-56 md:grid-cols-[10rem_minmax(0,1fr)] md:items-center">
+          <div className="grid gap-2.5 md:hidden">
+            <div className="flex items-baseline justify-between gap-4">
+              <strong className="text-heading-h2 text-foreground">{formatNumber(total, locale)}</strong>
+              <span className="text-body-b10 text-muted-foreground">{t("totalLabel")}</span>
+            </div>
+            <div className="flex h-2.5 overflow-hidden rounded-pill bg-muted" aria-hidden>
+              {present.map((slice) => (
+                <span key={slice.status} className={STATUS_BARS[slice.status]} style={{ flexGrow: slice.orders }} />
+              ))}
+            </div>
+          </div>
+          <div className="relative mx-auto hidden size-40 items-center justify-center rounded-full md:flex" style={{ background: `conic-gradient(${donutStops})` }} aria-hidden>
+            <div className="flex size-[6.5rem] flex-col items-center justify-center rounded-full bg-background"><strong className="text-heading-h2">{formatNumber(total, locale)}</strong><span className="text-body-b10 text-muted-foreground">{t("totalLabel")}</span></div>
           </div>
 
-          <ul className="flex flex-col gap-1.5">
+          <ul className="flex flex-col divide-y divide-border border-t border-border md:gap-1.5 md:divide-y-0 md:border-t-0">
             {present.map((slice) => (
               <li key={slice.status}>
                 <Link
                   href={`/dashboard/orders?pipeline=${STATUS_PIPELINE[slice.status]}`}
-                  className="flex items-center gap-3 rounded-card-md py-1 transition-colors hover:bg-muted"
+                  className={cn(
+                    focusRing,
+                    "flex min-h-13 items-center gap-3 rounded-card-md px-1 py-1 transition-colors hover:bg-muted md:min-h-9 md:px-0",
+                  )}
                 >
                   <span className={`size-2.5 shrink-0 rounded-full ${STATUS_BARS[slice.status]}`} />
-                  <span className="min-w-0 flex-1 truncate text-body-b7 text-foreground">
+                  <span className="min-w-0 flex-1 whitespace-nowrap text-body-b6 text-foreground">
                     {tOrders(STATUS_LABEL_KEYS[slice.status])}
                   </span>
                   {!compact ? (
@@ -127,7 +143,7 @@ export async function OrderStatusBreakdown({ breakdown, compact = false }: Order
                       {t("percentOfOrders", { percent: Math.round((slice.orders / total) * 100) })}
                     </span>
                   ) : null}
-                  <span className="w-10 text-end text-body-b8 text-foreground">
+                  <span className="min-w-6 text-end text-body-b7 tabular-nums text-foreground">
                     {formatNumber(slice.orders, locale)}
                   </span>
                   {!compact ? (

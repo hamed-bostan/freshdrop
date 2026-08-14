@@ -688,6 +688,7 @@
     },
     "search": {
       "trigger": "جستجو",
+      "adminTrigger": "جستجو در مدیریت freshDrop",
       "shortcutHint": "⌘K",
       "dialogTitle": "جستجو",
       "placeholder": "جستجوی سفارش‌ها، محصولات، مشتریان…",
@@ -754,13 +755,14 @@
     "recentOrders": "سفارش‌های اخیر",
     "viewAll": "مشاهده همه",
     "viewFullAnalytics": "مشاهده تحلیل کامل",
-    "noRecentOrders": "هنوز سفارشی ثبت نشده است."
-    ,"lowStockProducts": "کالاهای کم‌موجودی"
-    ,"viewAllInventory": "مشاهده همه موجودی"
-    ,"unitsRemaining": "{count} عدد باقی‌مانده"
-    ,"manage": "مدیریت"
-    ,"noLowStock": "سطح موجودی مناسب است."
-    ,"viewAllOrders": "مشاهده همه سفارش‌ها"
+    "noRecentOrders": "هنوز سفارشی ثبت نشده است.",
+    "lowStockProducts": "کالاهای کم‌موجودی",
+    "viewAllInventory": "مشاهده همه موجودی",
+    "unitsRemaining": "{count} عدد باقی‌مانده",
+    "manage": "مدیریت",
+    "manageProductAria": "مدیریت موجودی {product}",
+    "noLowStock": "سطح موجودی مناسب است.",
+    "viewAllOrders": "مشاهده همه سفارش‌ها"
   },
   "dashAnalytics": {
     "pageHeading": "تحلیل‌ها",
@@ -1507,6 +1509,7 @@
     "refundChosen": "مشتری در صورت ناموجود بودن این کالا، بازپرداخت را انتخاب کرده است.",
     "refundThisItem": "بازپرداخت این کالا",
     "colTotal": "جمع کل",
+    "colAction": "عملیات",
     "viewOrderAria": "مشاهده سفارش {id}",
     "backToOrders": "بازگشت به سفارش‌ها",
     "orderNumber": "سفارش {id}",

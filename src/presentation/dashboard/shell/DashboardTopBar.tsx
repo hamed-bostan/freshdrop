@@ -22,30 +22,30 @@ type DashboardTopBarProps = {
 
 /**
  * Persistent chrome above every dashboard page: the mobile nav trigger (the
- * desktop rail covers `lg` and up), the global search trigger, a help link,
+ * desktop rail covers `md` and up), the global search trigger, a help link,
  * the locale toggle, and the account menu.
  */
 export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTopBarProps) {
   const t = useTranslations("dashboard");
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-background px-4">
-      <Link href="/dashboard" className="flex items-center gap-2 text-xl font-bold text-foreground sm:hidden">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border bg-background px-4 md:px-6">
+      <Link href="/dashboard" className="flex shrink-0 items-center gap-2 text-xl font-bold text-foreground sm:hidden">
         <Icon icon={Leaf} size="md" className="text-primary" />
         <span>freshDrop</span>
       </Link>
 
-      <Button variant="ghost" iconOnly size="sm" aria-label={t("openNav")} onClick={onOpenNav} className="hidden sm:inline-flex lg:hidden">
+      <Button variant="ghost" iconOnly size="sm" aria-label={t("openNav")} onClick={onOpenNav} className="hidden sm:inline-flex md:hidden">
         <Icon icon={Menu} size="sm" />
       </Button>
 
       <button
         type="button"
         onClick={onOpenSearch}
-        className="hidden h-9 w-full max-w-md items-center gap-2 rounded-input border border-border bg-input-filled px-3 text-start text-body-b8 text-input-placeholder transition-colors hover:bg-muted-strong lg:flex"
+        className="hidden h-11 w-[42vw] max-w-[24.375rem] items-center gap-2 rounded-card-md border border-transparent bg-input-filled px-4 text-start text-body-b2 text-input-placeholder transition-colors hover:border-border hover:bg-muted-strong md:flex"
       >
         <Icon icon={Search} size="sm" />
-        <span className="flex-1 truncate">{t("search.trigger")}</span>
+        <span className="flex-1 truncate">{t("search.adminTrigger")}</span>
         <kbd className="rounded-input border border-border bg-surface px-1.5 py-0.5 text-label-l2 text-muted-foreground">
           {t("search.shortcutHint")}
         </kbd>
@@ -57,7 +57,7 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
         size="sm"
         aria-label={t("search.trigger")}
         onClick={onOpenSearch}
-        className="lg:hidden"
+        className="md:hidden"
       >
         <Icon icon={Search} size="sm" />
       </Button>

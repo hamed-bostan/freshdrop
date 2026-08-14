@@ -1,9 +1,9 @@
 import {
   AlertTriangle,
+  ChevronRight,
   ClipboardList,
   Clock,
   DollarSign,
-  ExternalLink,
   Receipt,
   Star,
   Truck,
@@ -32,6 +32,7 @@ import { OrderStatusBreakdown } from "./analytics/OrderStatusBreakdown";
 import { RevenueChart } from "./analytics/RevenueChart";
 import { NeedsAttentionPanel } from "./attention/NeedsAttentionPanel";
 import { buildDashboardOverviewViewModel } from "./dashboard-overview-view-model";
+import { DASHBOARD_SPLIT_GRID_CLASS } from "./dashboardLayout";
 import { LowStockPanel } from "./LowStockPanel";
 import { RecentOrdersPanel } from "./RecentOrdersPanel";
 import { StatCard } from "./StatCard";
@@ -173,8 +174,9 @@ export async function DashboardOverviewScreen({
       icon: Receipt,
       tone: "warning",
       value: formatMoney(totals.averageOrderValue, locale),
-      label: tAnalytics("kpiAverageOrder"),
+      label: tAnalytics("kpiAverageOrderValue"),
       deltaLabel: comparisonLabel,
+      neutralTrend: true,
       ...delta(totals.averageOrderValue, previousTotals.averageOrderValue),
       trendValues: viewModel.averageOrder.trendValues,
     },
@@ -248,15 +250,15 @@ export async function DashboardOverviewScreen({
   ];
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-3 sm:flex-col sm:gap-4 lg:flex-row">
+    <div className="@container flex flex-col gap-4">
+      <div className="flex flex-col gap-3 md:mb-1 md:flex-row md:items-end md:justify-between md:gap-6">
         <div className="min-w-0">
-          <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
-          <p className="whitespace-nowrap text-body-b7 text-muted-foreground sm:whitespace-normal">{t("subtitle")}</p>
+          <h1 className="text-[1.875rem] font-bold leading-10 text-foreground">{t("heading")}</h1>
+          <p className="whitespace-nowrap text-body-b6 text-muted-foreground sm:whitespace-normal">{t("subtitle")}</p>
           {/* The days actually covered, spelled out. A dashboard headed only "Last
               30 days" makes every number on it unverifiable; this is the line that
               lets someone reconcile a tile against the orders list. */}
-          <p className="mt-1 hidden text-body-b9 text-muted-foreground sm:inline">
+          <p className="mt-1 hidden text-body-b10 text-muted-foreground sm:inline">
             {tAnalytics("rangeCaption", {
               from: formatMediumDate(analytics.range.from, locale),
               to: formatMediumDate(analytics.range.to, locale),
@@ -265,12 +267,12 @@ export async function DashboardOverviewScreen({
           {/* Every KPI tile below states its move as "vs previous N days" without
               saying which days those were — this line names the baseline period
               those percentages are actually computed against. */}
-          <p className="ms-2 hidden text-body-b8 text-muted-foreground before:me-2 before:content-['•'] sm:inline">
+          <p className="ms-1 hidden text-body-b10 text-muted-foreground before:me-1 before:content-['·'] sm:inline">
             {t("comparedToPreviousPeriod")}
           </p>
         </div>
 
-        <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
+        <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:shrink-0 md:flex-col md:items-end md:justify-end md:gap-4 xl:flex-row xl:items-center xl:gap-2">
           {/* The overview keeps the KPIs and the period chart; everything else
               analytics can show (the full status breakdown, exports, and the
               rankings past the top five) moved to its own page — this is the
@@ -294,11 +296,11 @@ export async function DashboardOverviewScreen({
             href="/dashboard/analytics"
             className={cn(
               focusRing,
-              "hidden h-10 items-center rounded-input px-2 text-body-b9 text-primary transition-colors hover:bg-muted sm:inline-flex",
+              "hidden h-10 items-center rounded-input px-2 text-body-b8 text-primary transition-colors hover:bg-muted sm:inline-flex",
             )}
           >
             {t("viewFullAnalytics")}
-            <Icon icon={ExternalLink} size="xs" className="ms-1.5" />
+            <Icon icon={ChevronRight} size="xs" className="ms-1.5 rtl:-scale-x-100" />
           </Link>
         </div>
       </div>
@@ -326,7 +328,7 @@ export async function DashboardOverviewScreen({
           through a snapshot. */}
       <NeedsAttentionPanel items={attentionItems} />
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(22rem,1fr)]">
+      <div className={DASHBOARD_SPLIT_GRID_CLASS}>
         <RevenueChart
           compact
           points={analytics.revenueSeries}
@@ -340,7 +342,7 @@ export async function DashboardOverviewScreen({
         <OrderStatusBreakdown compact breakdown={analytics.statusBreakdown} />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div className={DASHBOARD_SPLIT_GRID_CLASS}>
         <RecentOrdersPanel orders={recentOrders} customersById={recentOrderCustomersById} />
         <LowStockPanel products={lowStockProducts} />
       </div>
