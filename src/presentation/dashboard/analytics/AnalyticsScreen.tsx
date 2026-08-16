@@ -45,10 +45,10 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange, comp
           <h1 className="text-heading-h2 text-foreground">{t("overviewHeading")}</h1>
           <p className="mt-1 text-body-b10 text-muted-foreground">{t("metricsOverviewSubtitle")}</p>
         </div>
-        <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center md:grid md:w-full md:grid-cols-[minmax(0,1fr)_auto] md:items-stretch xl:flex xl:w-auto xl:justify-end">
+        <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center md:grid md:w-full md:grid-cols-[minmax(0,1fr)_auto] md:items-stretch lg:flex lg:flex-row lg:flex-nowrap lg:items-center lg:justify-end">
           <AnalyticsRangePicker
-            className="md:col-start-1 md:row-start-1 md:w-full xl:w-auto"
-            triggerClassName="md:w-full xl:w-auto"
+            className="md:col-start-1 md:row-start-1 md:w-full lg:w-auto"
+            triggerClassName="md:w-full lg:w-auto"
             presetLabel={t("rangeLabel")}
             presetOptions={[...ANALYTICS_RANGE_PRESETS.map((preset) => ({ value: preset, label: t(`preset.${preset}`) })), { value: CUSTOM_RANGE_VALUE, label: t("presetCustom") }]}
             fromLabel={t("rangeFrom")}
@@ -58,7 +58,7 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange, comp
             isCustom={isCustomRange}
           />
           <AnalyticsComparePicker
-            className="h-11 w-full justify-between sm:h-10 sm:w-auto md:col-span-2 md:col-start-1 md:row-start-2 md:w-full md:justify-center xl:col-auto xl:row-auto xl:w-auto xl:justify-between"
+            className="h-11 w-full justify-between sm:h-10 sm:w-auto md:col-span-2 md:col-start-1 md:row-start-2 md:w-full md:justify-center lg:col-auto lg:row-auto lg:w-auto lg:justify-between"
             mode={compareMode}
             triggerLabel={compareTriggerLabel}
             heading={t("compareLabel")}
@@ -73,7 +73,7 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange, comp
             previousPeriodTo={previews.previous.to}
           />
           <AnalyticsExportMenu
-            className="w-full sm:w-auto md:col-start-2 md:row-start-1 xl:col-auto xl:row-auto"
+            className="w-full sm:w-auto md:col-start-2 md:row-start-1 lg:col-auto lg:row-auto"
             label={t("exportHeading")}
             reports={[
               { resource: "orders", label: t("exportOrdersReport") },
