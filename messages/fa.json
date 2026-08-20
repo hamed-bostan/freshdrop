@@ -918,6 +918,7 @@
     "salesByCategory": "فروش بر اساس دسته‌بندی",
     "topSellingProducts": "پرفروش‌ترین محصولات",
     "product": "محصول",
+    "productSalesMeta": "{units} واحد · {orders} سفارش",
     "unitsSold": "تعداد فروش",
     "netSales": "فروش خالص",
     "revenueShare": "سهم از درآمد",

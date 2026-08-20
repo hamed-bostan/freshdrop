@@ -918,6 +918,7 @@
     "salesByCategory": "Sales by category",
     "topSellingProducts": "Top-selling products",
     "product": "Product",
+    "productSalesMeta": "{units} units · {orders} orders",
     "unitsSold": "Units sold",
     "netSales": "Net sales",
     "revenueShare": "Revenue share",
