@@ -23,9 +23,10 @@ type ReportHeaderProps = {
   comparisonRange: { from: string; to: string };
   compareMode: ComparisonMode;
   exportReports: { resource: string; label: string }[];
+  responsiveActions?: boolean;
 };
 
-export async function ReportHeader({ ariaLabel, parentLabel, currentLabel, title, subtitle, from, to, isCustomRange, comparisonRange, compareMode, exportReports }: ReportHeaderProps) {
+export async function ReportHeader({ ariaLabel, parentLabel, currentLabel, title, subtitle, from, to, isCustomRange, comparisonRange, compareMode, exportReports, responsiveActions = false }: ReportHeaderProps) {
   const ta = await getTranslations("dashAnalytics");
   const locale = (await getLocale());
   const { from: activeFrom, to: activeTo } = wireRangeToParams(comparisonRange);
@@ -49,8 +50,10 @@ export async function ReportHeader({ ariaLabel, parentLabel, currentLabel, title
           <h1 className="text-heading-h2 text-foreground">{title}</h1>
           <p className="mt-1 text-body-b10 text-muted-foreground">{subtitle}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+        <div className={responsiveActions ? "flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center md:grid md:w-full md:grid-cols-[minmax(0,1fr)_auto] md:items-stretch lg:flex lg:flex-row lg:flex-nowrap lg:items-center lg:justify-end" : "flex flex-wrap items-center gap-2 xl:justify-end"}>
           <AnalyticsRangePicker
+            className={responsiveActions ? "md:col-start-1 md:row-start-1 md:w-full lg:w-auto" : undefined}
+            triggerClassName={responsiveActions ? "md:w-full lg:w-auto" : undefined}
             presetLabel={ta("rangeLabel")}
             presetOptions={[...ANALYTICS_RANGE_PRESETS.map((preset) => ({ value: preset, label: ta(`preset.${preset}`) })), { value: CUSTOM_RANGE_VALUE, label: ta("presetCustom") }]}
             fromLabel={ta("rangeFrom")}
@@ -60,6 +63,7 @@ export async function ReportHeader({ ariaLabel, parentLabel, currentLabel, title
             isCustom={isCustomRange}
           />
           <AnalyticsComparePicker
+            className={responsiveActions ? "h-11 w-full justify-between sm:h-10 sm:w-auto md:col-span-2 md:col-start-1 md:row-start-2 md:w-full md:justify-center lg:col-auto lg:row-auto lg:w-auto lg:justify-between" : undefined}
             mode={compareMode}
             triggerLabel={compareTriggerLabel}
             heading={ta("compareLabel")}
@@ -73,7 +77,7 @@ export async function ReportHeader({ ariaLabel, parentLabel, currentLabel, title
             previousPeriodFrom={previews.previous.from}
             previousPeriodTo={previews.previous.to}
           />
-          <AnalyticsExportMenu label={ta("exportHeading")} reports={exportReports} from={from} to={to} />
+          <AnalyticsExportMenu className={responsiveActions ? "w-full sm:w-auto md:col-start-2 md:row-start-1 lg:col-auto lg:row-auto" : undefined} label={ta("exportHeading")} reports={exportReports} from={from} to={to} />
         </div>
       </header>
     </>

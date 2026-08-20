@@ -4,6 +4,7 @@ import { percentChange } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { StatCardCarousel } from "@/src/presentation/dashboard/StatCardCarousel";
 
 import { SalesMetricCard } from "./SalesMetricCard";
 
@@ -23,6 +24,7 @@ export function SalesMetricGrid({ analytics, locale, labels }: SalesMetricGridPr
     { label: labels.averageOrder, value: formatMoney(totals.averageOrderValue, locale), icon: Receipt, tone: "orange" as const, delta: percentChange(totals.averageOrderValue, previousTotals.averageOrderValue), values: revenueSeries.map((item) => item.orders > 0 ? item.revenue / item.orders : 0) },
     { label: labels.units, value: formatNumber(totals.units, locale), icon: PackageOpen, tone: "green" as const, delta: percentChange(totals.units, previousTotals.units), values: [previousTotals.units, totals.units] },
   ];
+  const cards = metrics.map((metric) => <SalesMetricCard key={metric.label} {...metric} locale={locale} comparisonLabel={labels.comparison} currentLabel={labels.current} />);
 
-  return <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{metrics.map((metric) => <SalesMetricCard key={metric.label} {...metric} locale={locale} comparisonLabel={labels.comparison} currentLabel={labels.current} />)}</section>;
+  return <><div className="sm:hidden"><StatCardCarousel>{cards}</StatCardCarousel></div><section className="hidden gap-3 sm:grid sm:grid-cols-2 xl:grid-cols-4">{cards}</section></>;
 }
