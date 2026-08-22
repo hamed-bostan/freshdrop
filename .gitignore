@@ -27,6 +27,7 @@
 # IDE / editor settings (personal, not part of the app)
 .idea/
 .vscode/
+.claude/settings.local.json
 
 # debug
 npm-debug.log*
