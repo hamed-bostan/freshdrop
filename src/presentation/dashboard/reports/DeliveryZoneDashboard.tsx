@@ -5,7 +5,8 @@ import { percentChange } from "@/src/domain/entities/Analytics";
 import { Link } from "@/src/i18n/navigation";
 import type { Locale } from "@/src/i18n/routing";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
-import { DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
+import { StatCardCarousel } from "@/src/presentation/dashboard/StatCardCarousel";
+import { Icon } from "@/src/presentation/design-system";
 
 import { DeliveryZoneCoverageCard } from "./DeliveryZoneCoverageCard";
 import { SalesMetricCard } from "./SalesMetricCard";
@@ -24,7 +25,8 @@ export async function DeliveryZoneMetrics({ report, locale }: Props) {
     { label: t("onTimeRate"), value: formatPercent(rate, locale), icon: CheckCircle2, tone: "green" as const, delta: previousRate ? (rate - previousRate) / previousRate : null, values: [previousRate, rate] },
     { label: t("lateDeliveries"), value: formatNumber(report.totals.lateDeliveries, locale), icon: TimerOff, tone: "orange" as const, delta: percentChange(report.totals.lateDeliveries, report.previousTotals.lateDeliveries), values: [report.previousTotals.lateDeliveries, report.totals.lateDeliveries], inverse: true },
   ];
-  return <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{metrics.map((metric) => <SalesMetricCard key={metric.label} {...metric} locale={locale} comparisonLabel={t("vsPrevious")} currentLabel={t("currentPeriod")} />)}</section>;
+  const cards = metrics.map((metric) => <SalesMetricCard key={metric.label} {...metric} locale={locale} comparisonLabel={t("vsPrevious")} currentLabel={t("currentPeriod")} className="min-h-[174px] md:min-h-52 xl:min-h-48" />);
+  return <><div className="sm:hidden"><StatCardCarousel>{cards}</StatCardCarousel></div><section className="hidden gap-4 sm:grid sm:grid-cols-2 xl:grid-cols-4">{cards}</section></>;
 }
 
 export async function DeliveryZoneMap({ report, locale }: Props) {
@@ -35,12 +37,12 @@ export async function DeliveryZoneMap({ report, locale }: Props) {
 
 export async function DeliveryZonePerformance({ report, locale }: Props) {
   const t = await getTranslations("dashDeliveryReport");
-  return <section className="flex flex-col rounded-card-lg border border-border bg-background p-4">
-    <h2 className="text-body-b5">{t("zonePerformance")}</h2>
-    <DataTable className="mt-2 rounded-none border-x-0 border-b-0"><Table className="text-body-b10 [&_td]:px-3 [&_td]:py-2 [&_th]:px-3 [&_th]:py-2"><TableHeader><tr><TableHead>{t("zone")}</TableHead><TableHead className="text-end">{t("orders")}</TableHead><TableHead className="text-end">{t("onTimeShort")}</TableHead><TableHead className="text-end">{t("averageTimeShort")}</TableHead><TableHead className="text-end">{t("change")}</TableHead></tr></TableHeader><TableBody>{report.zones.map((zone) => {
-      const change = zone.previousOnTimeRate == null ? null : (zone.onTimeRate - zone.previousOnTimeRate) * 100;
-      return <TableRow key={zone.zone}><TableCell className="font-medium">{zone.zone}</TableCell><TableCell className="text-end">{formatNumber(zone.orders, locale)}</TableCell><TableCell className="text-end">{formatPercent(zone.onTimeRate, locale)}</TableCell><TableCell className="text-end">{t("compactMinutes", { value: zone.averageFulfillmentMinutes })}</TableCell><TableCell className={`whitespace-nowrap text-end font-semibold ${change == null ? "text-muted-foreground" : change >= 0 ? "text-primary" : "text-destructive"}`}>{change == null ? "—" : `${change >= 0 ? "↑" : "↓"} ${Math.abs(change).toFixed(1)}%`}</TableCell></TableRow>;
-    })}</TableBody></Table></DataTable>
+  return <section className="flex min-h-60 flex-col rounded-card-lg border border-border bg-background p-4 md:min-h-64 md:p-6 xl:min-h-0 xl:p-4">
+    <h2 className="text-heading-h3">{t("zonePerformance")}</h2>
+    <div className="mt-4 border-t border-border pt-4">{report.zones.map((zone) => <div key={zone.zone} className="mb-4 last:mb-0">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-4 text-body-b10 md:text-body-b6 xl:text-body-b10"><span className="truncate font-semibold">{zone.zone}</span><span>{formatNumber(zone.orders, locale)} {t("orders").toLocaleLowerCase(locale)}</span><span className="text-end">{formatPercent(zone.onTimeRate, locale)}</span></div>
+      <div className="mt-3 h-1.5 overflow-hidden rounded-pill bg-muted"><div className="h-full min-w-1 rounded-pill bg-primary" style={{ width: `${Math.max(zone.onTimeRate * 100, 1)}%` }} /></div>
+    </div>)}</div>
     <Footer href="/dashboard/delivery-slots" label={t("viewAllZones")} />
   </section>;
 }
@@ -64,9 +66,9 @@ export async function DeliveryZoneAlerts({ report, locale }: Props) {
       ? [{ key: `${strongest.zone}-healthy`, title: t("zonePerformingWell", { zone: strongest.zone }), detail: t("onTimeDetail", { rate: formatPercent(strongest.onTimeRate, locale) }), badge: t("healthy"), icon: CheckCircle2, tone: "text-primary bg-accent" }]
       : []),
   ];
-  return <section className="flex flex-col rounded-card-lg border border-border bg-background p-4">
-    <h2 className="text-body-b5">{t("zoneAlerts")}</h2>
-    {rows.length ? <div className="mt-2 divide-y divide-border rounded-card-md border border-border">{rows.map(({ key, title, detail, badge, icon, tone }) => <div key={key} className="grid grid-cols-[2rem_1fr_1fr_auto] items-center gap-3 px-3 py-2 text-body-b10"><span className={`flex size-8 items-center justify-center rounded-card-md ${tone}`}><Icon icon={icon} size="xs" /></span><span className="font-medium">{title}</span><span className="text-muted-foreground">{detail}</span><span className={`rounded-card-md border px-2 py-1 text-label-l1 ${tone}`}>{badge}</span></div>)}</div> : <p className="py-10 text-center text-body-b8 text-muted-foreground">{t("noAlerts")}</p>}
+  return <section className="flex min-h-72 flex-col rounded-card-lg border border-border bg-background p-4 md:min-h-64 md:p-6 xl:min-h-0 xl:p-4">
+    <h2 className="text-heading-h3">{t("zoneAlerts")}</h2>
+    {rows.length ? <div className="mt-4 divide-y divide-border rounded-card-md border border-border">{rows.map(({ key, title, detail, badge, icon, tone }) => <div key={key} className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-x-3 gap-y-2 p-3 text-body-b10 md:grid-cols-[2.5rem_minmax(0,1fr)_auto]"><span className={`flex size-10 items-center justify-center rounded-card-md ${tone}`}><Icon icon={icon} size="xs" /></span><span className="min-w-0"><span className="block font-semibold">{title}</span><span className="mt-0.5 block text-muted-foreground">{detail}</span></span><span className={`col-start-2 w-full rounded-pill border px-2 py-1 text-center text-label-l1 md:col-start-3 md:row-start-1 md:w-auto ${tone}`}>{badge}</span></div>)}</div> : <p className="py-10 text-center text-body-b8 text-muted-foreground">{t("noAlerts")}</p>}
     <Footer href="/dashboard/delivery-slots" label={t("viewAllAlerts")} />
   </section>;
 }
