@@ -34,7 +34,7 @@ export function DashboardSidebar({ permissions, collapsed, onToggleCollapsed }: 
   return (
     <aside
       className={cn(
-        "sticky top-0 hidden h-dvh w-20 shrink-0 flex-col border-e border-border bg-background md:flex",
+        "sticky top-0 hidden h-dvh w-32 shrink-0 flex-col border-e border-border bg-background md:flex xl:w-20",
         collapsed ? "xl:w-20" : "xl:w-64",
       )}
     >

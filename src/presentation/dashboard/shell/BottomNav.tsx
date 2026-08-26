@@ -68,7 +68,7 @@ export function BottomNav({ onOpenMore }: BottomNavProps) {
             aria-current={active ? "page" : undefined}
             className={cn(
               focusRing,
-              "flex flex-1 flex-col items-center gap-1 py-2 text-body-b11 transition-colors",
+              "flex flex-1 flex-col items-center gap-1 py-3 text-body-b11 transition-colors",
               active ? "text-primary" : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -84,7 +84,7 @@ export function BottomNav({ onOpenMore }: BottomNavProps) {
         aria-label={t("moreAria")}
         className={cn(
           focusRing,
-          "flex flex-1 flex-col items-center gap-1 py-2 text-body-b11 text-muted-foreground transition-colors hover:text-foreground",
+          "flex flex-1 flex-col items-center gap-1 py-3 text-body-b11 text-muted-foreground transition-colors hover:text-foreground",
         )}
       >
         <Icon icon={MoreHorizontal} size="sm" />

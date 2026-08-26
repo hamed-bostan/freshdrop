@@ -56,7 +56,7 @@ export function DashboardShell({ permissions, viewer, initialSidebarCollapsed, c
         <DashboardTopBar viewer={viewer} onOpenNav={() => setNavOpen(true)} onOpenSearch={() => setSearchOpen(true)} />
         {/* Extra bottom padding below `md` clears the fixed BottomNav — without
             it the tab bar covers whatever the page renders last. */}
-        <main className="min-w-0 flex-1 px-4 pb-20 pt-5 md:px-6 md:pb-6 md:pt-6">{children}</main>
+        <main className="min-w-0 flex-1 px-5 pb-24 pt-6 md:px-8 md:pb-8 md:pt-8 xl:px-6 xl:pb-6 xl:pt-6">{children}</main>
       </div>
 
       <NavDrawer open={navOpen} onOpenChange={setNavOpen} permissions={permissions} />

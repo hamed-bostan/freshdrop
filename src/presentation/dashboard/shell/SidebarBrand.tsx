@@ -21,7 +21,7 @@ export function SidebarBrand({ collapsed = false }: SidebarBrandProps) {
       href="/dashboard"
       title={collapsed ? `FreshDrop ${t("admin")}` : undefined}
       className={cn(
-        "flex items-center gap-2 py-5 text-heading-h3 text-foreground",
+        "flex items-center gap-2 py-5 text-heading-h3 text-foreground md:h-24 md:py-0 xl:h-16",
         focusRing,
         collapsed ? "justify-center px-0" : "px-5",
       )}

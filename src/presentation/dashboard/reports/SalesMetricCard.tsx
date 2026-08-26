@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, Info, type LucideIcon } from "lucide-react";
 
 import type { Locale } from "@/src/i18n/routing";
+import { cn } from "@/src/lib/utils";
 import { Icon } from "@/src/presentation/design-system";
 
 import { StatSparkline } from "../StatSparkline";
@@ -8,6 +9,7 @@ import { StatSparkline } from "../StatSparkline";
 type SalesMetricCardProps = {
   label: string; value: string; icon: LucideIcon; tone: "green" | "blue" | "orange" | "purple" | "red";
   delta: number | null; values: number[]; locale: Locale; comparisonLabel: string; currentLabel: string; inverse?: boolean;
+  className?: string;
 };
 
 const TONES = {
@@ -18,11 +20,11 @@ const TONES = {
   red: { icon: "bg-error text-destructive", chart: "var(--color-destructive)" },
 };
 
-export function SalesMetricCard({ label, value, icon, tone, delta, values, locale, comparisonLabel, currentLabel, inverse = false }: SalesMetricCardProps) {
+export function SalesMetricCard({ label, value, icon, tone, delta, values, locale, comparisonLabel, currentLabel, inverse = false, className }: SalesMetricCardProps) {
   const change = delta === null ? null : delta * 100;
   const favorable = change !== null && (inverse ? change <= 0 : change >= 0);
   return (
-    <article className="flex min-h-36 min-w-0 flex-col overflow-hidden rounded-card-lg border border-border bg-background p-4 pb-2">
+    <article className={cn("flex min-h-36 min-w-0 flex-col overflow-hidden rounded-card-lg border border-border bg-background p-4 pb-2", className)}>
       <div className="flex items-start gap-3">
         <span className={`flex size-11 shrink-0 items-center justify-center rounded-full ${TONES[tone].icon}`}><Icon icon={icon} size="sm" /></span>
         <div className="min-w-0">
