@@ -19,8 +19,8 @@ export async function CustomerInsightsScreen({ report, segments, from, to, isCus
   const t = await getTranslations("dashCustomerInsights");
   const ta = await getTranslations("dashAnalytics");
   const locale = await getLocale();
-  return <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-4">
-    <ReportHeader ariaLabel={t("breadcrumbAria")} parentLabel={t("reports")} currentLabel={t("heading")} title={t("heading")} subtitle={t("subtitle")} from={from} to={to} isCustomRange={isCustomRange} comparisonRange={report.previousRange} compareMode={compareMode} exportReports={[{ resource: "customers", label: ta("exportCustomersReport") }]} />
+  return <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-5 md:gap-6 xl:gap-4">
+    <ReportHeader ariaLabel={t("breadcrumbAria")} parentLabel={t("reports")} currentLabel={t("heading")} title={t("heading")} subtitle={t("subtitle")} from={from} to={to} isCustomRange={isCustomRange} comparisonRange={report.previousRange} compareMode={compareMode} exportReports={[{ resource: "customers", label: ta("exportCustomersReport") }]} responsiveActions />
     <CustomerMetricGrid report={report} locale={locale} />
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(20rem,1fr)]"><CustomerGrowthChart report={report} /><CustomerMixPanel segments={segments} locale={locale} /></div>
     <CustomerInsightBanner report={report} locale={locale} />

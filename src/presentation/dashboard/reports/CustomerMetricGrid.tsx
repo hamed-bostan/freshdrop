@@ -5,6 +5,7 @@ import { percentChange, repeatPurchaseRate } from "@/src/domain/entities/Analyti
 import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
+import { StatCardCarousel } from "@/src/presentation/dashboard/StatCardCarousel";
 
 import { SalesMetricCard } from "./SalesMetricCard";
 
@@ -22,5 +23,6 @@ export async function CustomerMetricGrid({ report, locale }: { report: CustomerI
     { label: t("repeatPurchaseRate"), value: formatPercent(repeatRate, locale), icon: Repeat2, tone: "purple" as const, delta: previousRepeatRate ? (repeatRate - previousRepeatRate) / previousRepeatRate : null, values: [previousRepeatRate, repeatRate] },
     { label: t("twelveMonthValue"), value: formatMoney(averageValue, locale), icon: CircleDollarSign, tone: "green" as const, delta: percentChange(averageValue, previousAverageValue), values: report.growth.map((point) => point.newRevenue + point.returningRevenue) },
   ];
-  return <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{metrics.map((metric) => <SalesMetricCard key={metric.label} {...metric} locale={locale} comparisonLabel={t("vsPrevious")} currentLabel={t("currentPeriod")} />)}</section>;
+  const cards = metrics.map((metric) => <SalesMetricCard key={metric.label} {...metric} locale={locale} comparisonLabel={t("vsPrevious")} currentLabel={t("currentPeriod")} className="min-h-[174px] md:min-h-52 xl:min-h-40" />);
+  return <><div className="sm:hidden"><StatCardCarousel>{cards}</StatCardCarousel></div><section className="hidden gap-4 sm:grid sm:grid-cols-2 xl:grid-cols-4">{cards}</section></>;
 }
