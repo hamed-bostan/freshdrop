@@ -10,6 +10,7 @@ type SalesMetricCardProps = {
   label: string; value: string; icon: LucideIcon; tone: "green" | "blue" | "orange" | "purple" | "red";
   delta: number | null; values: number[]; locale: Locale; comparisonLabel: string; currentLabel: string; inverse?: boolean;
   className?: string;
+  showSparkline?: boolean;
 };
 
 const TONES = {
@@ -20,7 +21,7 @@ const TONES = {
   red: { icon: "bg-error text-destructive", chart: "var(--color-destructive)" },
 };
 
-export function SalesMetricCard({ label, value, icon, tone, delta, values, locale, comparisonLabel, currentLabel, inverse = false, className }: SalesMetricCardProps) {
+export function SalesMetricCard({ label, value, icon, tone, delta, values, locale, comparisonLabel, currentLabel, inverse = false, className, showSparkline = true }: SalesMetricCardProps) {
   const change = delta === null ? null : delta * 100;
   const favorable = change !== null && (inverse ? change <= 0 : change >= 0);
   return (
@@ -35,7 +36,7 @@ export function SalesMetricCard({ label, value, icon, tone, delta, values, local
           </p>
         </div>
       </div>
-      <div className="mt-auto pt-2"><StatSparkline values={values} positive={favorable} color={TONES[tone].chart} heightClassName="h-8" /></div>
+      {showSparkline ? <div className="mt-auto pt-2"><StatSparkline values={values} positive={favorable} color={TONES[tone].chart} heightClassName="h-8" /></div> : null}
     </article>
   );
 }

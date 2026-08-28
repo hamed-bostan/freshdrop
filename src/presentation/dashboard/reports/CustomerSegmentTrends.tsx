@@ -1,4 +1,4 @@
-import { ArrowRight, ExternalLink, UsersRound } from "lucide-react";
+import { ArrowLeftRight, ArrowRight, ExternalLink } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import type { CustomerSegmentId } from "@/src/domain/entities/CustomerSegmentsReport";
@@ -27,10 +27,10 @@ export async function CustomerSegmentTrends({ transitions, locale }: { transitio
   const cards = [...moves].sort((a, b) => b.customers - a.customers).slice(0, MAX_CARDS);
   const higherValueMoved = moves.filter((row) => HIGHER_VALUE_TARGETS.has(row.toSegment)).reduce((sum, row) => sum + row.customers, 0);
 
-  return <section className="rounded-card-lg border border-border bg-background p-4">
-    <div className="flex items-center gap-3"><h2 className="text-body-b5">{t("segmentMovement")}</h2><span className="text-body-b10 text-muted-foreground">{t("independentTransitions")}</span></div>
+  return <section className="flex min-h-[340px] flex-col rounded-card-lg border border-border bg-background p-4 md:min-h-[390px] md:p-6 xl:min-h-[400px] xl:p-4">
+    <div><h2 className="text-heading-h3">{t("segmentMovement")}</h2><p className="mt-1 font-mono text-label-l1 uppercase tracking-widest text-muted-foreground">{t("independentTransitions")}</p></div>
     {cards.length === 0
-      ? <p className="mt-3 rounded-card-lg border border-dashed border-border p-4 text-body-b10 text-muted-foreground">{t("movementCollectingData")}</p>
+      ? <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-8 text-center text-muted-foreground"><Icon icon={ArrowLeftRight} size="lg" /><p className="max-w-sm text-body-b8">{t("movementCollectingData")}</p></div>
       : <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{cards.map((move) => <article key={`${move.fromSegment}-${move.toSegment}`} className="rounded-card-lg border border-border p-3">
         <div className="flex items-center gap-3">
           <span className="flex size-10 items-center justify-center rounded-full bg-accent text-primary"><Icon icon={ArrowRight} size="sm" className="rtl:rotate-180" /></span>
@@ -40,8 +40,8 @@ export async function CustomerSegmentTrends({ transitions, locale }: { transitio
           </div>
         </div>
       </article>)}</div>}
-    <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-      <p className="flex items-center gap-2 text-body-b10"><span className="flex size-7 items-center justify-center rounded-full bg-accent text-primary"><Icon icon={UsersRound} size="xs" /></span>{t("higherValueMoved", { count: higherValueMoved })}</p>
+    <div className="mt-auto flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-body-b10 text-muted-foreground">{t("higherValueMoved", { count: higherValueMoved })}</p>
       <Link href="/dashboard/customers" className="flex items-center gap-2 text-body-b8 text-primary">{t("viewMovementDetails")}<Icon icon={ExternalLink} size="xs" /></Link>
     </div>
   </section>;

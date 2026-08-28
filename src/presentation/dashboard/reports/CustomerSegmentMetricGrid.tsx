@@ -5,6 +5,7 @@ import { percentChange } from "@/src/domain/entities/Analytics";
 import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { StatCardCarousel } from "@/src/presentation/dashboard/StatCardCarousel";
 
 import { SalesMetricCard } from "./SalesMetricCard";
 
@@ -18,5 +19,6 @@ export async function CustomerSegmentMetricGrid({ report, locale }: { report: Cu
     { label: t("loyalRevenue"), value: formatMoney(report.loyalRevenue, locale), icon: CircleDollarSign, tone: "green" as const, delta: percentChange(report.loyalRevenue, report.previousLoyalRevenue), values: [report.previousLoyalRevenue, report.loyalRevenue], currentLabel: t("currentPeriod") },
     { label: t("atRiskCustomers"), value: formatNumber(report.atRiskCustomers, locale), icon: AlertTriangle, tone: "red" as const, delta: percentChange(report.atRiskCustomers, report.previousAtRiskCustomers), values: [report.previousAtRiskCustomers, report.atRiskCustomers], currentLabel: t("currentPeriod"), inverse: true },
   ];
-  return <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{metrics.map((metric) => <SalesMetricCard key={metric.label} {...metric} locale={locale} comparisonLabel={t("vsPrevious")} />)}</section>;
+  const cards = metrics.map((metric) => <SalesMetricCard key={metric.label} {...metric} locale={locale} comparisonLabel={t("vsPrevious")} className="min-h-[174px] md:min-h-52 xl:min-h-40" showSparkline={false} />);
+  return <><div className="sm:hidden"><StatCardCarousel>{cards}</StatCardCarousel></div><section className="hidden gap-4 sm:grid sm:grid-cols-2 xl:grid-cols-4">{cards}</section></>;
 }
