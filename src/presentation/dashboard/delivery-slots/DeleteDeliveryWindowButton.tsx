@@ -14,14 +14,24 @@ import { deliveryWindowsApi } from "./delivery-window-api";
 type DeleteDeliveryWindowButtonProps = {
   id: string;
   label: string;
+  trigger?: "button" | "none";
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 /** Trash action that confirms via the DS ConfirmSheet, then deletes over the API. */
-export function DeleteDeliveryWindowButton({ id, label }: DeleteDeliveryWindowButtonProps) {
+export function DeleteDeliveryWindowButton({
+  id,
+  label,
+  trigger = "button",
+  open: controlledOpen,
+  onOpenChange,
+}: DeleteDeliveryWindowButtonProps) {
   const t = useTranslations("dashDeliverySlots");
   const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
-  const [open, setOpen] = React.useState(false);
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  const open = controlledOpen ?? internalOpen;
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
 
@@ -30,7 +40,7 @@ export function DeleteDeliveryWindowButton({ id, label }: DeleteDeliveryWindowBu
     startTransition(async () => {
       try {
         await deliveryWindowsApi.remove(id);
-        setOpen(false);
+        handleOpenChange(false);
         // Re-run the server render so the list reflects the delete — the server
         // stays the source of truth instead of patching local state.
         router.refresh();
@@ -45,30 +55,33 @@ export function DeleteDeliveryWindowButton({ id, label }: DeleteDeliveryWindowBu
             : localizeApiError(err, tApiErrors, t("deleteError"));
         // Re-open the sheet in a failure state so the error reads in context.
         setError(message);
-        setOpen(true);
+        handleOpenChange(true);
       }
     });
   }
 
   function handleOpenChange(next: boolean): void {
-    setOpen(next);
+    setInternalOpen(next);
+    onOpenChange?.(next);
     if (!next) setError(null); // Drop a stale error once the sheet is dismissed.
   }
 
   return (
     <>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        iconOnly
-        aria-label={t("deleteAria", { label })}
-        onClick={() => setOpen(true)}
-        disabled={pending}
-        className="text-destructive"
-      >
-        <Icon icon={Trash2} size="sm" />
-      </Button>
+      {trigger === "button" ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          iconOnly
+          aria-label={t("deleteAria", { label })}
+          onClick={() => handleOpenChange(true)}
+          disabled={pending}
+          className="text-destructive"
+        >
+          <Icon icon={Trash2} size="sm" />
+        </Button>
+      ) : null}
 
       <ConfirmSheet
         open={open}
