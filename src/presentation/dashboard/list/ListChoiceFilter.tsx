@@ -28,6 +28,8 @@ type ListChoiceFilterProps = {
   counts?: Record<string, number>;
   /** Shows the unfiltered value beside the label instead of leaving it implicit. */
   showAllValue?: boolean;
+  /** Responsive width or alignment overrides for the popover trigger. */
+  triggerClassName?: string;
 };
 
 /**
@@ -50,6 +52,7 @@ export function ListChoiceFilter({
   icon,
   counts,
   showAllValue = false,
+  triggerClassName,
 }: ListChoiceFilterProps) {
   const { searchParams, setFilter } = useListParams();
   const current = searchParams.get(paramName) ?? "";
@@ -63,6 +66,7 @@ export function ListChoiceFilter({
       value={selected?.label ?? (showAllValue ? allLabel : undefined)}
       isActive={current !== ""}
       icon={icon}
+      triggerClassName={triggerClassName}
     >
       <div role="group" aria-label={label} className="flex flex-col">
         {entries.map((option) => {

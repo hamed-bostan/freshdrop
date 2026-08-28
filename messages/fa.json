@@ -1060,7 +1060,7 @@
   "dashExportReports": {
     "reports": "گزارش‌ها", "heading": "مرکز خروجی گزارش‌ها", "subtitle": "نسخهٔ CSV تازه از داده‌های فروشگاه دریافت کنید.", "breadcrumbAria": "مسیر صفحه", "quickHeading": "خروجی‌های سریع", "export": "خروجی",
     "customHeading": "ایجاد خروجی سفارشی", "customDescription": "یک مجموعه‌داده انتخاب کنید و نسخه‌ای تازه از اطلاعات جاری فروشگاه دریافت کنید.", "reportLabel": "گزارش", "generate": "ایجاد خروجی",
-    "dateRange": "بازهٔ زمانی", "compareWith": "مقایسه با", "noComparison": "هیچ‌کدام", "previousPeriod": "دورهٔ قبل", "formatLabel": "قالب فایل", "formatDescription": "فایل CSV با UTF-8 ساخته می‌شود و در Excel، Numbers و Google Sheets به‌درستی باز می‌شود.",
+    "dateRange": "بازهٔ زمانی", "startDate": "تاریخ شروع", "endDate": "تاریخ پایان", "compareWith": "مقایسه با", "noComparison": "هیچ‌کدام", "previousPeriod": "دورهٔ قبل", "formatLabel": "قالب فایل", "formatDescription": "فایل CSV با UTF-8 ساخته می‌شود و در Excel، Numbers و Google Sheets به‌درستی باز می‌شود.",
     "dataSections": "بخش‌های داده", "comparisonSection": "مقایسه با دورهٔ قبل", "secureLinkNote": "لینک‌های دانلود امضا شده‌اند و پس از ۷ روز منقضی می‌شوند.", "reset": "بازنشانی",
     "deliveryLabel": "ارسال", "deliveryDescription": "روش دریافت این خروجی را انتخاب کنید.", "deliveryDownload": "دانلود پس از آماده شدن", "deliveryEmail": "ارسال لینک امن به ایمیل من",
     "deliveryNoEmailHint": "حساب شما ایمیلی ثبت‌شده ندارد، بنابراین این خروجی فقط قابل دانلود است.", "deliverySmtpUnconfiguredHint": "ارسال ایمیل هنوز روی این سرور پیکربندی نشده است، بنابراین این خروجی فقط قابل دانلود است.",

@@ -23,7 +23,7 @@ export async function ScheduledExportsPanel() {
     <section>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-body-b7">{t("panelHeading")}</h2>
+          <h2 className="text-body-b1">{t("panelHeading")}</h2>
           <p className="mt-1 text-body-b10 text-muted-foreground">{t("panelSubtitle")}</p>
         </div>
         <Link href="/dashboard/reports/exports/schedules" className="text-body-b10 font-semibold text-primary hover:underline">

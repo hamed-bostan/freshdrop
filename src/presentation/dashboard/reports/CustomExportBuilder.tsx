@@ -1,5 +1,5 @@
 "use client";
-import { Download, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
@@ -135,12 +135,12 @@ export function CustomExportBuilder({ from, to, reports, canEmailDeliver, hasEma
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,.8fr)]">
-      <section id="custom-export" className="scroll-mt-6 rounded-card-lg border border-border bg-background p-4">
-        <h2 className="text-body-b5">{t("customHeading")}</h2>
-        <p className="mt-1 text-body-b10 text-muted-foreground">{t("customDescription")}</p>
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,.8fr)]">
+      <section id="custom-export" className="scroll-mt-6 rounded-card-lg border border-border bg-background p-4 lg:p-5">
+        <h2 className="text-heading-h3">{t("customHeading")}</h2>
+        <p className="mt-1 text-body-b6 text-muted-foreground">{t("customDescription")}</p>
 
-        <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Field label={t("reportLabel")}>
             <Select value={reportId} onChange={(event) => setReportId(event.target.value as ExportReportId)} className="w-full">
               {reports.map((item) => (
@@ -151,28 +151,33 @@ export function CustomExportBuilder({ from, to, reports, canEmailDeliver, hasEma
             </Select>
           </Field>
 
-          <Field label={t("dateRange")}>
-            <div className="flex items-center gap-2">
-              <Input
-                type="date"
-                value={rangeFrom}
-                onChange={(event) => setRangeFrom(event.target.value)}
-                disabled={!report.periodCapable}
-                aria-label={ta("rangeFrom")}
-                size="sm"
-              />
-              <Input
-                type="date"
-                value={rangeTo}
-                onChange={(event) => setRangeTo(event.target.value)}
-                disabled={!report.periodCapable}
-                aria-label={ta("rangeTo")}
-                size="sm"
-              />
-            </div>
+          <Field label={t("startDate")}>
+            <Input
+              type="date"
+              value={rangeFrom}
+              max={rangeTo}
+              onChange={(event) => setRangeFrom(event.target.value)}
+              disabled={!report.periodCapable}
+              aria-label={ta("rangeFrom")}
+              size="sm"
+              inputClassName="px-3"
+            />
           </Field>
 
-          <Field label={t("compareWith")}>
+          <Field label={t("endDate")}>
+            <Input
+              type="date"
+              value={rangeTo}
+              min={rangeFrom}
+              onChange={(event) => setRangeTo(event.target.value)}
+              disabled={!report.periodCapable}
+              aria-label={ta("rangeTo")}
+              size="sm"
+              inputClassName="px-3"
+            />
+          </Field>
+
+          <Field label={t("compareWith")} className="sm:col-span-2 lg:col-span-3">
             <Select
               value={compareWithPrevious ? "previous" : "none"}
               onChange={(event) => setCompareWithPrevious(event.target.value === "previous")}
@@ -188,7 +193,7 @@ export function CustomExportBuilder({ from, to, reports, canEmailDeliver, hasEma
         <div className="mt-4">
           <p className="text-body-b10 font-medium">{t("formatLabel")}</p>
           <p className="mt-1 text-body-b10 text-muted-foreground">{t("formatDescription")}</p>
-          <ChipGroup value={format} onValueChange={(value) => setFormat(value as ExportFormat)} aria-label={t("formatLabel")} className="mt-2">
+          <ChipGroup value={format} onValueChange={(value) => setFormat(value as ExportFormat)} aria-label={t("formatLabel")} className="mt-2 grid grid-cols-3 sm:flex">
             {FORMATS.map((value) => (
               <Chip key={value} value={value}>
                 {EXPORT_FORMAT_LABEL[value]}
@@ -220,7 +225,7 @@ export function CustomExportBuilder({ from, to, reports, canEmailDeliver, hasEma
         <div className="mt-4">
           <p className="text-body-b10 font-medium">{t("deliveryLabel")}</p>
           <p className="mt-1 text-body-b10 text-muted-foreground">{canEmailDeliver ? t("deliveryDescription") : hasEmailOnFile ? t("deliverySmtpUnconfiguredHint") : t("deliveryNoEmailHint")}</p>
-          <ChipGroup value={delivery} onValueChange={(value) => setDelivery(value as typeof delivery)} aria-label={t("deliveryLabel")} className="mt-2">
+          <ChipGroup value={delivery} onValueChange={(value) => setDelivery(value as typeof delivery)} aria-label={t("deliveryLabel")} className="mt-2 grid grid-cols-1 sm:flex">
             <Chip value="download">{t("deliveryDownload")}</Chip>
             <Chip value="email" disabled={!canEmailDeliver}>
               {t("deliveryEmail")}
@@ -235,7 +240,7 @@ export function CustomExportBuilder({ from, to, reports, canEmailDeliver, hasEma
           </FormMessage>
         )}
 
-        <div className="mt-4 flex flex-col gap-3 rounded-card-md border border-primary/20 bg-accent/35 px-3 py-2 sm:flex-row sm:items-center">
+        <div className="mt-4 flex flex-col gap-3 rounded-card-md border border-primary/20 bg-accent/35 p-3 sm:flex-row sm:items-center">
           <span className="flex flex-1 items-center gap-2 text-body-b10">
             <Icon icon={ShieldCheck} size="sm" className="text-primary" />
             {t("secureLinkNote")}
@@ -243,10 +248,7 @@ export function CustomExportBuilder({ from, to, reports, canEmailDeliver, hasEma
           <button type="button" onClick={resetBuilder} className="px-4 text-body-b10 text-muted-foreground">
             {t("reset")}
           </button>
-          <Button size="sm" onClick={handleGenerate} loading={submitting}>
-            {!submitting && <Icon icon={Download} size="xs" className="me-2" />}
-            {t("generate")}
-          </Button>
+          <Button size="sm" onClick={handleGenerate} loading={submitting}>{t("generate")}</Button>
         </div>
       </section>
 
@@ -290,9 +292,9 @@ function ExportSummary({
   t: ReturnType<typeof useTranslations<"dashExportReports">>;
 }) {
   return (
-    <section className="h-fit rounded-card-lg border border-border bg-background p-4">
-      <h2 className="text-body-b5">{t("summaryHeading")}</h2>
-      <dl className="mt-3 grid grid-cols-2 gap-x-8 gap-y-2 text-body-b10">
+    <section className="h-fit rounded-card-lg border border-border bg-background p-4 lg:p-5 xl:sticky xl:top-20">
+      <h2 className="text-heading-h3">{t("summaryHeading")}</h2>
+      <dl className="mt-3 grid grid-cols-1 gap-x-8 text-body-b10 sm:grid-cols-2">
         <Pair label={t("reportLabel")} value={reportName} />
         <Pair label={t("comparison")} value={comparison} />
         <Pair label={t("period")} value={periodCapable ? `${formatMediumDate(from, locale)} – ${formatMediumDate(to, locale)}` : t("allCurrentRecords")} />
@@ -313,16 +315,16 @@ function ExportSummary({
 
 function Pair({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-3">
+    <div className="flex min-w-0 justify-between gap-3 border-b border-border py-2">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-medium">{value}</dd>
+      <dd className="text-end font-semibold">{value}</dd>
     </div>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
-    <label>
+    <label className={className}>
       <span className="mb-1 block text-body-b10 font-medium">{label}</span>
       {children}
     </label>

@@ -35,7 +35,7 @@ export async function RecentExports({ params }: RecentExportsProps) {
   return (
     <section>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-body-b7">{t("recentHeading")}</h2>
+        <h2 className="text-body-b1">{t("recentHeading")}</h2>
         <Link
           href={viewAllParams.size ? `/dashboard/reports/exports/jobs?${viewAllParams.toString()}` : "/dashboard/reports/exports/jobs"}
           className="text-body-b10 font-semibold text-primary hover:underline"
@@ -46,13 +46,15 @@ export async function RecentExports({ params }: RecentExportsProps) {
 
       <div className="mt-2">
         <ListToolbar
-          search={<ListSearchInput label={t("recentSearchLabel")} placeholder={t("recentSearchPlaceholder")} />}
+          className="md:flex-row md:items-center [&>div:last-child]:w-full md:[&>div:last-child]:ms-auto md:[&>div:last-child]:w-auto"
+          search={<ListSearchInput label={t("recentSearchLabel")} placeholder={t("recentSearchPlaceholder")} className="sm:max-w-none md:max-w-md" />}
           filters={
             <ListChoiceFilter
               paramName="status"
               label={t("recentFilterStatusLabel")}
               allLabel={t("recentFilterStatusAll")}
               showAllValue
+              triggerClassName="w-full justify-between md:w-auto"
               options={EXPORT_JOB_STATUSES.map((status) => ({ value: status, label: t(`recentStatus.${status}`) }))}
             />
           }

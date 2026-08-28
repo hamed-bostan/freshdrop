@@ -1052,7 +1052,7 @@
   "dashExportReports": {
     "reports": "Reports", "heading": "Export center", "subtitle": "Download fresh CSV snapshots of your store data.", "breadcrumbAria": "Breadcrumb", "quickHeading": "Quick exports", "export": "Export",
     "customHeading": "Create a custom export", "customDescription": "Choose a dataset and download a fresh snapshot generated from the live store records.", "reportLabel": "Report", "generate": "Generate export",
-    "dateRange": "Date range", "compareWith": "Compare with", "noComparison": "None", "previousPeriod": "Previous period", "formatLabel": "File format", "formatDescription": "CSV is UTF-8 encoded and opens cleanly in Excel, Numbers, and Google Sheets.",
+    "dateRange": "Date range", "startDate": "Start date", "endDate": "End date", "compareWith": "Compare with", "noComparison": "None", "previousPeriod": "Previous period", "formatLabel": "File format", "formatDescription": "CSV is UTF-8 encoded and opens cleanly in Excel, Numbers, and Google Sheets.",
     "dataSections": "Data sections", "comparisonSection": "Comparison with previous period", "secureLinkNote": "Download links are signed and expire after 7 days.", "reset": "Reset",
     "deliveryLabel": "Delivery", "deliveryDescription": "Choose how you'd like to receive this export.", "deliveryDownload": "Download when ready", "deliveryEmail": "Email me a secure link",
     "deliveryNoEmailHint": "Your account has no email address on file, so this export can only be downloaded.", "deliverySmtpUnconfiguredHint": "Email delivery isn't configured on this server yet, so this export can only be downloaded.",

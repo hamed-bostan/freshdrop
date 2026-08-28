@@ -3,6 +3,7 @@
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { cn } from "@/src/lib/utils";
 import { Icon, Input } from "@/src/presentation/design-system";
 
 import { useListParams } from "./useListParams";
@@ -16,6 +17,8 @@ type ListSearchInputProps = {
   placeholder: string;
   /** Accessible name — the input carries no visible label. */
   label: string;
+  /** Responsive width or placement overrides supplied by the list using it. */
+  className?: string;
 };
 
 /**
@@ -27,7 +30,7 @@ type ListSearchInputProps = {
  * a newer one. The input keeps its own value meanwhile, so typing stays smooth
  * while the committed term trails behind in the URL.
  */
-export function ListSearchInput({ paramName = "q", placeholder, label }: ListSearchInputProps) {
+export function ListSearchInput({ paramName = "q", placeholder, label, className }: ListSearchInputProps) {
   const { searchParams, setFilter } = useListParams();
   const committed = searchParams.get(paramName) ?? "";
   const [value, setValue] = useState(committed);
@@ -58,7 +61,7 @@ export function ListSearchInput({ paramName = "q", placeholder, label }: ListSea
       onChange={(event) => setValue(event.target.value)}
       placeholder={placeholder}
       aria-label={label}
-      className="w-full sm:max-w-xs"
+      className={cn("w-full sm:max-w-xs", className)}
       leftElement={<Icon icon={Search} size="sm" className="text-muted-foreground" />}
     />
   );
