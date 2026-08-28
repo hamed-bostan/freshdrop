@@ -14,6 +14,9 @@ type PromoCodeActiveToggleProps = {
   id: string;
   code: string;
   active: boolean;
+  trigger?: "button" | "none";
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 /**
@@ -26,13 +29,26 @@ type PromoCodeActiveToggleProps = {
  * bare `Switch` — a toggle that fires on a stray click, with no sentence saying
  * what will happen, is the wrong control for an action customers feel at once.
  */
-export function PromoCodeActiveToggle({ id, code, active }: PromoCodeActiveToggleProps) {
+export function PromoCodeActiveToggle({
+  id,
+  code,
+  active,
+  trigger = "button",
+  open: controlledOpen,
+  onOpenChange,
+}: PromoCodeActiveToggleProps) {
   const t = useTranslations("dashPromoCodes");
   const tApiErrors = useTranslations("apiErrors");
   const router = useRouter();
-  const [open, setOpen] = React.useState(false);
+  const [internalOpen, setInternalOpen] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
+  const open = controlledOpen ?? internalOpen;
+
+  function setOpen(next: boolean): void {
+    if (controlledOpen === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  }
 
   function handleConfirm() {
     setError(null);
@@ -59,18 +75,20 @@ export function PromoCodeActiveToggle({ id, code, active }: PromoCodeActiveToggl
 
   return (
     <>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        iconOnly
-        aria-label={active ? t("deactivateAria", { code }) : t("activateAria", { code })}
-        onClick={() => setOpen(true)}
-        disabled={pending}
-        className={active ? "text-destructive" : "text-success-foreground"}
-      >
-        <Icon icon={active ? PowerOff : Power} size="sm" />
-      </Button>
+      {trigger === "button" ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          iconOnly
+          aria-label={active ? t("deactivateAria", { code }) : t("activateAria", { code })}
+          onClick={() => setOpen(true)}
+          disabled={pending}
+          className={active ? "text-destructive" : "text-success-foreground"}
+        >
+          <Icon icon={active ? PowerOff : Power} size="sm" />
+        </Button>
+      ) : null}
 
       <ConfirmSheet
         open={open}

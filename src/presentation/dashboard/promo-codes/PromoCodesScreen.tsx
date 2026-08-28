@@ -6,9 +6,10 @@ import {
   PROMO_CODE_STATUSES,
   type AdminPromoCodeFilters,
   type PromoCodeStatus,
- type AdminPromoCode } from "@/src/domain/entities/PromoCode";
+  type AdminPromoCode,
+} from "@/src/domain/entities/PromoCode";
 import { Link } from "@/src/i18n/navigation";
-import { ListFilterSelect, ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
+import { ListFilterSelect, ListPager, ListSearchInput } from "@/src/presentation/dashboard/list";
 import { Button, Icon } from "@/src/presentation/design-system";
 
 import { PromoCodesTable } from "./PromoCodesTable";
@@ -58,9 +59,13 @@ export async function PromoCodesScreen({ promoCodes, filters }: PromoCodesScreen
         </Button>
       </div>
 
-      <ListToolbar
-        search={<ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} />}
-        filters={
+      <div className="flex flex-col gap-3 rounded-card-lg border border-border bg-background p-4 sm:flex-row sm:items-center">
+        <ListSearchInput
+          label={t("searchLabel")}
+          placeholder={t("searchPlaceholder")}
+          className="sm:max-w-md sm:flex-1"
+        />
+        <div className="flex items-center sm:ms-auto">
           <ListFilterSelect
             paramName="status"
             label={t("filterStatusLabel")}
@@ -69,8 +74,8 @@ export async function PromoCodesScreen({ promoCodes, filters }: PromoCodesScreen
               ...PROMO_CODE_STATUSES.map((status) => ({ value: status, label: statusLabels[status] })),
             ]}
           />
-        }
-      />
+        </div>
+      </div>
 
       {promoCodes.items.length > 0 ? (
         <>

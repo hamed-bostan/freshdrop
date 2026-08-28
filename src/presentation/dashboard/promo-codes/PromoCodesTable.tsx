@@ -1,4 +1,3 @@
-import { Pencil } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import {
@@ -13,9 +12,7 @@ import { formatNumber } from "@/src/lib/formatNumber";
 import { ListSortHeader } from "@/src/presentation/dashboard/list";
 import {
   Badge,
-  Button,
   DataTable,
-  Icon,
   Table,
   TableBody,
   TableCell,
@@ -24,7 +21,7 @@ import {
   TableRow,
 } from "@/src/presentation/design-system";
 
-import { PromoCodeActiveToggle } from "./PromoCodeActiveToggle";
+import { PromoCodeRowActions } from "./PromoCodeRowActions";
 import { promoValidityLabel } from "./promoValidity";
 
 type PromoCodesTableProps = {
@@ -66,7 +63,7 @@ export async function PromoCodesTable({ promoCodes }: PromoCodesTableProps) {
   } as const;
 
   return (
-    <DataTable>
+    <DataTable minWidthClassName="min-w-[54rem]" className="shadow-sm">
       <Table>
         <TableHeader>
           <tr>
@@ -83,7 +80,7 @@ export async function PromoCodesTable({ promoCodes }: PromoCodesTableProps) {
               {t("colUsage")}
             </ListSortHeader>
             <TableHead>{t("colStatus")}</TableHead>
-            <TableHead className="text-end">{t("colActions")}</TableHead>
+            <TableHead className="w-20 text-end">{t("colActions")}</TableHead>
           </tr>
         </TableHeader>
         <TableBody>
@@ -92,8 +89,8 @@ export async function PromoCodesTable({ promoCodes }: PromoCodesTableProps) {
             const validity = promoValidityLabel(promo, locale);
 
             return (
-              <TableRow key={promo.id}>
-                <TableCell>
+              <TableRow key={promo.id} className="h-[4.75rem]">
+                <TableCell className="px-5 py-4">
                   {/* The code is the identifier operators trade in, so it leads and
                       stays LTR — the codes are Latin even on the Persian store. */}
                   <span className="block text-body-b7 text-foreground" dir="ltr">
@@ -101,28 +98,20 @@ export async function PromoCodesTable({ promoCodes }: PromoCodesTableProps) {
                   </span>
                   <span className="block text-body-b10 text-muted-foreground">{promo.title}</span>
                 </TableCell>
-                <TableCell className="text-end text-body-b7 text-foreground">
+                <TableCell className="px-5 py-4 text-end text-body-b7 text-foreground">
                   {t("discountValue", { percent: formatNumber(promo.discountPercent, locale) })}
                 </TableCell>
-                <TableCell className="text-body-b6 text-muted-foreground">
+                <TableCell className="px-5 py-4 text-body-b6 text-muted-foreground">
                   {t(validity.key, validity.values)}
                 </TableCell>
-                <TableCell className="text-end text-body-b6 text-muted-foreground">
+                <TableCell className="px-5 py-4 text-end text-body-b6 text-muted-foreground">
                   {t("usageValue", { count: promo.usageCount })}
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-5 py-4">
                   <Badge variant={STATUS_VARIANTS[status]}>{t(STATUS_LABEL_KEYS[status])}</Badge>
                 </TableCell>
-                <TableCell>
-                  <div className="flex items-center justify-end gap-2">
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/dashboard/promo-codes/${promo.id}/edit`}>
-                        <Icon icon={Pencil} size="sm" className="me-1.5" />
-                        {t("edit")}
-                      </Link>
-                    </Button>
-                    <PromoCodeActiveToggle id={promo.id} code={promo.code} active={promo.active} />
-                  </div>
+                <TableCell className="px-5 py-4 text-end">
+                  <PromoCodeRowActions id={promo.id} code={promo.code} active={promo.active} />
                 </TableCell>
               </TableRow>
             );
