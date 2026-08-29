@@ -683,6 +683,7 @@
       "orders": "Orders",
       "products": "Products",
       "analytics": "Analytics",
+      "promo": "Promo",
       "more": "More",
       "moreAria": "More options"
     },
@@ -1165,7 +1166,8 @@
     "rowsPerPage": "Rows per page",
     "noResultsTitle": "No matches",
     "noResultsBody": "No rows match the current search and filters.",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "clearFiltersShort": "Clear"
   },
   "dashBulk": {
     "selected": "{count} selected",
@@ -1853,6 +1855,7 @@
     "heading": "Promo codes",
     "count": "{count, plural, one {# promo code} other {# promo codes}}",
     "newPromoCode": "New promo code",
+    "newPromoCodeShort": "New code",
     "createSubtitle": "Run a discount campaign on the storefront.",
     "editHeading": "Edit promo code",
     "editSubtitle": "Update “{code}”.",

@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, ClipboardList, LayoutDashboard, MoreHorizontal, Package } from "lucide-react";
+import { BarChart3, ClipboardList, LayoutDashboard, MoreHorizontal, Package, Tag } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Link, usePathname } from "@/src/i18n/navigation";
@@ -51,11 +51,12 @@ type BottomNavProps = {
 export function BottomNav({ onOpenMore }: BottomNavProps) {
   const t = useTranslations("dashboard.bottomNav");
   const pathname = usePathname();
+  const isPromoSection = isSectionActive("/dashboard/promo-codes", pathname);
 
   return (
     <nav
       className={cn(
-        "fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-border bg-background md:hidden",
+        "fixed inset-x-0 bottom-0 z-40 mx-auto flex w-full max-w-[40.75rem] items-stretch justify-around border-x border-t border-border bg-background dashboard-short:hidden dashboard-landscape:hidden xl:hidden",
         "pb-[env(safe-area-inset-bottom)]",
       )}
     >
@@ -68,7 +69,7 @@ export function BottomNav({ onOpenMore }: BottomNavProps) {
             aria-current={active ? "page" : undefined}
             className={cn(
               focusRing,
-              "flex flex-1 flex-col items-center gap-1 py-3 text-body-b11 transition-colors",
+              "flex flex-1 flex-col items-center gap-1 pb-4 pt-7 text-body-b11 transition-colors dashboard-phone:pb-2 dashboard-phone:pt-3",
               active ? "text-primary" : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -78,18 +79,29 @@ export function BottomNav({ onOpenMore }: BottomNavProps) {
         );
       })}
 
-      <button
-        type="button"
-        onClick={onOpenMore}
-        aria-label={t("moreAria")}
-        className={cn(
-          focusRing,
-          "flex flex-1 flex-col items-center gap-1 py-3 text-body-b11 text-muted-foreground transition-colors hover:text-foreground",
-        )}
-      >
-        <Icon icon={MoreHorizontal} size="sm" />
-        {t("more")}
-      </button>
+      {isPromoSection ? (
+        <Link
+          href="/dashboard/promo-codes"
+          aria-current="page"
+          className={cn(focusRing, "flex flex-1 flex-col items-center gap-1 pb-4 pt-7 text-body-b11 text-primary dashboard-phone:pb-2 dashboard-phone:pt-3")}
+        >
+          <Icon icon={Tag} size="sm" />
+          {t("promo")}
+        </Link>
+      ) : (
+        <button
+          type="button"
+          onClick={onOpenMore}
+          aria-label={t("moreAria")}
+          className={cn(
+            focusRing,
+            "flex flex-1 flex-col items-center gap-1 pb-4 pt-7 text-body-b11 text-muted-foreground transition-colors hover:text-foreground dashboard-phone:pb-2 dashboard-phone:pt-3",
+          )}
+        >
+          <Icon icon={MoreHorizontal} size="sm" />
+          {t("more")}
+        </button>
+      )}
     </nav>
   );
 }

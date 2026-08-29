@@ -34,12 +34,12 @@ export function DashboardSidebar({ permissions, collapsed, onToggleCollapsed }: 
   return (
     <aside
       className={cn(
-        "sticky top-0 hidden h-dvh w-32 shrink-0 flex-col border-e border-border bg-background md:flex xl:w-20",
+        "sticky top-0 hidden h-dvh w-20 shrink-0 flex-col border-e border-border bg-background dashboard-landscape:flex xl:flex",
         collapsed ? "xl:w-20" : "xl:w-64",
       )}
     >
       {/* The `md`–`xl` tier: always the icon-only rail, no toggle — there's nowhere to put one. */}
-      <div className="flex h-full flex-col xl:hidden">
+      <div className="hidden h-full flex-col dashboard-landscape:flex">
         <SidebarBrand collapsed />
         <div className="flex-1 overflow-y-auto px-3 py-2">
           <DashboardNav permissions={permissions} collapsed />

@@ -29,20 +29,20 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
   const t = useTranslations("dashboard");
 
   return (
-    <header className="sticky top-0 z-30 flex h-20 items-center gap-2 border-b border-border bg-background px-6 md:h-24 md:px-8 xl:h-16 xl:px-6">
-      <Link href="/dashboard" className="flex shrink-0 items-center gap-2 text-heading-h2 text-foreground sm:hidden">
+    <header className="sticky top-0 z-30 mx-auto flex h-[5.625rem] w-full max-w-[40.75rem] items-center gap-2 border-x border-b border-border bg-background px-6 dashboard-phone:h-16 dashboard-phone:px-4 dashboard-short:h-16 dashboard-short:max-w-none dashboard-short:border-x-0 dashboard-short:px-5 dashboard-landscape:h-16 dashboard-landscape:max-w-none dashboard-landscape:border-x-0 xl:h-16 xl:max-w-none xl:border-x-0">
+      <Link href="/dashboard" className="flex shrink-0 items-center gap-2 text-[1.75rem] font-bold leading-10 text-foreground dashboard-phone:text-[1.5rem] dashboard-phone:leading-8 dashboard-landscape:hidden xl:hidden">
         <Icon icon={Leaf} size="md" className="text-primary" />
         <span>freshDrop</span>
       </Link>
 
-      <Button variant="ghost" iconOnly size="sm" aria-label={t("openNav")} onClick={onOpenNav} className="hidden sm:inline-flex md:hidden">
+      <Button variant="ghost" iconOnly size="sm" aria-label={t("openNav")} onClick={onOpenNav} className="hidden dashboard-short:inline-flex">
         <Icon icon={Menu} size="sm" />
       </Button>
 
       <button
         type="button"
         onClick={onOpenSearch}
-        className="hidden h-11 w-full max-w-sm items-center gap-2 rounded-card-md border border-transparent bg-input-filled px-4 text-start text-body-b2 text-input-placeholder transition-colors hover:border-border hover:bg-muted-strong md:flex md:h-14 md:max-w-lg xl:h-11 xl:max-w-sm"
+        className="hidden h-11 w-full max-w-sm items-center gap-2 rounded-card-md border border-transparent bg-input-filled px-4 text-start text-body-b2 text-input-placeholder transition-colors hover:border-border hover:bg-muted-strong dashboard-landscape:flex xl:flex"
       >
         <Icon icon={Search} size="sm" />
         <span className="flex-1 truncate">{t("search.adminTrigger")}</span>
@@ -57,14 +57,14 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
         size="sm"
         aria-label={t("search.trigger")}
         onClick={onOpenSearch}
-        className="hidden sm:inline-flex md:hidden"
+        className="hidden"
       >
         <Icon icon={Search} size="sm" />
       </Button>
 
       <div className="flex-1" />
 
-      <Button variant="ghost" iconOnly size="sm" aria-label={t("help")} className="hidden xl:inline-flex" asChild>
+      <Button variant="ghost" iconOnly size="sm" aria-label={t("help")} className="hidden dashboard-landscape:inline-flex xl:inline-flex" asChild>
         <a href="mailto:support@yourapp.com">
           <Icon icon={CircleHelp} size="sm" />
         </a>
@@ -72,7 +72,7 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
 
       <NotificationBell />
 
-      <div className="hidden sm:block">
+      <div className="hidden dashboard-landscape:block xl:block">
         <LocaleToggle />
       </div>
 

@@ -3,6 +3,12 @@
 @plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
+/* The dashboard's tablet composition is portrait-first. A landscape tablet has
+ * desktop-like working width but very little vertical room, so it uses the
+ * compact desktop shell rather than a centered portrait canvas. */
+@custom-variant dashboard-landscape (@media (min-width: 64rem) and (max-width: 79.999rem) and (orientation: landscape));
+@custom-variant dashboard-short (@media (max-width: 63.999rem) and (max-height: 50rem) and (orientation: landscape));
+@custom-variant dashboard-phone (@media (max-width: 30rem));
 
 /* Hide the scrollbar while keeping the element scrollable (e.g. card carousels).
  * Plain rule (not @utility) so it applies without a dev-server restart. */

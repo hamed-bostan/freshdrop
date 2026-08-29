@@ -683,6 +683,7 @@
       "orders": "سفارش‌ها",
       "products": "محصولات",
       "analytics": "تحلیل‌ها",
+      "promo": "تخفیف",
       "more": "بیشتر",
       "moreAria": "گزینه‌های بیشتر"
     },
@@ -1173,7 +1174,8 @@
     "rowsPerPage": "تعداد ردیف در صفحه",
     "noResultsTitle": "نتیجه‌ای نیست",
     "noResultsBody": "هیچ ردیفی با جست‌وجو و فیلترهای فعلی مطابقت ندارد.",
-    "clearFilters": "پاک کردن فیلترها"
+    "clearFilters": "پاک کردن فیلترها",
+    "clearFiltersShort": "پاک کردن"
   },
   "dashBulk": {
     "selected": "{count} مورد انتخاب‌شده",
@@ -1861,6 +1863,7 @@
     "heading": "کدهای تخفیف",
     "count": "{count, plural, other {# کد تخفیف}}",
     "newPromoCode": "کد تخفیف جدید",
+    "newPromoCodeShort": "کد جدید",
     "createSubtitle": "یک کمپین تخفیف روی فروشگاه اجرا کنید.",
     "editHeading": "ویرایش کد تخفیف",
     "editSubtitle": "ویرایش «{code}».",

@@ -10,6 +10,9 @@ type ListFilterResetProps = {
   label: string;
   /** Every param the toolbar's filters write. Anything else in the URL survives. */
   paramNames: string[];
+  /** Keep the action visible as a stable toolbar affordance, even at the default state. */
+  alwaysVisible?: boolean;
+  className?: string;
 };
 
 /**
@@ -25,11 +28,11 @@ type ListFilterResetProps = {
  * beside a list that isn't filtered invites the click that does nothing, and then
  * teaches people it never does anything.
  */
-export function ListFilterReset({ label, paramNames }: ListFilterResetProps) {
+export function ListFilterReset({ label, paramNames, alwaysVisible = false, className }: ListFilterResetProps) {
   const { searchParams, setParams } = useListParams();
 
   const active = paramNames.some((name) => searchParams.get(name));
-  if (!active) return null;
+  if (!active && !alwaysVisible) return null;
 
   function reset(): void {
     const next = new URLSearchParams(searchParams);
@@ -39,8 +42,8 @@ export function ListFilterReset({ label, paramNames }: ListFilterResetProps) {
   }
 
   return (
-    <Button variant="link" size="sm" onClick={reset}>
-      <RotateCcw aria-hidden className="me-1 size-4" />
+    <Button variant="link" size="sm" onClick={reset} className={className}>
+      <RotateCcw aria-hidden className="me-1 hidden size-4 dashboard-landscape:block xl:block" />
       {label}
     </Button>
   );

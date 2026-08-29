@@ -21,6 +21,8 @@ type ListPagerProps = {
   page: Pick<Page<unknown>, "total" | "page" | "pageSize">;
   defaultPageSize?: number;
   pageSizeOptions?: readonly number[];
+  /** Borderless, space-efficient treatment used by compact responsive tables. */
+  compact?: boolean;
 };
 
 const PAGE_SIZE_STORAGE_KEY = "dashboard:table-page-size";
@@ -38,6 +40,7 @@ export function ListPager({
   page,
   defaultPageSize = DEFAULT_PAGE_SIZE,
   pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS,
+  compact = false,
 }: ListPagerProps) {
   const { searchParams, setParams } = useListParams();
   const t = useTranslations("dashList");
@@ -66,9 +69,9 @@ export function ListPager({
   }, [defaultPageSize, pageSizeOptions, searchParams, setParams]);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="flex flex-wrap items-center justify-between gap-3 px-0.5">
       <div className="flex flex-wrap items-center gap-2">
-        <label htmlFor={pageSizeId} className="text-body-b8 text-muted-foreground">
+        <label htmlFor={pageSizeId} className={compact ? "text-body-b2 text-muted-foreground dashboard-phone:text-body-b6" : "text-body-b8 text-muted-foreground"}>
           {t("rowsPerPage")}
         </label>
         <Select
@@ -76,7 +79,7 @@ export function ListPager({
           size="sm"
           value={page.pageSize}
           onChange={(event) => changePageSize(Number(event.target.value))}
-          className="w-auto"
+          className={compact ? "h-auto w-auto appearance-none border-transparent bg-transparent p-0 text-body-b6" : "w-auto"}
         >
           {pageSizeOptions.map((size) => (
             <option key={size} value={size}>
@@ -84,17 +87,17 @@ export function ListPager({
             </option>
           ))}
         </Select>
-        <p className="text-body-b8 text-muted-foreground">
+      </div>
+
+      <div className="ms-auto flex items-center gap-2">
+        <p className={compact ? "text-body-b2 text-muted-foreground dashboard-phone:text-body-b6" : "text-body-b8 text-muted-foreground"}>
           {t("range", {
             first: formatNumber(first, locale),
             last: formatNumber(last, locale),
             total: formatNumber(page.total, locale),
           })}
         </p>
-      </div>
-
-      {totalPages > 1 && (
-      <div className="flex items-center gap-2">
+        {totalPages > 1 && <>
         <p className="text-body-b8 text-muted-foreground">
           {t("pageOf", {
             page: formatNumber(page.page, locale),
@@ -122,8 +125,8 @@ export function ListPager({
         >
           <Icon icon={ChevronRight} size="sm" className="rtl:rotate-180" />
         </Button>
+        </>}
       </div>
-      )}
     </div>
   );
 }

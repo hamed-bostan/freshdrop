@@ -60,7 +60,7 @@ export function UserMenu({ viewer }: UserMenuProps) {
             aria-label={t("account")}
             className={cn("shrink-0 rounded-full transition-opacity hover:opacity-80", focusRing)}
           >
-            <Avatar name={viewer.name} className="size-12 xl:size-9">
+            <Avatar name={viewer.name} className="size-12 dashboard-phone:size-10 xl:size-9">
               {viewer.imageUrl && (
                 <Image src={viewer.imageUrl} alt="" width={36} height={36} className="size-full object-cover" />
               )}
