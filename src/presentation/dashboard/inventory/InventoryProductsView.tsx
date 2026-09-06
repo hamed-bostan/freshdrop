@@ -1,3 +1,4 @@
+
 import { getTranslations } from "next-intl/server";
 
 import {
@@ -15,6 +16,7 @@ import {
   ListToolbar,
 } from "@/src/presentation/dashboard/list";
 
+import styles from "./inventory.module.css";
 import { InventoryBulkRestock } from "./InventoryBulkRestock";
 import { InventoryProductsTable } from "./InventoryProductsTable";
 
@@ -52,6 +54,7 @@ export async function InventoryProductsView({
 
   const toolbar = (
     <ListToolbar
+      className={styles.toolbar}
       search={<ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} />}
       filters={
         <>
@@ -59,10 +62,10 @@ export async function InventoryProductsView({
             paramName="categoryId"
             label={tProducts("filterCategoryLabel")}
             options={[
-              { value: "", label: tProducts("filterCategoryOption", { category: tProducts("filterCategoryAll") }) },
+              { value: "", label: tProducts("filterCategoryAll") },
               ...categories.map((category) => ({
                 value: category.id,
-                label: tProducts("filterCategoryOption", { category: category.name }),
+                label: category.name,
               })),
             ]}
           />

@@ -1,12 +1,14 @@
+
 import { getTranslations } from "next-intl/server";
 
 import type { Page } from "@/src/domain/entities/Pagination";
 import type { Product } from "@/src/domain/entities/Product";
 import type { StockMovementFilters } from "@/src/domain/entities/StockMovement";
 import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvLink";
-import { ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
+import { ListPager, ListSearchInput } from "@/src/presentation/dashboard/list";
 import type { StockMovementEntry } from "@/src/presentation/dashboard/products/stock-movement-response-schema";
 
+import styles from "./inventory.module.css";
 import { InventoryMovementFilters } from "./InventoryMovementFilters";
 import { InventoryMovementsTable } from "./InventoryMovementsTable";
 
@@ -28,15 +30,19 @@ export async function InventoryMovementsView({
     filters.query || filters.direction || filters.reason || filters.occurredFrom || filters.occurredTo,
   );
   const toolbar = (
-    <ListToolbar
-      search={<ListSearchInput label={t("movementSearchLabel")} placeholder={t("movementSearchPlaceholder")} />}
-      filters={
-        <>
+    <div className={styles.movementToolbar}>
+      <div className={styles.movementControls}>
+        <div className={styles.movementSearch}>
+          <ListSearchInput label={t("movementSearchLabel")} placeholder={t("movementSearchPlaceholder")} className="max-w-none sm:max-w-none" />
+        </div>
+        <div className={styles.movementFilters}>
           <InventoryMovementFilters />
+        </div>
+        <div className={styles.movementExport}>
           <ExportCsvLink resource="inventory-movements" label={t("exportCsv")} />
-        </>
-      }
-    />
+        </div>
+      </div>
+    </div>
   );
 
   if (movements.items.length === 0) {

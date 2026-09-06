@@ -35,10 +35,10 @@ export async function InventoryScreen({ canWrite, data }: InventoryScreenProps) 
   const t = await getTranslations("dashInventory");
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-w-0 flex-col gap-5 sm:gap-6">
       <div>
         <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
-        <p className="text-body-b6 text-muted-foreground">{t("summary")}</p>
+        <p className="max-w-2xl text-body-b6 leading-relaxed text-muted-foreground">{t("summary")}</p>
       </div>
 
       <InventoryTabs view={data.view} canViewMovements={canWrite} />

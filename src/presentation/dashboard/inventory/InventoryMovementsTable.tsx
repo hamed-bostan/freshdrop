@@ -20,6 +20,8 @@ import {
   Thumbnail,
 } from "@/src/presentation/design-system";
 
+import styles from "./inventory.module.css";
+
 import type { ReactNode } from "react";
 
 type InventoryMovementsTableProps = {
@@ -54,8 +56,8 @@ export async function InventoryMovementsTable({
   const productsById = new Map(products.map((product) => [product.id, product]));
 
   return (
-    <DataTable toolbar={toolbar} footer={footer} minWidthClassName="min-w-[72rem]">
-      <Table>
+    <DataTable toolbar={toolbar} footer={footer} className={styles.frame}>
+      <Table className={`${styles.table} ${styles.ledger}`}>
         <TableHeader>
           <tr>
             <TableHead>{t("colProduct")}</TableHead>
@@ -77,7 +79,7 @@ export async function InventoryMovementsTable({
             const timestamp = formatCompactDateTime(movement.at, locale);
             return (
               <TableRow key={movement.id}>
-                <TableCell>
+                <TableCell className={styles.product}>
                   {product ? (
                     <Link href={`/dashboard/products/${product.id}/edit`} className="group flex items-center gap-3">
                       <Thumbnail as="span" className="size-10 shrink-0">
@@ -95,17 +97,21 @@ export async function InventoryMovementsTable({
                   )}
                 </TableCell>
                 <TableCell className="text-end">
+                  <span className={styles.mobileLabel}>{t("colChange")}</span>
                   <span dir="ltr" className={added ? "text-body-b7 text-success-foreground" : "text-body-b7 text-destructive"}>
                     {added ? "+" : "−"}{formatNumber(Math.abs(movement.delta), locale)}
                   </span>
                 </TableCell>
                 <TableCell dir="ltr" className="text-body-b7 text-foreground">
+                  <span className={styles.mobileLabel}>{t("colStock")}</span>
                   {formatNumber(quantityBefore, locale)} → {formatNumber(movement.quantityAfter, locale)}
                 </TableCell>
                 <TableCell>
+                  <span className={styles.mobileLabel}>{t("colReason")}</span>
                   <Badge variant={REASON_VARIANT[movement.reason]}>{tProducts(`adjustReason.${movement.reason}`)}</Badge>
                 </TableCell>
                 <TableCell className="text-body-b8">
+                  <span className={styles.mobileLabel}>{t("colSource")}</span>
                   {movement.orderId ? (
                     <Link href={`/dashboard/orders/${movement.orderId}`} className="text-primary underline-offset-4 hover:underline">
                       <span title={movement.orderId}>{t("orderReference", { id: shortOrderReference(movement.orderId) })}</span>
@@ -116,9 +122,11 @@ export async function InventoryMovementsTable({
                   {movement.note ? <span className="block max-w-48 truncate text-body-b10 text-muted-foreground">{movement.note}</span> : null}
                 </TableCell>
                 <TableCell className="text-body-b8 text-muted-foreground">
+                  <span className={styles.mobileLabel}>{t("colActor")}</span>
                   {movement.actorName ?? t("systemActor")}
                 </TableCell>
                 <TableCell>
+                  <span className={styles.mobileLabel}>{t("colDateTime")}</span>
                   <time dateTime={movement.at} className="text-body-b8 text-muted-foreground">
                     <span className="block">{timestamp.date}</span>
                     <span className="block text-body-b10">{timestamp.time}</span>

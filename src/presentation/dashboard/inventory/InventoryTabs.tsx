@@ -14,16 +14,16 @@ type InventoryTabsProps = {
 /** URL-backed inventory sections: each tab is a real, shareable server-rendered list. */
 export async function InventoryTabs({ view, canViewMovements }: InventoryTabsProps) {
   const t = await getTranslations("dashInventory");
-  const tabs: Array<{ value: InventoryView; href: string; label: string }> = [
-    { value: "restock", href: "/dashboard/inventory", label: t("tabRestock") },
-    { value: "all", href: "/dashboard/inventory?view=all", label: t("tabAll") },
+  const tabs: Array<{ value: InventoryView; href: string; label: string; mobileLabel: string }> = [
+    { value: "restock", href: "/dashboard/inventory", label: t("tabRestock"), mobileLabel: t("tabRestockShort") },
+    { value: "all", href: "/dashboard/inventory?view=all", label: t("tabAll"), mobileLabel: t("tabAllShort") },
     ...(canViewMovements
-      ? [{ value: "movements" as const, href: "/dashboard/inventory?view=movements", label: t("tabMovements") }]
+      ? [{ value: "movements" as const, href: "/dashboard/inventory?view=movements", label: t("tabMovements"), mobileLabel: t("tabMovementsShort") }]
       : []),
   ];
 
   return (
-    <nav aria-label={t("tabsAria")} className="flex gap-8 border-b border-border">
+    <nav aria-label={t("tabsAria")} className="flex min-w-0 border-b border-border">
       {tabs.map((tab) => {
         const active = tab.value === view;
         return (
@@ -32,13 +32,14 @@ export async function InventoryTabs({ view, canViewMovements }: InventoryTabsPro
             href={tab.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "relative px-1 pb-3 text-body-b6 transition-colors hover:text-foreground",
+              "-mb-px flex min-h-11 min-w-0 flex-1 items-center justify-center border-b-2 px-2 py-2 text-center text-body-b8 font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-primary sm:flex-none sm:px-5",
               active
-                ? "text-primary after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-primary"
-                : "text-muted-foreground",
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >
-            {tab.label}
+            <span className="whitespace-nowrap sm:hidden">{tab.mobileLabel}</span>
+            <span className="hidden sm:inline">{tab.label}</span>
           </Link>
         );
       })}

@@ -1,0 +1,367 @@
+.frame {
+  min-width: 0;
+  background: var(--color-background);
+  container: inventory / inline-size;
+}
+
+.table th {
+  text-align: start;
+  white-space: nowrap;
+}
+
+.product {
+  max-width: 24rem;
+}
+
+.mobileLabel {
+  display: none;
+}
+
+.tabletCategory {
+  display: none;
+}
+
+.selectionHeading {
+  width: 3rem;
+}
+
+.checkboxTarget {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+}
+
+.table button[role="checkbox"] {
+  position: relative;
+  width: 1.25rem;
+  height: 1.25rem;
+  min-height: 1.25rem;
+  border-radius: 0.375rem;
+}
+
+/* Enlarge the hit area without distorting the visible selection control. */
+.table button[role="checkbox"]::after {
+  content: "";
+  position: absolute;
+  inset: -0.75rem;
+}
+
+.table .actionsHeading {
+  text-align: end;
+}
+
+@container inventory (36rem <= width < 64rem) {
+  .table:not(.ledger) {
+    table-layout: fixed;
+  }
+
+  .table th,
+  .table td {
+    padding-inline: 0.75rem;
+  }
+
+  .table .category {
+    display: none;
+  }
+
+  .tabletCategory {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--color-primary);
+    font-size: 0.75rem;
+    overflow-wrap: anywhere;
+  }
+
+  .tabletCategory:hover {
+    text-decoration: underline;
+  }
+
+  .stockHeading {
+    width: 8.5rem;
+  }
+
+  .actionsHeading {
+    width: 12rem;
+  }
+
+  .product :global(.truncate) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .actions > div {
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+  }
+
+  .actions button {
+    padding-inline: 0.5rem;
+    min-height: 2.75rem;
+    height: auto;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.movementToolbar {
+  container: movement-controls / inline-size;
+}
+
+.movementControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.movementSearch {
+  min-width: 0;
+}
+
+.movementFilters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.movementSearch input,
+.movementFilters > select,
+.movementFilters > button,
+.movementExport > a {
+  height: 2.75rem;
+  border-radius: var(--radius-card-md);
+  font-size: 0.875rem;
+}
+
+.movementFilters > select,
+.movementFilters > button {
+  width: 100%;
+  min-width: 0;
+  text-align: start;
+}
+
+.movementFilters > button > svg:last-child {
+  margin-inline-start: auto;
+}
+
+.movementExport {
+  justify-self: end;
+}
+
+.movementExport > a {
+  width: fit-content;
+  white-space: nowrap;
+}
+
+@container movement-controls (24rem <= width < 36rem) {
+  .movementFilters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .movementFilters > button {
+    grid-column: 1 / -1;
+  }
+}
+
+@container movement-controls (width >= 36rem) {
+  .movementControls {
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+
+  .movementSearch {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .movementExport {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .movementFilters {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Input's className belongs to its wrapper, not the native input. */
+.toolbar > div:first-child {
+  flex: 2 1 16rem;
+  min-width: 0;
+  max-width: none;
+}
+
+/* Let search and each filter wrap together according to available space. */
+.toolbar > div:last-child {
+  display: contents;
+}
+
+.toolbar select,
+.toolbar > div:last-child > button,
+.toolbar > div:last-child > a {
+  flex: 1 1 12rem;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+}
+
+.toolbar input,
+.toolbar select,
+.toolbar > div:last-child > button,
+.toolbar > div:last-child > a {
+  min-height: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-card-md);
+}
+
+@container inventory (width < 36rem) {
+  .table,
+  .table thead,
+  .table tbody {
+    display: block;
+  }
+
+  .table thead tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .table th {
+    width: auto;
+    padding: 0;
+  }
+
+  .table th:not(:has(button, input)) {
+    display: none;
+  }
+
+  .table th button:not([role="checkbox"]) {
+    min-height: 2.75rem;
+  }
+
+  .table tbody tr {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .table td {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    text-align: start;
+    overflow-wrap: anywhere;
+  }
+
+  .table td.product {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+
+  .product :global(.truncate) {
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .table tr:has(.selection) .product {
+    padding-inline-end: 2.75rem;
+  }
+
+  .table td.selection {
+    position: absolute;
+    inset-inline-end: 0.5rem;
+    top: 0.5rem;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .mobileLabel {
+    display: block;
+    margin-bottom: 0.375rem;
+    color: var(--color-muted-foreground);
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .table td.actions {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--color-border);
+    padding-top: 0.75rem;
+  }
+
+  .actions button {
+    min-height: 2.75rem;
+  }
+}
+
+/* The seven-column ledger needs more space than the product table. Keep all
+   movement details visible in a balanced record layout on tablets. */
+@container inventory (36rem <= width < 64rem) {
+  .ledger,
+  .ledger thead,
+  .ledger tbody {
+    display: block;
+  }
+
+  .ledger thead tr {
+    display: flex;
+    justify-content: end;
+    padding: 0.5rem 1rem;
+  }
+
+  .ledger th:not([aria-sort]) {
+    display: none;
+  }
+
+  .ledger th {
+    padding: 0;
+  }
+
+  .ledger th button {
+    min-height: 2.75rem;
+  }
+
+  .ledger tbody tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem 1.5rem;
+    padding: 1rem;
+  }
+
+  .ledger td {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    text-align: start;
+    overflow-wrap: anywhere;
+  }
+
+  .ledger .product {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+
+  .ledger .mobileLabel {
+    display: block;
+    margin-bottom: 0.375rem;
+    color: var(--color-muted-foreground);
+    font-size: 0.75rem;
+  }
+}

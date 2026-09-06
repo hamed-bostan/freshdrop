@@ -21,7 +21,7 @@ import {
   Thumbnail,
 } from "@/src/presentation/design-system";
 
-
+import styles from "./inventory.module.css";
 import { InventoryRowActions } from "./InventoryRowActions";
 
 import type { InventoryView } from "./InventoryTabs";
@@ -57,23 +57,25 @@ export async function InventoryProductsTable({
   const locale = await getLocale();
 
   return (
-    <DataTable toolbar={toolbar} footer={footer} minWidthClassName="min-w-[52rem]">
-      <Table>
+    <DataTable toolbar={toolbar} footer={footer} className={styles.frame}>
+      <Table className={styles.table}>
         <TableHeader>
           <tr>
             {canSelect ? (
-              <TableHead className="w-10">
-                <BulkSelectAllCheckbox label={tProducts("selectAllAria")} />
+              <TableHead className={styles.selectionHeading}>
+                <span className={styles.checkboxTarget}>
+                  <BulkSelectAllCheckbox label={tProducts("selectAllAria")} />
+                </span>
               </TableHead>
             ) : null}
             <ListSortHeader sortKey="name" {...SORT_DEFAULTS}>
               {t("colProduct")}
             </ListSortHeader>
-            <TableHead>{tProducts("colCategory")}</TableHead>
-            <ListSortHeader sortKey="stock" initialDirection="asc" {...SORT_DEFAULTS}>
+            <TableHead className={styles.category}>{tProducts("colCategory")}</TableHead>
+            <ListSortHeader className={styles.stockHeading} sortKey="stock" initialDirection="asc" {...SORT_DEFAULTS}>
               {t("colInventory")}
             </ListSortHeader>
-            {canWrite ? <TableHead className="text-end">{tProducts("colActions")}</TableHead> : null}
+            {canWrite ? <TableHead className={styles.actionsHeading}>{tProducts("colActions")}</TableHead> : null}
           </tr>
         </TableHeader>
         <TableBody>
@@ -84,12 +86,12 @@ export async function InventoryProductsTable({
             return (
               <TableRow key={product.id}>
                 {canSelect ? (
-                  <TableCell>
+                  <TableCell className={styles.selection}>
                     <BulkRowCheckbox id={product.id} label={tProducts("selectRowAria", { name: product.name })} />
                   </TableCell>
                 ) : null}
-                <TableCell>
-                  <div className="flex items-center gap-3">
+                <TableCell className={styles.product}>
+                  <div className="flex min-w-0 items-center gap-3">
                     <Thumbnail className="size-10 shrink-0">
                       <Image src={product.imageUrl} alt="" width={40} height={40} className="size-full object-cover" />
                     </Thumbnail>
@@ -98,10 +100,14 @@ export async function InventoryProductsTable({
                       {product.unit ? (
                         <span className="block truncate text-body-b10 text-muted-foreground">{product.unit}</span>
                       ) : null}
+                      {categoryName ? (
+                        <Link href={categoryHref} className={styles.tabletCategory}>{categoryName}</Link>
+                      ) : null}
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-body-b6">
+                <TableCell className={styles.category}>
+                  <span className={styles.mobileLabel}>{tProducts("colCategory")}</span>
                   {categoryName ? (
                     <Link href={categoryHref} className="text-primary underline-offset-4 hover:underline">
                       {categoryName}
@@ -111,6 +117,7 @@ export async function InventoryProductsTable({
                   )}
                 </TableCell>
                 <TableCell>
+                  <span className={styles.mobileLabel}>{t("colInventory")}</span>
                   {stock.level === "out" ? (
                     <Badge variant="destructive">
                       {tProducts("outOfStockCount", { count: formatNumber(0, locale) })}
@@ -126,8 +133,8 @@ export async function InventoryProductsTable({
                   )}
                 </TableCell>
                 {canWrite ? (
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-2">
+                  <TableCell className={styles.actions}>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
                       <AdjustStockButton
                         id={product.id}
                         name={product.name}
