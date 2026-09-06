@@ -46,7 +46,7 @@ export async function DeliveryWindowsTable({ windows }: DeliveryWindowsTableProp
     <DataTable
       className="rounded-[1.375rem] shadow-none dashboard-phone:rounded-card-lg dashboard-landscape:rounded-card-lg xl:rounded-card-lg"
       toolbar={
-        <div className="flex min-h-12 items-center gap-3 dashboard-phone:min-h-11">
+        <div className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1 dashboard-phone:min-h-8">
           <h2 className="text-body-b1 text-foreground dashboard-phone:text-body-b4 dashboard-landscape:text-body-b4 xl:text-body-b4">
             {t("tableTitle")}
           </h2>
@@ -58,18 +58,18 @@ export async function DeliveryWindowsTable({ windows }: DeliveryWindowsTableProp
         {windows.map((window) => (
           <li
             key={window.id}
-            className="grid min-h-32 grid-cols-[3.25rem_minmax(0,1fr)_2rem] items-center gap-x-4 bg-background px-4 py-4"
+            className="grid grid-cols-[2.5rem_minmax(0,1fr)_2rem] items-center gap-x-3 bg-background px-4 py-5"
           >
-            <span className="flex size-[3.25rem] items-center justify-center rounded-card-lg bg-muted text-foreground">
+            <span className="flex size-10 items-center justify-center rounded-card-md bg-accent text-primary">
               <Icon icon={getWindowIcon(window.startMinutes)} size="md" />
             </span>
 
             <div className="min-w-0">
-              <span className="block truncate text-body-b4 text-foreground">{window.label}</span>
-              <span className="block whitespace-nowrap text-body-b6 text-muted-foreground" dir="ltr">
+              <span className="block truncate text-sm font-semibold leading-5 text-foreground">{window.label}</span>
+              <span className="mt-1 block text-sm leading-5 text-foreground/80" dir="ltr">
                 {formatWindowRange(window.startMinutes, window.endMinutes)}
               </span>
-              <span className="mt-2 block text-body-b6 text-muted-foreground">
+              <span className="mt-1.5 block text-xs leading-5 text-muted-foreground">
                 {t("capacityValue", { count: window.capacity })}
               </span>
             </div>
@@ -107,7 +107,7 @@ export async function DeliveryWindowsTable({ windows }: DeliveryWindowsTableProp
             <TableRow key={window.id} className="h-24 dashboard-landscape:h-[5.75rem] xl:h-auto">
               <TableCell className="py-4">
                 <div className="flex items-center gap-3">
-                  <span className="flex size-[3.25rem] shrink-0 items-center justify-center rounded-card-lg bg-muted text-foreground xl:size-10 xl:rounded-card-md xl:bg-accent xl:text-primary">
+                  <span className="flex size-[3.25rem] shrink-0 items-center justify-center rounded-card-lg bg-accent text-primary xl:size-10 xl:rounded-card-md">
                     <Icon icon={getWindowIcon(window.startMinutes)} size="md" className="xl:size-4" />
                   </span>
                   <span className="truncate text-body-b4 text-foreground dashboard-landscape:text-body-b7 xl:text-body-b7">

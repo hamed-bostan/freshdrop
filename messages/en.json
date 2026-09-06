@@ -1926,7 +1926,7 @@
   },
   "dashDeliverySlots": {
     "heading": "Delivery slots",
-    "subtitle": "The recurring windows shoppers book at checkout. Each is offered every day for the next {days} days, up to its capacity.",
+    "subtitle": "Set daily delivery times and order limits. Customers can book up to {days} days ahead.",
     "count": "{count, plural, one {# window} other {# windows}}",
     "newWindow": "New window",
     "createSubtitle": "Add a delivery window to the schedule.",
