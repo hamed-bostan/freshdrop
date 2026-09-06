@@ -30,16 +30,23 @@ export async function DeliverySlotsScreen({ windows }: DeliverySlotsScreenProps)
   const locale = (await getLocale());
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-4">
+    <div className="flex w-full flex-col gap-6 dashboard-phone:gap-4">
+      <div className="flex items-start justify-between gap-4 sm:items-center dashboard-phone:items-end xl:items-start">
         <div className="max-w-2xl">
-          <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
-          <p className="text-body-b6 text-muted-foreground">{t("subtitle", { days: formatNumber(SLOT_HORIZON_DAYS, locale) })}</p>
+          <h1 className="text-[2.75rem] font-bold leading-[3.25rem] tracking-[-0.03em] text-foreground dashboard-phone:text-heading-h2 dashboard-phone:tracking-normal dashboard-landscape:text-[2.75rem] dashboard-landscape:leading-[3.25rem] xl:text-heading-h2 xl:leading-normal xl:tracking-normal">
+            {t("heading")}
+          </h1>
+          <p className="mt-1 text-[1.125rem] leading-7 text-muted-foreground dashboard-phone:text-body-b6 dashboard-phone:leading-normal dashboard-landscape:max-w-2xl xl:mt-0 xl:text-body-b6 xl:leading-normal">
+            {t("subtitle", { days: formatNumber(SLOT_HORIZON_DAYS, locale) })}
+          </p>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/delivery-slots/create">
-            <Icon icon={Plus} size="sm" className="me-1.5" />
-            {t("newWindow")}
+        <Button
+          asChild
+          className="h-14 min-w-40 shrink-0 rounded-[1.125rem] px-5 text-body-b4 dashboard-phone:size-12 dashboard-phone:min-w-0 dashboard-phone:rounded-full dashboard-phone:p-0 xl:h-10 xl:min-w-0 xl:rounded-button xl:px-4 xl:text-button-btn4"
+        >
+          <Link href="/dashboard/delivery-slots/create" aria-label={t("newWindow")}>
+            <Icon icon={Plus} size="md" className="me-2 dashboard-phone:me-0 xl:me-1.5 xl:size-4" />
+            <span className="dashboard-phone:sr-only">{t("newWindow")}</span>
           </Link>
         </Button>
       </div>
