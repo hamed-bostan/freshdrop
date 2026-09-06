@@ -23,15 +23,14 @@ type SettingsScreenProps = {
  * a save re-runs that render via `router.refresh()`, so the server stays the
  * single source of truth and this screen holds no data state.
  *
- * One section today (VAT); a second settings group grows as a sibling card
- * here, not a rewrite.
+ * Each settings group owns its form and save action.
  */
 export function SettingsScreen({ taxSettings, notificationTemplates }: SettingsScreenProps) {
   const t = useTranslations("dashSettings");
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 sm:gap-8">
+      <div className="flex flex-col gap-2">
         <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
         <p className="text-body-b6 text-muted-foreground">{t("summary")}</p>
       </div>

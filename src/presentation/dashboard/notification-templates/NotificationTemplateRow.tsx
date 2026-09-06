@@ -93,19 +93,20 @@ export function NotificationTemplateRow({ kind, template, sampleVars }: Notifica
   });
 
   return (
-    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
-      <p className="text-body-b6 text-muted-foreground">{t("variablesHint", { vars: vars.length ? vars.map((name) => `{{${name}}}`).join(", ") : "—" })}</p>
+    <form onSubmit={onSubmit} noValidate className="grid min-w-0 gap-5 lg:grid-cols-2">
+      <p className="break-words rounded-card-md border border-border bg-surface px-4 py-3 text-body-b6 leading-relaxed text-muted-foreground lg:col-span-2">{t("variablesHint", { vars: vars.length ? vars.map((name) => `{{${name}}}`).join(", ") : "—" })}</p>
 
+      <div className="flex min-w-0 flex-col gap-4">
       {channel === "push" ? (
         <div className="flex flex-col gap-1.5">
-          <label className="text-body-b7 text-input-foreground">{t("titleLabel")}</label>
-          <Input {...register("title")} aria-invalid={!!errors.title} />
+          <label htmlFor={`${kind}-title`} className="text-body-b7 text-input-foreground">{t("titleLabel")}</label>
+          <Input id={`${kind}-title`} {...register("title")} aria-invalid={!!errors.title} />
           {errors.title?.message && <FormMessage size="sm">{templateErrorMessage(tFormErrors, errors.title.message)}</FormMessage>}
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">
-          <label className="text-body-b7 text-input-foreground">{t("subjectLabel")}</label>
-          <Input {...register("subject")} aria-invalid={!!errors.subject} />
+          <label htmlFor={`${kind}-subject`} className="text-body-b7 text-input-foreground">{t("subjectLabel")}</label>
+          <Input id={`${kind}-subject`} {...register("subject")} aria-invalid={!!errors.subject} />
           {errors.subject?.message && (
             <FormMessage size="sm">{templateErrorMessage(tFormErrors, errors.subject.message)}</FormMessage>
           )}
@@ -113,23 +114,26 @@ export function NotificationTemplateRow({ kind, template, sampleVars }: Notifica
       )}
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-body-b7 text-input-foreground">{t("bodyLabel")}</label>
-        <Textarea {...register("body")} aria-invalid={!!errors.body} rows={5} />
+        <label htmlFor={`${kind}-body`} className="text-body-b7 text-input-foreground">{t("bodyLabel")}</label>
+        <Textarea id={`${kind}-body`} {...register("body")} aria-invalid={!!errors.body} rows={6} />
         {errors.body?.message && <FormMessage size="sm">{templateErrorMessage(tFormErrors, errors.body.message)}</FormMessage>}
       </div>
+      </div>
 
-      <div className="flex flex-col gap-2 rounded-card-md border border-border bg-muted/40 p-3">
+      <div className="flex min-w-0 flex-col gap-3 self-start break-words rounded-card-md border border-border bg-surface p-5">
         <h4 className="text-body-b8 text-foreground">{t("previewHeading")}</h4>
         {previewTitle != null && <p className="text-body-b7 font-medium text-foreground">{previewTitle}</p>}
         {previewSubject != null && <p className="text-body-b7 font-medium text-foreground">{previewSubject}</p>}
         <p className="whitespace-pre-wrap text-body-b6 text-muted-foreground">{previewBody}</p>
       </div>
 
-      <Button type="submit" size="sm" className="self-start" disabled={isSubmitting}>
+      <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-end lg:col-span-2">
+      {errors.root?.message && <FormMessage size="md">{errors.root.message}</FormMessage>}
+      <Button type="submit" className="w-full sm:w-auto sm:min-w-28" loading={isSubmitting}>
         {isSubmitting ? t("saving") : t("save")}
       </Button>
 
-      {errors.root?.message && <FormMessage size="md">{errors.root.message}</FormMessage>}
+      </div>
     </form>
   );
 }

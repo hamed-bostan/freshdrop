@@ -1,10 +1,12 @@
+import { Bell, Mail, MessageSquare } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import {
   NOTIFICATION_TEMPLATE_KINDS,
+  NOTIFICATION_TEMPLATE_CHANNEL,
   type NotificationTemplateKind,
 } from "@/src/domain/entities/NotificationTemplate";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/src/presentation/design-system";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, Icon } from "@/src/presentation/design-system";
 
 import { NotificationTemplateRow } from "./NotificationTemplateRow";
 
@@ -64,22 +66,32 @@ export function NotificationTemplateEditor({ templates }: NotificationTemplateEd
   const byKind = new Map(templates.map((template) => [template.kind, template]));
 
   return (
-    <div className="flex flex-col gap-4 rounded-card-lg border border-border p-5">
-      <div>
-        <h2 className="text-body-b4 text-foreground">{t("heading")}</h2>
-        <p className="mt-1 text-body-b6 text-muted-foreground">{t("summary")}</p>
+    <section aria-labelledby="notification-templates-heading" className="overflow-hidden rounded-card-lg border border-border bg-surface">
+      <div className="flex items-start gap-4 border-b border-border p-5 sm:p-6">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-card-md bg-accent text-primary">
+          <Icon icon={Bell} size="sm" />
+        </span>
+        <div className="min-w-0">
+          <h2 id="notification-templates-heading" className="text-body-b4 text-foreground">{t("heading")}</h2>
+          <p className="mt-1 max-w-2xl text-body-b6 leading-relaxed text-muted-foreground">{t("summary")}</p>
+        </div>
       </div>
 
-      <Accordion type="multiple" className="flex flex-col gap-2">
+      <Accordion type="multiple" className="divide-y divide-border">
         {NOTIFICATION_TEMPLATE_KINDS.map((kind) => (
-          <AccordionItem key={kind} value={kind} className="border border-border">
-            <AccordionTrigger>{t(KIND_LABEL_KEYS[kind] as Parameters<typeof t>[0])}</AccordionTrigger>
-            <AccordionContent>
+          <AccordionItem key={kind} value={kind} className="rounded-none">
+            <AccordionTrigger className="h-auto min-h-16 gap-4 px-5 py-4 text-start text-body-b7 hover:bg-muted/30 data-[state=open]:bg-muted/30 sm:px-6">
+              <span className="flex min-w-0 items-center gap-3">
+                <Icon icon={NOTIFICATION_TEMPLATE_CHANNEL[kind] === "email" ? Mail : MessageSquare} size="sm" className="text-muted-foreground" />
+                <span>{t(KIND_LABEL_KEYS[kind] as Parameters<typeof t>[0])}</span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="border-t border-border bg-muted/10 px-5 pb-5 pt-5 sm:px-6 sm:pb-6">
               <NotificationTemplateRow kind={kind} template={byKind.get(kind)} sampleVars={SAMPLE_VARS[kind]} />
             </AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>
-    </div>
+    </section>
   );
 }
