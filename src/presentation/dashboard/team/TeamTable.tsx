@@ -4,12 +4,9 @@ import { useTranslations } from "next-intl";
 import type { TeamMember } from "@/src/contracts/team-response-schema";
 import type { UserRole } from "@/src/domain/entities/User";
 import {
+  Avatar,
   Badge,
   Button,
-  DataGridBody,
-  DataGridHeader,
-  DataGridRow,
-  DataTable,
   Icon,
 } from "@/src/presentation/design-system";
 
@@ -20,12 +17,6 @@ type TeamTableProps = {
   /** Everyone who can reach the dashboard, in the order the API returned them. */
   members: TeamMember[];
 };
-
-/**
- * Shared grid template for the team list — the header row and every data row use
- * it so the columns line up. Columns: member, phone, access, actions.
- */
-const TEAM_ROW_GRID = "grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto_auto] items-center gap-4";
 
 /**
  * Badge tone per role, warm as the role gets more powerful — owner stands out,
@@ -40,17 +31,7 @@ const ROLE_BADGE_VARIANT: Record<UserRole, "warning" | "success" | "info" | "neu
   customer: "neutral",
 };
 
-/**
- * The admin team list. Built on a shared CSS grid rather than a `<table>` so the
- * header and rows align on {@link TEAM_ROW_GRID}; scrolls horizontally on narrow
- * viewports rather than crushing the columns.
- *
- * Removal availability is decided server-side and arrives as `revokeBlocked`:
- * re-deriving it here meant two copies of one rule, and they disagreed as soon as
- * a break-glass admin was in the list. A blocked row keeps a disabled button
- * carrying the reason, so "why can't I remove this person?" is answerable from
- * the table rather than by reading the source.
- */
+/** Responsive member directory with server-controlled permissions. */
 export function TeamTable({ members }: TeamTableProps) {
   const t = useTranslations("dashTeam");
   // Taking ownership means three different things depending on the situation —
@@ -60,33 +41,34 @@ export function TeamTable({ members }: TeamTableProps) {
   const hasOwner = members.some((member) => member.role === "owner");
 
   return (
-    <DataTable minWidthClassName="min-w-[40rem]">
-      <DataGridHeader template={TEAM_ROW_GRID}>
-        <span>{t("colMember")}</span>
-        <span>{t("colPhone")}</span>
-        <span>{t("colAccess")}</span>
-        <span className="sr-only">{t("colActions")}</span>
-      </DataGridHeader>
-      <DataGridBody>
+    <section aria-label={t("membersHeading")} className="overflow-hidden rounded-card-lg border border-border bg-background">
+      <div className="flex items-center gap-3 border-b border-border px-5 py-4">
+        <h2 className="text-body-b4 text-foreground">{t("membersHeading")}</h2>
+        <Badge variant="neutral">{members.length}</Badge>
+      </div>
+      <div aria-hidden="true" className="hidden grid-cols-[minmax(0,1fr)_10rem_6rem] gap-4 bg-surface-sunken/60 px-5 py-3 text-body-b8 text-muted-foreground md:grid">
+        <span>{t("colMember")}</span><span>{t("colAccess")}</span><span className="text-end">{t("colActions")}</span>
+      </div>
+      <ul className="divide-y divide-border">
         {members.map((member) => (
-          <DataGridRow key={member.id} template={TEAM_ROW_GRID}>
-            {/* "(you)" belongs on the name, not in the Access column — it isn't
-                an access level, and putting it there made the column look like
-                it held two different kinds of thing. */}
-            <span className="min-w-0 truncate text-body-b7 text-foreground">
-              {member.name}
-              {member.isSelf && (
-                <span className="ms-1 text-muted-foreground">{t("youSuffix")}</span>
-              )}
-            </span>
-            <span dir="ltr" className="truncate text-body-b6 text-muted-foreground">
-              {member.phone}
-            </span>
+          <li key={member.id} className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-4 p-5 md:grid-cols-[minmax(0,1fr)_10rem_6rem] md:gap-4">
+            <div className="col-span-2 flex min-w-0 items-center gap-3 md:col-span-1">
+              <Avatar name={member.name} className="size-11" />
+              <div className="min-w-0">
+                <p className="text-body-b7 text-foreground [overflow-wrap:anywhere]">
+                  {member.name}
+                  {member.isSelf && <span className="ms-1 text-body-b6 text-muted-foreground">{t("youSuffix")}</span>}
+                </p>
+                <p dir="ltr" className="mt-1 w-fit text-body-b6 text-muted-foreground [overflow-wrap:anywhere]">
+                  <span className="sr-only">{t("colPhone")}: </span>{member.phone}
+                </p>
+              </div>
+            </div>
             {/* The badge is the role and nothing else. Where the grant is stored
                 is metadata about the row, so it sits underneath as a note —
                 rendering "Server config" as a peer of "Admin" implied they were
                 two different access levels, which they never were. */}
-            <span className="flex flex-col items-start gap-1">
+            <span className="flex min-w-0 flex-col items-start gap-1.5">
               <Badge variant={ROLE_BADGE_VARIANT[member.role]}>{t(`role.${member.role}`)}</Badge>
               {member.breakGlass && (
                 <span className="text-body-b10 text-muted-foreground">{t("managedInEnv")}</span>
@@ -124,9 +106,9 @@ export function TeamTable({ members }: TeamTableProps) {
                 )
               )}
             </span>
-          </DataGridRow>
+          </li>
         ))}
-      </DataGridBody>
-    </DataTable>
+      </ul>
+    </section>
   );
 }

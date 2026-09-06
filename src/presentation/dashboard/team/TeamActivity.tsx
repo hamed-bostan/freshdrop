@@ -1,3 +1,4 @@
+import { History } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { roleChangeKind } from "@/src/domain/entities/RoleChange";
@@ -29,16 +30,17 @@ export function TeamActivity({ changes }: TeamActivityProps) {
   const locale = useLocale();
 
   return (
-    <section className="flex flex-col gap-3">
-      <div>
+    <section className="flex flex-col gap-4 rounded-card-lg border border-border bg-background p-5 sm:p-6">
+      <div className="space-y-1">
         <h2 className="text-body-b4 text-foreground">{t("activityHeading")}</h2>
         <p className="text-body-b6 text-muted-foreground">{t("activityDescription")}</p>
       </div>
 
       {changes.length === 0 ? (
-        <p className="rounded-card-lg border border-dashed border-border px-6 py-10 text-center text-body-b6 text-muted-foreground">
-          {t("activityEmpty")}
-        </p>
+        <div className="flex flex-col items-center gap-3 rounded-card-lg bg-surface-sunken/50 px-5 py-8 text-center">
+          <span className="flex size-10 items-center justify-center rounded-full border border-border bg-background text-muted-foreground"><History size={18} aria-hidden="true" /></span>
+          <p className="text-body-b6 text-muted-foreground">{t("activityEmpty")}</p>
+        </div>
       ) : (
         // The frame is the same card the admin tables sit in; the rows inside are
         // an ordered list, not a table — a log entry is one sentence, not columns.

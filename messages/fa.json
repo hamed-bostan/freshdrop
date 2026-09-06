@@ -1752,6 +1752,7 @@
     }
   },
   "dashTeam": {
+    "membersHeading": "اعضای تیم",
     "heading": "تیم",
     "summary": "{count, plural, other {# نفر}} به داشبورد دسترسی دارند",
     "grantHeading": "افزودن عضو تیم",

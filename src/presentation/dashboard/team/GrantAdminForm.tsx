@@ -73,17 +73,17 @@ export function GrantAdminForm() {
     <form
       onSubmit={onSubmit}
       noValidate
-      className="flex flex-col gap-4 rounded-card-lg border border-border p-5"
+      className="flex flex-col gap-4 rounded-card-lg border border-border bg-background p-5 sm:p-6"
     >
       <div>
         <h2 className="text-body-b4 text-foreground">{t("grantHeading")}</h2>
-        <p className="mt-1 text-body-b6 text-muted-foreground">{t("grantDescription")}</p>
+        <p className="mt-1 max-w-2xl text-body-b6 text-muted-foreground">{t("grantDescription")}</p>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+      <div className="grid min-w-0 grid-cols-1 items-start gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem_auto]">
         {/* TextField drops extra props when a render-prop control is used, so the
             row's sizing lives on a wrapper rather than on the field itself. */}
-        <div className="sm:flex-1">
+        <div className="min-w-0">
           <TextField
             label={t("phoneLabel")}
             required
@@ -102,7 +102,7 @@ export function GrantAdminForm() {
           </TextField>
         </div>
 
-        <div className="sm:flex-1">
+        <div className="min-w-0">
           <TextField
             label={t("emailLabel")}
             description={t("emailHint")}
@@ -121,7 +121,7 @@ export function GrantAdminForm() {
           </TextField>
         </div>
 
-        <div className="sm:w-44">
+        <div className="min-w-0">
           {/* The role goes beside the phone rather than behind an "advanced"
               disclosure: choosing what someone may do is part of adding them, and
               defaulting quietly to the most powerful option is how everyone ends
@@ -139,7 +139,7 @@ export function GrantAdminForm() {
           </TextField>
         </div>
 
-        <Button type="submit" disabled={isSubmitting} className="sm:mt-7">
+        <Button type="submit" disabled={isSubmitting} className="w-full self-start sm:mt-7 xl:w-auto">
           {isSubmitting ? t("granting") : t("grantSubmit")}
         </Button>
       </div>
