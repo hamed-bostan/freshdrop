@@ -1,3 +1,4 @@
+import { History } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import {
@@ -5,7 +6,7 @@ import {
   FILTERABLE_ACTIVITY_FIELDS,
 } from "@/src/domain/entities/ActivityEntry";
 import type { Page } from "@/src/domain/entities/Pagination";
-import { ListFilterSelect, ListPager, ListToolbar } from "@/src/presentation/dashboard/list";
+import { ListFilterSelect, ListPager } from "@/src/presentation/dashboard/list";
 
 import { ActivityList } from "./ActivityList";
 
@@ -45,10 +46,11 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
         <p className="text-body-b6 text-muted-foreground">{t("summary")}</p>
       </div>
 
-      <ListToolbar
-        filters={
-          <>
+      <div className="grid gap-4 rounded-card-lg border border-border bg-background p-4 sm:p-5 md:grid-cols-3">
+            <label className="flex min-w-0 flex-col gap-2 text-body-b8 text-muted-foreground">
+              <span>{t("filterActor")}</span>
             <ListFilterSelect
+              className="w-full min-w-0 bg-surface"
               paramName="actorId"
               label={t("filterActor")}
               options={[
@@ -56,7 +58,11 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
                 ...actors.map((actor) => ({ value: actor.id, label: actor.name })),
               ]}
             />
+            </label>
+            <label className="flex min-w-0 flex-col gap-2 text-body-b8 text-muted-foreground">
+              <span>{t("filterEntity")}</span>
             <ListFilterSelect
+              className="w-full min-w-0 bg-surface"
               paramName="entityType"
               label={t("filterEntity")}
               options={[
@@ -67,11 +73,15 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
                 })),
               ]}
             />
+            </label>
             {/* Filters on the *diff*, not the action — which is what lets a save
                 stay one entry while "show me every price change" is still a
                 question with an answer. Backed by the GIN index on
                 `changed_fields`, so it's a real query rather than a scan. */}
+            <label className="flex min-w-0 flex-col gap-2 text-body-b8 text-muted-foreground">
+              <span>{t("filterField")}</span>
             <ListFilterSelect
+              className="w-full min-w-0 bg-surface"
               paramName="field"
               label={t("filterField")}
               options={[
@@ -82,9 +92,8 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
                 })),
               ]}
             />
-          </>
-        }
-      />
+            </label>
+      </div>
 
       {entries.items.length > 0 ? (
         <>
@@ -92,7 +101,10 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
           <ListPager page={entries} />
         </>
       ) : (
-        <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
+        <div className="rounded-card-lg border border-border bg-background px-6 py-16 text-center">
+          <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-surface-sunken text-muted-foreground">
+            <History aria-hidden="true" className="size-5" />
+          </div>
           <p className="text-body-b4 text-foreground">
             {isFiltered ? tList("noResultsTitle") : t("empty")}
           </p>

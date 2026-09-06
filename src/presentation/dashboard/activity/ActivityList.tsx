@@ -1,3 +1,4 @@
+import { ArrowUpRight, History } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { roleChangeKind } from "@/src/domain/entities/RoleChange";
@@ -60,19 +61,27 @@ export async function ActivityList({ entries, showEntity = true }: ActivityListP
               : t(`action.${entry.action}`, { actor: entry.actorName, entity: label });
 
           return (
-            <li key={entry.id} className="flex flex-col gap-1.5 bg-background px-4 py-3">
-              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                <span className="text-body-b6 text-foreground">
-                  {sentence}
-                  {showEntity && href ? (
-                    <Link href={href} className="ms-2 text-body-b10 text-primary hover:underline">
-                      {t("open")}
-                    </Link>
-                  ) : null}
-                </span>
-                <time dateTime={entry.at} className="text-body-b10 text-muted-foreground">
+            <li key={entry.id} className="flex gap-3 bg-background px-4 py-5 sm:gap-4 sm:px-6">
+              <div aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-muted-foreground">
+                <History className="size-4" />
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col gap-3">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                {showEntity ? <span className="rounded-badge-md bg-surface-sunken px-2 py-1 text-body-b10 text-foreground">{t(`entity.${entry.entityType}`)}</span> : null}
+                <time dateTime={entry.at} title={new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(new Date(entry.at)) + " UTC"} className="text-body-b8 tabular-nums text-muted-foreground sm:ms-auto">
                   {formatRelativeTime(entry.at, locale)}
                 </time>
+              </div>
+              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+                <span className="min-w-0 break-words text-body-b6 leading-relaxed text-foreground [overflow-wrap:anywhere]">
+                  {sentence}
+                </span>
+                  {showEntity && href ? (
+                    <Link href={href} aria-label={`${t("open")}: ${label}`} className="inline-flex shrink-0 items-center gap-1 rounded-md text-body-b8 text-accent-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+                      {t("open")}
+                      <ArrowUpRight aria-hidden="true" className="size-3.5 rtl:-scale-x-100" />
+                    </Link>
+                  ) : null}
               </div>
 
               {entry.changes.length > 0 ? (
@@ -81,6 +90,7 @@ export async function ActivityList({ entries, showEntity = true }: ActivityListP
                   fieldLabel={(field) => fieldLabel(t as unknown as LooseTranslator, field)}
                 />
               ) : null}
+              </div>
             </li>
           );
         })}
@@ -108,10 +118,10 @@ function ActivityDiff({
   fieldLabel: (field: string) => string;
 }) {
   return (
-    <ul className="flex flex-col gap-0.5">
+    <ul className="divide-y divide-border/60 rounded-card-md border border-border/70 bg-surface px-3">
       {changes.map((change) => (
-        <li key={change.field} className="flex flex-wrap items-baseline gap-x-2 text-body-b10">
-          <span className="text-muted-foreground">{fieldLabel(change.field)}</span>
+        <li key={change.field} className="flex flex-wrap items-baseline gap-x-2 gap-y-1 py-2 text-body-b8 [overflow-wrap:anywhere]">
+          <span className="w-full shrink-0 text-foreground sm:w-32">{fieldLabel(change.field)}</span>
           {change.before !== null ? (
             <span className="text-muted-foreground line-through">{change.before}</span>
           ) : (
@@ -120,7 +130,7 @@ function ActivityDiff({
           <span aria-hidden className="text-muted-foreground rtl:-scale-x-100">
             →
           </span>
-          <span className="text-foreground">{change.after ?? "—"}</span>
+          <span className="rounded bg-accent px-1.5 py-0.5 text-accent-foreground">{change.after ?? "—"}</span>
         </li>
       ))}
     </ul>
