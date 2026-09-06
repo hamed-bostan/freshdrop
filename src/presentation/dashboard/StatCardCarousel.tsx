@@ -63,11 +63,13 @@ export function StatCardCarousel({ children, slideLabels }: StatCardCarouselProp
               type="button"
               aria-label={slideLabels[index]}
               aria-current={index === activeIndex ? "true" : undefined}
-              className="flex size-11 items-center justify-center rounded-button focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className={cn(
+                "h-1.5 shrink-0 rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                stillWhenReduced,
+                index === activeIndex ? "w-4 bg-primary" : "w-1.5 bg-border",
+              )}
               onClick={() => swiper.current?.slideTo(index, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 300)}
-            >
-              <span aria-hidden className={cn("h-1.5 rounded-full", index === activeIndex ? "w-4 bg-primary" : "w-1.5 bg-border")} />
-            </button>
+            />
           ) : (
             <span
               key={index}
