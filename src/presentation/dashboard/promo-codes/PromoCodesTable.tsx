@@ -63,24 +63,24 @@ export async function PromoCodesTable({ promoCodes }: PromoCodesTableProps) {
   } as const;
 
   return (
-    <DataTable minWidthClassName="min-w-0 dashboard-landscape:min-w-[54rem] xl:min-w-[54rem]" className="rounded-[1.375rem] shadow-none dashboard-phone:rounded-card-lg dashboard-landscape:rounded-card-lg dashboard-landscape:shadow-sm xl:rounded-card-lg xl:shadow-sm">
-      <Table>
+    <DataTable minWidthClassName="min-w-0" className="rounded-none border-0">
+      <Table className="table-fixed xl:table-auto">
         <TableHeader>
           <tr>
-            <ListSortHeader sortKey="code" className="px-5 py-4 text-start uppercase tracking-[0.04em] dashboard-phone:px-4 dashboard-phone:py-3 [&_svg]:hidden dashboard-landscape:[&_svg]:block xl:[&_svg]:block" {...sortDefaults}>
+            <ListSortHeader sortKey="code" className="px-4 py-3 text-start" {...sortDefaults}>
               {t("colCode")}
             </ListSortHeader>
-            <ListSortHeader sortKey="discount" initialDirection="desc" align="end" className="px-5 py-4 uppercase tracking-[0.04em] dashboard-phone:px-4 dashboard-phone:py-3 [&_svg]:hidden dashboard-landscape:[&_svg]:block xl:[&_svg]:block" {...sortDefaults}>
+            <ListSortHeader sortKey="discount" initialDirection="desc" align="end" className="w-28 px-4 py-3 sm:w-36" {...sortDefaults}>
               {t("colDiscount")}
             </ListSortHeader>
-            <ListSortHeader sortKey="endsAt" className="hidden dashboard-landscape:table-cell xl:table-cell" {...sortDefaults}>
+            <ListSortHeader sortKey="endsAt" className="hidden xl:table-cell" {...sortDefaults}>
               {t("colValidity")}
             </ListSortHeader>
-            <ListSortHeader sortKey="usage" initialDirection="desc" align="end" className="hidden dashboard-landscape:table-cell xl:table-cell" {...sortDefaults}>
+            <ListSortHeader sortKey="usage" initialDirection="desc" align="end" className="hidden xl:table-cell" {...sortDefaults}>
               {t("colUsage")}
             </ListSortHeader>
-            <TableHead className="hidden dashboard-landscape:table-cell xl:table-cell">{t("colStatus")}</TableHead>
-            <TableHead className="hidden w-20 text-end dashboard-landscape:table-cell xl:table-cell">{t("colActions")}</TableHead>
+            <TableHead className="hidden xl:table-cell">{t("colStatus")}</TableHead>
+            <TableHead className="w-12 px-2 text-end sm:w-16"><span className="sr-only">{t("colActions")}</span></TableHead>
           </tr>
         </TableHeader>
         <TableBody>
@@ -89,31 +89,32 @@ export async function PromoCodesTable({ promoCodes }: PromoCodesTableProps) {
             const validity = promoValidityLabel(promo, locale);
 
             return (
-              <TableRow key={promo.id} className="h-[6.75rem] dashboard-phone:h-[5.25rem] dashboard-landscape:h-[4.75rem] xl:h-[4.75rem]">
-                <TableCell className="px-5 py-4 align-middle dashboard-phone:px-4 dashboard-phone:py-3">
+              <TableRow key={promo.id} className="h-24 xl:h-20">
+                <TableCell className="px-4 py-4 align-middle">
                   {/* The code is the identifier operators trade in, so it leads and
                       stays LTR — the codes are Latin even on the Persian store. */}
-                  <Link href={`/dashboard/promo-codes/${promo.id}/edit`} className="inline-block hover:text-primary">
-                    <span className="block text-body-b1 text-foreground dashboard-phone:text-body-b4 dashboard-landscape:text-body-b7 xl:text-body-b7" dir="ltr">
+                  <Link href={`/dashboard/promo-codes/${promo.id}/edit`} className="group block min-w-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    <span className="break-all font-mono text-sm font-semibold tracking-wide text-foreground transition-colors group-hover:text-primary" dir="ltr">
                       {promo.code}
                     </span>
-                    <span className="block text-body-b2 text-muted-foreground dashboard-phone:text-body-b6 dashboard-landscape:text-body-b10 xl:text-body-b10">{promo.title}</span>
+                    <span className="mt-1 block break-words text-body-b6 text-muted-foreground">{promo.title}</span>
                   </Link>
+                  <p className="mt-2 text-body-b10 text-muted-foreground xl:hidden">{t(validity.key, validity.values)} · {t("usageValue", { count: promo.usageCount })}</p>
                 </TableCell>
-                <TableCell className="px-5 py-4 text-end align-middle text-body-b1 text-foreground dashboard-phone:px-4 dashboard-phone:py-3 dashboard-phone:text-body-b4 dashboard-landscape:text-body-b7 xl:text-body-b7">
+                <TableCell className="px-4 py-4 text-end align-middle text-body-b7 tabular-nums text-foreground">
                   <span className="block">{t("discountValue", { percent: formatNumber(promo.discountPercent, locale) })}</span>
-                  <Badge variant={STATUS_VARIANTS[status]} className="mt-1 rounded-badge-lg px-3 py-1.5 text-body-b7 font-semibold dashboard-phone:rounded-badge-md dashboard-phone:px-2 dashboard-phone:py-1 dashboard-phone:text-label-l1 dashboard-landscape:hidden xl:hidden">{t(STATUS_LABEL_KEYS[status])}</Badge>
+                  <Badge variant={STATUS_VARIANTS[status]} className="mt-2 xl:hidden">{t(STATUS_LABEL_KEYS[status])}</Badge>
                 </TableCell>
-                <TableCell className="hidden px-5 py-4 text-body-b6 text-muted-foreground dashboard-landscape:table-cell xl:table-cell">
+                <TableCell className="hidden px-5 py-4 text-body-b6 text-muted-foreground xl:table-cell">
                   {t(validity.key, validity.values)}
                 </TableCell>
-                <TableCell className="hidden px-5 py-4 text-end text-body-b6 text-muted-foreground dashboard-landscape:table-cell xl:table-cell">
+                <TableCell className="hidden px-5 py-4 text-end text-body-b6 text-muted-foreground xl:table-cell">
                   {t("usageValue", { count: promo.usageCount })}
                 </TableCell>
-                <TableCell className="hidden px-5 py-4 dashboard-landscape:table-cell xl:table-cell">
+                <TableCell className="hidden px-5 py-4 xl:table-cell">
                   <Badge variant={STATUS_VARIANTS[status]}>{t(STATUS_LABEL_KEYS[status])}</Badge>
                 </TableCell>
-                <TableCell className="hidden px-5 py-4 text-end dashboard-landscape:table-cell xl:table-cell">
+                <TableCell className="px-2 py-4 text-end align-middle">
                   <PromoCodeRowActions id={promo.id} code={promo.code} active={promo.active} />
                 </TableCell>
               </TableRow>
