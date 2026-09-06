@@ -1042,6 +1042,9 @@
     "activeCustomers": "مشتریان فعال", "newCustomers": "مشتریان جدید", "returningCustomers": "مشتریان بازگشتی", "repeatCustomers": "مشتریان تکراری", "repeatPurchaseRate": "نرخ خرید مجدد", "averageCustomerValue": "میانگین ارزش مشتری", "vsPrevious": "نسبت به دوره قبل", "currentPeriod": "دوره جاری",
     "growthOverTime": "رشد مشتریان در طول زمان", "customers": "مشتریان", "revenue": "درآمد", "newPrevious": "مشتریان جدید (دوره قبل)", "returningPrevious": "مشتریان بازگشتی (دوره قبل)", "noData": "در این دوره فعالیتی از مشتریان ثبت نشده است.",
     "customerMix": "ترکیب مشتریان", "active": "فعال", "insightEmpty": "پس از ثبت فعالیت مشتریان، بینش‌ها نمایش داده می‌شوند.", "returningRevenueInsight": "مشتریان بازگشتی {percent} از درآمد را ایجاد کردند.", "averageOrdersInsight": "میانگین سفارش مشتریان {count} و درآمد مشتریان بازگشتی {revenue} بود.",
+    "cohortDescription": "مشتریان بر اساس ماه اولین خرید گروه‌بندی شده‌اند. هر خانه سهم مشتریانی را نشان می‌دهد که در آن ماه خرید کرده‌اند.",
+    "cohortCustomers": "{count, plural, one {# مشتری} other {# مشتری}}",
+    "retentionScale": "حفظ مشتری",
     "retentionCohorts": "گروه‌های حفظ مشتری", "cohortMonth": "ماه گروه", "monthNumber": "ماه {month}", "noCohorts": "هنوز گروه حفظ مشتری در دسترس نیست.", "cohortNote": "بر اساس مشتریانی که دوباره خرید کرده‌اند", "viewCustomers": "مشاهده مشتریان",
     "purchaseFrequency": "تکرار خرید", "ordersColumn": "سفارش‌ها", "percentCustomersColumn": "درصد مشتریان", "oneOrder": "۱ سفارش", "twoToThreeOrders": "۲ تا ۳ سفارش", "fourToSixOrders": "۴ تا ۶ سفارش", "sevenPlusOrders": "۷+ سفارش", "averageOrders": "میانگین سفارش هر مشتری", "averageDays": "میانگین روز بین سفارش‌ها", "viewCustomerDetails": "مشاهده جزئیات مشتریان",
     "newLabel": "جدید", "returning": "بازگشتی", "atRisk": "در معرض ریزش", "reactivated": "فعال‌شده مجدد", "twelveMonthValue": "ارزش ۱۲ماهه مشتری", "daily": "روزانه", "weekly": "هفتگی", "monthly": "ماهانه", "viewInsights": "مشاهده بینش‌ها"
