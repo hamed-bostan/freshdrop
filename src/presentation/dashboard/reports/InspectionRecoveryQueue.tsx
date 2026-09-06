@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, ExternalLink, MoreVertical, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, ClipboardCheck, ExternalLink, MoreVertical, Package, Search } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
 
@@ -56,14 +56,38 @@ export function InspectionRecoveryQueue({ rows, labels, viewAllHref }: { rows: R
     setPage(1);
   }
 
-  return <section className="w-full min-w-0 overflow-hidden rounded-card-lg border border-border bg-background p-3">
-    <div className="flex flex-col gap-3 pb-2 lg:flex-row lg:items-center lg:justify-between"><h2 className="shrink-0 text-body-b5">{labels.heading}</h2><div className="flex flex-wrap items-center justify-end gap-2 lg:flex-nowrap">
-      <Input size="sm" type="search" value={query} onChange={(event) => updateFilter(setQuery, event.target.value)} placeholder={labels.search} aria-label={labels.search} className="w-56 shrink-0" leftElement={<Icon icon={Search} size="xs" />} />
-      <Select size="sm" value={condition} onChange={(event) => updateFilter(setCondition, event.target.value)} aria-label={labels.allConditions} className="h-8 w-36 shrink-0"><option value="all">{labels.allConditions}</option>{conditions.map((value) => <option key={value}>{value}</option>)}</Select>
-      <Select size="sm" value={status} onChange={(event) => updateFilter(setStatus, event.target.value)} aria-label={labels.allStatuses} className="h-8 w-36 shrink-0"><option value="all">{labels.allStatuses}</option><option>{labels.awaitingInspection}</option><option>{labels.inspected}</option><option>{labels.inReview}</option></Select>
-      <Link href={viewAllHref} className={cn(focusRing, "inline-flex h-8 items-center rounded-input border border-primary/50 px-4 text-body-b10 font-semibold text-primary hover:bg-accent")}>{labels.viewAll}</Link>
+  return <section className="@container/queue w-full min-w-0 overflow-hidden rounded-card-lg border border-border bg-background p-4">
+    <div className="flex min-w-0 flex-col gap-4 pb-4"><h2 className="min-w-0 break-words text-body-b5">{labels.heading}</h2><div className="grid min-w-0 grid-cols-1 items-center gap-2 @[20rem]/queue:grid-cols-2 @[44rem]/queue:grid-cols-[minmax(14rem,1fr)_minmax(0,10rem)_minmax(0,10rem)_auto]">
+      <Input size="sm" type="search" value={query} onChange={(event) => updateFilter(setQuery, event.target.value)} placeholder={labels.search} aria-label={labels.search} className="min-w-0 w-full @[20rem]/queue:col-span-2 @[44rem]/queue:col-span-1" inputClassName="h-11 text-base" leftElement={<Icon icon={Search} size="xs" />} />
+      <Select size="sm" value={condition} onChange={(event) => updateFilter(setCondition, event.target.value)} aria-label={labels.allConditions} className="h-11 min-w-0 w-full text-body-b10"><option value="all">{labels.allConditions}</option>{conditions.map((value) => <option key={value}>{value}</option>)}</Select>
+      <Select size="sm" value={status} onChange={(event) => updateFilter(setStatus, event.target.value)} aria-label={labels.allStatuses} className="h-11 min-w-0 w-full text-body-b10"><option value="all">{labels.allStatuses}</option><option>{labels.awaitingInspection}</option><option>{labels.inspected}</option><option>{labels.inReview}</option></Select>
+      <Link href={viewAllHref} className={cn(focusRing, "inline-flex min-h-11 items-center justify-center rounded-input border border-primary/50 px-4 py-2 text-body-b10 font-semibold text-primary hover:bg-accent @[20rem]/queue:col-span-2 @[44rem]/queue:col-span-1")}>{labels.viewAll}</Link>
     </div></div>
-    <DataTable className="max-w-full"><Table><TableHeader><tr><TableHead>{labels.product}</TableHead><TableHead>{labels.order}</TableHead><TableHead>{labels.condition}</TableHead><TableHead>{labels.received}</TableHead><TableHead>{labels.inspectionStatus}</TableHead><TableHead>{labels.recoveryDecision}</TableHead><TableHead className="text-end">{labels.value}</TableHead><TableHead className="text-center">{labels.action}</TableHead><TableHead /></tr></TableHeader>
+    <div className={cn("grid min-w-0 grid-cols-1 gap-3 @[36rem]/queue:grid-cols-2", pageRows.length > 0 && "@[48rem]/queue:hidden")}>
+      {pageRows.length === 0 ? <div className="col-span-full flex flex-col items-center gap-3 rounded-card-lg border border-dashed border-border bg-surface-sunken/40 px-4 py-8 text-center">
+        <span className="flex size-11 items-center justify-center rounded-full border border-border bg-background text-primary"><Icon icon={ClipboardCheck} size="md" /></span>
+        <p className="text-body-b10 text-muted-foreground">{labels.showing.replace("{first}", "0").replace("{last}", "0").replace("{total}", "0")}</p>
+      </div> : pageRows.map((row) => <article key={row.id} className="flex min-w-0 flex-col overflow-hidden rounded-card-lg border border-border bg-background">
+        <div className="flex items-start gap-3 p-3">
+          <Thumbnail className="size-11 shrink-0">{row.productImageUrl ? <Image src={row.productImageUrl} alt="" width={44} height={44} className="size-full object-contain" /> : <span className="flex size-full items-center justify-center bg-surface-sunken text-muted-foreground"><Icon icon={Package} size="sm" /></span>}</Thumbnail>
+          <div className="min-w-0 flex-1">
+            <h3 className="break-words text-body-b10 font-semibold leading-5">{row.productName}</h3>
+            <Link href={`/dashboard/orders/${row.orderId}`} className={cn(focusRing, "mt-1 inline-flex min-h-8 items-center gap-1 rounded-input font-mono text-body-b10 font-semibold text-primary hover:underline")}><span className="sr-only">{labels.order}: </span>{row.orderNumber}<Icon icon={ExternalLink} size="xs" /></Link>
+          </div>
+        </div>
+        <dl className="grid flex-1 grid-cols-1 gap-x-3 gap-y-4 @[20rem]/queue:grid-cols-2 border-t border-border bg-surface-sunken/30 p-3 [&_dt]:mb-1.5 [&_dt]:text-label-l1 [&_dt]:text-muted-foreground [&_dd]:min-w-0 [&_dd]:text-body-b10 [&_span]:max-w-full [&_span]:whitespace-normal [&_span]:break-words">
+          <div className="min-w-0"><dt>{labels.condition}</dt><dd><Badge variant={row.conditionTone.variant} appearance={row.conditionTone.appearance}>{row.conditionLabel}</Badge></dd></div>
+          <div className="min-w-0"><dt>{labels.inspectionStatus}</dt><dd><Badge variant={row.inspection === labels.awaitingInspection ? "warning" : row.inspection === labels.inReview ? "info" : "primary"} appearance="outline">{row.inspection}</Badge></dd></div>
+          <div className="min-w-0"><dt>{labels.recoveryDecision}</dt><dd><Badge variant="neutral" appearance="outline">{row.decision}</Badge></dd></div>
+          <div className="min-w-0"><dt>{labels.received}</dt><dd className="break-words leading-5">{row.date}</dd></div>
+        </dl>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border p-3">
+          <div className="min-w-0"><p className="text-label-l1 text-muted-foreground">{labels.value}</p><p className="break-words text-body-b8 font-semibold tabular-nums">{row.amount}</p></div>
+          <Link href={`/dashboard/orders/${row.orderId}`} className={cn(focusRing, "inline-flex min-h-11 min-w-24 shrink-0 items-center justify-center rounded-input border border-primary/50 px-4 text-body-b10 font-semibold text-primary hover:bg-accent")}>{row.action}</Link>
+        </div>
+      </article>)}
+    </div>
+    <DataTable className={cn("hidden max-w-full", pageRows.length > 0 && "@[48rem]/queue:block")} minWidthClassName="min-w-[72rem]"><Table><TableHeader><tr><TableHead>{labels.product}</TableHead><TableHead>{labels.order}</TableHead><TableHead>{labels.condition}</TableHead><TableHead>{labels.received}</TableHead><TableHead>{labels.inspectionStatus}</TableHead><TableHead>{labels.recoveryDecision}</TableHead><TableHead className="text-end">{labels.value}</TableHead><TableHead className="text-center">{labels.action}</TableHead><TableHead /></tr></TableHeader>
       <TableBody>{pageRows.map((row) => <TableRow key={row.id}>
         <TableCell><div className="flex min-w-44 items-center gap-2">{row.productImageUrl ? <Thumbnail className="size-7 shrink-0"><Image src={row.productImageUrl} alt="" width={28} height={28} className="size-full object-contain" /></Thumbnail> : <span className="size-7 rounded-card-md bg-surface-sunken" />}<span className="text-body-b10 font-medium">{row.productName}</span></div></TableCell>
         <TableCell><Link href={`/dashboard/orders/${row.orderId}`} className="inline-flex items-center gap-1 whitespace-nowrap font-mono text-body-b10 font-semibold text-primary hover:underline">{row.orderNumber}<Icon icon={ExternalLink} size="xs" /></Link></TableCell>
@@ -72,7 +96,7 @@ export function InspectionRecoveryQueue({ rows, labels, viewAllHref }: { rows: R
         <TableCell><Badge variant="neutral" appearance="outline">{row.decision}</Badge></TableCell><TableCell className="text-end text-body-b10 font-semibold tabular-nums">{row.amount}</TableCell>
         <TableCell className="text-center"><Link href={`/dashboard/orders/${row.orderId}`} className="inline-flex min-w-20 justify-center rounded-card-md border border-primary/50 px-3 py-1 text-label-l1 font-semibold text-primary hover:bg-accent">{row.action}</Link></TableCell><TableCell><Icon icon={MoreVertical} size="xs" /></TableCell>
       </TableRow>)}</TableBody></Table></DataTable>
-    <div className="flex items-center justify-between px-1 pt-3 text-body-b10 text-muted-foreground">
+    <div className={cn("flex flex-wrap items-center justify-between gap-3 px-1 pt-4 text-body-b10 text-muted-foreground", pageRows.length === 0 && "hidden")}>
       <span>{labels.showing.replace("{first}", String(visible.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1)).replace("{last}", String((currentPage - 1) * PAGE_SIZE + pageRows.length)).replace("{total}", String(visible.length))}</span>
       {totalPages > 1 && <div className="flex items-center gap-2">
         <Button variant="outline" size="sm" onClick={() => setPage(currentPage - 1)} disabled={currentPage <= 1} aria-label={labels.previousPage}><Icon icon={ChevronLeft} size="sm" className="rtl:rotate-180" /></Button>
