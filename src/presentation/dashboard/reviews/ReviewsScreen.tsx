@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import type { PublicReviewPage } from "@/src/domain/entities/AdminReviewFilters";
 import type { Product } from "@/src/domain/entities/Product";
 import { BulkActionBar, BulkSelectionProvider } from "@/src/presentation/dashboard/bulk";
-import { ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
+import { ListPager, ListSearchInput } from "@/src/presentation/dashboard/list";
 
 import { ReviewBulkActions } from "./ReviewBulkActions";
 import { ReviewsTable } from "./ReviewsTable";
@@ -49,15 +49,17 @@ export async function ReviewsScreen({
   const productsById = new Map(products.map((product) => [product.id, product]));
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
+    <div className="@container flex min-w-0 flex-col gap-5 sm:gap-6">
+      <div className="min-w-0 space-y-1">
         <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
         <p className="text-body-b6 text-muted-foreground">{t("summary", { count: reviews.counts.pending })}</p>
       </div>
 
       <ReviewStatusTabs counts={reviews.counts} />
 
-      <ListToolbar search={<ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} />} />
+      <section aria-label={t("searchLabel")} className="min-w-0 rounded-card-lg border border-border bg-surface-sunken/40 p-3 sm:p-4">
+        <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="min-w-0 sm:max-w-none" />
+      </section>
 
       {reviews.items.length > 0 ? (
         // Bar and table share one selection; the rows stay server-rendered inside.

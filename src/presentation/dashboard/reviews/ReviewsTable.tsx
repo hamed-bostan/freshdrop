@@ -58,7 +58,51 @@ export function ReviewsTable({ reviews, productsById, canModerate, footer }: Rev
   const locale = useLocale();
 
   return (
-    <DataTable minWidthClassName="min-w-[56rem]" footer={footer}>
+    <div className="min-w-0">
+    <div className="space-y-3 @min-[64rem]:hidden">
+      {canModerate ? (
+        <label className="flex min-h-11 w-fit items-center gap-3 text-body-b7 text-muted-foreground">
+          <BulkSelectAllCheckbox label={t("selectAllAria")} />
+          {t("selectAllAria")}
+        </label>
+      ) : null}
+      {reviews.map((review) => {
+        const badge = STATUS_BADGE[review.status];
+        const product = productsById.get(review.productId);
+        return (
+          <article key={review.id} className="min-w-0 rounded-card-lg border border-border bg-background p-4 sm:p-5">
+            <div className="flex items-start gap-3">
+              {canModerate ? <BulkRowCheckbox id={review.id} label={t("selectRowAria", { name: review.authorName })} /> : null}
+              <Avatar name={review.authorName} className="size-9 shrink-0">
+                {review.authorAvatarUrl ? <Image src={review.authorAvatarUrl} alt="" width={36} height={36} className="size-full object-cover" /> : null}
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <p className="break-words text-body-b7 text-foreground">{review.authorName}</p>
+                <time dateTime={review.createdAt} className="text-body-b10 text-muted-foreground">{formatReviewDate(review.createdAt, locale)}</time>
+              </div>
+            </div>
+            <div className="my-4 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface-sunken px-2.5 py-1" aria-label={t("ratingAria", { rating: formatNumber(review.rating, locale, 1) })}>
+                <Icon icon={Star} size="xs" className="fill-rating text-rating" />
+                <span className="text-body-b8 text-foreground">{formatNumber(review.rating, locale, 1)}</span>
+              </span>
+              <Badge variant={badge.variant}>{t(badge.labelKey)}</Badge>
+            </div>
+            <p className="whitespace-pre-wrap break-words text-body-b6 leading-relaxed text-foreground [overflow-wrap:anywhere]">{review.comment || t("noComment")}</p>
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-4">
+              {product ? (
+                <Link href={`/dashboard/products/${product.id}/edit`} className="flex min-w-0 max-w-full items-center gap-2.5 rounded-card-md hover:underline focus-visible:outline-2 focus-visible:outline-primary">
+                  <Thumbnail as="span" className="size-9 shrink-0"><Image src={product.imageUrl} alt="" width={36} height={36} className="size-full object-cover" /></Thumbnail>
+                  <span className="min-w-0 break-words text-body-b7 text-foreground">{product.name}</span>
+                </Link>
+              ) : <span className="text-body-b8 text-muted-foreground">{t("unknownProduct")}</span>}
+              {canModerate ? <div className="ms-auto"><ReviewModerationActions id={review.id} status={review.status} authorName={review.authorName} /></div> : null}
+            </div>
+          </article>
+        );
+      })}
+    </div>
+    <DataTable className="hidden @min-[64rem]:block" minWidthClassName="min-w-[64rem]">
       <Table className="table-fixed border-collapse">
         <TableHeader>
           <tr>
@@ -68,10 +112,10 @@ export function ReviewsTable({ reviews, productsById, canModerate, footer }: Rev
               </TableHead>
             ) : null}
             <TableHead className="w-[22%]">{t("colAuthor")}</TableHead>
-            <TableHead className="w-[32%]">{t("colReview")}</TableHead>
-            <TableHead className="w-[22%]">{t("colProduct")}</TableHead>
-            <TableHead className="w-[10%]">{t("colStatus")}</TableHead>
-            {canModerate ? <TableHead className="w-[14%] text-end">{t("colAction")}</TableHead> : null}
+            <TableHead className="w-[28%]">{t("colReview")}</TableHead>
+            <TableHead className="w-[20%]">{t("colProduct")}</TableHead>
+            <TableHead className="w-[12%]">{t("colStatus")}</TableHead>
+            {canModerate ? <TableHead className="w-[18%] text-end">{t("colAction")}</TableHead> : null}
           </tr>
         </TableHeader>
         <TableBody>
@@ -79,7 +123,7 @@ export function ReviewsTable({ reviews, productsById, canModerate, footer }: Rev
             const badge = STATUS_BADGE[review.status];
             const product = productsById.get(review.productId);
             return (
-              <TableRow key={review.id}>
+              <TableRow key={review.id} className="align-top">
                 {canModerate ? (
                   <TableCell className="py-4">
                     <BulkRowCheckbox id={review.id} label={t("selectRowAria", { name: review.authorName })} />
@@ -119,7 +163,7 @@ export function ReviewsTable({ reviews, productsById, canModerate, footer }: Rev
                       <span className="text-body-b8 text-foreground">{formatNumber(review.rating, locale, 1)}</span>
                     </span>
                     {review.comment ? (
-                      <p className="line-clamp-3 min-w-0 text-body-b6 text-foreground">
+                      <p className="min-w-0 whitespace-pre-wrap break-words text-body-b6 leading-relaxed text-foreground [overflow-wrap:anywhere]">
                         {review.comment}
                       </p>
                     ) : (
@@ -168,5 +212,7 @@ export function ReviewsTable({ reviews, productsById, canModerate, footer }: Rev
         </TableBody>
       </Table>
     </DataTable>
+    {footer ? <div className="mt-4 rounded-card-lg border border-border bg-background px-4 py-3">{footer}</div> : null}
+    </div>
   );
 }

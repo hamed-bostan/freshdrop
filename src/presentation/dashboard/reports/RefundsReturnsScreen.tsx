@@ -1,11 +1,10 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
 import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
-import { Link } from "@/src/i18n/navigation";
 import type { ComparisonMode } from "@/src/lib/api/analytics-params";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
-import { cn } from "@/src/lib/utils";
+import { DashboardViewTab, DashboardViewTabs } from "@/src/presentation/dashboard/DashboardViewTabs";
 
 import { InspectionRecoveryQueue } from "./InspectionRecoveryQueue";
 import { RecoveryBreakdownPanels } from "./RecoveryBreakdownPanels";
@@ -52,7 +51,7 @@ export async function RefundsReturnsScreen({ report, customers, from, to, isCust
 
   return <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-4">
     <ReportHeader ariaLabel={t("breadcrumbAria")} parentLabel={t("reports")} currentLabel={t("heading")} title={t("heading")} subtitle={t("combinedSubtitle")} from={from} to={to} isCustomRange={isCustomRange} comparisonRange={report.previousRange} compareMode={compareMode} exportReports={[{ resource: "orders", label: ta("exportOrdersReport") }]} responsiveActions />
-    <nav className="flex border-b border-border" aria-label={t("viewTabsLabel")}><ReportTab active={view === "overview"} href={viewHref(queryString, "overview")} label={t("overview")} /><ReportTab active={view === "items"} href={viewHref(queryString, "items")} label={t("itemsRecovery")} /></nav>
+    <DashboardViewTabs label={t("viewTabsLabel")}><ReportTab active={view === "overview"} href={viewHref(queryString, "overview")} label={t("overview")} /><ReportTab active={view === "items"} href={viewHref(queryString, "items")} label={t("itemsRecovery")} /></DashboardViewTabs>
     {view === "overview" ? <>
       <RefundOverviewMetricGrid report={report} locale={locale} />
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(17rem,.72fr)_minmax(17rem,.72fr)]"><RefundTrendChart points={report.series} previousPoints={report.previousSeries} granularity={report.granularity} range={report.range} previousRange={report.previousRange} title={t("overviewTrend")} defaultMetric="amount" /><ReturnReasonsPanel reasons={report.reasons} total={report.totals.refundActivity} locale={locale} /><ReturnProcessingStatus totals={report.totals} locale={locale} /></div>
@@ -68,7 +67,7 @@ export async function RefundsReturnsScreen({ report, customers, from, to, isCust
 }
 
 function ReportTab({ active, href, label }: { active: boolean; href: string; label: string }) {
-  return <Link href={href} aria-current={active ? "page" : undefined} className={cn("-mb-px border-b-2 px-5 py-2 text-body-b8 font-semibold", active ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground")}>{label}</Link>;
+  return <DashboardViewTab active={active} href={href}>{label}</DashboardViewTab>;
 }
 
 function viewHref(queryString: string, view: RefundView): string {
