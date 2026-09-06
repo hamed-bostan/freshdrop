@@ -20,7 +20,7 @@ export async function ScheduledExportsPanel() {
   const schedules = await scheduledExportsServerApi.list();
 
   return (
-    <section>
+    <section className="min-w-0 rounded-card-lg border border-border bg-background p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-body-b1">{t("panelHeading")}</h2>
@@ -36,7 +36,7 @@ export async function ScheduledExportsPanel() {
           <ScheduledExportsTable schedules={schedules.slice(0, PANEL_ROW_LIMIT)} />
         </div>
       ) : (
-        <div className="mt-3 rounded-card-lg border border-dashed border-border px-6 py-12 text-center">
+        <div className="mt-5 rounded-card-md border border-dashed border-border bg-muted/30 px-6 py-12 text-center">
           <p className="text-body-b8 text-muted-foreground">{t("panelEmpty")}</p>
           <Link href="/dashboard/reports/exports/schedules/create" className="mt-2 inline-block text-body-b10 font-semibold text-primary hover:underline">
             {t("createSchedule")}

@@ -33,7 +33,7 @@ export async function RecentExports({ params }: RecentExportsProps) {
   const viewAllParams = buildExportJobQueryParams(filters);
 
   return (
-    <section>
+    <section className="min-w-0 rounded-card-lg border border-border bg-background p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-body-b1">{t("recentHeading")}</h2>
         <Link
@@ -66,7 +66,7 @@ export async function RecentExports({ params }: RecentExportsProps) {
           <ExportJobsTable jobs={jobs.items} />
         </div>
       ) : (
-        <div className="mt-3 rounded-card-lg border border-dashed border-border px-6 py-12 text-center">
+        <div className="mt-5 rounded-card-md border border-dashed border-border bg-muted/30 px-6 py-12 text-center">
           <p className="text-body-b8 text-muted-foreground">{t("recentEmpty")}</p>
         </div>
       )}
