@@ -89,7 +89,7 @@ export function ListPager({
         </Select>
       </div>
 
-      <div className="ms-auto flex items-center gap-2">
+      <div className="ms-auto flex max-w-full flex-wrap items-center justify-end gap-2">
         <p className={compact ? "text-body-b2 text-muted-foreground dashboard-phone:text-body-b6" : "text-body-b8 text-muted-foreground"}>
           {t("range", {
             first: formatNumber(first, locale),

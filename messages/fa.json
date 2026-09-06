@@ -1195,6 +1195,16 @@
     "clear": "پاک کردن انتخاب"
   },
   "dashProducts": {
+    "sortLabel": "مرتب‌سازی محصولات",
+    "sortNewest": "جدیدترین",
+    "sortOldest": "قدیمی‌ترین",
+    "sortNameAsc": "نام: صعودی",
+    "sortNameDesc": "نام: نزولی",
+    "sortPriceAsc": "قیمت: کم به زیاد",
+    "sortPriceDesc": "قیمت: زیاد به کم",
+    "sortStockAsc": "موجودی: کم به زیاد",
+    "sortStockDesc": "موجودی: زیاد به کم",
+
     "heading": "محصولات",
     "count": "{count, plural, other {# محصول}}",
     "newProduct": "محصول جدید",

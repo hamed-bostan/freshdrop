@@ -12,7 +12,7 @@ import type { Product } from "@/src/domain/entities/Product";
 import { Link } from "@/src/i18n/navigation";
 import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvLink";
 import { BulkActionBar, BulkSelectionProvider } from "@/src/presentation/dashboard/bulk";
-import { ListFilterSelect, ListPager, ListSearchInput, ListToolbar } from "@/src/presentation/dashboard/list";
+import { ListFilterSelect, ListPager, ListSearchInput } from "@/src/presentation/dashboard/list";
 import { Button, Icon } from "@/src/presentation/design-system";
 
 import { ProductBulkActions } from "./ProductBulkActions";
@@ -68,21 +68,21 @@ export async function ProductsScreen({ products, categories, filters, canWrite }
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
+    <div className="@container/products flex min-w-0 flex-col gap-5">
+      <div className="flex flex-col gap-4 @xl/products:flex-row @xl/products:items-center @xl/products:justify-between">
         <div>
           <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
           <p className="text-body-b6 text-muted-foreground">{t("count", { count: products.total })}</p>
         </div>
         {canWrite ? (
-          <div className="flex items-center gap-3">
-            <Button variant="outline" asChild>
+          <div className="grid grid-cols-2 gap-2 @xl/products:flex @xl/products:items-center">
+            <Button variant="outline" className="min-h-11 px-3" asChild>
               <Link href="/dashboard/products/import">
                 <Icon icon={Upload} size="sm" className="me-1.5" />
                 {t("importCsv")}
               </Link>
             </Button>
-            <Button asChild>
+            <Button className="min-h-11 px-3" asChild>
               <Link href="/dashboard/products/create">
                 <Icon icon={Plus} size="sm" className="me-1.5" />
                 {t("newProduct")}
@@ -92,51 +92,52 @@ export async function ProductsScreen({ products, categories, filters, canWrite }
         ) : null}
       </div>
 
-      <ListToolbar
-        search={<ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} />}
-        filters={
-          <>
-            <ListFilterSelect
-              paramName="categoryId"
-              label={t("filterCategoryLabel")}
-              options={[
-                { value: "", label: t("filterCategoryOption", { category: t("filterCategoryAll") }) },
-                ...categories.map((category) => ({
-                  value: category.id,
-                  label: t("filterCategoryOption", { category: category.name }),
-                })),
-              ]}
-            />
-            <ListFilterSelect
-              paramName="stock"
-              label={t("filterStockLabel")}
-              options={[
-                { value: "", label: t("filterStockOption", { stock: t("filterStockAll") }) },
-                ...ADMIN_STOCK_FILTERS.map((level) => ({
-                  value: level,
-                  label: t("filterStockOption", { stock: stockLabels[level] }),
-                })),
-              ]}
-            />
-            <ListFilterSelect
-              paramName="visibility"
-              label={t("filterVisibilityLabel")}
-              options={[
-                // "All" is the default and shows withdrawn products alongside live
-                // ones — the dashboard is where you go to find them again.
-                { value: "", label: t("filterVisibilityOption", { visibility: t("filterVisibilityAll") }) },
-                ...ADMIN_VISIBILITY_FILTERS.map((value) => ({
-                  value,
-                  label: t("filterVisibilityOption", { visibility: visibilityLabels[value] }),
-                })),
-              ]}
-            />
-            {/* Carries the current query string, so `?stock=needsRestock` exports
-                the restocking round rather than the whole catalog. */}
-            <ExportCsvLink resource="products" label={tAnalytics("exportCsv")} />
-          </>
-        }
-      />
+      <div className="flex flex-col gap-3 rounded-card-lg border border-border bg-surface-sunken/40 p-3 @xl/products:p-4">
+        <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="sm:max-w-none" />
+        <div className="grid min-w-0 grid-cols-1 gap-2 @sm/products:grid-cols-2 @3xl/products:grid-cols-4 [&>a]:min-h-11 [&>a]:justify-center">
+          <ListFilterSelect
+            className="h-11 w-full min-w-0 truncate"
+            paramName="categoryId"
+            label={t("filterCategoryLabel")}
+            options={[
+              { value: "", label: t("filterCategoryOption", { category: t("filterCategoryAll") }) },
+              ...categories.map((category) => ({
+                value: category.id,
+                label: t("filterCategoryOption", { category: category.name }),
+              })),
+            ]}
+          />
+          <ListFilterSelect
+            className="h-11 w-full min-w-0 truncate"
+            paramName="stock"
+            label={t("filterStockLabel")}
+            options={[
+              { value: "", label: t("filterStockOption", { stock: t("filterStockAll") }) },
+              ...ADMIN_STOCK_FILTERS.map((level) => ({
+                value: level,
+                label: t("filterStockOption", { stock: stockLabels[level] }),
+              })),
+            ]}
+          />
+          <ListFilterSelect
+            className="h-11 w-full min-w-0 truncate"
+            paramName="visibility"
+            label={t("filterVisibilityLabel")}
+            options={[
+              // "All" is the default and shows withdrawn products alongside live
+              // ones — the dashboard is where you go to find them again.
+              { value: "", label: t("filterVisibilityOption", { visibility: t("filterVisibilityAll") }) },
+              ...ADMIN_VISIBILITY_FILTERS.map((value) => ({
+                value,
+                label: t("filterVisibilityOption", { visibility: visibilityLabels[value] }),
+              })),
+            ]}
+          />
+          {/* Carries the current query string, so `?stock=needsRestock` exports
+              the restocking round rather than the whole catalog. */}
+          <ExportCsvLink resource="products" label={tAnalytics("exportCsv")} />
+        </div>
+      </div>
 
       {products.items.length > 0 ? (
         // The provider wraps both the bar and the table so a row's checkbox and the

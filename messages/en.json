@@ -1187,6 +1187,16 @@
     "clear": "Clear selection"
   },
   "dashProducts": {
+    "sortLabel": "Sort products",
+    "sortNewest": "Newest first",
+    "sortOldest": "Oldest first",
+    "sortNameAsc": "Name: A–Z",
+    "sortNameDesc": "Name: Z–A",
+    "sortPriceAsc": "Price: low to high",
+    "sortPriceDesc": "Price: high to low",
+    "sortStockAsc": "Stock: low to high",
+    "sortStockDesc": "Stock: high to low",
+
     "heading": "Products",
     "count": "{count, plural, one {# product} other {# products}}",
     "newProduct": "New product",
