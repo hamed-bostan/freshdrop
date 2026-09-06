@@ -35,7 +35,7 @@ export function OrderRowActions({ orderId, customerId }: OrderRowActionsProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuIconTrigger aria-label={t("rowActionsAria", { id: orderId })}>
+      <DropdownMenuIconTrigger className="size-11" aria-label={t("rowActionsAria", { id: orderId })}>
         <EllipsisVertical aria-hidden className="size-4" />
       </DropdownMenuIconTrigger>
 

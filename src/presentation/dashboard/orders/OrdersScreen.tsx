@@ -11,13 +11,13 @@ import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSu
 import type { Order } from "@/src/domain/entities/Order";
 import type { Page } from "@/src/domain/entities/Pagination";
 import type { OrderPipelineCounts } from "@/src/domain/use-cases/orders/GetOrderPipelineCounts";
+import { Link } from "@/src/i18n/navigation";
 import { ExportCsvLink } from "@/src/presentation/dashboard/analytics/ExportCsvLink";
 import { BulkActionBar, BulkSelectionProvider } from "@/src/presentation/dashboard/bulk";
 import {
   ListPager,
   ListSearchInput,
   ListSortSelect,
-  ListToolbar,
   type ListSortOption,
 } from "@/src/presentation/dashboard/list";
 
@@ -81,39 +81,33 @@ export async function OrdersScreen({
   ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="@container flex min-w-0 flex-col gap-5 sm:gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0 space-y-1">
           <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
           <p className="text-body-b6 text-muted-foreground">{t("summary", { count: orders.total })}</p>
         </div>
+        <ExportCsvLink resource="orders" label={tAnalytics("exportCsv")} />
       </div>
 
       {/* Above the toolbar, not below it: the cards are how someone *arrives* at a
           filtered list, so they have to sit before the controls that refine one. */}
       <OrdersSummaryCards counts={counts} />
 
-      <ListToolbar
-        search={<ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} />}
-        filters={
-          <>
+      <section aria-label={t("searchLabel")} className="min-w-0 rounded-card-lg border border-border bg-surface-sunken/40 p-3 sm:p-4">
+        <div className="flex min-w-0 flex-col gap-3 @min-[36rem]:flex-row @min-[36rem]:items-center">
+          <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="min-w-0 flex-1 sm:max-w-none" />
+          <div className="min-w-0 shrink-0 [&_select]:min-h-11 [&_select]:w-full">
+            <ListSortSelect label={t("sortLabel")} options={sortOptions} defaultSort={DEFAULT_ADMIN_ORDER_SORT} defaultDirection={DEFAULT_ADMIN_ORDER_DIRECTION} />
+          </div>
+        </div>
+        <div className="mt-3 border-t border-border pt-3">
             {/* The filters are one client island: they all write query params,
                 and the labels they need are resolved inside it rather than
                 threaded through as props. */}
             <OrdersFilterBar pipelineCounts={counts.counts} />
-            <ListSortSelect
-              label={t("sortLabel")}
-              options={sortOptions}
-              defaultSort={DEFAULT_ADMIN_ORDER_SORT}
-              defaultDirection={DEFAULT_ADMIN_ORDER_DIRECTION}
-            />
-            {/* Exports the *filtered* set, not the page: the link carries the
-                current query string, so whatever narrows this table narrows the
-                file (see `ExportCsvLink`). */}
-            <ExportCsvLink resource="orders" label={tAnalytics("exportCsv")} />
-          </>
-        }
-      />
+        </div>
+      </section>
 
       {orders.items.length > 0 ? (
         // The provider wraps both the bar and the table so a row's checkbox and
@@ -140,6 +134,7 @@ export async function OrdersScreen({
           <p className="mt-1 text-body-b6 text-muted-foreground">
             {isFiltered ? tList("noResultsBody") : t("emptyBody")}
           </p>
+          {isFiltered && <Link href="/dashboard/orders" className="mt-4 inline-flex min-h-11 items-center rounded-button px-4 text-body-b7 text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("filterReset")}</Link>}
         </div>
       )}
     </div>

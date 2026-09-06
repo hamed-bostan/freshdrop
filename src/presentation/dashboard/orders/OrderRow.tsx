@@ -43,7 +43,7 @@ export function OrderRow({ order, customer, canFulfill }: OrderRowProps) {
   const DeliveryIcon = order.deliveryType === "pickup" ? Store : Truck;
 
   return (
-    <TableRow>
+    <TableRow className="[&>td]:py-4">
       {canFulfill ? (
         <TableCell>
           <BulkRowCheckbox id={order.id} label={t("selectRowAria", { id: order.orderNumber })} />
@@ -54,7 +54,7 @@ export function OrderRow({ order, customer, canFulfill }: OrderRowProps) {
         <Link
           href={`/dashboard/orders/${order.id}`}
           aria-label={t("viewOrderAria", { id: order.orderNumber })}
-          className="text-body-b7 text-primary hover:underline"
+          className="inline-block py-2 text-body-b7 text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           #{order.orderNumber}
         </Link>

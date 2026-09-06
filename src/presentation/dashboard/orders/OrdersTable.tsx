@@ -11,6 +11,7 @@ import {
   TableHeader,
 } from "@/src/presentation/design-system";
 
+import { OrderMobileCard } from "./OrderMobileCard";
 import { OrderRow } from "./OrderRow";
 
 import type { ReactNode } from "react";
@@ -39,13 +40,23 @@ type OrdersTableProps = {
  * columns for a screen reader, and the alignment the grid template was
  * hand-maintaining comes free.
  *
- * Scrolls horizontally rather than crushing seven columns on a narrow viewport.
+ * Switches to cards based on the available content width, including the sidebar.
  */
 export async function OrdersTable({ orders, customersById, canFulfill, footer }: OrdersTableProps) {
   const t = await getTranslations("dashOrders");
 
   return (
-    <DataTable minWidthClassName="min-w-[64rem]" footer={footer}>
+    <div className="min-w-0">
+      <div className="@min-[64rem]:hidden">
+        {canFulfill && <label className="mb-3 flex w-fit items-center gap-3 py-2 text-body-b8 font-medium text-muted-foreground">
+          <BulkSelectAllCheckbox label={t("selectAllAria")} />
+          {t("selectAllAria")}
+        </label>}
+        <div className="grid min-w-0 grid-cols-1 gap-3 @min-[38rem]:grid-cols-2">
+          {orders.map((order) => <OrderMobileCard key={order.id} order={order} customer={customersById.get(order.userId)} canFulfill={canFulfill} />)}
+        </div>
+      </div>
+    <DataTable className="hidden rounded-card-lg @min-[64rem]:block">
       <Table>
         <TableHeader>
           {/* The header is not a hoverable row; the shared `TableRow` hover would
@@ -56,11 +67,11 @@ export async function OrdersTable({ orders, customersById, canFulfill, footer }:
                 <BulkSelectAllCheckbox label={t("selectAllAria")} />
               </TableHead>
             ) : null}
-            <TableHead>{t("colOrder")}</TableHead>
-            <TableHead>{t("colCustomer")}</TableHead>
-            <TableHead>{t("colStatus")}</TableHead>
-            <TableHead>{t("colDelivery")}</TableHead>
-            <TableHead>{t("colPlaced")}</TableHead>
+            <TableHead className="text-start">{t("colOrder")}</TableHead>
+            <TableHead className="text-start">{t("colCustomer")}</TableHead>
+            <TableHead className="text-start">{t("colStatus")}</TableHead>
+            <TableHead className="text-start">{t("colDelivery")}</TableHead>
+            <TableHead className="text-start">{t("colPlaced")}</TableHead>
             <TableHead className="text-end">{t("colTotal")}</TableHead>
             <TableHead className="text-end">{t("colActions")}</TableHead>
           </tr>
@@ -79,5 +90,7 @@ export async function OrdersTable({ orders, customersById, canFulfill, footer }:
         </TableBody>
       </Table>
     </DataTable>
+      {footer && <div className="mt-4 border-t border-border pt-4">{footer}</div>}
+    </div>
   );
 }

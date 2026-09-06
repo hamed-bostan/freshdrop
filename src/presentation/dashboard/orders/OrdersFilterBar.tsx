@@ -64,7 +64,7 @@ export function OrdersFilterBar({ pipelineCounts }: OrdersFilterBarProps) {
     iso ? format.dateTime(new Date(iso), { day: "numeric", month: "short" }) : null;
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <div className="flex min-w-0 flex-wrap items-center gap-2 [&>button]:min-h-11 [&>button]:max-w-full [&>button]:grow @min-[36rem]:[&>button]:grow-0">
       <ListChoiceFilter
         paramName="pipeline"
         label={t("filterStatusLabel")}
