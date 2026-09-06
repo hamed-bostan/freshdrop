@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { FolderTree, Plus, Search } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { ADMIN_CATEGORY_STATUSES, type AdminCategoryFilters } from "@/src/domain/entities/AdminCategoryFilters";
@@ -36,13 +36,13 @@ export async function CategoriesScreen({ categories, filters }: CategoriesScreen
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
+    <div className="flex min-w-0 flex-col gap-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
-          <p className="text-body-b6 text-muted-foreground">{t("count", { count: categories.total })}</p>
+          <p className="mt-1 text-body-b6 text-muted-foreground">{t("count", { count: categories.total })}</p>
         </div>
-        <Button asChild>
+        <Button asChild className="shrink-0">
           <Link href="/dashboard/categories/create">
             <Icon icon={Plus} size="sm" className="me-1.5" />
             {t("newCategory")}
@@ -50,46 +50,55 @@ export async function CategoriesScreen({ categories, filters }: CategoriesScreen
         </Button>
       </div>
 
-      <ListToolbar
-        search={<ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} />}
-        filters={
-          <ListFilterSelect
-            paramName="status"
-            label={t("filterStatusLabel")}
-            options={[
-              { value: "", label: t("filterStatusOption", { status: t("filterStatusAll") }) },
-              ...ADMIN_CATEGORY_STATUSES.map((status) => ({
-                value: status,
-                label: t("filterStatusOption", { status: statusLabels[status] }),
-              })),
-            ]}
-          />
-        }
-      />
+      <div className="overflow-hidden rounded-card-lg border border-border bg-background shadow-sm">
+        <ListToolbar
+          className="border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
+          search={<ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="sm:max-w-sm" />}
+          filters={
+            <ListFilterSelect
+              className="h-10 w-full sm:w-auto"
+              paramName="status"
+              label={t("filterStatusLabel")}
+              options={[
+                { value: "", label: t("filterStatusOption", { status: t("filterStatusAll") }) },
+                ...ADMIN_CATEGORY_STATUSES.map((status) => ({
+                  value: status,
+                  label: t("filterStatusOption", { status: statusLabels[status] }),
+                })),
+              ]}
+            />
+          }
+        />
 
-      {categories.items.length > 0 ? (
-        // The provider wraps both the bar and the table so a row's checkbox and
-        // the actions above it share one selection. The rows stay server-
-        // rendered inside it — only the checkboxes and the bar are client islands.
-        <BulkSelectionProvider ids={categories.items.map((category) => category.id)}>
-          <BulkActionBar>
-            <CategoryBulkActions />
-          </BulkActionBar>
-          <CategoriesTable
-            categories={categories.items}
-            footer={<ListPager page={categories} defaultPageSize={10} pageSizeOptions={[10, 25, 50]} />}
-          />
-        </BulkSelectionProvider>
-      ) : (
-        <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
-          <p className="text-body-b4 text-foreground">
-            {isFiltered ? tList("noResultsTitle") : t("emptyTitle")}
-          </p>
-          <p className="mt-1 text-body-b6 text-muted-foreground">
-            {isFiltered ? tList("noResultsBody") : t("emptyBody")}
-          </p>
-        </div>
-      )}
+        {categories.items.length > 0 ? (
+          // The provider wraps both the bar and the table so a row's checkbox and
+          // the actions above it share one selection. The rows stay server-
+          // rendered inside it — only the checkboxes and the bar are client islands.
+          <BulkSelectionProvider ids={categories.items.map((category) => category.id)}>
+            <div className="[&:has(>div)]:border-b [&:has(>div)]:border-border [&:has(>div)]:p-4">
+              <BulkActionBar>
+                <CategoryBulkActions />
+              </BulkActionBar>
+            </div>
+            <CategoriesTable
+              categories={categories.items}
+              footer={<ListPager page={categories} defaultPageSize={10} pageSizeOptions={[10, 25, 50]} />}
+            />
+          </BulkSelectionProvider>
+        ) : (
+          <div className="flex flex-col items-center px-6 py-20 text-center">
+            <div className="mb-5 flex size-14 items-center justify-center rounded-full bg-surface-sunken text-muted-foreground">
+              <Icon icon={isFiltered ? Search : FolderTree} size="lg" />
+            </div>
+            <p className="text-body-b4 text-foreground">
+              {isFiltered ? tList("noResultsTitle") : t("emptyTitle")}
+            </p>
+            <p className="mt-1 text-body-b6 text-muted-foreground">
+              {isFiltered ? tList("noResultsBody") : t("emptyBody")}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -31,7 +31,7 @@ export function CategoryRowActions({ id, name, productCount }: CategoryRowAction
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuIconTrigger aria-label={t("rowActionsAria", { name })}>
+        <DropdownMenuIconTrigger className="size-11 @[48rem]:size-8" aria-label={t("rowActionsAria", { name })}>
           <EllipsisVertical aria-hidden className="size-4" />
         </DropdownMenuIconTrigger>
         <DropdownMenuContent>
