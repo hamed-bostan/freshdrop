@@ -5,6 +5,7 @@ import type { Product } from "@/src/domain/entities/Product";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 
 import { FavoritesBrowser, FavoritesEmptyState } from "./components";
+import styles from "./favorites.module.css";
 
 interface FavoritesScreenProps {
   favorites: Product[];
@@ -15,7 +16,7 @@ export default async function FavoritesScreen({ favorites, categories }: Favorit
   const t = await getTranslations("favorites");
 
   return (
-    <div className="flex min-h-dvh flex-col px-6 pb-24">
+    <div className={styles.page}>
       <PageHeader title={t("title")} />
 
       {favorites.length > 0 ? (

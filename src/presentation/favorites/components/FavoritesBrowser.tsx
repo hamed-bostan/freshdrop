@@ -6,6 +6,8 @@ import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
 import { ProductGrid } from "@/src/presentation/product/components";
 
+import styles from "../favorites.module.css";
+
 import { ALL_FILTER, FavoriteFilterTabs } from "./FavoriteFilterTabs";
 
 interface FavoritesBrowserProps {
@@ -33,7 +35,7 @@ export function FavoritesBrowser({ favorites, categories }: FavoritesBrowserProp
   const favoriteIds = React.useMemo(() => new Set(favorites.map((product) => product.id)), [favorites]);
 
   return (
-    <div className="mt-4 flex flex-col gap-5">
+    <div className={styles.browser}>
       <FavoriteFilterTabs categories={availableCategories} value={selected} onValueChange={setSelected} />
       <ProductGrid products={visible} addOnly favoriteToggle favoriteIds={favoriteIds} refreshOnUnfavorite />
     </div>

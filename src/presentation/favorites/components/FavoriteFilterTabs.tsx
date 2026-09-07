@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import type { Category } from "@/src/domain/entities/Category";
 import { FilterTab, FilterTabs } from "@/src/presentation/design-system";
 
+import styles from "../favorites.module.css";
+
 /** Sentinel value for the "All" tab (no category filter). */
 export const ALL_FILTER = "all";
 
@@ -17,9 +19,7 @@ interface FavoriteFilterTabsProps {
 }
 
 /**
- * Horizontally scrollable, single-select category filter. Bleeds to the screen
- * edges so it scrolls edge-to-edge while its first tab stays aligned to the page
- * gutter.
+ * Wrapping single-select filters keep every category visible on the mobile page.
  */
 export function FavoriteFilterTabs({ categories, value, onValueChange }: FavoriteFilterTabsProps) {
   const t = useTranslations("favorites");
@@ -35,7 +35,7 @@ export function FavoriteFilterTabs({ categories, value, onValueChange }: Favorit
       value={value}
       onValueChange={onValueChange}
       aria-label={t("filterAria")}
-      className="-mx-6 px-6"
+      className={styles.filters}
     >
       {tabs.map((tab) => (
         <FilterTab key={tab.id} value={tab.id}>
