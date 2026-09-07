@@ -32,7 +32,7 @@ export function CustomerReviewsPanel({ reviews }: CustomerReviewsPanelProps) {
   const locale = useLocale();
 
   if (reviews.length === 0) {
-    return <p className="text-body-b6 text-muted-foreground">{t("noReviews")}</p>;
+    return <p className="rounded-card-lg border border-dashed border-border bg-surface-sunken/40 px-5 py-10 text-center text-body-b6 text-muted-foreground">{t("noReviews")}</p>;
   }
 
   return (
@@ -48,7 +48,7 @@ export function CustomerReviewsPanel({ reviews }: CustomerReviewsPanelProps) {
               {formatOrderDate(review.createdAt, locale)}
             </span>
           </div>
-          <p className="text-body-b6 text-foreground">{review.comment}</p>
+          <p className="break-words text-body-b6 text-foreground">{review.comment}</p>
           <Link
             href={`/dashboard/products/${review.productId}/edit`}
             className="w-fit text-body-b6 text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"

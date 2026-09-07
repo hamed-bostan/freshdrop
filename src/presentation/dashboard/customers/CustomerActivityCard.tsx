@@ -6,7 +6,7 @@ import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { Icon, RatingStars } from "@/src/presentation/design-system";
 
-import { PANEL_CLASS } from "./PanelHeading";
+import { PANEL_CLASS, PanelHeading } from "./PanelHeading";
 
 type ActivityItem = {
   id: string;
@@ -49,17 +49,17 @@ export function CustomerActivityCard({ customer }: { customer: CustomerDetail })
 
   return (
     <section className={PANEL_CLASS}>
-      <h2 className="text-body-b8 text-foreground">{t("recentActivity")}</h2>
+      <PanelHeading icon={ClipboardList}>{t("recentActivity")}</PanelHeading>
       {items.length > 0 ? (
-        <ol className="mt-3 flex flex-col gap-3">
+        <ol className="mt-5 flex flex-col gap-4">
           {items.map((item) => (
-            <li key={item.id} className="grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-2 text-body-b10">
+            <li key={item.id} className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-center gap-2 text-body-b10">
               <span className={`flex size-6 items-center justify-center rounded-full ${item.tone}`}><Icon icon={item.icon} size="xs" /></span>
               <div className="min-w-0">
-                <p className="truncate text-foreground">{item.label}</p>
+                <p className="break-words text-foreground">{item.label}</p>
                 {item.rating ? <RatingStars value={item.rating} size="sm" /> : null}
               </div>
-              <div className="text-end">
+              <div className="col-start-2 flex flex-wrap items-center justify-between gap-2">
                 {item.amount !== undefined ? <p className={item.amount >= 0 ? "font-semibold text-primary" : "font-semibold text-destructive"}>{item.amount >= 0 ? "+" : ""}{formatMoney(item.amount, locale)}</p> : null}
                 <time className="whitespace-nowrap text-muted-foreground" dateTime={item.date}>{formatMediumDate(item.date, locale)}</time>
               </div>

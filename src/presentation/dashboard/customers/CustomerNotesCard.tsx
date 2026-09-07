@@ -15,14 +15,14 @@ export function CustomerNotesCard({ customer }: { customer: CustomerDetail }) {
     <section className={PANEL_CLASS}>
       <PanelHeading icon={MessageSquareText}>{t("internalNotes")}</PanelHeading>
       {customer.notes.length > 0 ? (
-        <ul className="mt-3 flex flex-col gap-3">
+        <ul className="mt-5 flex flex-col gap-4">
           {customer.notes.slice(0, 3).map((note) => (
             <li key={note.id} className="border-s-2 border-warning ps-3">
               <p className="text-body-b10 text-muted-foreground">
                 {formatOrderDate(note.createdAt, locale)} · {note.authorName}
                 {orderNumberById.get(note.orderId) ? ` · #${orderNumberById.get(note.orderId)}` : ""}
               </p>
-              <p className="mt-0.5 line-clamp-2 text-body-b10 text-foreground">{note.body}</p>
+              <p className="mt-0.5 break-words text-body-b8 text-foreground">{note.body}</p>
             </li>
           ))}
         </ul>

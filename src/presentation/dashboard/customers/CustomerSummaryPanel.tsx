@@ -20,11 +20,11 @@ export function CustomerSummaryPanel({ customer }: { customer: CustomerDetail })
   return (
     <section className={PANEL_CLASS}>
       <PanelHeading icon={UserRound}>{t("customerSummary")}</PanelHeading>
-      <dl className="mt-3 grid grid-cols-[7.5rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-body-b10">
+      <dl className="mt-5 flex flex-col divide-y divide-border text-body-b8">
         {rows.map((row) => (
-          <div key={row.label} className="contents">
-            <dt className="text-foreground">{row.label}</dt>
-            <dd className="min-w-0 truncate text-muted-foreground">{row.value}</dd>
+          <div key={row.label} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3 first:pt-0 last:pb-0">
+            <dt className="text-muted-foreground">{row.label}</dt>
+            <dd className="min-w-0 break-all text-foreground">{row.value}</dd>
           </div>
         ))}
       </dl>
