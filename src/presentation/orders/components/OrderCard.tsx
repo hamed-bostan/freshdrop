@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Order, OrderItem } from "@/src/domain/entities/Order";
 import { formatDeliveryWindow } from "@/src/lib/formatDeliveryWindow";
 import { formatMoney } from "@/src/lib/formatMoney";
-import { formatOrderDate, formatOrderTime } from "@/src/lib/formatOrderDate";
+import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { Icon, Thumbnail } from "@/src/presentation/design-system";
 
 import { OrderAdjustments } from "./OrderAdjustments";
@@ -76,8 +76,8 @@ export function OrderCard({ order }: OrderCardProps) {
 
       <dl className="flex flex-col gap-2">
         <OrderInfoRow label={t("timeLabel")} value={formatOrderTime(order.placedAt, locale)} />
-        <OrderInfoRow label={t("dateLabel")} value={formatOrderDate(order.placedAt, locale)} />
-        {deliveryWindow && <OrderInfoRow label={t("deliveryLabel")} value={deliveryWindow} />}
+        <OrderInfoRow label={t("dateLabel")} value={formatOrderDateShort(order.placedAt, locale)} />
+        {deliveryWindow && <div data-order-delivery><OrderInfoRow label={t("deliveryLabel")} value={deliveryWindow} /></div>}
         <OrderLocationRow location={order.location} label={order.locationLabel} />
       </dl>
 

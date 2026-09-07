@@ -108,7 +108,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
 
   if (trackable) {
     actions.push(
-      <Button key="track" asChild size="sm" disabled={pending}>
+      <Button key="track" data-order-track asChild size="sm" disabled={pending}>
         <Link href={`/orders/${order.id}/track`}>{t("trackOrder")}</Link>
       </Button>,
     );
@@ -175,7 +175,7 @@ export function OrderCardActions({ order }: OrderCardActionsProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className={actions.length === 1 ? "grid grid-cols-1 gap-2" : "grid grid-cols-2 gap-2"}>
+      <div data-order-actions className={actions.length === 1 ? "grid grid-cols-1 gap-2" : "grid grid-cols-2 gap-2"}>
         {actions}
       </div>
       {error && (

@@ -1,0 +1,223 @@
+/* Storefront order-list polish, designed for the 390px mobile canvas. */
+@media (max-width: 480px) {
+  .screen {
+    padding: 0 20px 112px;
+    gap: 16px;
+    background: #fafbf9;
+  }
+
+  .screen > header {
+    padding-top: 8px;
+    min-height: 60px;
+  }
+
+  .screen > header h1 {
+    font-size: 20px;
+    font-weight: 650;
+    letter-spacing: -0.6px;
+  }
+
+  .screen > form input {
+    height: 44px;
+    border: 1px solid #e7eae5;
+    border-radius: 14px;
+    background: #fff;
+    font-size: 14px;
+  }
+
+  .screen > form span {
+    font-size: 14px;
+  }
+
+  .screen [role="radiogroup"] {
+    padding: 4px;
+    gap: 4px;
+    border-radius: 14px;
+    background: #edf0eb;
+  }
+
+  .screen button[role="radio"] {
+    min-height: 38px;
+    height: auto;
+    padding: 8px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #687168;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .screen button[role="radio"][data-state="checked"] {
+    background: #fff;
+    color: #087d3d;
+    box-shadow: 0 1px 4px #17391e12;
+  }
+
+  .screen article {
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid #e4e9e1;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 4px 16px #20351c05;
+  }
+
+  .screen article h2 {
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: -0.2px;
+  }
+
+  .screen article > div:first-child > span {
+    min-height: 26px;
+    padding: 4px 9px;
+    border: 0;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .screen article dl {
+    gap: 8px;
+  }
+
+  .screen article dl > div {
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .screen article dt {
+    color: #778076;
+    flex-shrink: 0;
+  }
+
+  .screen article dd {
+    font-weight: 500;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .screen article [data-order-location] {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0 12px;
+  }
+
+  .screen [data-order-location] > dd {
+    display: contents;
+  }
+
+  .screen article [data-order-location] button {
+    justify-self: end;
+    min-height: 44px;
+    max-width: 100%;
+    padding: 8px 10px;
+    gap: 6px;
+    border: 1px solid #e2eadf;
+    border-radius: 10px;
+    background: #f6f9f4;
+    color: #37643b;
+    font-size: 12px;
+  }
+
+  .screen [data-order-location] button span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .screen [data-order-location] button:hover,
+  .screen [data-order-location] button[data-state="open"] {
+    background: #edf5e9;
+    border-color: #c9dbc2;
+  }
+
+  .screen [data-order-address] {
+    grid-column: 1 / -1;
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-inline-start: 2px solid #b4cfaa;
+    border-radius: 0 10px 10px 0;
+    background: #f6f8f4;
+    color: #586353;
+    text-align: start;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  .screen [data-order-address][hidden] {
+    display: none;
+  }
+
+  .screen [data-order-delivery] {
+    order: -1;
+    margin-bottom: 4px;
+    padding: 10px;
+    border-radius: 12px;
+    background: #f0f7ee;
+  }
+
+  .screen [data-order-delivery] > div {
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+  }
+
+  .screen [data-order-delivery] dt {
+    color: #52724f;
+    font-size: 11px;
+  }
+
+  .screen [data-order-delivery] dd {
+    color: #234d28;
+    font-weight: 600;
+    text-align: start;
+  }
+
+  .screen article > dl + div {
+    padding-top: 12px;
+    border-top: 1px solid #edf0eb;
+  }
+
+  .screen article > dl + div li {
+    width: 40px;
+    height: 44px;
+    border-radius: 9px;
+    background: #f5f6f3;
+  }
+
+  .screen article > dl + div li img {
+    width: 32px;
+    height: 36px;
+  }
+
+  .screen article > dl + div p:first-child {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .screen [data-order-actions] {
+    gap: 6px 12px;
+  }
+
+  .screen [data-order-actions] > * {
+    min-height: 44px;
+    height: auto;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .screen [data-order-actions]:has([data-order-track]) > button {
+    border-color: transparent;
+    background: transparent;
+    color: #657063;
+  }
+
+  .screen [data-order-track] {
+    grid-column: 1 / -1;
+    background: #119b4b;
+  }
+}

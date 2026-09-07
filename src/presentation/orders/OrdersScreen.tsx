@@ -5,6 +5,7 @@ import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { SearchBar } from "@/src/presentation/components/SearchBar";
 
 import { OrdersBrowser, OrdersEmptyState } from "./components";
+import styles from "./orders.module.css";
 
 interface OrdersScreenProps {
   orders: Order[];
@@ -14,10 +15,10 @@ export default async function OrdersScreen({ orders }: OrdersScreenProps) {
   const t = await getTranslations("orders");
 
   return (
-    <div className="flex min-h-dvh flex-col gap-6 px-6 pb-24">
+    <div className={`${styles.screen} flex min-h-dvh flex-col gap-6 px-6 pb-24`}>
       <PageHeader title={t("title")} />
 
-      <SearchBar />
+      <SearchBar hideFilter />
 
       {orders.length > 0 ? <OrdersBrowser orders={orders} /> : <OrdersEmptyState />}
     </div>

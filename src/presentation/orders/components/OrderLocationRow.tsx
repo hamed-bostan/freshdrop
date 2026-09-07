@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, MapPin } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Collapsible } from "radix-ui";
 import * as React from "react";
@@ -38,24 +38,29 @@ export function OrderLocationRow({ location, label }: OrderLocationRowProps) {
     <Collapsible.Root
       open={open}
       onOpenChange={setOpen}
+      data-order-location
       className="flex items-start justify-between gap-2 text-body-b6"
     >
       <dt className="text-muted-foreground">{t("locationLabel")}</dt>
       <dd className="flex min-w-0 flex-col items-end gap-1 text-end text-foreground">
         <Collapsible.Trigger
+          aria-label={`${t("locationLabel")} ${collapsedLabel(location, label)}`}
           className={cn(
             "inline-flex items-center gap-0.5 rounded text-label-l1 text-primary transition-colors",
             focusRing,
           )}
         >
-          {collapsedLabel(location, label)}
+          <Icon icon={MapPin} size="xs" className="shrink-0" />
+          <span>{collapsedLabel(location, label)}</span>
           <Icon
             icon={ChevronDown}
             size="xs"
             className={cn("transition-transform duration-200", stillWhenReduced, open && "rotate-180")}
           />
         </Collapsible.Trigger>
-        <Collapsible.Content className="text-muted-foreground">{location}</Collapsible.Content>
+        <Collapsible.Content className="text-muted-foreground" data-order-address>
+          <p dir="auto">{location}</p>
+        </Collapsible.Content>
       </dd>
     </Collapsible.Root>
   );
