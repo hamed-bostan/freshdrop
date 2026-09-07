@@ -32,6 +32,40 @@
   min-height: 60px;
 }
 
+.content [data-card-part="rating"] {
+  gap: 5px;
+  min-height: 20px;
+}
+
+.content [data-card-part="rating"] span {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.content [data-card-part="rating"] svg {
+  width: 16px;
+  height: 16px;
+}
+
+.content [data-card-part="stock"],
+.content [data-card-part$="badge"] {
+  font-size: 12px;
+}
+
+.content [data-card-part="footer"] > div:first-child > div {
+  flex-wrap: wrap;
+}
+
+.content [data-card-part="footer"] > div:first-child > div > span {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.content [data-card-part="footer"] > div:first-child > div > span:last-child {
+  color: #626b64;
+}
+
 .content form input {
   height: 48px;
   border: 1px solid #e8ede8;
