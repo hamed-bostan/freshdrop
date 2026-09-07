@@ -26,7 +26,7 @@ interface StepNodeProps {
 }
 
 /**
- * A 32px node styled by the step's progress: a solid green disc for a `done`
+ * A 40px node styled by the step's progress: a solid green disc for a `done`
  * milestone, a green ring highlighting the live `current` step, and a muted grey
  * ring for a `pending` one still ahead — so the milestone the order is actually
  * at never reads as inactive.
@@ -37,10 +37,10 @@ function StepNode({ milestone, status }: StepNodeProps) {
   return (
     <span
       className={cn(
-        "flex size-8 shrink-0 items-center justify-center rounded-full border-2",
+        "flex size-10 shrink-0 items-center justify-center rounded-full border-2",
         done && "border-primary bg-primary",
-        current && "border-primary bg-background",
-        status === "pending" && "border-icon-muted bg-background",
+        current && "border-primary bg-primary/10 ring-4 ring-primary/5",
+        status === "pending" && "border-border bg-surface",
       )}
     >
       <Icon
@@ -73,24 +73,30 @@ export function TrackingStepper({ steps }: TrackingStepperProps) {
       {steps.map((step, index) => {
         const isLast = index === steps.length - 1;
         return (
-          <li key={step.milestone} className="flex gap-3">
+          <li
+            key={step.milestone}
+            aria-current={step.status === "current" ? "step" : undefined}
+            className={cn("flex gap-4", !isLast && "min-h-24")}
+          >
             <div className="flex flex-col items-center self-stretch">
               <StepNode milestone={step.milestone} status={step.status} />
               {!isLast && (
                 <span
                   aria-hidden
                   className={cn(
-                    "my-1 w-0 flex-1 border-s-2",
-                    step.status === "done" ? "border-solid border-primary" : "border-dashed border-icon-muted",
+                    "my-2 w-0 flex-1 border-s-2",
+                    step.status === "done" ? "border-solid border-primary" : "border-dashed border-border",
                   )}
                 />
               )}
             </div>
 
-            <div className={cn("flex flex-col gap-1", !isLast && "pb-6")}>
-              <p className="text-body-b8 text-foreground">{t(MILESTONE_LABEL_KEYS[step.milestone])}</p>
+            <div className={cn("flex min-h-10 flex-col justify-center gap-1.5", !isLast && "justify-start pt-2 pb-8")}>
+              <p className={cn("text-body-b8", step.status === "pending" ? "text-muted-foreground" : "text-foreground")}>
+                {t(MILESTONE_LABEL_KEYS[step.milestone])}
+              </p>
               {step.occurredAt && (
-                <p className="text-body-b10 text-icon-muted">{formatOrderTime(step.occurredAt, locale)}</p>
+                <p className="text-body-b10 text-muted-foreground">{formatOrderTime(step.occurredAt, locale)}</p>
               )}
             </div>
           </li>
