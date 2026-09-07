@@ -6,6 +6,8 @@ import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
 import { cn } from "@/src/lib/utils";
 import { SelectableTile } from "@/src/presentation/design-system";
 
+import styles from "../PaymentMethodScreen.module.css";
+
 import { PaymentMethodIcon } from "./PaymentMethodIcon";
 
 
@@ -52,7 +54,7 @@ export function PaymentMethodOption({ method, selected, onSelect }: PaymentMetho
       selected={selected}
       onSelect={() => onSelect(method.id)}
       size="md"
-      className={cn("min-h-[74px] gap-4 rounded-2xl border-border bg-background px-4 sm:min-h-[88px] sm:px-6", selected && "border-primary bg-primary/[0.025]")}
+      className={cn(styles.option, "min-h-[74px] gap-4 rounded-2xl border-border bg-background px-4 sm:min-h-[88px] sm:px-6", selected && "border-primary bg-primary/[0.025]")}
     >
       <span aria-hidden className={cn("flex size-7 shrink-0 items-center justify-center rounded-full border-2 border-muted-strong", selected && "border-primary")}>{selected && <span className="size-3.5 rounded-full bg-primary" />}</span>
       <PaymentMethodIcon methodId={method.id} className="size-9" />

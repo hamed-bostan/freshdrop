@@ -5,6 +5,8 @@ import { Link } from "@/src/i18n/navigation";
 import { cn } from "@/src/lib/utils";
 import { focusRing , Icon } from "@/src/presentation/design-system";
 
+import styles from "../PaymentMethodScreen.module.css";
+
 import { PaymentMethodIcon } from "./PaymentMethodIcon";
 
 
@@ -20,7 +22,7 @@ export function AddCardRow() {
   return (
     <Link
       href="/profile/payment-methods/add-card"
-      className={cn(
+      className={cn(styles.addCard,
         "flex min-h-[82px] items-center gap-4 rounded-2xl border border-border bg-background px-4 text-foreground transition-colors hover:border-primary sm:min-h-[102px] sm:px-6",
         focusRing,
       )}
