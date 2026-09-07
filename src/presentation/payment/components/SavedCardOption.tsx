@@ -20,7 +20,7 @@ export function SavedCardOption({ card, selected, onSelect }: SavedCardOptionPro
 
   return (
     <SelectableTile name="payment-method" value={card.id} selected={selected} onSelect={() => onSelect(card.id)} size="md"
-      className={cn(styles.option, "min-h-[82px] gap-4 rounded-2xl border-border bg-background px-4 sm:min-h-[102px] sm:px-6", selected && "border-primary bg-primary/[0.025]")}>
+      className={cn(styles.option, styles.savedOption, "min-h-[82px] gap-4 rounded-2xl border-border bg-background px-4 sm:min-h-[102px] sm:px-6", selected && "border-primary bg-primary/[0.025]")}>
       <span aria-hidden className={cn("flex size-7 shrink-0 items-center justify-center rounded-full border-2 border-muted-strong", selected && "border-primary")}>{selected && <span className="size-3.5 rounded-full bg-primary" />}</span>
       <span aria-hidden className={card.brand === "Visa" ? "w-14 text-center text-xl font-black italic tracking-tight text-blue-700" : "relative flex w-14 justify-center"}>
         {card.brand === "Visa" ? "VISA" : <><span className="size-8 rounded-full bg-red-500" /><span className="-ms-3 size-8 rounded-full bg-amber-400/90" /></>}

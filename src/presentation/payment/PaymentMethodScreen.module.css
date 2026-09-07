@@ -2,8 +2,8 @@
   margin-top: auto;
 }
 
-/* This treatment is intentionally scoped to the requested mobile layout. */
-@media (max-width: 430px) {
+/* Share one visual language across phones and tablets. */
+@media (max-width: 1024px) {
   .screen {
     gap: 24px;
     padding: 0 20px;
@@ -98,6 +98,44 @@
     display: none;
   }
 
+  .screen .savedOption {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 20px;
+    column-gap: 12px;
+    row-gap: 2px;
+  }
+
+  .savedOption > span:first-of-type {
+    grid-column: 3;
+    grid-row: 1 / 3;
+  }
+
+  .savedOption > span:nth-of-type(2) {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    width: 48px;
+  }
+
+  .savedOption > span:nth-of-type(3) {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .savedOption > span:nth-of-type(4):not(:last-of-type) {
+    display: none;
+  }
+
+  .savedOption > span:last-of-type {
+    display: block;
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 400;
+  }
+
   .screen .footer {
     position: sticky;
     bottom: 0;
@@ -113,5 +151,56 @@
     border-radius: 14px;
     font-size: 15px;
     font-weight: 600;
+  }
+}
+
+@media (min-width: 431px) and (max-width: 1024px) {
+  .screen {
+    width: 100%;
+    max-width: 608px;
+    margin-inline: auto;
+    padding-inline: 24px;
+    gap: 28px;
+  }
+
+  .screen > header {
+    min-height: 80px;
+  }
+
+  .screen > header h1 {
+    font-size: 22px;
+  }
+
+  .screen .methods {
+    gap: 24px;
+  }
+
+  .methods h2 {
+    font-size: 13px;
+    line-height: 20px;
+  }
+
+  .screen .option,
+  .screen .addCard {
+    min-height: 72px;
+    padding: 16px 18px;
+    gap: 16px;
+  }
+
+  .option > span:last-of-type,
+  .addCard > span:nth-of-type(2) {
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .option > span:last-of-type > span,
+  .addCard > span:nth-of-type(2) > span {
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .screen .footer {
+    margin-inline: -24px;
+    padding-inline: 24px;
   }
 }
