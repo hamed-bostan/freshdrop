@@ -63,11 +63,13 @@ export function DashboardNav({ permissions, collapsed = false, onNavigate }: Das
                 aria-current={active ? "page" : undefined}
                 title={collapsed ? label : undefined}
                 className={cn(
-                  "flex items-center gap-3 rounded-pill text-body-b7 transition-colors",
+                  "flex items-center gap-3 text-body-b7 transition-colors",
                   focusRing,
-                  collapsed ? "min-h-11 justify-center px-0 py-2" : "px-3 py-2",
+                  collapsed
+                    ? "size-11 shrink-0 self-center justify-center rounded-xl p-0"
+                    : "rounded-xl px-3 py-2",
                   active
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-surface-sunken hover:text-foreground",
                 )}
               >
