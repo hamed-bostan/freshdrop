@@ -1,0 +1,46 @@
+/* Category detail uses the same 390px card treatment as Favorites. */
+.page {
+  min-height: 100dvh;
+  padding: 0 16px 104px;
+  background: #fff;
+}
+
+.page > header {
+  min-height: 72px;
+  padding-top: 4px;
+  border-bottom: 1px solid #edf0ed;
+}
+
+.page > header h1 {
+  font-size: 21px;
+  letter-spacing: -0.6px;
+}
+
+.content {
+  composes: cards from "../product/components/mobile-catalog.module.css";
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 18px;
+}
+
+.content > div:last-child {
+  gap: 12px;
+}
+
+.content [data-card-part="title"] {
+  min-height: 60px;
+}
+
+.content form input {
+  height: 48px;
+  border: 1px solid #e8ede8;
+  border-radius: 14px;
+  background: #f7f9f7;
+  font-size: 14px;
+}
+
+.content form > div > span,
+.content form > div > span span {
+  font-size: 14px;
+}
