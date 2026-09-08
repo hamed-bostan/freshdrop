@@ -46,33 +46,36 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
         <p className="text-body-b6 text-muted-foreground">{t("summary")}</p>
       </div>
 
-      <div className="grid gap-4 rounded-card-lg border border-border bg-background p-4 sm:p-5 md:grid-cols-3">
+      <ActivityList
+        entries={entries.items}
+        toolbar={(
+          <section aria-label={t("heading")} className="grid gap-4 md:grid-cols-3">
             <label className="flex min-w-0 flex-col gap-2 text-body-b8 text-muted-foreground">
               <span>{t("filterActor")}</span>
-            <ListFilterSelect
-              className="w-full min-w-0 bg-surface"
-              paramName="actorId"
-              label={t("filterActor")}
-              options={[
-                { value: "", label: t("allActors") },
-                ...actors.map((actor) => ({ value: actor.id, label: actor.name })),
-              ]}
-            />
+              <ListFilterSelect
+                className="w-full min-w-0 bg-surface"
+                paramName="actorId"
+                label={t("filterActor")}
+                options={[
+                  { value: "", label: t("allActors") },
+                  ...actors.map((actor) => ({ value: actor.id, label: actor.name })),
+                ]}
+              />
             </label>
             <label className="flex min-w-0 flex-col gap-2 text-body-b8 text-muted-foreground">
               <span>{t("filterEntity")}</span>
-            <ListFilterSelect
-              className="w-full min-w-0 bg-surface"
-              paramName="entityType"
-              label={t("filterEntity")}
-              options={[
-                { value: "", label: t("allEntities") },
-                ...ACTIVITY_ENTITY_TYPES.map((type) => ({
-                  value: type,
-                  label: t(`entity.${type}`),
-                })),
-              ]}
-            />
+              <ListFilterSelect
+                className="w-full min-w-0 bg-surface"
+                paramName="entityType"
+                label={t("filterEntity")}
+                options={[
+                  { value: "", label: t("allEntities") },
+                  ...ACTIVITY_ENTITY_TYPES.map((type) => ({
+                    value: type,
+                    label: t(`entity.${type}`),
+                  })),
+                ]}
+              />
             </label>
             {/* Filters on the *diff*, not the action — which is what lets a save
                 stay one entry while "show me every price change" is still a
@@ -80,39 +83,36 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
                 `changed_fields`, so it's a real query rather than a scan. */}
             <label className="flex min-w-0 flex-col gap-2 text-body-b8 text-muted-foreground">
               <span>{t("filterField")}</span>
-            <ListFilterSelect
-              className="w-full min-w-0 bg-surface"
-              paramName="field"
-              label={t("filterField")}
-              options={[
-                { value: "", label: t("allFields") },
-                ...FILTERABLE_ACTIVITY_FIELDS.map((field) => ({
-                  value: field,
-                  label: t(`fieldOption.${field}`),
-                })),
-              ]}
-            />
+              <ListFilterSelect
+                className="w-full min-w-0 bg-surface"
+                paramName="field"
+                label={t("filterField")}
+                options={[
+                  { value: "", label: t("allFields") },
+                  ...FILTERABLE_ACTIVITY_FIELDS.map((field) => ({
+                    value: field,
+                    label: t(`fieldOption.${field}`),
+                  })),
+                ]}
+              />
             </label>
-      </div>
-
-      {entries.items.length > 0 ? (
-        <>
-          <ActivityList entries={entries.items} />
-          <ListPager page={entries} />
-        </>
-      ) : (
-        <div className="rounded-card-lg border border-border bg-background px-6 py-16 text-center">
-          <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-surface-sunken text-muted-foreground">
-            <History aria-hidden="true" className="size-5" />
+          </section>
+        )}
+        emptyState={(
+          <div className="px-6 py-16 text-center">
+            <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-surface-sunken text-muted-foreground">
+              <History aria-hidden="true" className="size-5" />
+            </div>
+            <p className="text-body-b4 text-foreground">
+              {isFiltered ? tList("noResultsTitle") : t("empty")}
+            </p>
+            <p className="mt-1 text-body-b6 text-muted-foreground">
+              {isFiltered ? tList("noResultsBody") : t("emptyBody")}
+            </p>
           </div>
-          <p className="text-body-b4 text-foreground">
-            {isFiltered ? tList("noResultsTitle") : t("empty")}
-          </p>
-          <p className="mt-1 text-body-b6 text-muted-foreground">
-            {isFiltered ? tList("noResultsBody") : t("emptyBody")}
-          </p>
-        </div>
-      )}
+        )}
+        footer={<ListPager page={entries} />}
+      />
     </div>
   );
 }

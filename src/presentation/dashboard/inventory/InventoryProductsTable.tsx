@@ -34,6 +34,8 @@ type InventoryProductsTableProps = {
   canWrite: boolean;
   canSelect?: boolean;
   toolbar?: ReactNode;
+  bulkActions?: ReactNode;
+  emptyState?: ReactNode;
   footer?: ReactNode;
 };
 
@@ -50,6 +52,8 @@ export async function InventoryProductsTable({
   canWrite,
   canSelect = false,
   toolbar,
+  bulkActions,
+  emptyState,
   footer,
 }: InventoryProductsTableProps) {
   const t = await getTranslations("dashInventory");
@@ -57,7 +61,13 @@ export async function InventoryProductsTable({
   const locale = await getLocale();
 
   return (
-    <DataTable toolbar={toolbar} footer={footer} className={styles.frame}>
+    <DataTable toolbar={toolbar} footer={products.length > 0 ? footer : undefined} className={styles.frame}>
+      {bulkActions ? (
+        <div className="[&:has(>div)]:border-b [&:has(>div)]:border-border [&:has(>div)]:p-4">
+          {bulkActions}
+        </div>
+      ) : null}
+      {products.length > 0 ? (
       <Table className={styles.table}>
         <TableHeader>
           <tr>
@@ -150,6 +160,9 @@ export async function InventoryProductsTable({
           })}
         </TableBody>
       </Table>
+      ) : (
+        emptyState
+      )}
     </DataTable>
   );
 }

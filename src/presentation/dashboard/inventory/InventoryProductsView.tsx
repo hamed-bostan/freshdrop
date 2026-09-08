@@ -21,6 +21,7 @@ import { InventoryBulkRestock } from "./InventoryBulkRestock";
 import { InventoryProductsTable } from "./InventoryProductsTable";
 
 import type { InventoryView } from "./InventoryTabs";
+import type { ReactNode } from "react";
 
 type InventoryProductsViewProps = {
   view: Extract<InventoryView, "restock" | "all">;
@@ -87,23 +88,18 @@ export async function InventoryProductsView({
     />
   );
 
-  if (products.items.length === 0) {
-    return (
-      <>
-        {toolbar}
-        <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
-          <p className="text-body-b4 text-foreground">
-            {isFiltered ? tList("noResultsTitle") : view === "restock" ? t("emptyTitle") : t("allEmptyTitle")}
-          </p>
-          <p className="mt-1 text-body-b6 text-muted-foreground">
-            {isFiltered ? tList("noResultsBody") : view === "restock" ? t("emptyBody") : t("allEmptyBody")}
-          </p>
-        </div>
-      </>
-    );
-  }
+  const emptyState = (
+    <div className="px-6 py-16 text-center">
+      <p className="text-body-b4 text-foreground">
+        {isFiltered ? tList("noResultsTitle") : view === "restock" ? t("emptyTitle") : t("allEmptyTitle")}
+      </p>
+      <p className="mt-1 text-body-b6 text-muted-foreground">
+        {isFiltered ? tList("noResultsBody") : view === "restock" ? t("emptyBody") : t("allEmptyBody")}
+      </p>
+    </div>
+  );
 
-  const table = (
+  const renderTable = (bulkActions?: ReactNode) => (
     <InventoryProductsTable
       products={products.items}
       categoryNames={categoryNames}
@@ -111,18 +107,21 @@ export async function InventoryProductsView({
       canWrite={canWrite}
       canSelect={canSelect}
       toolbar={toolbar}
+      bulkActions={bulkActions}
+      emptyState={emptyState}
       footer={<ListPager page={products} />}
     />
   );
 
-  if (!canSelect) return table;
+  if (!canSelect) return renderTable();
 
   return (
     <BulkSelectionProvider ids={products.items.map((product) => product.id)}>
-      <BulkActionBar>
-        <InventoryBulkRestock />
-      </BulkActionBar>
-      {table}
+      {renderTable(products.items.length > 0 ? (
+        <BulkActionBar>
+          <InventoryBulkRestock />
+        </BulkActionBar>
+      ) : undefined)}
     </BulkSelectionProvider>
   );
 }

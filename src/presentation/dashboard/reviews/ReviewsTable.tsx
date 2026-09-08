@@ -36,6 +36,12 @@ type ReviewsTableProps = {
    * selection checkboxes — there's nothing to select for without the bulk actions.
    */
   canModerate: boolean;
+  /** Search controls attached to the table's upper edge. */
+  toolbar?: ReactNode;
+  /** Selection actions attached inside the same table frame. */
+  bulkActions?: ReactNode;
+  /** Content shown inside the shared frame when the active queue has no rows. */
+  emptyState?: ReactNode;
   /** Pagination attached to the table frame, matching the other dashboard lists. */
   footer?: ReactNode;
 };
@@ -53,13 +59,19 @@ const STATUS_BADGE: Record<ReviewStatus, { variant: "success" | "warning" | "des
 };
 
 /** Admin moderation table: one row per review with its status and a moderation control. */
-export function ReviewsTable({ reviews, productsById, canModerate, footer }: ReviewsTableProps) {
+export function ReviewsTable({ reviews, productsById, canModerate, toolbar, bulkActions, emptyState, footer }: ReviewsTableProps) {
   const t = useTranslations("dashReviews");
   const locale = useLocale();
 
   return (
-    <div className="min-w-0">
-    <div className="space-y-3 @min-[64rem]:hidden">
+    <DataTable className="min-w-0" toolbar={toolbar} footer={reviews.length > 0 ? footer : undefined}>
+      {bulkActions ? (
+        <div className="[&:has(>div)]:border-b [&:has(>div)]:border-border [&:has(>div)]:p-4">
+          {bulkActions}
+        </div>
+      ) : null}
+      {reviews.length > 0 ? <>
+    <div className="space-y-3 p-3 @min-[64rem]:hidden">
       {canModerate ? (
         <label className="flex min-h-11 w-fit items-center gap-3 text-body-b7 text-muted-foreground">
           <BulkSelectAllCheckbox label={t("selectAllAria")} />
@@ -102,7 +114,8 @@ export function ReviewsTable({ reviews, productsById, canModerate, footer }: Rev
         );
       })}
     </div>
-    <DataTable className="hidden @min-[64rem]:block" minWidthClassName="min-w-[64rem]">
+    <div className="hidden overflow-x-auto @min-[64rem]:block">
+      <div className="min-w-[64rem]">
       <Table className="table-fixed border-collapse">
         <TableHeader>
           <tr>
@@ -211,8 +224,9 @@ export function ReviewsTable({ reviews, productsById, canModerate, footer }: Rev
           })}
         </TableBody>
       </Table>
-    </DataTable>
-    {footer ? <div className="mt-4 rounded-card-lg border border-border bg-background px-4 py-3">{footer}</div> : null}
+      </div>
     </div>
+      </> : emptyState}
+    </DataTable>
   );
 }

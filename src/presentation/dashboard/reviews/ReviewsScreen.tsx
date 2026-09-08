@@ -57,35 +57,36 @@ export async function ReviewsScreen({
 
       <ReviewStatusTabs counts={reviews.counts} />
 
-      <section aria-label={t("searchLabel")} className="min-w-0 rounded-card-lg border border-border bg-surface-sunken/40 p-3 sm:p-4">
-        <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="min-w-0 sm:max-w-none" />
-      </section>
-
-      {reviews.items.length > 0 ? (
-        // Bar and table share one selection; the rows stay server-rendered inside.
-        <BulkSelectionProvider ids={reviews.items.map((review) => review.id)}>
-          {canModerate ? (
+      {/* Tabs switch queues and remain outside. Search, moderation actions, rows,
+          empty states, and pagination belong to the selected queue's surface. */}
+      <BulkSelectionProvider ids={reviews.items.map((review) => review.id)}>
+        <ReviewsTable
+          reviews={reviews.items}
+          productsById={productsById}
+          canModerate={canModerate}
+          toolbar={(
+            <section aria-label={t("searchLabel")} className="min-w-0">
+              <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="min-w-0 sm:max-w-none" />
+            </section>
+          )}
+          bulkActions={reviews.items.length > 0 && canModerate ? (
             <BulkActionBar>
               <ReviewBulkActions />
             </BulkActionBar>
           ) : null}
-          <ReviewsTable
-            reviews={reviews.items}
-            productsById={productsById}
-            canModerate={canModerate}
-            footer={<ListPager page={reviews} />}
-          />
-        </BulkSelectionProvider>
-      ) : (
-        <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
-          <p className="text-body-b4 text-foreground">
-            {isSearching ? tList("noResultsTitle") : isPending ? t("emptyPending") : t("emptyOther")}
-          </p>
-          <p className="mt-1 text-body-b6 text-muted-foreground">
-            {isSearching ? tList("noResultsBody") : isPending ? t("emptyPendingBody") : t("emptyOtherBody")}
-          </p>
-        </div>
-      )}
+          emptyState={(
+            <div className="px-6 py-16 text-center">
+              <p className="text-body-b4 text-foreground">
+                {isSearching ? tList("noResultsTitle") : isPending ? t("emptyPending") : t("emptyOther")}
+              </p>
+              <p className="mt-1 text-body-b6 text-muted-foreground">
+                {isSearching ? tList("noResultsBody") : isPending ? t("emptyPendingBody") : t("emptyOtherBody")}
+              </p>
+            </div>
+          )}
+          footer={<ListPager page={reviews} />}
+        />
+      </BulkSelectionProvider>
     </div>
   );
 }

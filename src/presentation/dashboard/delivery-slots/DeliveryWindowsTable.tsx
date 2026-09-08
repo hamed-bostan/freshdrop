@@ -17,8 +17,11 @@ import {
 
 import { DeliveryWindowRowActions } from "./DeliveryWindowRowActions";
 
+import type { ReactNode } from "react";
+
 type DeliveryWindowsTableProps = {
   windows: DeliveryWindow[];
+  emptyState?: ReactNode;
 };
 
 /** Give each part of the day a recognizable cue without depending on its label or locale. */
@@ -37,7 +40,7 @@ function getWindowIcon(startMinutes: number): LucideIcon {
  * being edited. A sortable header here would let you rearrange the view of a list
  * whose whole point is the arrangement you saved.
  */
-export async function DeliveryWindowsTable({ windows }: DeliveryWindowsTableProps) {
+export async function DeliveryWindowsTable({ windows, emptyState }: DeliveryWindowsTableProps) {
   const t = await getTranslations("dashDeliverySlots");
   const locale = (await getLocale());
   const maxCapacity = Math.max(...windows.map((window) => window.capacity), 1);
@@ -54,6 +57,7 @@ export async function DeliveryWindowsTable({ windows }: DeliveryWindowsTableProp
         </div>
       }
     >
+      {windows.length > 0 ? <>
       <ul className="divide-y divide-border sm:hidden">
         {windows.map((window) => (
           <li
@@ -148,6 +152,7 @@ export async function DeliveryWindowsTable({ windows }: DeliveryWindowsTableProp
           ))}
         </TableBody>
       </Table>
+      </> : emptyState}
     </DataTable>
   );
 }

@@ -24,8 +24,13 @@ import {
 import { PromoCodeRowActions } from "./PromoCodeRowActions";
 import { promoValidityLabel } from "./promoValidity";
 
+import type { ReactNode } from "react";
+
 type PromoCodesTableProps = {
   promoCodes: AdminPromoCode[];
+  toolbar?: ReactNode;
+  emptyState?: ReactNode;
+  footer?: ReactNode;
 };
 
 /** Badge tone per campaign state — live is the only affirmative one. */
@@ -52,7 +57,7 @@ const STATUS_LABEL_KEYS = {
  * as expired the next time the page is opened — there's no stored status column to
  * fall out of date.
  */
-export async function PromoCodesTable({ promoCodes }: PromoCodesTableProps) {
+export async function PromoCodesTable({ promoCodes, toolbar, emptyState, footer }: PromoCodesTableProps) {
   const t = await getTranslations("dashPromoCodes");
   const locale = (await getLocale());
   const now = new Date();
@@ -63,7 +68,12 @@ export async function PromoCodesTable({ promoCodes }: PromoCodesTableProps) {
   } as const;
 
   return (
-    <DataTable minWidthClassName="min-w-0" className="rounded-none border-0">
+    <DataTable
+      className="min-w-0 bg-background"
+      toolbar={toolbar}
+      footer={promoCodes.length > 0 ? footer : undefined}
+    >
+      {promoCodes.length > 0 ? (
       <Table className="table-fixed xl:table-auto">
         <TableHeader>
           <tr>
@@ -122,6 +132,9 @@ export async function PromoCodesTable({ promoCodes }: PromoCodesTableProps) {
           })}
         </TableBody>
       </Table>
+      ) : (
+        emptyState
+      )}
     </DataTable>
   );
 }

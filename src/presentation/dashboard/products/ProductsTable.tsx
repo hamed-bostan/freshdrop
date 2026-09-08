@@ -33,6 +33,10 @@ type ProductsTableProps = {
   /** Category id to localized display name. */
   categoryNames: Map<string, string>;
   canWrite: boolean;
+  /** Search and filters attached to the table's upper edge. */
+  toolbar?: ReactNode;
+  /** Content shown inside the shared frame when the current query has no rows. */
+  emptyState?: ReactNode;
   footer?: ReactNode;
 };
 
@@ -42,12 +46,14 @@ const SORT_DEFAULTS = {
 } as const;
 
 /** Product management list with explicit inventory and publication state. */
-export async function ProductsTable({ products, categoryNames, canWrite, footer }: ProductsTableProps) {
+export async function ProductsTable({ products, categoryNames, canWrite, toolbar, emptyState, footer }: ProductsTableProps) {
   const t = await getTranslations("dashProducts");
   const locale = await getLocale();
 
   return (
-    <DataTable className="min-w-0 bg-background" footer={footer}>
+    <DataTable className="min-w-0 bg-background" toolbar={toolbar} footer={products.length > 0 ? footer : undefined}>
+      {products.length > 0 ? (
+        <>
       <div className="@4xl/products:hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface-sunken/50 p-4 [&_select]:h-11 [&_select]:w-full [&_select]:min-w-0">
           {canWrite ? (
@@ -229,6 +235,10 @@ export async function ProductsTable({ products, categoryNames, canWrite, footer 
           </TableBody>
         </Table>
       </div>
+        </>
+      ) : (
+        emptyState
+      )}
     </DataTable>
   );
 }

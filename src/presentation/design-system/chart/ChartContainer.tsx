@@ -29,7 +29,17 @@ export type ChartContainerProps = {
  */
 export function ChartContainer({ children, height = 240, className, dir }: ChartContainerProps) {
   return (
-    <div dir={dir} className={cn("w-full", className)} style={{ height }}>
+    <div
+      dir={dir}
+      className={cn("w-full", className)}
+      style={{ height }}
+      onMouseDownCapture={(event) => {
+        // Recharts makes its root SVG keyboard-focusable. Keep that useful
+        // keyboard behavior, but do not move focus there on a pointer click;
+        // otherwise browsers draw a focus outline around the entire plot.
+        if (event.button === 0) event.preventDefault();
+      }}
+    >
       <ResponsiveContainer width="100%" height="100%">
         {children}
       </ResponsiveContainer>

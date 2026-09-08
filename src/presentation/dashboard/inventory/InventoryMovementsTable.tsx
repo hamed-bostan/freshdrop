@@ -28,6 +28,7 @@ type InventoryMovementsTableProps = {
   movements: StockMovementEntry[];
   products: Product[];
   toolbar?: ReactNode;
+  emptyState?: ReactNode;
   footer?: ReactNode;
 };
 
@@ -48,6 +49,7 @@ export async function InventoryMovementsTable({
   movements,
   products,
   toolbar,
+  emptyState,
   footer,
 }: InventoryMovementsTableProps) {
   const t = await getTranslations("dashInventory");
@@ -56,7 +58,8 @@ export async function InventoryMovementsTable({
   const productsById = new Map(products.map((product) => [product.id, product]));
 
   return (
-    <DataTable toolbar={toolbar} footer={footer} className={styles.frame}>
+    <DataTable toolbar={toolbar} footer={movements.length > 0 ? footer : undefined} className={styles.frame}>
+      {movements.length > 0 ? (
       <Table className={`${styles.table} ${styles.ledger}`}>
         <TableHeader>
           <tr>
@@ -137,6 +140,9 @@ export async function InventoryMovementsTable({
           })}
         </TableBody>
       </Table>
+      ) : (
+        emptyState
+      )}
     </DataTable>
   );
 }

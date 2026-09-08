@@ -26,6 +26,10 @@ type OrdersTableProps = {
    * bar of things they'll be refused.
    */
   canFulfill: boolean;
+  /** Search, sorting, and filters attached to the table's upper edge. */
+  toolbar?: ReactNode;
+  /** Content shown inside the shared frame when the current query has no rows. */
+  emptyState?: ReactNode;
   /** Pagination attached to the shared table frame. */
   footer?: ReactNode;
 };
@@ -42,55 +46,64 @@ type OrdersTableProps = {
  *
  * Switches to cards based on the available content width, including the sidebar.
  */
-export async function OrdersTable({ orders, customersById, canFulfill, footer }: OrdersTableProps) {
+export async function OrdersTable({ orders, customersById, canFulfill, toolbar, emptyState, footer }: OrdersTableProps) {
   const t = await getTranslations("dashOrders");
 
   return (
-    <div className="min-w-0">
-      <div className="@min-[64rem]:hidden">
-        {canFulfill && <label className="mb-3 flex w-fit items-center gap-3 py-2 text-body-b8 font-medium text-muted-foreground">
-          <BulkSelectAllCheckbox label={t("selectAllAria")} />
-          {t("selectAllAria")}
-        </label>}
-        <div className="grid min-w-0 grid-cols-1 gap-3 @min-[38rem]:grid-cols-2">
-          {orders.map((order) => <OrderMobileCard key={order.id} order={order} customer={customersById.get(order.userId)} canFulfill={canFulfill} />)}
-        </div>
-      </div>
-    <DataTable className="hidden rounded-card-lg @min-[64rem]:block">
-      <Table>
-        <TableHeader>
-          {/* The header is not a hoverable row; the shared `TableRow` hover would
-              otherwise make it look like something to click. */}
-          <tr>
-            {canFulfill ? (
-              <TableHead className="w-10">
+    <DataTable className="min-w-0" toolbar={toolbar} footer={orders.length > 0 ? footer : undefined}>
+      {orders.length > 0 ? (
+        <>
+          <div className="p-3 @min-[64rem]:hidden">
+            {canFulfill && (
+              <label className="mb-3 flex w-fit items-center gap-3 py-2 text-body-b8 font-medium text-muted-foreground">
                 <BulkSelectAllCheckbox label={t("selectAllAria")} />
-              </TableHead>
-            ) : null}
-            <TableHead className="text-start">{t("colOrder")}</TableHead>
-            <TableHead className="text-start">{t("colCustomer")}</TableHead>
-            <TableHead className="text-start">{t("colStatus")}</TableHead>
-            <TableHead className="text-start">{t("colDelivery")}</TableHead>
-            <TableHead className="text-start">{t("colPlaced")}</TableHead>
-            <TableHead className="text-end">{t("colTotal")}</TableHead>
-            <TableHead className="text-end">{t("colActions")}</TableHead>
-          </tr>
-        </TableHeader>
-        <TableBody>
-          {orders.map((order) => (
-            // Every order's userId is present in the summaries (they're derived
-            // from the same order history); OrderRow falls back to the raw id.
-            <OrderRow
-              key={order.id}
-              order={order}
-              customer={customersById.get(order.userId)}
-              canFulfill={canFulfill}
-            />
-          ))}
-        </TableBody>
-      </Table>
+                {t("selectAllAria")}
+              </label>
+            )}
+            <div className="grid min-w-0 grid-cols-1 gap-3 @min-[38rem]:grid-cols-2">
+              {orders.map((order) => (
+                <OrderMobileCard key={order.id} order={order} customer={customersById.get(order.userId)} canFulfill={canFulfill} />
+              ))}
+            </div>
+          </div>
+          <div className="hidden @min-[64rem]:block">
+            <Table>
+              <TableHeader>
+                {/* The header is not a hoverable row; the shared `TableRow` hover would
+                    otherwise make it look like something to click. */}
+                <tr>
+                  {canFulfill ? (
+                    <TableHead className="w-10">
+                      <BulkSelectAllCheckbox label={t("selectAllAria")} />
+                    </TableHead>
+                  ) : null}
+                  <TableHead className="text-start">{t("colOrder")}</TableHead>
+                  <TableHead className="text-start">{t("colCustomer")}</TableHead>
+                  <TableHead className="text-start">{t("colStatus")}</TableHead>
+                  <TableHead className="text-start">{t("colDelivery")}</TableHead>
+                  <TableHead className="text-start">{t("colPlaced")}</TableHead>
+                  <TableHead className="text-end">{t("colTotal")}</TableHead>
+                  <TableHead className="text-end">{t("colActions")}</TableHead>
+                </tr>
+              </TableHeader>
+              <TableBody>
+                {orders.map((order) => (
+                  // Every order's userId is present in the summaries (they're derived
+                  // from the same order history); OrderRow falls back to the raw id.
+                  <OrderRow
+                    key={order.id}
+                    order={order}
+                    customer={customersById.get(order.userId)}
+                    canFulfill={canFulfill}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      ) : (
+        emptyState
+      )}
     </DataTable>
-      {footer && <div className="mt-4 border-t border-border pt-4">{footer}</div>}
-    </div>
   );
 }

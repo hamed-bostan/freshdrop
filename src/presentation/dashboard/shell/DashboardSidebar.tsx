@@ -41,7 +41,7 @@ export function DashboardSidebar({ permissions, collapsed, onToggleCollapsed }: 
       {/* The `md`–`xl` tier: always the icon-only rail, no toggle — there's nowhere to put one. */}
       <div className="hidden h-full flex-col dashboard-landscape:flex">
         <SidebarBrand collapsed />
-        <div className="flex-1 overflow-y-auto px-3 py-2">
+        <div className="flex-1 overflow-y-auto px-3 py-2 [scrollbar-gutter:stable_both-edges]">
           <DashboardNav permissions={permissions} collapsed />
         </div>
         <ViewStoreLink collapsed />
@@ -61,7 +61,12 @@ export function DashboardSidebar({ permissions, collapsed, onToggleCollapsed }: 
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto px-3 py-2">
+        <div
+          className={cn(
+            "flex-1 overflow-y-auto px-3 py-2",
+            collapsed && "[scrollbar-gutter:stable_both-edges]",
+          )}
+        >
           <DashboardNav permissions={permissions} collapsed={collapsed} />
         </div>
 

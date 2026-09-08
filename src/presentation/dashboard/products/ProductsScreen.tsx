@@ -92,80 +92,79 @@ export async function ProductsScreen({ products, categories, filters, canWrite }
         ) : null}
       </div>
 
-      <div className="flex flex-col gap-3 rounded-card-lg border border-border bg-surface-sunken/40 p-3 @xl/products:p-4">
-        <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="sm:max-w-none" />
-        <div className="grid min-w-0 grid-cols-1 gap-2 @sm/products:grid-cols-2 @3xl/products:grid-cols-4 [&>a]:min-h-11 [&>a]:justify-center">
-          <ListFilterSelect
-            className="h-11 w-full min-w-0 truncate"
-            paramName="categoryId"
-            label={t("filterCategoryLabel")}
-            options={[
-              { value: "", label: t("filterCategoryOption", { category: t("filterCategoryAll") }) },
-              ...categories.map((category) => ({
-                value: category.id,
-                label: t("filterCategoryOption", { category: category.name }),
-              })),
-            ]}
-          />
-          <ListFilterSelect
-            className="h-11 w-full min-w-0 truncate"
-            paramName="stock"
-            label={t("filterStockLabel")}
-            options={[
-              { value: "", label: t("filterStockOption", { stock: t("filterStockAll") }) },
-              ...ADMIN_STOCK_FILTERS.map((level) => ({
-                value: level,
-                label: t("filterStockOption", { stock: stockLabels[level] }),
-              })),
-            ]}
-          />
-          <ListFilterSelect
-            className="h-11 w-full min-w-0 truncate"
-            paramName="visibility"
-            label={t("filterVisibilityLabel")}
-            options={[
-              // "All" is the default and shows withdrawn products alongside live
-              // ones — the dashboard is where you go to find them again.
-              { value: "", label: t("filterVisibilityOption", { visibility: t("filterVisibilityAll") }) },
-              ...ADMIN_VISIBILITY_FILTERS.map((value) => ({
-                value,
-                label: t("filterVisibilityOption", { visibility: visibilityLabels[value] }),
-              })),
-            ]}
-          />
-          {/* Carries the current query string, so `?stock=needsRestock` exports
-              the restocking round rather than the whole catalog. */}
-          <ExportCsvLink resource="products" label={tAnalytics("exportCsv")} />
-        </div>
-      </div>
-
-      {products.items.length > 0 ? (
-        // The provider wraps both the bar and the table so a row's checkbox and the
-        // actions above it share one selection. The rows stay server-rendered
-        // inside it — only the checkboxes and the bar are client islands.
-        <BulkSelectionProvider ids={products.items.map((product) => product.id)}>
-          {canWrite ? (
+      {/* All controls that modify or export this dataset are attached to its
+          table. Import and creation remain page-level catalog actions. */}
+      <BulkSelectionProvider ids={products.items.map((product) => product.id)}>
+        {products.items.length > 0 && canWrite ? (
             <BulkActionBar>
               <ProductBulkActions categories={categories} />
             </BulkActionBar>
-          ) : null}
-          <ProductsTable
-            products={products.items}
-            categoryNames={categoryNames}
-            canWrite={canWrite}
-            footer={<ListPager page={products} />}
-          />
-        </BulkSelectionProvider>
-      ) : (
-        <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
-          <p className="text-body-b4 text-foreground">
-            {isFiltered ? tList("noResultsTitle") : t("emptyTitle")}
-          </p>
-          <p className="mt-1 text-body-b6 text-muted-foreground">
-            {isFiltered ? tList("noResultsBody") : t("emptyBody")}
-          </p>
-        </div>
-      )}
+        ) : null}
+        <ProductsTable
+          products={products.items}
+          categoryNames={categoryNames}
+          canWrite={canWrite}
+          toolbar={(
+            <section aria-label={t("searchLabel")} className="min-w-0 space-y-3">
+              <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="sm:max-w-none" />
+              <div className="grid min-w-0 grid-cols-1 gap-2 border-t border-border pt-3 @sm/products:grid-cols-2 @3xl/products:grid-cols-4 [&>a]:min-h-11 [&>a]:justify-center">
+                <ListFilterSelect
+                  className="h-11 w-full min-w-0 truncate"
+                  paramName="categoryId"
+                  label={t("filterCategoryLabel")}
+                  options={[
+                    { value: "", label: t("filterCategoryOption", { category: t("filterCategoryAll") }) },
+                    ...categories.map((category) => ({
+                      value: category.id,
+                      label: t("filterCategoryOption", { category: category.name }),
+                    })),
+                  ]}
+                />
+                <ListFilterSelect
+                  className="h-11 w-full min-w-0 truncate"
+                  paramName="stock"
+                  label={t("filterStockLabel")}
+                  options={[
+                    { value: "", label: t("filterStockOption", { stock: t("filterStockAll") }) },
+                    ...ADMIN_STOCK_FILTERS.map((level) => ({
+                      value: level,
+                      label: t("filterStockOption", { stock: stockLabels[level] }),
+                    })),
+                  ]}
+                />
+                <ListFilterSelect
+                  className="h-11 w-full min-w-0 truncate"
+                  paramName="visibility"
+                  label={t("filterVisibilityLabel")}
+                  options={[
+                    // "All" is the default and shows withdrawn products alongside
+                    // live ones — the dashboard is where you go to find them again.
+                    { value: "", label: t("filterVisibilityOption", { visibility: t("filterVisibilityAll") }) },
+                    ...ADMIN_VISIBILITY_FILTERS.map((value) => ({
+                      value,
+                      label: t("filterVisibilityOption", { visibility: visibilityLabels[value] }),
+                    })),
+                  ]}
+                />
+                {/* Carries the current query string, so `?stock=needsRestock`
+                    exports the restocking round rather than the whole catalog. */}
+                <ExportCsvLink resource="products" label={tAnalytics("exportCsv")} />
+              </div>
+            </section>
+          )}
+          emptyState={(
+            <div className="px-6 py-16 text-center">
+              <p className="text-body-b4 text-foreground">
+                {isFiltered ? tList("noResultsTitle") : t("emptyTitle")}
+              </p>
+              <p className="mt-1 text-body-b6 text-muted-foreground">
+                {isFiltered ? tList("noResultsBody") : t("emptyBody")}
+              </p>
+            </div>
+          )}
+          footer={<ListPager page={products} />}
+        />
+      </BulkSelectionProvider>
     </div>
   );
 }

@@ -45,27 +45,23 @@ export async function InventoryMovementsView({
     </div>
   );
 
-  if (movements.items.length === 0) {
-    return (
-      <>
-        {toolbar}
-        <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
-          <p className="text-body-b4 text-foreground">
-            {isFiltered ? tList("noResultsTitle") : t("movementsEmpty")}
-          </p>
-          <p className="mt-1 text-body-b6 text-muted-foreground">
-            {isFiltered ? tList("noResultsBody") : t("movementsEmptyBody")}
-          </p>
-        </div>
-      </>
-    );
-  }
+  const emptyState = (
+    <div className="px-6 py-16 text-center">
+      <p className="text-body-b4 text-foreground">
+        {isFiltered ? tList("noResultsTitle") : t("movementsEmpty")}
+      </p>
+      <p className="mt-1 text-body-b6 text-muted-foreground">
+        {isFiltered ? tList("noResultsBody") : t("movementsEmptyBody")}
+      </p>
+    </div>
+  );
 
   return (
     <InventoryMovementsTable
       movements={movements.items}
       products={products}
       toolbar={toolbar}
+      emptyState={emptyState}
       footer={<ListPager page={movements} />}
     />
   );

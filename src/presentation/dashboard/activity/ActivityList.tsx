@@ -9,9 +9,13 @@ import { DataTable } from "@/src/presentation/design-system";
 import { activityEntityHref } from "./activityLinks";
 
 import type { ActivityEntryWire } from "./activity-response-schema";
+import type { ReactNode } from "react";
 
 type ActivityListProps = {
   entries: ActivityEntryWire[];
+  toolbar?: ReactNode;
+  emptyState?: ReactNode;
+  footer?: ReactNode;
   /**
    * Whether to name the entity in each row. Off inside a per-entity panel, where
    * every row is about the same thing and repeating its name down the column says
@@ -33,12 +37,13 @@ type ActivityListProps = {
  * Read-only, and there is nothing here to edit or delete. A record an admin can
  * quietly tidy up isn't one.
  */
-export async function ActivityList({ entries, showEntity = true }: ActivityListProps) {
+export async function ActivityList({ entries, toolbar, emptyState, footer, showEntity = true }: ActivityListProps) {
   const t = await getTranslations("dashActivity");
   const locale = (await getLocale());
 
   return (
-    <DataTable>
+    <DataTable toolbar={toolbar} footer={entries.length > 0 ? footer : undefined}>
+      {entries.length > 0 ? (
       <ol className="divide-y divide-border">
         {entries.map((entry) => {
           const href = activityEntityHref(entry.entityType, entry.entityId, entry.action);
@@ -95,6 +100,9 @@ export async function ActivityList({ entries, showEntity = true }: ActivityListP
           );
         })}
       </ol>
+      ) : (
+        emptyState
+      )}
     </DataTable>
   );
 }

@@ -94,49 +94,48 @@ export async function OrdersScreen({
           filtered list, so they have to sit before the controls that refine one. */}
       <OrdersSummaryCards counts={counts} />
 
-      <section aria-label={t("searchLabel")} className="min-w-0 rounded-card-lg border border-border bg-surface-sunken/40 p-3 sm:p-4">
-        <div className="flex min-w-0 flex-col gap-3 @min-[36rem]:flex-row @min-[36rem]:items-center">
-          <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="min-w-0 flex-1 sm:max-w-none" />
-          <div className="min-w-0 shrink-0 [&_select]:min-h-11 [&_select]:w-full">
-            <ListSortSelect label={t("sortLabel")} options={sortOptions} defaultSort={DEFAULT_ADMIN_ORDER_SORT} defaultDirection={DEFAULT_ADMIN_ORDER_DIRECTION} />
-          </div>
-        </div>
-        <div className="mt-3 border-t border-border pt-3">
-            {/* The filters are one client island: they all write query params,
-                and the labels they need are resolved inside it rather than
-                threaded through as props. */}
-            <OrdersFilterBar pipelineCounts={counts.counts} />
-        </div>
-      </section>
-
-      {orders.items.length > 0 ? (
-        // The provider wraps both the bar and the table so a row's checkbox and
-        // the actions above it share one selection. The rows stay server-rendered
-        // inside it — only the checkboxes and the bar are client islands.
-        <BulkSelectionProvider ids={orders.items.map((order) => order.id)}>
-          {canFulfill ? (
+      {/* Search, filters, rows, and pagination form one data surface. Page-level
+          actions and the queue summary remain outside because they affect more
+          than the currently displayed table slice. */}
+      <BulkSelectionProvider ids={orders.items.map((order) => order.id)}>
+        {orders.items.length > 0 && canFulfill ? (
             <BulkActionBar>
               <OrderBulkActions />
             </BulkActionBar>
-          ) : null}
-          <OrdersTable
-            orders={orders.items}
-            customersById={customersById}
-            canFulfill={canFulfill}
-            footer={<ListPager page={orders} />}
-          />
-        </BulkSelectionProvider>
-      ) : (
-        <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
-          <p className="text-body-b4 text-foreground">
-            {isFiltered ? tList("noResultsTitle") : t("emptyTitle")}
-          </p>
-          <p className="mt-1 text-body-b6 text-muted-foreground">
-            {isFiltered ? tList("noResultsBody") : t("emptyBody")}
-          </p>
-          {isFiltered && <Link href="/dashboard/orders" className="mt-4 inline-flex min-h-11 items-center rounded-button px-4 text-body-b7 text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("filterReset")}</Link>}
-        </div>
-      )}
+        ) : null}
+        <OrdersTable
+          orders={orders.items}
+          customersById={customersById}
+          canFulfill={canFulfill}
+          toolbar={(
+            <section aria-label={t("searchLabel")} className="min-w-0 space-y-3">
+              <div className="flex min-w-0 flex-col gap-3 @min-[36rem]:flex-row @min-[36rem]:items-center">
+                <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="min-w-0 flex-1 sm:max-w-none" />
+                <div className="min-w-0 shrink-0 [&_select]:min-h-11 [&_select]:w-full">
+                  <ListSortSelect label={t("sortLabel")} options={sortOptions} defaultSort={DEFAULT_ADMIN_ORDER_SORT} defaultDirection={DEFAULT_ADMIN_ORDER_DIRECTION} />
+                </div>
+              </div>
+              <div className="border-t border-border pt-3">
+                {/* The filters are one client island: they all write query params,
+                    and resolve their own translated labels. */}
+                <OrdersFilterBar pipelineCounts={counts.counts} />
+              </div>
+            </section>
+          )}
+          emptyState={(
+            <div className="px-6 py-16 text-center">
+              <p className="text-body-b4 text-foreground">
+                {isFiltered ? tList("noResultsTitle") : t("emptyTitle")}
+              </p>
+              <p className="mt-1 text-body-b6 text-muted-foreground">
+                {isFiltered ? tList("noResultsBody") : t("emptyBody")}
+              </p>
+              {isFiltered && <Link href="/dashboard/orders" className="mt-4 inline-flex min-h-11 items-center rounded-button px-4 text-body-b7 text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("filterReset")}</Link>}
+            </div>
+          )}
+          footer={<ListPager page={orders} />}
+        />
+      </BulkSelectionProvider>
     </div>
   );
 }

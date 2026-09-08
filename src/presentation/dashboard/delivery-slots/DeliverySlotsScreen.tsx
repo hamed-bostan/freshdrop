@@ -51,14 +51,15 @@ export async function DeliverySlotsScreen({ windows }: DeliverySlotsScreenProps)
         </p>
       </div>
 
-      {windows.length > 0 ? (
-        <DeliveryWindowsTable windows={windows} />
-      ) : (
-        <div className="rounded-card-lg border border-dashed border-border px-6 py-16 text-center">
-          <p className="text-body-b4 text-foreground">{t("emptyTitle")}</p>
-          <p className="mt-1 text-body-b6 text-muted-foreground">{t("emptyBody")}</p>
-        </div>
-      )}
+      <DeliveryWindowsTable
+        windows={windows}
+        emptyState={(
+          <div className="px-6 py-16 text-center">
+            <p className="text-body-b4 text-foreground">{t("emptyTitle")}</p>
+            <p className="mt-1 text-body-b6 text-muted-foreground">{t("emptyBody")}</p>
+          </div>
+        )}
+      />
     </div>
   );
 }

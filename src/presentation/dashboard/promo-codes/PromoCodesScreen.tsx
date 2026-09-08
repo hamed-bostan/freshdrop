@@ -63,37 +63,34 @@ export async function PromoCodesScreen({ promoCodes, filters }: PromoCodesScreen
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-card-lg border border-border bg-background shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:flex-wrap sm:items-center">
-          <ListSearchInput
-            label={t("searchLabel")}
-            placeholder={t("searchPlaceholder")}
-            className="min-w-0 flex-1 sm:max-w-md [&_input]:h-11"
-          />
-          <div className="flex flex-wrap items-center gap-3 sm:ms-auto">
-            <ListFilterSelect
-              paramName="status"
-              label={t("filterStatusLabel")}
-              options={[
-                { value: "", label: t("filterStatusAll") },
-                ...PROMO_CODE_STATUSES.map((status) => ({ value: status, label: statusLabels[status] })),
-              ]}
-              className="h-11 w-auto min-w-36"
+      <PromoCodesTable
+        promoCodes={promoCodes.items}
+        toolbar={(
+          <section aria-label={t("searchLabel")} className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <ListSearchInput
+              label={t("searchLabel")}
+              placeholder={t("searchPlaceholder")}
+              className="min-w-0 flex-1 sm:max-w-md [&_input]:h-11"
             />
-            <ListFilterReset
-              label={tList("clearFiltersShort")}
-              paramNames={["q", "status"]}
-              className="font-semibold text-muted-foreground hover:text-foreground"
-            />
-          </div>
-        </div>
-
-        {promoCodes.items.length > 0 ? (
-          <>
-            <PromoCodesTable promoCodes={promoCodes.items} />
-            <div className="border-t border-border p-4"><ListPager page={promoCodes} /></div>
-          </>
-        ) : (
+            <div className="flex flex-wrap items-center gap-3 sm:ms-auto">
+              <ListFilterSelect
+                paramName="status"
+                label={t("filterStatusLabel")}
+                options={[
+                  { value: "", label: t("filterStatusAll") },
+                  ...PROMO_CODE_STATUSES.map((status) => ({ value: status, label: statusLabels[status] })),
+                ]}
+                className="h-11 w-auto min-w-36"
+              />
+              <ListFilterReset
+                label={tList("clearFiltersShort")}
+                paramNames={["q", "status"]}
+                className="font-semibold text-muted-foreground hover:text-foreground"
+              />
+            </div>
+          </section>
+        )}
+        emptyState={(
           <div className="px-6 py-16 text-center">
             <p className="text-body-b4 text-foreground">
               {isFiltered ? tList("noResultsTitle") : t("emptyTitle")}
@@ -103,7 +100,8 @@ export async function PromoCodesScreen({ promoCodes, filters }: PromoCodesScreen
             </p>
           </div>
         )}
-      </div>
+        footer={<ListPager page={promoCodes} />}
+      />
     </div>
   );
 }
