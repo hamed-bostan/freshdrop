@@ -42,7 +42,7 @@ export function StatCardCarousel({ children, slideLabels }: StatCardCarouselProp
   const swiper = React.useRef<SwiperType | null>(null);
 
   return (
-    <div>
+    <div className="-mx-2">
       <Swiper
         dir={getLangDir(locale)}
         slidesPerView={1}
@@ -51,7 +51,13 @@ export function StatCardCarousel({ children, slideLabels }: StatCardCarouselProp
         className="w-full"
       >
         {cards.map((card, index) => (
-          <SwiperSlide key={index} inert={slideLabels && index !== activeIndex ? true : undefined}>{card}</SwiperSlide>
+          <SwiperSlide
+            key={index}
+            inert={slideLabels && index !== activeIndex ? true : undefined}
+            className="px-2"
+          >
+            {card}
+          </SwiperSlide>
         ))}
       </Swiper>
 
