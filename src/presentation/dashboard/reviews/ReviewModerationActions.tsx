@@ -56,7 +56,7 @@ export function ReviewModerationActions({ id, status, authorName }: ReviewModera
     <div className="flex flex-col items-end gap-1">
       <div className="flex items-center justify-end gap-1">
         {status === "pending" ? (
-          <Button size="sm" loading={pending} onClick={() => apply("approved")}>
+          <Button size="sm" className="min-h-11 @min-[64rem]:min-h-10" loading={pending} onClick={() => apply("approved")}>
             <Icon icon={Check} size="sm" className="me-1.5" />
             {t("approveAction")}
           </Button>
@@ -64,6 +64,7 @@ export function ReviewModerationActions({ id, status, authorName }: ReviewModera
 
         <DropdownMenu>
           <DropdownMenuIconTrigger
+            className="size-11 @min-[64rem]:size-8"
             aria-label={t("rowActionsAria", { name: authorName })}
             disabled={pending}
           >

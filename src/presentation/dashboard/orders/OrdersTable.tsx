@@ -55,7 +55,7 @@ export async function OrdersTable({ orders, customersById, canFulfill, toolbar, 
         <>
           <div className="p-3 @min-[64rem]:hidden">
             {canFulfill && (
-              <label className="mb-3 flex w-fit items-center gap-3 py-2 text-body-b8 font-medium text-muted-foreground">
+              <label className="mb-3 flex min-h-11 w-fit items-center gap-3 text-body-b8 font-medium text-muted-foreground">
                 <BulkSelectAllCheckbox label={t("selectAllAria")} />
                 {t("selectAllAria")}
               </label>
@@ -74,7 +74,9 @@ export async function OrdersTable({ orders, customersById, canFulfill, toolbar, 
                 <tr>
                   {canFulfill ? (
                     <TableHead className="w-10">
-                      <BulkSelectAllCheckbox label={t("selectAllAria")} />
+                      <label className="flex size-8 cursor-pointer items-center justify-center">
+                        <BulkSelectAllCheckbox label={t("selectAllAria")} />
+                      </label>
                     </TableHead>
                   ) : null}
                   <TableHead className="text-start">{t("colOrder")}</TableHead>

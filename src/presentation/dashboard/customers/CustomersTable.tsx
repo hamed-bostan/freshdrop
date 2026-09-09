@@ -83,7 +83,7 @@ export function CustomersTable({ customers, footer, toolbar }: CustomersTablePro
                   ) : null}
                 </Avatar>
                 <span className="min-w-0">
-                  <span className="block break-words text-body-b7 text-foreground group-hover:text-primary">
+                  <span className="block break-words text-body-b8 text-foreground group-hover:text-primary">
                     {customer.name}
                   </span>
                   <span

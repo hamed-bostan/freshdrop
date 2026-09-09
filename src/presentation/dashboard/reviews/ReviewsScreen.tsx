@@ -49,9 +49,9 @@ export async function ReviewsScreen({
   const productsById = new Map(products.map((product) => [product.id, product]));
 
   return (
-    <div className="@container flex min-w-0 flex-col gap-5 sm:gap-6">
+    <div className="@container flex min-w-0 flex-col gap-4 sm:gap-6">
       <div className="min-w-0 space-y-1">
-        <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
+        <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">{t("heading")}</h1>
         <p className="text-body-b6 text-muted-foreground">{t("summary", { count: reviews.counts.pending })}</p>
       </div>
 
@@ -66,7 +66,7 @@ export async function ReviewsScreen({
           canModerate={canModerate}
           toolbar={(
             <section aria-label={t("searchLabel")} className="min-w-0">
-              <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="min-w-0 sm:max-w-none" />
+              <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="min-w-0 sm:max-w-none [&_input]:h-11 sm:[&_input]:h-10" />
             </section>
           )}
           bulkActions={reviews.items.length > 0 && canModerate ? (

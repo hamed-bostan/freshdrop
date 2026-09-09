@@ -84,7 +84,11 @@ export function ReviewsTable({ reviews, productsById, canModerate, toolbar, bulk
         return (
           <article key={review.id} className="min-w-0 rounded-card-lg border border-border bg-background p-4 sm:p-5">
             <div className="flex items-start gap-3">
-              {canModerate ? <BulkRowCheckbox id={review.id} label={t("selectRowAria", { name: review.authorName })} /> : null}
+              {canModerate ? (
+                <label className="flex size-11 shrink-0 cursor-pointer items-center justify-center">
+                  <BulkRowCheckbox id={review.id} label={t("selectRowAria", { name: review.authorName })} />
+                </label>
+              ) : null}
               <Avatar name={review.authorName} className="size-9 shrink-0">
                 {review.authorAvatarUrl ? <Image src={review.authorAvatarUrl} alt="" width={36} height={36} className="size-full object-cover" /> : null}
               </Avatar>
@@ -121,7 +125,9 @@ export function ReviewsTable({ reviews, productsById, canModerate, toolbar, bulk
           <tr>
             {canModerate ? (
               <TableHead className="w-10">
-                <BulkSelectAllCheckbox label={t("selectAllAria")} />
+                <label className="flex size-8 cursor-pointer items-center justify-center">
+                  <BulkSelectAllCheckbox label={t("selectAllAria")} />
+                </label>
               </TableHead>
             ) : null}
             <TableHead className="w-[22%]">{t("colAuthor")}</TableHead>
@@ -139,7 +145,9 @@ export function ReviewsTable({ reviews, productsById, canModerate, toolbar, bulk
               <TableRow key={review.id} className="align-top">
                 {canModerate ? (
                   <TableCell className="py-4">
-                    <BulkRowCheckbox id={review.id} label={t("selectRowAria", { name: review.authorName })} />
+                    <label className="flex size-8 cursor-pointer items-center justify-center">
+                      <BulkRowCheckbox id={review.id} label={t("selectRowAria", { name: review.authorName })} />
+                    </label>
                   </TableCell>
                 ) : null}
                 <TableCell className="py-4">

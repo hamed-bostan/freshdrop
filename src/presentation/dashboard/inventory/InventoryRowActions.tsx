@@ -25,7 +25,7 @@ export function InventoryRowActions({ id, name, isPublished }: InventoryRowActio
 
   return (
     <DropdownMenu>
-      <DropdownMenuIconTrigger aria-label={t("rowActionsAria", { name })}>
+      <DropdownMenuIconTrigger className="size-11" aria-label={t("rowActionsAria", { name })}>
         <EllipsisVertical aria-hidden className="size-4" />
       </DropdownMenuIconTrigger>
       <DropdownMenuContent>

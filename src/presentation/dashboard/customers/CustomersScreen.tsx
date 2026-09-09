@@ -34,16 +34,16 @@ export async function CustomersScreen({ customers, query }: CustomersScreenProps
   const isSearching = query != null && query.length > 0;
   const toolbar = (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <ListSearchInput label={t("searchPlaceholder")} placeholder={t("searchPlaceholder")} className="min-h-11 sm:max-w-md" />
+      <ListSearchInput label={t("searchPlaceholder")} placeholder={t("searchPlaceholder")} className="sm:max-w-md [&_input]:h-11 sm:[&_input]:h-10" />
       <ListFilterReset label={tList("clearFilters")} paramNames={["q"]} className="min-h-11 shrink-0 self-start" />
     </div>
   );
 
   return (
-    <div className="flex min-w-0 flex-col gap-5">
+    <div className="flex min-w-0 flex-col gap-4 sm:gap-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
+          <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">{t("heading")}</h1>
           <p className="mt-1 text-body-b6 text-muted-foreground">{t("summary", { count: customers.total })}</p>
         </div>
         <div className="shrink-0 [&>a]:min-h-11">

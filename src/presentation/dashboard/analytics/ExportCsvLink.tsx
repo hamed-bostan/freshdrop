@@ -49,7 +49,7 @@ export function ExportCsvLink({ resource, label, compact = false }: ExportCsvLin
         "flex items-center gap-2 border border-border text-foreground",
         compact
           ? "h-9 min-w-0 justify-start whitespace-nowrap rounded-card-md px-3 text-body-b10"
-          : "h-9 rounded-button px-3 text-body-b7",
+          : "h-11 rounded-button px-3 text-body-b7 sm:h-10",
         "transition-colors hover:bg-muted",
         focusRing,
       )}

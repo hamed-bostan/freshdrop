@@ -46,7 +46,9 @@ export function OrderRow({ order, customer, canFulfill }: OrderRowProps) {
     <TableRow className="[&>td]:py-4">
       {canFulfill ? (
         <TableCell>
-          <BulkRowCheckbox id={order.id} label={t("selectRowAria", { id: order.orderNumber })} />
+          <label className="flex size-8 cursor-pointer items-center justify-center">
+            <BulkRowCheckbox id={order.id} label={t("selectRowAria", { id: order.orderNumber })} />
+          </label>
         </TableCell>
       ) : null}
 

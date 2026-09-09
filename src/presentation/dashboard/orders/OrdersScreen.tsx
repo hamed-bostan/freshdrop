@@ -81,10 +81,10 @@ export async function OrdersScreen({
   ];
 
   return (
-    <div className="@container flex min-w-0 flex-col gap-5 sm:gap-6">
+    <div className="@container flex min-w-0 flex-col gap-4 sm:gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 space-y-1">
-          <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
+          <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">{t("heading")}</h1>
           <p className="text-body-b6 text-muted-foreground">{t("summary", { count: orders.total })}</p>
         </div>
         <ExportCsvLink resource="orders" label={tAnalytics("exportCsv")} />
@@ -110,7 +110,7 @@ export async function OrdersScreen({
           toolbar={(
             <section aria-label={t("searchLabel")} className="min-w-0 space-y-3">
               <div className="flex min-w-0 flex-col gap-3 @min-[36rem]:flex-row @min-[36rem]:items-center">
-                <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="min-w-0 flex-1 sm:max-w-none" />
+                <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="min-w-0 flex-1 sm:max-w-none [&_input]:h-11 sm:[&_input]:h-10" />
                 <div className="min-w-0 shrink-0 [&_select]:min-h-11 [&_select]:w-full">
                   <ListSortSelect label={t("sortLabel")} options={sortOptions} defaultSort={DEFAULT_ADMIN_ORDER_SORT} defaultDirection={DEFAULT_ADMIN_ORDER_DIRECTION} />
                 </div>
