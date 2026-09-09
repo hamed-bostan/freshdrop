@@ -27,7 +27,7 @@ export default async function EditScheduledExportPage({ params }: Props) {
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
       <div>
-        <h1 className="text-heading-h2 text-foreground">{t("editHeading")}</h1>
+        <h1 className="dashboard-page-title">{t("editHeading")}</h1>
         <p className="text-body-b6 text-muted-foreground">{t("editSubtitle")}</p>
       </div>
       <ScheduledExportForm mode="edit" schedule={schedule} reports={reports} />

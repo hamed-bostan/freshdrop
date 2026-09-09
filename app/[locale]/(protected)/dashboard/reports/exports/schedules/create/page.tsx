@@ -20,7 +20,7 @@ export default async function CreateScheduledExportPage() {
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
       <div>
-        <h1 className="text-heading-h2 text-foreground">{t("createSchedule")}</h1>
+        <h1 className="dashboard-page-title">{t("createSchedule")}</h1>
         <p className="text-body-b6 text-muted-foreground">{t("createSubtitle")}</p>
       </div>
       <ScheduledExportForm mode="create" reports={reports} />

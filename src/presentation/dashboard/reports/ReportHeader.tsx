@@ -48,7 +48,7 @@ export async function ReportHeader({ ariaLabel, parentLabel, currentLabel, title
       <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <h1 className="dashboard-page-title">{title}</h1>
-          <p className="mt-1 text-body-b10 text-muted-foreground">{subtitle}</p>
+          <p className="mt-1 text-body-b7 leading-relaxed text-muted-foreground">{subtitle}</p>
         </div>
         <div className={responsiveActions ? "flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center md:grid md:w-full md:grid-cols-[minmax(0,1fr)_auto] md:items-stretch xl:flex xl:w-auto xl:flex-row xl:flex-nowrap xl:items-center xl:justify-end" : "flex flex-wrap items-center gap-2 xl:justify-end"}>
           <AnalyticsRangePicker

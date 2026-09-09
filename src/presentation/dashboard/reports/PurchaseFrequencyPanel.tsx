@@ -20,7 +20,7 @@ export async function PurchaseFrequencyPanel({ frequency, locale }: { frequency:
   const percent = (value: number) => total ? value / total : 0;
 
   return (
-    <section className="flex min-h-[480px] min-w-0 flex-col rounded-card-lg border border-border bg-background p-4 md:p-6 xl:p-4">
+    <section className="flex min-h-[480px] min-w-0 flex-col rounded-card-lg border border-border bg-background p-4 md:p-6">
       <h2 className="text-heading-h3">{t("purchaseFrequency")}</h2>
       <div className="mt-3 divide-y divide-border text-body-b10">
         {rows.map((row) => {

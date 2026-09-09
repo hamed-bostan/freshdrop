@@ -32,7 +32,7 @@ export function DeliveryZoneCoverageCard({ zones, locale, labels }: { zones: Del
   const [view, setView] = React.useState<View>("map");
 
   return (
-    <section className="relative z-0 isolate h-full rounded-card-lg border border-border bg-background p-4 md:p-6 xl:p-4">
+    <section className="relative z-0 isolate h-full rounded-card-lg border border-border bg-background p-4 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="max-w-52 text-heading-h3 md:max-w-none">{labels.title}</h2>
         <ChartSegmentedControl className="w-auto" value={view} options={["map", "list"] as const} label={labels.mapAria} onChange={setView} getLabel={(value) => value === "map" ? labels.map : labels.list} emphasis />

@@ -19,7 +19,7 @@ export async function ScheduledExportsScreen({ schedules }: Props) {
   const te = await getTranslations("dashExportReports");
 
   return (
-    <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-5 md:gap-6">
       <nav aria-label={te("breadcrumbAria")} className="flex items-center gap-2 text-body-b10 text-muted-foreground">
         <Link href="/dashboard/reports/exports">{te("heading")}</Link>
         <ChevronRight className="size-3.5" />

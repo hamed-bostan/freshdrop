@@ -34,12 +34,12 @@ export function PaymentIssuesTable({ issues }: { issues: Issue[] }) {
     && (!query.trim() || `${issue.orderNumber} ${issue.customerName}`.toLowerCase().includes(query.trim().toLowerCase())),
   );
 
-  return <section className="rounded-card-lg border border-border bg-background p-4">
+  return <section className="rounded-card-lg border border-border bg-background p-4 md:p-6">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <h2 className="text-body-b5">{t("recentTransactions")}</h2>
+      <h2 className="text-heading-h3">{t("recentTransactions")}</h2>
       <div className="flex flex-wrap items-center gap-2">
         <Input size="sm" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("searchTransactions")} aria-label={t("searchTransactions")} className="w-40" leftElement={<Icon icon={Search} size="xs" />} />
-        <Select size="sm" value={status} onChange={(event) => setStatus(event.target.value as "all" | Issue["status"])} aria-label={t("status")} className="h-8">
+        <Select size="sm" value={status} onChange={(event) => setStatus(event.target.value as "all" | Issue["status"])} aria-label={t("status")} className="h-11 sm:h-8">
           <option value="all">{t("allStatuses")}</option>
           <option value="failed">{t("failed")}</option>
           <option value="refunded">{t("refunded")}</option>

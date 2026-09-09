@@ -13,8 +13,8 @@ import { DataTable, Icon, Table, TableBody, TableCell, TableHead, TableHeader, T
 export async function TopSellingProductsTable({ products, locale }: { products: TopProduct[]; totalRevenue: number; locale: Locale }) {
   const t = await getTranslations("dashReports");
   const ta = await getTranslations("dashAnalytics");
-  return <section className="flex min-h-64 min-w-0 flex-col rounded-card-lg border border-border bg-background p-4">
-    <h2 className="text-body-b5 text-foreground">{t("topSellingProducts")}</h2>
+  return <section className="flex min-h-64 min-w-0 flex-col rounded-card-lg border border-border bg-background p-4 md:p-6">
+    <h2 className="text-heading-h3 text-foreground">{t("topSellingProducts")}</h2>
     {products.length ? <>
       <ul className="mt-3 divide-y divide-border md:hidden">
         {products.slice(0, 5).map((product) => <MobileProductRow key={product.productId} product={product} locale={locale} salesMeta={t("productSalesMeta", { units: formatNumber(product.units, locale), orders: formatNumber(product.orders, locale) })} />)}

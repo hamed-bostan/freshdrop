@@ -24,9 +24,9 @@ export async function DeliveryIssuesPanel({ issues, locale, canWrite }: { issues
   const t = await getTranslations("dashDeliveryReport");
 
   return (
-    <section className="flex min-h-80 min-w-0 flex-col rounded-card-lg border border-border bg-background p-4 md:min-h-96 md:p-6 xl:min-h-0 xl:p-4">
+    <section className="flex min-h-80 min-w-0 flex-col rounded-card-lg border border-border bg-background p-4 md:min-h-96 md:p-6 xl:min-h-0">
       <div className="flex flex-col gap-3">
-        <h2 className="flex items-center gap-1.5 text-body-b5 md:text-heading-h3 xl:text-body-b5">{t("issuesIncidents")}</h2>
+        <h2 className="flex items-center gap-1.5 text-heading-h3">{t("issuesIncidents")}</h2>
         <div className="flex w-full flex-col items-start gap-2 sm:flex-row sm:items-center">
           <ListSearchInput paramName="issueQ" placeholder={t("searchIssues")} label={t("searchIssues")} />
           <ListChoiceFilter

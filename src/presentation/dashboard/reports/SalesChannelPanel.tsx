@@ -7,8 +7,8 @@ import { formatMoney } from "@/src/lib/formatMoney";
 export async function SalesChannelPanel({ revenue, locale }: { revenue: number; locale: Locale }) {
   const t = await getTranslations("dashReports");
   return (
-    <section className="rounded-card-lg border border-border bg-background p-4">
-      <h2 className="text-body-b5 text-foreground">{t("salesByChannel")}</h2>
+    <section className="rounded-card-lg border border-border bg-background p-4 md:p-6">
+      <h2 className="text-heading-h3 text-foreground">{t("salesByChannel")}</h2>
       <div className="mt-6">
         <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-4 text-body-b10">
           <span className="font-medium text-foreground">{t("onlineStore")}</span>

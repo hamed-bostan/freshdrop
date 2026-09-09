@@ -56,8 +56,8 @@ export function InspectionRecoveryQueue({ rows, labels, viewAllHref }: { rows: R
     setPage(1);
   }
 
-  return <section className="@container/queue w-full min-w-0 overflow-hidden rounded-card-lg border border-border bg-background p-4">
-    <div className="flex min-w-0 flex-col gap-4 pb-4"><h2 className="min-w-0 break-words text-body-b5">{labels.heading}</h2><div className="grid min-w-0 grid-cols-1 items-center gap-2 @[20rem]/queue:grid-cols-2 @[44rem]/queue:grid-cols-[minmax(14rem,1fr)_minmax(0,10rem)_minmax(0,10rem)_auto]">
+  return <section className="@container/queue w-full min-w-0 overflow-hidden rounded-card-lg border border-border bg-background p-4 md:p-6">
+    <div className="flex min-w-0 flex-col gap-4 pb-4"><h2 className="min-w-0 break-words text-heading-h3">{labels.heading}</h2><div className="grid min-w-0 grid-cols-1 items-center gap-2 @[20rem]/queue:grid-cols-2 @[44rem]/queue:grid-cols-[minmax(14rem,1fr)_minmax(0,10rem)_minmax(0,10rem)_auto]">
       <Input size="sm" type="search" value={query} onChange={(event) => updateFilter(setQuery, event.target.value)} placeholder={labels.search} aria-label={labels.search} className="min-w-0 w-full @[20rem]/queue:col-span-2 @[44rem]/queue:col-span-1" inputClassName="h-11 text-base" leftElement={<Icon icon={Search} size="xs" />} />
       <Select size="sm" value={condition} onChange={(event) => updateFilter(setCondition, event.target.value)} aria-label={labels.allConditions} className="h-11 min-w-0 w-full text-body-b10"><option value="all">{labels.allConditions}</option>{conditions.map((value) => <option key={value}>{value}</option>)}</Select>
       <Select size="sm" value={status} onChange={(event) => updateFilter(setStatus, event.target.value)} aria-label={labels.allStatuses} className="h-11 min-w-0 w-full text-body-b10"><option value="all">{labels.allStatuses}</option><option>{labels.awaitingInspection}</option><option>{labels.inspected}</option><option>{labels.inReview}</option></Select>

@@ -33,9 +33,9 @@ export function SalesTrendChart({ analytics, locale, labels }: SalesTrendChartPr
   const formatter = (value: number) => metric === "revenue" ? formatMoney(value, locale) : formatNumber(value, locale);
 
   return (
-    <section className="min-w-0 rounded-card-lg border border-border bg-background p-4">
+    <section className="min-w-0 rounded-card-lg border border-border bg-background p-4 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="flex items-center gap-1.5 text-body-b5 text-foreground">{labels.heading}<Icon icon={Info} size="xs" className="text-muted-foreground" /></h2>
+        <h2 className="flex items-center gap-1.5 text-heading-h3 text-foreground">{labels.heading}<Icon icon={Info} size="xs" className="text-muted-foreground" /></h2>
         <ChartSegmentedControl value={interval} options={availableIntervals} label="Chart interval" onChange={setInterval} getLabel={(value) => value === "day" ? labels.daily : value === "week" ? labels.weekly : labels.monthly} />
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-5">

@@ -27,7 +27,7 @@ export async function CustomerSegmentTrends({ transitions, locale }: { transitio
   const cards = [...moves].sort((a, b) => b.customers - a.customers).slice(0, MAX_CARDS);
   const higherValueMoved = moves.filter((row) => HIGHER_VALUE_TARGETS.has(row.toSegment)).reduce((sum, row) => sum + row.customers, 0);
 
-  return <section className="flex min-h-[340px] flex-col rounded-card-lg border border-border bg-background p-4 md:min-h-[390px] md:p-6 xl:min-h-[400px] xl:p-4">
+  return <section className="flex min-h-[340px] flex-col rounded-card-lg border border-border bg-background p-4 md:min-h-[390px] md:p-6 xl:min-h-[400px]">
     <div><h2 className="text-heading-h3">{t("segmentMovement")}</h2><p className="mt-1 font-mono text-label-l1 uppercase tracking-widest text-muted-foreground">{t("independentTransitions")}</p></div>
     {cards.length === 0
       ? <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-8 text-center text-muted-foreground"><Icon icon={ArrowLeftRight} size="lg" /><p className="max-w-sm text-body-b8">{t("movementCollectingData")}</p></div>

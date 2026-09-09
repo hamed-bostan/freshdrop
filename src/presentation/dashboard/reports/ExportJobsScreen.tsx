@@ -29,7 +29,7 @@ export async function ExportJobsScreen({ jobs, isFiltered }: ExportJobsScreenPro
   const hasProcessing = jobs.items.some((job) => job.status === "processing");
 
   return (
-    <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-5 md:gap-6">
       <nav aria-label={t("breadcrumbAria")} className="flex items-center gap-2 text-body-b10 text-muted-foreground">
         <Link href="/dashboard/reports/exports">{t("heading")}</Link>
         <ChevronRight className="size-3.5" />
