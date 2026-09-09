@@ -133,9 +133,9 @@ export async function PriorityActionsCard({ analytics }: { analytics: AnalyticsO
             <div className="min-w-0 flex-1">
               <p className="line-clamp-2 text-body-b7 font-semibold text-foreground">{action.title}</p>
               <p className="mt-1 line-clamp-2 text-body-b6 leading-relaxed text-muted-foreground sm:mt-0.5 sm:line-clamp-1 sm:text-body-b10">{action.body}</p>
-              <span className={`mt-2 inline-flex rounded-card-md px-2 py-1 text-label-l2 font-semibold md:hidden ${action.badgeTone}`}>{action.badge}</span>
+            <span className={`mt-2 inline-flex min-h-7 min-w-24 items-center justify-center rounded-card-md px-3 text-body-b7 font-semibold md:hidden ${action.badgeTone}`}>{action.badge}</span>
             </div>
-            <span className={`hidden min-w-20 justify-center rounded-card-md px-2 py-1 text-label-l2 font-semibold md:inline-flex ${action.badgeTone}`}>{action.badge}</span>
+            <span className={`hidden min-h-7 min-w-24 items-center justify-center rounded-card-md px-3 text-body-b7 font-semibold md:inline-flex ${action.badgeTone}`}>{action.badge}</span>
           </li>
         ))}
       </ul>
@@ -168,15 +168,15 @@ export async function AnalyticsInsights({ analytics }: { analytics: AnalyticsOve
         </h2>
         <Link href="/dashboard/analytics" className="hidden text-body-b10 text-primary xl:block">{t("viewAll")}</Link>
       </div>
-      <ul className="mt-3 divide-y divide-border sm:flex sm:flex-col sm:gap-2.5 sm:divide-y-0 md:grid md:grid-cols-3 md:gap-0 md:divide-x md:rtl:divide-x-reverse xl:flex xl:divide-x-0">
+      <ul className="mt-4 divide-y divide-border sm:flex sm:flex-col sm:gap-3 sm:divide-y-0 md:grid md:grid-cols-3 md:gap-0 md:divide-x md:rtl:divide-x-reverse xl:flex xl:gap-3 xl:divide-x-0">
         {items.map((item) => (
           <li key={item.title} className={`items-center gap-3 py-3 first:pt-0 last:pb-0 sm:items-start sm:gap-2.5 sm:py-0 md:px-4 md:py-4 md:first:ps-0 md:first:pt-4 md:last:pe-0 md:last:pb-4 xl:px-0 xl:py-0 xl:first:pt-0 xl:last:pb-0 ${"mobileHidden" in item ? "hidden xl:flex" : "flex"}`}>
             <span className={`flex size-10 shrink-0 items-center justify-center rounded-full sm:size-8 ${item.tone}`}>
               <Icon icon={item.icon} size="xs" />
             </span>
             <div className="min-w-0">
-              <p className="line-clamp-2 text-body-b7 font-semibold text-foreground sm:truncate sm:text-body-b10 md:line-clamp-2 md:text-clip md:whitespace-normal md:text-body-b7 xl:truncate xl:text-body-b10">{item.title}</p>
-              <p className="mt-0.5 line-clamp-2 text-body-b10 text-muted-foreground sm:line-clamp-1 md:line-clamp-2 xl:line-clamp-1">{item.body}</p>
+              <p className="line-clamp-2 text-body-b7 font-semibold text-foreground sm:truncate sm:text-body-b10 md:line-clamp-2 md:text-clip md:whitespace-normal md:text-body-b7 xl:line-clamp-2 xl:text-clip xl:whitespace-normal">{item.title}</p>
+              <p className="mt-1 line-clamp-2 text-body-b10 text-muted-foreground sm:line-clamp-1 md:line-clamp-2 xl:line-clamp-2">{item.body}</p>
             </div>
           </li>
         ))}
