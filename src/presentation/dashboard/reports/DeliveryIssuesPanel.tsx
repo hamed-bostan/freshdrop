@@ -24,7 +24,7 @@ export async function DeliveryIssuesPanel({ issues, locale, canWrite }: { issues
   const t = await getTranslations("dashDeliveryReport");
 
   return (
-    <section className="flex min-h-80 min-w-0 flex-col rounded-card-lg border border-border bg-background p-4 md:min-h-96 md:p-6 xl:min-h-0">
+    <section className="flex min-w-0 flex-col rounded-card-lg border border-border bg-background p-4 md:p-6">
       <div className="flex flex-col gap-3">
         <h2 className="flex items-center gap-1.5 text-heading-h3">{t("issuesIncidents")}</h2>
         <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1.7fr)_minmax(14rem,1fr)]">
@@ -89,7 +89,7 @@ export async function DeliveryIssuesPanel({ issues, locale, canWrite }: { issues
       ) : (
         <p className="py-10 text-center text-body-b8 text-muted-foreground">{t("noLateOrders")}</p>
       )}
-      <Link href="/dashboard/orders?delivery=late" className="mt-auto flex items-center gap-2 border-t border-border pt-3 text-body-b8 font-medium text-primary">
+      <Link href="/dashboard/orders?delivery=late" className="mt-6 flex items-center gap-2 border-t border-border pt-4 text-body-b8 font-medium text-primary">
         {t("viewAllIssues")}
         <Icon icon={ExternalLink} size="xs" />
       </Link>
