@@ -90,7 +90,7 @@ export async function ProductsTable({ products, categoryNames, canWrite, toolbar
                     <Image src={product.imageUrl} alt="" width={56} height={56} className="size-full object-cover" />
                   </Thumbnail>
                   <div className="min-w-0 flex-1">
-                    <p className="break-words text-body-b7 text-foreground">{product.name}</p>
+                    <p className="break-words text-body-b8 text-foreground">{product.name}</p>
                     {product.unit ? <p className="mt-1 break-words text-body-b10 text-muted-foreground">{product.unit}</p> : null}
                     {categoryName ? (
                       <Link href={`/dashboard/products?categoryId=${encodeURIComponent(product.categoryId)}`} className="mt-1 inline-block break-words text-body-b8 text-primary underline-offset-4 hover:underline">
@@ -99,9 +99,11 @@ export async function ProductsTable({ products, categoryNames, canWrite, toolbar
                     ) : null}
                   </div>
                   {canWrite ? (
-                    <div className="flex shrink-0 flex-col items-center gap-3">
+                    <div className="flex shrink-0 items-center gap-1">
                       <ProductRowActions id={product.id} name={product.name} stockQuantity={product.stockQuantity} isPublished={product.isPublished} />
-                      <BulkRowCheckbox id={product.id} label={t("selectRowAria", { name: product.name })} />
+                      <label className="flex size-11 cursor-pointer items-center justify-center">
+                        <BulkRowCheckbox id={product.id} label={t("selectRowAria", { name: product.name })} />
+                      </label>
                     </div>
                   ) : null}
                 </div>
@@ -131,7 +133,9 @@ export async function ProductsTable({ products, categoryNames, canWrite, toolbar
             <tr>
               {canWrite ? (
                 <TableHead className="w-10">
-                  <BulkSelectAllCheckbox label={t("selectAllAria")} />
+                  <label className="flex size-8 cursor-pointer items-center justify-center">
+                    <BulkSelectAllCheckbox label={t("selectAllAria")} />
+                  </label>
                 </TableHead>
               ) : null}
               <ListSortHeader className="text-start" sortKey="name" {...SORT_DEFAULTS}>
@@ -158,7 +162,9 @@ export async function ProductsTable({ products, categoryNames, canWrite, toolbar
                 <TableRow key={product.id}>
                   {canWrite ? (
                     <TableCell>
-                      <BulkRowCheckbox id={product.id} label={t("selectRowAria", { name: product.name })} />
+                      <label className="flex size-8 cursor-pointer items-center justify-center">
+                        <BulkRowCheckbox id={product.id} label={t("selectRowAria", { name: product.name })} />
+                      </label>
                     </TableCell>
                   ) : null}
 
@@ -169,7 +175,7 @@ export async function ProductsTable({ products, categoryNames, canWrite, toolbar
                       </Thumbnail>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="max-w-64 break-words text-body-b7 text-foreground">{product.name}</span>
+                          <span className="max-w-64 break-words text-body-b8 text-foreground">{product.name}</span>
                           {product.isFeatured ? <Badge variant="success">{t("featuredBadge")}</Badge> : null}
                         </div>
                         {product.unit ? (

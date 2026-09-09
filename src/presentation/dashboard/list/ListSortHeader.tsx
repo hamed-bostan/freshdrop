@@ -81,7 +81,7 @@ export function ListSortHeader<TSort extends string>({
         type="button"
         onClick={toggle}
         className={cn(
-          "inline-flex items-center gap-1 rounded-sm transition-colors hover:text-foreground",
+          "inline-flex min-h-8 items-center gap-1 rounded-sm transition-colors hover:text-foreground",
           isActive && "text-foreground",
           focusRing,
         )}

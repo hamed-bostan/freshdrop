@@ -68,11 +68,11 @@ export async function ProductsScreen({ products, categories, filters, canWrite }
   };
 
   return (
-    <div className="@container/products flex min-w-0 flex-col gap-5">
+    <div className="@container/products flex min-w-0 flex-col gap-4 sm:gap-6">
       <div className="flex flex-col gap-4 @xl/products:flex-row @xl/products:items-center @xl/products:justify-between">
         <div>
-          <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
-          <p className="text-body-b6 text-muted-foreground">{t("count", { count: products.total })}</p>
+          <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">{t("heading")}</h1>
+          <p className="mt-1 text-body-b6 text-muted-foreground">{t("count", { count: products.total })}</p>
         </div>
         {canWrite ? (
           <div className="grid grid-cols-2 gap-2 @xl/products:flex @xl/products:items-center">
@@ -106,7 +106,7 @@ export async function ProductsScreen({ products, categories, filters, canWrite }
           canWrite={canWrite}
           toolbar={(
             <section aria-label={t("searchLabel")} className="min-w-0 space-y-3">
-              <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="sm:max-w-none" />
+              <ListSearchInput label={t("searchLabel")} placeholder={t("searchPlaceholder")} className="sm:max-w-none [&_input]:h-11 sm:[&_input]:h-10" />
               <div className="grid min-w-0 grid-cols-1 gap-2 border-t border-border pt-3 @sm/products:grid-cols-2 @3xl/products:grid-cols-4 [&>a]:min-h-11 [&>a]:justify-center">
                 <ListFilterSelect
                   className="h-11 w-full min-w-0 truncate"
