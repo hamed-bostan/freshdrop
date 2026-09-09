@@ -39,7 +39,7 @@ export async function ExportReportsScreen({ from, to, isCustomRange, permissions
       </nav>
       <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h1 className="text-heading-h2 lg:text-heading-h1">{t("heading")}</h1>
+          <h1 className="dashboard-page-title">{t("heading")}</h1>
           <p className="mt-1 text-body-b6 text-muted-foreground">{t("subtitle")}</p>
         </div>
         <AnalyticsRangePicker

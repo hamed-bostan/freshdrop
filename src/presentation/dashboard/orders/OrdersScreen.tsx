@@ -84,7 +84,7 @@ export async function OrdersScreen({
     <div className="@container flex min-w-0 flex-col gap-4 sm:gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 space-y-1">
-          <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">{t("heading")}</h1>
+          <h1 className="dashboard-page-title">{t("heading")}</h1>
           <p className="text-body-b6 text-muted-foreground">{t("summary", { count: orders.total })}</p>
         </div>
         <ExportCsvLink resource="orders" label={tAnalytics("exportCsv")} />

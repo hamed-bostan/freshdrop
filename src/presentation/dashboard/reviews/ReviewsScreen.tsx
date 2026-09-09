@@ -51,7 +51,7 @@ export async function ReviewsScreen({
   return (
     <div className="@container flex min-w-0 flex-col gap-4 sm:gap-6">
       <div className="min-w-0 space-y-1">
-        <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">{t("heading")}</h1>
+        <h1 className="dashboard-page-title">{t("heading")}</h1>
         <p className="text-body-b6 text-muted-foreground">{t("summary", { count: reviews.counts.pending })}</p>
       </div>
 

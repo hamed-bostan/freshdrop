@@ -89,7 +89,7 @@ export function ProductImportPanel(): React.ReactElement {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
+          <h1 className="dashboard-page-title">{t("heading")}</h1>
           <p className="text-body-b6 text-muted-foreground">{t("subtitle")}</p>
         </div>
         <Button variant="outline" size="sm" asChild>

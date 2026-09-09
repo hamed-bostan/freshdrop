@@ -253,7 +253,7 @@ export async function DashboardOverviewScreen({
     <div className="@container flex flex-col gap-4 sm:gap-6">
       <div className="flex flex-col gap-3 md:mb-1 md:flex-row md:items-end md:justify-between md:gap-6">
         <div className="min-w-0">
-          <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">{t("heading")}</h1>
+          <h1 className="dashboard-page-title">{t("heading")}</h1>
           <p className="whitespace-nowrap text-body-b6 text-muted-foreground sm:whitespace-normal">{t("subtitle")}</p>
           {/* The days actually covered, spelled out. A dashboard headed only "Last
               30 days" makes every number on it unverifiable; this is the line that

@@ -100,7 +100,7 @@ export async function OrderDetailScreen({
         </Link>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="truncate text-heading-h2 text-foreground">
+            <h1 className="dashboard-page-title truncate">
               {t("orderNumber", { id: order.orderNumber })}
             </h1>
             <p className="text-body-b6 text-muted-foreground">

@@ -59,7 +59,7 @@ export async function CustomerDetailScreen({ customer }: CustomerDetailScreenPro
           </Avatar>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="break-words text-heading-h3 sm:text-heading-h2 text-foreground">{customer.name}</h1>
+              <h1 className="dashboard-page-title break-words">{customer.name}</h1>
               {isDashboardRole(customer.role) ? <Badge variant="primary" size="sm">{t(`role.${customer.role}`)}</Badge> : null}
               {customer.hasProfile ? <Badge variant="success" size="sm"><Icon icon={Check} size="xs" className="me-1" />{t("profileActive")}</Badge> : null}
             </div>

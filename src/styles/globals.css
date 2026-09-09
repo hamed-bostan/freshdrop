@@ -21,6 +21,17 @@
   display: none; /* Chromium / Safari */
 }
 
+/* One semantic title treatment for every dashboard page. Keeping this as a
+ * plain class also makes nested report and detail screens follow the same
+ * responsive hierarchy as the primary navigation destinations. */
+.dashboard-page-title {
+  color: var(--color-foreground);
+  font-family: var(--font-inter), sans-serif;
+  font-size: clamp(1.75rem, 4vw, 2rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 @layer base {
   *,
   *::before,

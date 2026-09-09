@@ -15,7 +15,7 @@ export async function EditPromoCodeScreen({ promoCode }: { promoCode: AdminPromo
   return (
     <div className="flex max-w-xl flex-col gap-6">
       <div>
-        <h1 className="text-heading-h2 text-foreground">{t("editHeading")}</h1>
+        <h1 className="dashboard-page-title">{t("editHeading")}</h1>
         <p className="text-body-b6 text-muted-foreground">{t("editSubtitle", { code: promoCode.code })}</p>
       </div>
       <PromoCodeForm mode="edit" promoCode={promoCode} />

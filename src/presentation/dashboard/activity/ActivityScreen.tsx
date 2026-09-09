@@ -42,7 +42,7 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
   return (
     <div className="flex min-w-0 flex-col gap-4 sm:gap-6">
       <div>
-        <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">{t("heading")}</h1>
+        <h1 className="dashboard-page-title">{t("heading")}</h1>
         <p className="mt-1 text-body-b6 leading-relaxed text-muted-foreground">{t("summary")}</p>
       </div>
 

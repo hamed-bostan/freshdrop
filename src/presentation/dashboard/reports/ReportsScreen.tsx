@@ -31,7 +31,7 @@ export async function ReportsScreen() {
   ];
 
   return <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-5">
-    <header><h1 className="text-heading-h2 text-foreground">{t("heading")}</h1><p className="mt-1 text-body-b7 text-muted-foreground">{t("subtitle")}</p></header>
+    <header><h1 className="dashboard-page-title">{t("heading")}</h1><p className="mt-1 text-body-b7 text-muted-foreground">{t("subtitle")}</p></header>
     <div className="flex flex-col gap-4">{groups.map((group) => <section key={group.id} aria-labelledby={`report-group-${group.id}`}><h2 id={`report-group-${group.id}`} className="mb-2 text-body-b5 text-foreground">{group.title}</h2><div className="grid grid-cols-1 gap-3 md:grid-cols-2">{group.items.map((item) => <ReportDirectoryCard key={item.id} item={item} fullWidth={group.items.length === 1} openAria={t("openReportAria", { report: item.title })} />)}</div></section>)}</div>
     <aside className="flex flex-col gap-4 rounded-card-lg border border-primary/20 bg-accent/60 p-4 sm:flex-row sm:items-center"><span className="flex size-14 shrink-0 rotate-[-6deg] items-center justify-center rounded-card-lg border border-primary/20 bg-background text-primary shadow-card"><Icon icon={ClipboardList} size="md" /></span><div className="min-w-0 flex-1"><h2 className="text-body-b5 text-foreground">{t("needSomethingElse")}</h2><p className="mt-1 text-body-b8 text-muted-foreground">{t("requestDescription")}</p></div><a href="mailto:support@yourapp.com?subject=Report%20request" className={cn(focusRing, "inline-flex h-10 shrink-0 items-center justify-center rounded-input border border-primary/40 bg-background px-6 text-body-b7 font-semibold text-primary hover:bg-accent")}>{t("requestReport")}</a></aside>
   </div>;

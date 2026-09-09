@@ -37,7 +37,7 @@ export async function ExportJobsScreen({ jobs, isFiltered }: ExportJobsScreenPro
       </nav>
 
       <header>
-        <h1 className="text-heading-h2">{t("recentHeading")}</h1>
+        <h1 className="dashboard-page-title">{t("recentHeading")}</h1>
         <p className="mt-1 text-body-b10 text-muted-foreground">{t("recentSummary", { count: jobs.total })}</p>
       </header>
 

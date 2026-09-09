@@ -28,7 +28,7 @@ export async function ScheduledExportsScreen({ schedules }: Props) {
 
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-heading-h2">{t("manageHeading")}</h1>
+          <h1 className="dashboard-page-title">{t("manageHeading")}</h1>
           <p className="mt-1 text-body-b10 text-muted-foreground">{t("manageSubtitle")}</p>
         </div>
         <Button asChild>

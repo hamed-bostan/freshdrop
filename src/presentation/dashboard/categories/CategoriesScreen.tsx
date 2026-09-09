@@ -39,7 +39,7 @@ export async function CategoriesScreen({ categories, filters }: CategoriesScreen
     <div className="flex min-w-0 flex-col gap-4 sm:gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">{t("heading")}</h1>
+          <h1 className="dashboard-page-title">{t("heading")}</h1>
           <p className="mt-1 text-body-b6 text-muted-foreground">{t("count", { count: categories.total })}</p>
         </div>
         <Button asChild className="shrink-0">

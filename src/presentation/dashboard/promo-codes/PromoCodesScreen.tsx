@@ -49,7 +49,7 @@ export async function PromoCodesScreen({ promoCodes, filters }: PromoCodesScreen
     <div className="flex w-full min-w-0 flex-col gap-4 sm:gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">
+          <h1 className="dashboard-page-title">
             {t("heading")}
           </h1>
           <p className="mt-1 text-body-b6 text-muted-foreground">{t("count", { count: promoCodes.total })}</p>

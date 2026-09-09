@@ -33,7 +33,7 @@ export async function DeliverySlotsScreen({ windows }: DeliverySlotsScreenProps)
     <div className="flex w-full min-w-0 flex-col gap-4 sm:gap-6">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2">
         <div className="min-w-0">
-          <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">
+          <h1 className="dashboard-page-title">
             {t("heading")}
           </h1>
         </div>
