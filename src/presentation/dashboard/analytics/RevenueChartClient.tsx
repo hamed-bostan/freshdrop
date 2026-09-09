@@ -74,8 +74,8 @@ export function RevenueChartClient({ compact = false, points, previousPoints, gr
       <div className="mt-4" aria-hidden><ChartContainer height={compact ? 210 : 220} dir={dir}>
         <AreaChart data={data} margin={{ top: 6, right: 8, bottom: 0, left: 0 }}>
           <CartesianGrid vertical={false} stroke="var(--color-border)" />
-          <XAxis dataKey="label" axisLine={false} tickLine={false} interval="preserveStartEnd" reversed={dir === "rtl"} tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }} />
-          <YAxis axisLine={false} tickLine={false} width={58} tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }} tickFormatter={(value: number) => formatMetric(metric, value, locale)} />
+          <XAxis dataKey="label" axisLine={false} tickLine={false} interval="preserveStartEnd" reversed={dir === "rtl"} tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }} />
+          <YAxis axisLine={false} tickLine={false} width={58} tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }} tickFormatter={(value: number) => formatMetric(metric, value, locale)} />
           <Tooltip cursor={{ stroke: "var(--color-border)" }} content={(props) => <ChartTooltip {...props} renderContent={() => { const point = props.payload?.[0]?.payload as ChartDatum | undefined; return point ? <div className="space-y-1"><p className="text-muted-foreground">{point.label}</p><p>{t("tooltipCurrent", { amount: formatMetric(metric, point.current, locale) })}</p><p className="text-muted-foreground">{t("tooltipPrevious", { amount: formatMetric(metric, point.compare, locale) })}</p></div> : null; }} />} />
           <Area type="monotone" dataKey="current" stroke={chartColor(0)} fill={chartColor(0)} fillOpacity={0.08} strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} isAnimationActive={false} />
           <Line type="monotone" dataKey="compare" stroke="var(--color-chart-6)" strokeWidth={2} strokeDasharray="6 5" dot={false} isAnimationActive={false} />

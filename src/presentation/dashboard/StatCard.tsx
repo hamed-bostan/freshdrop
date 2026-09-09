@@ -125,7 +125,7 @@ export function StatCard({
             {deltaLabel ? <span className="text-body-b10 text-muted-foreground">{deltaLabel}</span> : null}
           </p>
         ) : deltaLabel ? (
-          <p className="mt-1 text-body-b9 text-muted-foreground">{deltaLabel}</p>
+          <p className="mt-1 text-body-b6 text-muted-foreground">{deltaLabel}</p>
         ) : hint ? (
           <p className="mt-2 text-body-b8 text-muted-foreground">{hint}</p>
         ) : null}

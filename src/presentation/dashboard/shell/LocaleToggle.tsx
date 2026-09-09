@@ -51,7 +51,7 @@ export function LocaleToggle() {
           aria-label={t("languageAria")}
           disabled={pending}
           className={cn(
-            "inline-flex h-9 min-w-24 items-center justify-between gap-2 rounded-input border border-border bg-background px-3 text-body-b9 text-foreground transition-colors hover:bg-muted",
+            "inline-flex h-11 min-w-24 items-center justify-between gap-2 rounded-input border border-border bg-background px-3 text-body-b9 text-foreground transition-colors hover:bg-muted",
             focusRing,
             "disabled:cursor-not-allowed disabled:opacity-50",
           )}

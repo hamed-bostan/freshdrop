@@ -189,7 +189,7 @@ export function NotificationBell(): React.ReactElement {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" iconOnly size="sm" aria-label={t("trigger")} className="relative">
+        <Button variant="ghost" iconOnly size="sm" aria-label={t("trigger")} className="relative size-11">
           <Icon icon={Bell} size="sm" />
           {unreadCount > 0 ? (
             <Badge

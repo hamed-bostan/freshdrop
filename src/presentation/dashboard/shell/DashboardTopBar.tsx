@@ -35,7 +35,7 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
         <span>freshDrop</span>
       </Link>
 
-      <Button variant="ghost" iconOnly size="sm" aria-label={t("openNav")} onClick={onOpenNav} className="hidden dashboard-short:inline-flex">
+      <Button variant="ghost" iconOnly size="sm" aria-label={t("openNav")} onClick={onOpenNav} className="hidden size-11 dashboard-short:inline-flex">
         <Icon icon={Menu} size="sm" />
       </Button>
 
@@ -57,14 +57,14 @@ export function DashboardTopBar({ viewer, onOpenNav, onOpenSearch }: DashboardTo
         size="sm"
         aria-label={t("search.trigger")}
         onClick={onOpenSearch}
-        className="hidden"
+        className="hidden size-11"
       >
         <Icon icon={Search} size="sm" />
       </Button>
 
       <div className="flex-1" />
 
-      <Button variant="ghost" iconOnly size="sm" aria-label={t("help")} className="hidden dashboard-landscape:inline-flex xl:inline-flex" asChild>
+      <Button variant="ghost" iconOnly size="sm" aria-label={t("help")} className="hidden size-11 dashboard-landscape:inline-flex xl:inline-flex" asChild>
         <a href="mailto:support@yourapp.com">
           <Icon icon={CircleHelp} size="sm" />
         </a>

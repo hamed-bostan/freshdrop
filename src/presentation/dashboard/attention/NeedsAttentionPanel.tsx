@@ -44,7 +44,7 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
 
   return (
     <section className="rounded-card-lg border border-border">
-      <div className="flex items-center gap-3 p-5 pb-1">
+      <div className="flex items-center gap-3 p-4 pb-1 sm:p-5 sm:pb-1">
         <h2 className="text-body-b1 text-foreground">{t("attentionHeading")}</h2>
         {/* Counts the *categories* needing a look, not the sum of their items — "2
             things need you" is what an operator scanning the header wants, not a
@@ -54,7 +54,7 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
             {formatNumber(active.length, locale)}
           </Badge>
         ) : null}
-        <Link href="/dashboard/activity" className="ms-auto hidden items-center gap-1 text-body-b8 text-primary hover:underline sm:inline-flex">{t("viewAllAlerts")}<Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" /></Link>
+        <Link href="/dashboard/activity" className="ms-auto hidden min-h-8 items-center gap-1 rounded-input px-2 text-body-b8 text-primary hover:underline sm:inline-flex">{t("viewAllAlerts")}<Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" /></Link>
       </div>
 
       {active.length > 0 ? (
@@ -79,8 +79,15 @@ export async function NeedsAttentionPanel({ items }: NeedsAttentionPanelProps) {
               <div className="min-w-0 flex-1">
                 <p className="text-body-b8 text-foreground">{item.title}</p>
                 <p className="text-body-b10 text-muted-foreground">{item.detail}</p>
+                <span className="mt-1.5 inline-flex items-center gap-1 text-body-b10 font-semibold text-primary md:hidden">
+                  {item.ctaLabel}
+                  <Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" />
+                </span>
               </div>
-              <span className="inline-flex size-11 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-input text-body-b8 text-primary md:h-auto md:w-auto md:justify-start"><span className="hidden md:inline">{item.ctaLabel}</span><Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" /></span>
+              <span className="hidden shrink-0 items-center gap-1 whitespace-nowrap rounded-input text-body-b8 text-primary md:inline-flex">
+                {item.ctaLabel}
+                <Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" />
+              </span>
             </Link>
           ))}
         </div>

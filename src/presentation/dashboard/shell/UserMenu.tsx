@@ -58,7 +58,7 @@ export function UserMenu({ viewer }: UserMenuProps) {
           <button
             type="button"
             aria-label={t("account")}
-            className={cn("shrink-0 rounded-full transition-opacity hover:opacity-80", focusRing)}
+            className={cn("flex size-11 shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-80", focusRing)}
           >
             <Avatar name={viewer.name} className="size-12 dashboard-phone:size-10 xl:size-9">
               {viewer.imageUrl && (

@@ -55,7 +55,7 @@ export async function RecentOrdersPanel({ orders, customersById }: RecentOrdersP
       <DashboardPanelHeader
         title={t("recentOrders")}
         action={(
-          <Link href="/dashboard/orders" className="inline-flex items-center gap-1 text-body-b8 text-primary hover:underline">
+          <Link href="/dashboard/orders" className="inline-flex min-h-11 items-center gap-1 rounded-input px-2 text-body-b8 text-primary hover:underline sm:min-h-8">
             {t("viewAllOrders")}
             <Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" />
           </Link>

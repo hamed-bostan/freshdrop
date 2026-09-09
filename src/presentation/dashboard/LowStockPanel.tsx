@@ -18,13 +18,16 @@ export async function LowStockPanel({ products }: Props) {
   const t = await getTranslations("dashHome");
   const locale = (await getLocale());
   return (
-    <DashboardPanel className="h-full">
+    <DashboardPanel className="h-full min-w-0 overflow-hidden">
       <DashboardPanelHeader
         title={t("lowStockProducts")}
         action={(
-          <Link href="/dashboard/inventory" className="inline-flex items-center gap-1 text-body-b8 text-primary hover:underline">
-            <span className="sm:hidden">{t("viewAll")}</span>
-            <span className="hidden sm:inline">{t("viewAllInventory")}</span>
+          <Link
+            href="/dashboard/inventory"
+            aria-label={t("viewAllInventory")}
+            className="inline-flex min-h-11 shrink-0 items-center gap-1 whitespace-nowrap rounded-input px-2 text-body-b8 text-primary hover:underline sm:min-h-8"
+          >
+            <span>{t("viewAll")}</span>
             <Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" />
           </Link>
         )}
@@ -50,10 +53,10 @@ export async function LowStockPanel({ products }: Props) {
                 aria-label={t("manageProductAria", { product: product.name })}
                 className={cn(
                   focusRing,
-                  "inline-flex size-11 shrink-0 items-center justify-center gap-1 rounded-input text-body-b9 text-primary transition-colors hover:bg-muted sm:h-auto sm:w-auto sm:px-2 sm:py-1.5",
+                  "inline-flex h-11 w-auto shrink-0 items-center justify-center gap-1 rounded-input px-2 text-body-b10 font-semibold text-primary transition-colors hover:bg-muted sm:h-auto sm:py-1.5 sm:text-body-b9",
                 )}
               >
-                <span className="sr-only sm:not-sr-only">{t("manage")}</span>
+                <span>{t("manage")}</span>
                 <Icon icon={ChevronRight} size="xs" className="rtl:-scale-x-100" />
               </Link>
             </li>
