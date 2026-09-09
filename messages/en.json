@@ -1438,7 +1438,7 @@
     "heading": "Orders",
     "summary": "{count, plural, one {# order} other {# orders}} · open an order to update its delivery stage",
     "searchLabel": "Search orders by ID, customer or phone",
-    "searchPlaceholder": "Search by order ID, customer, or phone…",
+    "searchPlaceholder": "Search orders…",
     "filterStatusLabel": "Status",
     "filterStatusAll": "All",
     "filterPipelineInProgress": "In progress",

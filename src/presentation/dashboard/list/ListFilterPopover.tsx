@@ -60,7 +60,7 @@ export function ListFilterPopover({
     <Popover>
       <PopoverTrigger
         className={cn(
-          "group flex h-10 items-center gap-2 rounded-button border px-3 text-button-btn4 transition-colors",
+          "group flex h-10 items-center gap-2 rounded-button border px-3 text-body-b7 transition-colors",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           // An active filter is carried by border and text colour, never by
           // colour alone — the value beside the label is the primary signal, so

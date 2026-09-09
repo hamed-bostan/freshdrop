@@ -1446,7 +1446,7 @@
     "heading": "سفارش‌ها",
     "summary": "{count, plural, other {# سفارش}} · برای به‌روزرسانی مرحله تحویل، سفارش را باز کنید",
     "searchLabel": "جست‌وجوی سفارش با شناسه، نام مشتری یا شماره تماس",
-    "searchPlaceholder": "جست‌وجو با شناسه سفارش، نام مشتری یا شماره…",
+    "searchPlaceholder": "جست‌وجوی سفارش‌ها…",
     "filterStatusLabel": "وضعیت",
     "filterStatusAll": "همه",
     "filterPipelineInProgress": "در جریان",
