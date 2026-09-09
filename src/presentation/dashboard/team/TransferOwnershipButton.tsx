@@ -78,6 +78,7 @@ export function TransferOwnershipButton({ id, name, intent }: TransferOwnershipB
         title={label}
         onClick={() => setOpen(true)}
         disabled={pending}
+        className="size-11 sm:size-10"
       >
         <Icon icon={Crown} size="sm" />
       </Button>

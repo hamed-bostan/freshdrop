@@ -29,10 +29,10 @@ export function SettingsScreen({ taxSettings, notificationTemplates }: SettingsS
   const t = useTranslations("dashSettings");
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 sm:gap-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
-        <p className="text-body-b6 text-muted-foreground">{t("summary")}</p>
+    <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col gap-4 sm:gap-6">
+      <div>
+        <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">{t("heading")}</h1>
+        <p className="mt-1 text-body-b6 leading-relaxed text-muted-foreground">{t("summary")}</p>
       </div>
 
       <TaxSettingsForm settings={taxSettings} />

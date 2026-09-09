@@ -67,7 +67,7 @@ export function TaxSettingsForm({ settings }: TaxSettingsFormProps) {
 
   return (
     <form onSubmit={onSubmit} noValidate aria-labelledby="tax-heading" className="overflow-hidden rounded-card-lg border border-border bg-surface">
-      <div className="flex items-start gap-4 border-b border-border p-5 sm:p-6">
+      <div className="flex items-start gap-4 border-b border-border p-4 sm:p-6">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-card-md bg-accent text-primary">
           <Icon icon={Percent} size="sm" />
         </span>
@@ -77,7 +77,7 @@ export function TaxSettingsForm({ settings }: TaxSettingsFormProps) {
         </div>
       </div>
 
-      <div className="grid gap-6 p-5 sm:grid-cols-2 sm:items-end sm:p-6">
+      <div className="grid gap-4 p-4 sm:grid-cols-2 sm:items-end sm:gap-6 sm:p-6">
         <div className="w-full sm:max-w-60">
           <TextField
             label={t("rateLabel")}
@@ -93,6 +93,7 @@ export function TaxSettingsForm({ settings }: TaxSettingsFormProps) {
                 max={100}
                 step={0.1}
                 dir="ltr"
+                inputClassName="h-11 sm:h-10"
               />
             )}
           </TextField>
@@ -110,9 +111,9 @@ export function TaxSettingsForm({ settings }: TaxSettingsFormProps) {
         />
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-border bg-muted/20 px-5 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6">
+      <div className="flex flex-col gap-3 border-t border-border bg-muted/20 px-4 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6">
         {errors.root?.message && <FormMessage size="md">{errors.root.message}</FormMessage>}
-        <Button type="submit" loading={isSubmitting} className="w-full sm:w-auto sm:min-w-28">
+        <Button type="submit" loading={isSubmitting} className="w-full text-body-b7 sm:w-auto sm:min-w-28">
           {isSubmitting ? t("saving") : t("save")}
         </Button>
       </div>

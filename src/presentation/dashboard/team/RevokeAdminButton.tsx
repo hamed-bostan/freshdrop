@@ -63,7 +63,7 @@ export function RevokeAdminButton({ id, name }: RevokeAdminButtonProps) {
         aria-label={t("revokeAria", { name })}
         onClick={() => setOpen(true)}
         disabled={pending}
-        className="text-destructive"
+        className="size-11 text-destructive sm:size-10"
       >
         <Icon icon={Trash2} size="sm" />
       </Button>

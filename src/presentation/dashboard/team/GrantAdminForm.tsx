@@ -73,7 +73,7 @@ export function GrantAdminForm() {
     <form
       onSubmit={onSubmit}
       noValidate
-      className="flex flex-col gap-4 rounded-card-lg border border-border bg-background p-5 sm:p-6"
+      className="flex flex-col gap-4 rounded-card-lg border border-border bg-background p-4 sm:p-6"
     >
       <div>
         <h2 className="text-body-b4 text-foreground">{t("grantHeading")}</h2>
@@ -97,6 +97,7 @@ export function GrantAdminForm() {
                 dir="ltr"
                 autoComplete="off"
                 placeholder={t("phonePlaceholder")}
+                inputClassName="h-11 sm:h-10"
               />
             )}
           </TextField>
@@ -116,6 +117,7 @@ export function GrantAdminForm() {
                 dir="ltr"
                 autoComplete="off"
                 placeholder={t("emailPlaceholder")}
+                inputClassName="h-11 sm:h-10"
               />
             )}
           </TextField>
@@ -128,7 +130,7 @@ export function GrantAdminForm() {
               up an admin. */}
           <TextField label={t("roleLabel")} description={t("roleHint")}>
             {(control) => (
-              <Select {...control} {...register("role")}>
+              <Select {...control} {...register("role")} className="h-11 sm:h-10">
                 {GRANTABLE_ROLES.map((role) => (
                   <option key={role} value={role}>
                     {t(`role.${role}`)}
@@ -139,7 +141,7 @@ export function GrantAdminForm() {
           </TextField>
         </div>
 
-        <Button type="submit" disabled={isSubmitting} className="w-full self-start sm:mt-7 xl:w-auto">
+        <Button type="submit" disabled={isSubmitting} className="w-full self-start text-body-b7 sm:mt-7 xl:w-auto">
           {isSubmitting ? t("granting") : t("grantSubmit")}
         </Button>
       </div>

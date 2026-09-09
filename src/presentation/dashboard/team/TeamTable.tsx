@@ -42,7 +42,7 @@ export function TeamTable({ members }: TeamTableProps) {
 
   return (
     <section aria-label={t("membersHeading")} className="overflow-hidden rounded-card-lg border border-border bg-background">
-      <div className="flex items-center gap-3 border-b border-border px-5 py-4">
+      <div className="flex items-center gap-3 border-b border-border px-4 py-4 sm:px-5">
         <h2 className="text-body-b4 text-foreground">{t("membersHeading")}</h2>
         <Badge variant="neutral">{members.length}</Badge>
       </div>
@@ -51,7 +51,7 @@ export function TeamTable({ members }: TeamTableProps) {
       </div>
       <ul className="divide-y divide-border">
         {members.map((member) => (
-          <li key={member.id} className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-4 p-5 md:grid-cols-[minmax(0,1fr)_10rem_6rem] md:gap-4">
+          <li key={member.id} className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_10rem_6rem] md:gap-4">
             <div className="col-span-2 flex min-w-0 items-center gap-3 md:col-span-1">
               <Avatar name={member.name} className="size-11" />
               <div className="min-w-0">
@@ -100,6 +100,7 @@ export function TeamTable({ members }: TeamTableProps) {
                     disabled
                     aria-label={t(`revokeBlocked.${member.revokeBlocked}`)}
                     title={t(`revokeBlocked.${member.revokeBlocked}`)}
+                    className="size-11 sm:size-10"
                   >
                     <Icon icon={Trash2} size="sm" />
                   </Button>

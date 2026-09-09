@@ -24,10 +24,10 @@ export function TeamScreen({ members, changes }: TeamScreenProps) {
   const t = useTranslations("dashTeam");
 
   return (
-    <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-6 sm:gap-8">
-      <div className="space-y-2">
-        <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
-        <p className="text-body-b6 text-muted-foreground">
+    <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-4 sm:gap-6">
+      <div>
+        <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">{t("heading")}</h1>
+        <p className="mt-1 text-body-b6 leading-relaxed text-muted-foreground">
           {t("summary", { count: members.length })}
         </p>
       </div>

@@ -30,7 +30,7 @@ export function TeamActivity({ changes }: TeamActivityProps) {
   const locale = useLocale();
 
   return (
-    <section className="flex flex-col gap-4 rounded-card-lg border border-border bg-background p-5 sm:p-6">
+    <section className="flex flex-col gap-4 rounded-card-lg border border-border bg-background p-4 sm:p-6">
       <div className="space-y-1">
         <h2 className="text-body-b4 text-foreground">{t("activityHeading")}</h2>
         <p className="text-body-b6 text-muted-foreground">{t("activityDescription")}</p>
@@ -49,7 +49,7 @@ export function TeamActivity({ changes }: TeamActivityProps) {
             {changes.map((change) => (
               <li
                 key={change.id}
-                className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 bg-background px-4 py-3"
+                className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5 bg-background px-4 py-3"
               >
                 <span className="text-body-b6 text-foreground">
                   {t(
