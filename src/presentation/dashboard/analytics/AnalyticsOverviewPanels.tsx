@@ -126,17 +126,16 @@ export async function PriorityActionsCard({ analytics }: { analytics: AnalyticsO
       <h2 className="text-body-b5 text-foreground">{t("priorityActions")}</h2>
       <ul className="mt-3 flex flex-col gap-2">
         {actions.map((action) => (
-          <li key={action.title} className="flex items-center gap-3 rounded-card-md border border-border p-3">
+          <li key={action.title} className="flex items-start gap-3 rounded-card-md border border-border p-4 sm:items-center sm:p-3">
             <span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${action.tone}`}>
               <Icon icon={action.icon} size="sm" />
             </span>
             <div className="min-w-0 flex-1">
               <p className="line-clamp-2 text-body-b7 font-semibold text-foreground">{action.title}</p>
-              <p className="line-clamp-1 text-body-b10 text-muted-foreground">{action.body}</p>
-              <span className={`mt-1 inline-flex rounded-card-md px-2 py-1 text-label-l2 font-semibold md:hidden ${action.badgeTone}`}>{action.badge}</span>
+              <p className="mt-1 line-clamp-2 text-body-b6 leading-relaxed text-muted-foreground sm:mt-0.5 sm:line-clamp-1 sm:text-body-b10">{action.body}</p>
+              <span className={`mt-2 inline-flex rounded-card-md px-2 py-1 text-label-l2 font-semibold md:hidden ${action.badgeTone}`}>{action.badge}</span>
             </div>
             <span className={`hidden min-w-20 justify-center rounded-card-md px-2 py-1 text-label-l2 font-semibold md:inline-flex ${action.badgeTone}`}>{action.badge}</span>
-            <Icon icon={ChevronRight} size="xs" className="shrink-0 text-muted-foreground rtl:rotate-180" />
           </li>
         ))}
       </ul>
