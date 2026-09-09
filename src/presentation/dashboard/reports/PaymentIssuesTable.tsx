@@ -35,16 +35,16 @@ export function PaymentIssuesTable({ issues }: { issues: Issue[] }) {
   );
 
   return <section className="rounded-card-lg border border-border bg-background p-4 md:p-6">
-    <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <h2 className="text-heading-h3">{t("recentTransactions")}</h2>
-      <div className="flex flex-wrap items-center gap-2">
-        <Input size="sm" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("searchTransactions")} aria-label={t("searchTransactions")} className="w-40" leftElement={<Icon icon={Search} size="xs" />} />
-        <Select size="sm" value={status} onChange={(event) => setStatus(event.target.value as "all" | Issue["status"])} aria-label={t("status")} className="h-11 sm:h-8">
+      <div className="grid w-full grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(10rem,.55fr)_auto] lg:max-w-2xl">
+        <Input size="sm" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("searchTransactions")} aria-label={t("searchTransactions")} className="w-full" leftElement={<Icon icon={Search} size="xs" />} />
+        <Select size="sm" value={status} onChange={(event) => setStatus(event.target.value as "all" | Issue["status"])} aria-label={t("status")} className="h-11 w-full sm:h-8">
           <option value="all">{t("allStatuses")}</option>
           <option value="failed">{t("failed")}</option>
           <option value="refunded">{t("refunded")}</option>
         </Select>
-        <Link href="/dashboard/orders?payment=failed" className="ms-2 text-body-b10 text-primary">{t("viewAll")}</Link>
+        <Link href="/dashboard/orders?payment=failed" className="inline-flex min-h-11 items-center justify-center rounded-input px-3 text-body-b7 font-semibold text-primary sm:min-h-8 sm:text-body-b10">{t("viewAll")}</Link>
       </div>
     </div>
 

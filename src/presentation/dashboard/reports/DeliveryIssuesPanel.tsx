@@ -27,14 +27,15 @@ export async function DeliveryIssuesPanel({ issues, locale, canWrite }: { issues
     <section className="flex min-h-80 min-w-0 flex-col rounded-card-lg border border-border bg-background p-4 md:min-h-96 md:p-6 xl:min-h-0">
       <div className="flex flex-col gap-3">
         <h2 className="flex items-center gap-1.5 text-heading-h3">{t("issuesIncidents")}</h2>
-        <div className="flex w-full flex-col items-start gap-2 sm:flex-row sm:items-center">
-          <ListSearchInput paramName="issueQ" placeholder={t("searchIssues")} label={t("searchIssues")} />
+        <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1.7fr)_minmax(14rem,1fr)]">
+          <ListSearchInput paramName="issueQ" placeholder={t("searchIssues")} label={t("searchIssues")} className="sm:max-w-none" />
           <ListChoiceFilter
             paramName="issueStatus"
             label={t("status")}
             allLabel={t("allStatuses")}
             options={DELIVERY_ISSUE_STATUSES.map((status) => ({ value: status, label: t(STATUS_LABEL_KEY[status]) }))}
             showAllValue
+            triggerClassName="w-full justify-between"
           />
         </div>
       </div>

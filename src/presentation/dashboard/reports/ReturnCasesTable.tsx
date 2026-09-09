@@ -64,17 +64,17 @@ export function ReturnCasesTable({ rows, labels, viewAllHref }: { rows: ReturnCa
   return <section className="w-full min-w-0 max-w-full overflow-hidden rounded-card-lg border border-border bg-background p-4 md:p-6">
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <h2 className="text-heading-h3">{labels.heading}</h2>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <label className="relative">
+      <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(11rem,.55fr)_auto] lg:max-w-3xl">
+        <label className="relative min-w-0">
           <span className="sr-only">{labels.search}</span>
           <Icon icon={Search} size="xs" className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={labels.search} className={cn(focusRing, "h-11 w-full sm:h-9 rounded-input border border-border bg-background ps-9 pe-3 text-body-b10 placeholder:text-muted-foreground sm:w-60")} />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={labels.search} className={cn(focusRing, "h-11 w-full rounded-input border border-border bg-background ps-9 pe-3 text-body-b7 placeholder:text-muted-foreground sm:h-9 sm:text-body-b10")} />
         </label>
-        <Select size="sm" aria-label={labels.filterStatus} value={status} onChange={(event) => setStatus(event.target.value as ReturnStatus | "all")} className="w-auto min-w-36">
+        <Select size="sm" aria-label={labels.filterStatus} value={status} onChange={(event) => setStatus(event.target.value as ReturnStatus | "all")} className="w-full min-w-0">
           <option value="all">{labels.all}</option>
           {rows.map((row) => row.status).filter((value, index, values) => values.indexOf(value) === index).map((value) => <option key={value} value={value}>{rows.find((row) => row.status === value)?.statusLabel}</option>)}
         </Select>
-        <Link href={viewAllHref} className={cn(focusRing, "inline-flex h-11 items-center sm:h-9 justify-center rounded-input border border-primary/45 px-4 text-body-b10 font-semibold text-primary hover:bg-accent")}>{labels.viewAll}</Link>
+        <Link href={viewAllHref} className={cn(focusRing, "inline-flex h-11 items-center justify-center rounded-input border border-primary/45 px-4 text-body-b7 font-semibold text-primary hover:bg-accent sm:h-9 sm:text-body-b10")}>{labels.viewAll}</Link>
       </div>
     </div>
 

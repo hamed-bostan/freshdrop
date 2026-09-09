@@ -31,7 +31,7 @@ export async function RecoveryBreakdownPanels({ report, locale }: { report: Refu
   const outcomeLabel: Record<ReturnRecoveryDecision | "not_recorded", string> = {
     restocked: t("restocked"), returned_to_supplier: t("returnedToSupplier"), discounted: t("discounted"), disposed: t("disposed"), pending: t("pendingDecision"), not_recorded: t("notRecorded"),
   };
-  return <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
+  return <div className="grid min-w-0 grid-cols-1 gap-4 2xl:grid-cols-[minmax(22rem,1.1fr)_minmax(18rem,.9fr)]">
     <section className="rounded-card-lg border border-border bg-background p-4 md:p-6"><PanelTitle icon={Box} title={t("itemCondition")} />
       <div className="mt-3 space-y-3">{conditions.map((row) => { const key = row.condition ?? "not_recorded"; const share = row.count / conditionTotal; return <div key={key} className="grid grid-cols-[5rem_1fr_3.5rem_2.5rem] items-center gap-2 text-body-b10"><span>{conditionLabel[key]}</span><span className="h-1.5 overflow-hidden rounded-full bg-surface-sunken"><span className={`block h-full rounded-full ${CONDITION_TONE[key]}`} style={{ width: `${share * 100}%` }} /></span><span className="text-end tabular-nums">{(share * 100).toFixed(1)}%</span><span className="text-end font-medium tabular-nums">{formatNumber(row.count, locale)}</span></div>; })}</div>
     </section>
