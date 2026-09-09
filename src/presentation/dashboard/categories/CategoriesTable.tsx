@@ -60,7 +60,10 @@ export async function CategoriesTable({ categories, footer }: CategoriesTablePro
         <ul className="divide-y divide-border" aria-label={t("heading")}>
           {categories.map((category) => (
             <li key={category.id} className="min-w-0 p-4 has-[[data-state=checked]]:bg-accent/40">
-              <div className="flex items-start gap-3">
+              <div className="flex min-w-0 items-start gap-2">
+                <label className="flex size-11 shrink-0 cursor-pointer items-center justify-center">
+                  <BulkRowCheckbox id={category.id} label={t("selectRowAria", { name: category.name })} />
+                </label>
                 <Thumbnail className="size-12 border border-border/60">
                   <Image src={category.iconUrl} alt="" width={36} height={36} className="object-contain" />
                 </Thumbnail>
@@ -71,13 +74,13 @@ export async function CategoriesTable({ categories, footer }: CategoriesTablePro
                   >
                     {category.name}
                   </Link>
-                  <p className="mt-1 text-body-b8 break-all text-muted-foreground">{category.slug}</p>
+                  <p className="mt-1 break-all text-body-b6 text-muted-foreground">{category.slug}</p>
                 </div>
                 <CategoryRowActions id={category.id} name={category.name} productCount={category.productCount} />
               </div>
-              <dl className="mt-4 grid min-w-0 grid-cols-2 gap-x-4 gap-y-3 rounded-card-md bg-surface-sunken/50 p-3">
+              <dl className="mt-3 grid min-w-0 grid-cols-2 gap-x-4 gap-y-2 rounded-card-md bg-surface-sunken/50 p-3">
                 <div className="min-w-0">
-                  <dt className="mb-1 text-body-b8 text-muted-foreground">{t("colProductCount")}</dt>
+                  <dt className="mb-1 text-body-b7 text-muted-foreground">{t("colProductCount")}</dt>
                   <dd>
                     <Link
                       href={`/dashboard/products?categoryId=${encodeURIComponent(category.id)}`}
@@ -89,7 +92,7 @@ export async function CategoriesTable({ categories, footer }: CategoriesTablePro
                   </dd>
                 </div>
                 <div className="min-w-0">
-                  <dt className="mb-1 text-body-b8 text-muted-foreground">{t("colStatus")}</dt>
+                  <dt className="mb-1 text-body-b7 text-muted-foreground">{t("colStatus")}</dt>
                   <dd className="flex min-h-11 items-center">
                     <Badge variant={category.isActive ? "success" : "neutral"} className="gap-1.5">
                       <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-current" />
@@ -97,15 +100,11 @@ export async function CategoriesTable({ categories, footer }: CategoriesTablePro
                     </Badge>
                   </dd>
                 </div>
-                <div className="col-span-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-border pt-3 text-body-b8 text-muted-foreground">
+                <div className="col-span-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-border pt-3 text-body-b7 text-muted-foreground">
                   <dt>{t("colUpdatedAt")}</dt>
                   <dd><time dateTime={category.updatedAt.toISOString()}>{formatOrderDateShort(category.updatedAt.toISOString(), locale)}</time></dd>
                 </div>
               </dl>
-              <label className="mt-2 flex min-h-11 w-fit max-w-full cursor-pointer items-center gap-2 text-body-b8 text-muted-foreground">
-                <BulkRowCheckbox id={category.id} label={t("selectRowAria", { name: category.name })} />
-                {t("selectCategory")}
-              </label>
             </li>
           ))}
         </ul>
@@ -147,7 +146,7 @@ export async function CategoriesTable({ categories, footer }: CategoriesTablePro
                     >
                       {category.name}
                     </Link>
-                    <p className="mt-1 max-w-64 truncate text-body-b8 text-muted-foreground">{category.slug}</p>
+                    <p className="mt-1 max-w-64 truncate text-body-b6 text-muted-foreground">{category.slug}</p>
                   </div>
                 </div>
               </TableCell>

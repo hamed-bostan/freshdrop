@@ -79,7 +79,7 @@ export function ListPager({
           size="sm"
           value={page.pageSize}
           onChange={(event) => changePageSize(Number(event.target.value))}
-          className={compact ? "h-auto w-auto appearance-none border-transparent bg-transparent p-0 text-body-b6" : "w-auto"}
+          className={compact ? "h-auto w-auto appearance-none border-transparent bg-transparent p-0 text-body-b6" : "h-11 w-auto sm:h-10"}
         >
           {pageSizeOptions.map((size) => (
             <option key={size} value={size}>
@@ -113,6 +113,7 @@ export function ListPager({
           onClick={() => goTo(page.page - 1)}
           disabled={page.page <= 1}
           aria-label={t("previous")}
+          className="size-11"
         >
           <Icon icon={ChevronLeft} size="sm" className="rtl:rotate-180" />
         </Button>
@@ -122,6 +123,7 @@ export function ListPager({
           onClick={() => goTo(page.page + 1)}
           disabled={page.page >= totalPages}
           aria-label={t("next")}
+          className="size-11"
         >
           <Icon icon={ChevronRight} size="sm" className="rtl:rotate-180" />
         </Button>
