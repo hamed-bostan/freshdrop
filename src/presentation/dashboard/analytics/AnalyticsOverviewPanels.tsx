@@ -182,7 +182,7 @@ export async function AnalyticsInsights({ analytics }: { analytics: AnalyticsOve
           </li>
         ))}
       </ul>
-      <Link href="/dashboard/analytics" className="mt-3 flex items-center justify-between border-t border-border pt-3 text-body-b8 font-semibold text-primary sm:hidden md:flex md:justify-end md:gap-2 xl:hidden">
+      <Link href="/dashboard/analytics" className="mt-3 flex min-h-11 items-center justify-between border-t border-border pt-3 text-body-b8 font-semibold text-primary sm:hidden md:flex md:min-h-8 md:justify-end md:gap-2 xl:hidden">
         {t("viewAll")}
         <Icon icon={ChevronRight} size="xs" className="rtl:rotate-180" />
       </Link>

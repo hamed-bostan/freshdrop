@@ -113,7 +113,7 @@ export function AnalyticsRangePicker({
           aria-label={presetLabel}
           value={isCustom ? CUSTOM_RANGE_VALUE : (searchParams.get("range") ?? DEFAULT_ANALYTICS_PRESET)}
           onChange={(event) => selectPreset(event.target.value)}
-          className={cn("h-11 w-full ps-9 sm:w-auto", triggerClassName)}
+          className={cn("h-11 w-full ps-9 text-body-b7 sm:h-10 sm:w-auto", triggerClassName)}
         >
           {presetOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -137,7 +137,7 @@ export function AnalyticsRangePicker({
             max={to}
             onChange={(event) => setBound("from", event.target.value)}
             className="w-full sm:w-auto"
-            inputClassName="px-3"
+            inputClassName="h-11 px-3 sm:h-9"
           />
           <Input
             type="date"
@@ -147,7 +147,7 @@ export function AnalyticsRangePicker({
             min={from}
             onChange={(event) => setBound("to", event.target.value)}
             className="w-full sm:w-auto"
-            inputClassName="px-3"
+            inputClassName="h-11 px-3 sm:h-9"
           />
         </>
       ) : null}

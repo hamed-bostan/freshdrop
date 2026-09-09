@@ -39,11 +39,11 @@ export async function AnalyticsScreen({ analytics, from, to, isCustomRange, comp
   ];
   const compareTriggerLabel = compareMode === "none" ? t("compareNone") : t("comparisonPeriod", { from: formatMediumDate(activeFrom, locale), to: formatMediumDate(activeTo, locale) });
   return (
-    <div className="flex flex-col gap-4 pb-2">
+    <div className="flex min-w-0 flex-col gap-4 pb-2 sm:gap-6">
       <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
-          <h1 className="text-heading-h2 text-foreground">{t("overviewHeading")}</h1>
-          <p className="mt-1 text-body-b10 text-muted-foreground">{t("metricsOverviewSubtitle")}</p>
+          <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">{t("overviewHeading")}</h1>
+          <p className="mt-1 text-body-b6 leading-relaxed text-muted-foreground">{t("metricsOverviewSubtitle")}</p>
         </div>
         <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center md:grid md:w-full md:grid-cols-[minmax(0,1fr)_auto] md:items-stretch lg:flex lg:flex-row lg:flex-nowrap lg:items-center lg:justify-end">
           <AnalyticsRangePicker

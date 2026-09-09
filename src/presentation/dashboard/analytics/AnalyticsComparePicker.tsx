@@ -189,6 +189,7 @@ function ComparePanel({
             value={draftFrom}
             max={draftTo}
             onChange={(event) => setDraftFrom(event.target.value)}
+            inputClassName="h-11 sm:h-9"
           />
           <Input
             type="date"
@@ -197,18 +198,19 @@ function ComparePanel({
             value={draftTo}
             min={draftFrom}
             onChange={(event) => setDraftTo(event.target.value)}
+            inputClassName="h-11 sm:h-9"
           />
         </div>
       ) : null}
 
       <div className="mt-1 flex items-center justify-end gap-2 border-t border-border px-2 pt-2">
         <PopoverClose asChild>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="min-h-11 text-body-b7 sm:min-h-10">
             {cancelLabel}
           </Button>
         </PopoverClose>
         <PopoverClose asChild>
-          <Button size="sm" onClick={apply}>
+          <Button size="sm" className="min-h-11 text-body-b7 sm:min-h-10" onClick={apply}>
             {applyLabel}
           </Button>
         </PopoverClose>

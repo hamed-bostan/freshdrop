@@ -22,7 +22,7 @@ export async function TopPerformancePanel({ products }: { products: TopProduct[]
       </ul>
       <div className="mt-2 hidden min-w-0 overflow-x-auto sm:block"><table className="w-full table-fixed text-body-b10"><colgroup><col /><col className="w-24" /><col className="w-28" /><col className="w-36" /></colgroup><thead className="border-b border-border text-muted-foreground"><tr><th className="py-2 text-start font-medium">{tr("product")}</th><th className="px-2 py-2 text-end font-medium">{tr("unitsSold")}</th><th className="px-2 py-2 text-end font-medium">{tr("netSales")}</th><th className="py-2 text-end font-medium">{t("vsPreviousPeriod")}</th></tr></thead><tbody className="divide-y divide-border">{products.slice(0, 5).map((product) => <ProductRow key={product.productId} product={product} locale={locale} />)}</tbody></table></div>
     </> : <p className="flex flex-1 items-center justify-center py-8 text-body-b10 text-muted-foreground">{tr("noSales")}</p>}
-    <Link href="/dashboard/reports/sales" className={cn(focusRing, "mt-auto inline-flex items-center gap-1 border-t border-border pt-3 text-body-b10 font-semibold text-primary hover:underline")}>{t("salesReport")}<Icon icon={ChevronRight} size="xs" className="rtl:rotate-180" /></Link>
+    <Link href="/dashboard/reports/sales" className={cn(focusRing, "mt-auto inline-flex min-h-11 items-center gap-1 border-t border-border pt-3 text-body-b7 font-semibold text-primary hover:underline sm:min-h-8 sm:text-body-b10")}>{t("salesReport")}<Icon icon={ChevronRight} size="xs" className="rtl:rotate-180" /></Link>
   </section>;
 }
 
@@ -34,7 +34,7 @@ function MobileProductRow({ product, locale }: { product: TopProduct; locale: Lo
           <Image src={product.imageUrl} alt="" width={40} height={40} className="size-full object-contain" />
         </Thumbnail>
       ) : <span className="size-10 shrink-0 rounded-card-md bg-surface-sunken" aria-hidden />}
-      <Link href={`/dashboard/products/${product.productId}/edit`} className="min-w-0 flex-1 truncate text-body-b10 font-semibold text-foreground hover:underline">{product.name}</Link>
+      <Link href={`/dashboard/products/${product.productId}/edit`} className="inline-flex min-h-11 min-w-0 flex-1 items-center truncate text-body-b7 font-semibold text-foreground hover:underline">{product.name}</Link>
       <div className="shrink-0 text-end text-body-b10">
         <p className="text-muted-foreground">{formatNumber(product.units, locale)}</p>
         <p className="mt-1 font-semibold text-foreground">{formatMoney(product.revenue, locale)}</p>

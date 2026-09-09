@@ -23,7 +23,7 @@ export function ChartSegmentedControl<T extends string>({ className, value, opti
           aria-pressed={value === option}
           onClick={() => onChange(option)}
           className={cn(
-            "min-h-11 min-w-0 flex-1 rounded-card-md px-3 text-body-b10 sm:min-h-0 sm:flex-none",
+            "min-h-11 min-w-0 flex-1 rounded-card-md px-3 text-body-b7 sm:min-h-8 sm:flex-none",
             emphasis ? "py-1.5 font-semibold" : "py-1 font-medium",
             value === option ? "bg-accent text-primary shadow-sm" : "text-muted-foreground hover:text-foreground",
           )}
