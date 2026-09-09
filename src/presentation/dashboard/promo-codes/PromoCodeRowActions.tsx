@@ -32,6 +32,7 @@ export function PromoCodeRowActions({ id, code, active }: PromoCodeRowActionsPro
     <>
       <DropdownMenu>
         <DropdownMenuIconTrigger
+          className="size-11 sm:size-8"
           aria-label={active ? t("deactivateAria", { code }) : t("activateAria", { code })}
         >
           <EllipsisVertical aria-hidden className="size-4" />

@@ -40,20 +40,20 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
   const tList = await getTranslations("dashList");
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex min-w-0 flex-col gap-4 sm:gap-6">
       <div>
-        <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
-        <p className="text-body-b6 text-muted-foreground">{t("summary")}</p>
+        <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">{t("heading")}</h1>
+        <p className="mt-1 text-body-b6 leading-relaxed text-muted-foreground">{t("summary")}</p>
       </div>
 
       <ActivityList
         entries={entries.items}
         toolbar={(
-          <section aria-label={t("heading")} className="grid gap-4 md:grid-cols-3">
-            <label className="flex min-w-0 flex-col gap-2 text-body-b8 text-muted-foreground">
+          <section aria-label={t("heading")} className="grid gap-3 md:grid-cols-3 md:gap-4">
+            <label className="flex min-w-0 flex-col gap-1.5 text-body-b7 text-muted-foreground">
               <span>{t("filterActor")}</span>
               <ListFilterSelect
-                className="w-full min-w-0 bg-surface"
+                className="h-11 w-full min-w-0 bg-surface text-body-b7 sm:h-10"
                 paramName="actorId"
                 label={t("filterActor")}
                 options={[
@@ -62,10 +62,10 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
                 ]}
               />
             </label>
-            <label className="flex min-w-0 flex-col gap-2 text-body-b8 text-muted-foreground">
+            <label className="flex min-w-0 flex-col gap-1.5 text-body-b7 text-muted-foreground">
               <span>{t("filterEntity")}</span>
               <ListFilterSelect
-                className="w-full min-w-0 bg-surface"
+                className="h-11 w-full min-w-0 bg-surface text-body-b7 sm:h-10"
                 paramName="entityType"
                 label={t("filterEntity")}
                 options={[
@@ -81,10 +81,10 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
                 stay one entry while "show me every price change" is still a
                 question with an answer. Backed by the GIN index on
                 `changed_fields`, so it's a real query rather than a scan. */}
-            <label className="flex min-w-0 flex-col gap-2 text-body-b8 text-muted-foreground">
+            <label className="flex min-w-0 flex-col gap-1.5 text-body-b7 text-muted-foreground">
               <span>{t("filterField")}</span>
               <ListFilterSelect
-                className="w-full min-w-0 bg-surface"
+                className="h-11 w-full min-w-0 bg-surface text-body-b7 sm:h-10"
                 paramName="field"
                 label={t("filterField")}
                 options={[

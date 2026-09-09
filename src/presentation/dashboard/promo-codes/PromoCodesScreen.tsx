@@ -46,19 +46,19 @@ export async function PromoCodesScreen({ promoCodes, filters }: PromoCodesScreen
   };
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="flex w-full min-w-0 flex-col gap-4 sm:gap-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-heading-h2 text-foreground">
+          <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">
             {t("heading")}
           </h1>
           <p className="mt-1 text-body-b6 text-muted-foreground">{t("count", { count: promoCodes.total })}</p>
         </div>
-        <Button asChild size="lg" className="shrink-0">
+        <Button asChild className="h-11 shrink-0 px-3 text-body-b7 sm:h-10 sm:px-4">
           <Link href="/dashboard/promo-codes/create">
             <Icon icon={Plus} size="sm" className="me-1.5" />
-            <span className="dashboard-landscape:hidden xl:hidden">{t("newPromoCodeShort")}</span>
-            <span className="hidden dashboard-landscape:inline xl:inline">{t("newPromoCode")}</span>
+            <span className="sm:hidden">{t("newPromoCodeShort")}</span>
+            <span className="hidden sm:inline">{t("newPromoCode")}</span>
           </Link>
         </Button>
       </div>
@@ -70,9 +70,9 @@ export async function PromoCodesScreen({ promoCodes, filters }: PromoCodesScreen
             <ListSearchInput
               label={t("searchLabel")}
               placeholder={t("searchPlaceholder")}
-              className="min-w-0 flex-1 sm:max-w-md [&_input]:h-11"
+              className="min-w-0 flex-1 sm:max-w-md [&_input]:h-11 sm:[&_input]:h-10"
             />
-            <div className="flex flex-wrap items-center gap-3 sm:ms-auto">
+            <div className="flex flex-wrap items-center gap-2 sm:ms-auto sm:gap-3">
               <ListFilterSelect
                 paramName="status"
                 label={t("filterStatusLabel")}
@@ -80,7 +80,7 @@ export async function PromoCodesScreen({ promoCodes, filters }: PromoCodesScreen
                   { value: "", label: t("filterStatusAll") },
                   ...PROMO_CODE_STATUSES.map((status) => ({ value: status, label: statusLabels[status] })),
                 ]}
-                className="h-11 w-auto min-w-36"
+                className="h-11 min-w-36 flex-1 text-body-b7 sm:h-10 sm:w-auto sm:flex-none"
               />
               <ListFilterReset
                 label={tList("clearFiltersShort")}

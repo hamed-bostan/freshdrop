@@ -66,7 +66,7 @@ export async function ActivityList({ entries, toolbar, emptyState, footer, showE
               : t(`action.${entry.action}`, { actor: entry.actorName, entity: label });
 
           return (
-            <li key={entry.id} className="flex gap-3 bg-background px-4 py-5 sm:gap-4 sm:px-6">
+            <li key={entry.id} className="flex gap-3 bg-background px-4 py-4 sm:gap-4 sm:px-6 sm:py-5">
               <div aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-muted-foreground">
                 <History className="size-4" />
               </div>
@@ -82,7 +82,7 @@ export async function ActivityList({ entries, toolbar, emptyState, footer, showE
                   {sentence}
                 </span>
                   {showEntity && href ? (
-                    <Link href={href} aria-label={`${t("open")}: ${label}`} className="inline-flex shrink-0 items-center gap-1 rounded-md text-body-b8 text-accent-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+                    <Link href={href} aria-label={`${t("open")}: ${label}`} className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md text-body-b8 text-accent-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:min-h-8">
                       {t("open")}
                       <ArrowUpRight aria-hidden="true" className="size-3.5 rtl:-scale-x-100" />
                     </Link>

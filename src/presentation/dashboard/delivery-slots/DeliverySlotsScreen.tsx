@@ -30,23 +30,23 @@ export async function DeliverySlotsScreen({ windows }: DeliverySlotsScreenProps)
   const locale = (await getLocale());
 
   return (
-    <div className="flex w-full flex-col gap-6 dashboard-phone:gap-4">
+    <div className="flex w-full min-w-0 flex-col gap-4 sm:gap-6">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2">
         <div className="min-w-0">
-          <h1 className="text-[2.75rem] font-bold leading-[3.25rem] tracking-[-0.03em] text-foreground dashboard-phone:text-heading-h2 dashboard-phone:tracking-normal dashboard-landscape:text-[2.75rem] dashboard-landscape:leading-[3.25rem] xl:text-heading-h2 xl:leading-normal xl:tracking-normal">
+          <h1 className="text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] text-foreground">
             {t("heading")}
           </h1>
         </div>
         <Button
           asChild
-          className="h-14 min-w-40 shrink-0 rounded-[1.125rem] px-5 text-body-b4 dashboard-phone:size-11 dashboard-phone:min-w-0 dashboard-phone:rounded-button dashboard-phone:p-0 xl:h-10 xl:min-w-0 xl:rounded-button xl:px-4 xl:text-button-btn4"
+          className="size-11 shrink-0 p-0 text-body-b7 sm:h-10 sm:w-auto sm:px-4"
         >
           <Link href="/dashboard/delivery-slots/create" aria-label={t("newWindow")}>
-            <Icon icon={Plus} size="md" className="me-2 dashboard-phone:me-0 xl:me-1.5 xl:size-4" />
-            <span className="dashboard-phone:sr-only">{t("newWindow")}</span>
+            <Icon icon={Plus} size="sm" className="sm:me-1.5" />
+            <span className="sr-only sm:not-sr-only">{t("newWindow")}</span>
           </Link>
         </Button>
-        <p className="col-span-2 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
+        <p className="col-span-2 max-w-xl text-body-b6 leading-relaxed text-muted-foreground sm:text-body-b2">
           {t("subtitle", { days: formatNumber(SLOT_HORIZON_DAYS, locale) })}
         </p>
       </div>

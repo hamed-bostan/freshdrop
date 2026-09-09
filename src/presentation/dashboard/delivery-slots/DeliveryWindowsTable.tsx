@@ -47,10 +47,10 @@ export async function DeliveryWindowsTable({ windows, emptyState }: DeliveryWind
 
   return (
     <DataTable
-      className="rounded-[1.375rem] shadow-none dashboard-phone:rounded-card-lg dashboard-landscape:rounded-card-lg xl:rounded-card-lg"
+      className="rounded-card-lg shadow-none"
       toolbar={
-        <div className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1 dashboard-phone:min-h-8">
-          <h2 className="text-body-b1 text-foreground dashboard-phone:text-body-b4 dashboard-landscape:text-body-b4 xl:text-body-b4">
+        <div className="flex min-h-8 flex-wrap items-center gap-x-3 gap-y-1">
+          <h2 className="text-body-b4 text-foreground">
             {t("tableTitle")}
           </h2>
           <Badge variant="neutral">{t("count", { count: windows.length })}</Badge>
@@ -62,7 +62,7 @@ export async function DeliveryWindowsTable({ windows, emptyState }: DeliveryWind
         {windows.map((window) => (
           <li
             key={window.id}
-            className="grid grid-cols-[2.5rem_minmax(0,1fr)_2rem] items-center gap-x-3 bg-background px-4 py-5"
+            className="grid grid-cols-[2.5rem_minmax(0,1fr)_2.75rem] items-center gap-x-3 bg-background px-4 py-4"
           >
             <span className="flex size-10 items-center justify-center rounded-card-md bg-accent text-primary">
               <Icon icon={getWindowIcon(window.startMinutes)} size="md" />
@@ -108,13 +108,13 @@ export async function DeliveryWindowsTable({ windows, emptyState }: DeliveryWind
         </TableHeader>
         <TableBody>
           {windows.map((window) => (
-            <TableRow key={window.id} className="h-24 dashboard-landscape:h-[5.75rem] xl:h-auto">
+            <TableRow key={window.id}>
               <TableCell className="py-4">
                 <div className="flex items-center gap-3">
-                  <span className="flex size-[3.25rem] shrink-0 items-center justify-center rounded-card-lg bg-accent text-primary xl:size-10 xl:rounded-card-md">
-                    <Icon icon={getWindowIcon(window.startMinutes)} size="md" className="xl:size-4" />
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-card-md bg-accent text-primary">
+                    <Icon icon={getWindowIcon(window.startMinutes)} size="sm" />
                   </span>
-                  <span className="truncate text-body-b4 text-foreground dashboard-landscape:text-body-b7 xl:text-body-b7">
+                  <span className="truncate text-body-b7 text-foreground">
                     {window.label}
                   </span>
                 </div>

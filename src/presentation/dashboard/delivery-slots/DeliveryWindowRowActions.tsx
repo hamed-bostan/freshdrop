@@ -30,7 +30,7 @@ export function DeliveryWindowRowActions({ id, label }: DeliveryWindowRowActions
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuIconTrigger aria-label={t("rowActionsAria", { label })}>
+        <DropdownMenuIconTrigger className="size-11 sm:size-8" aria-label={t("rowActionsAria", { label })}>
           <EllipsisVertical aria-hidden className="size-4" />
         </DropdownMenuIconTrigger>
         <DropdownMenuContent>
