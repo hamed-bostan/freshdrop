@@ -57,14 +57,16 @@ export async function ExportReportsScreen({ from, to, isCustomRange, permissions
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {reports.map((report) => (
             <article key={report.id} className="flex min-w-0 flex-col rounded-card-lg border border-border bg-background p-5 transition-colors hover:border-primary/40">
-              <span
-                className="mb-4 flex size-10 shrink-0 items-center justify-center rounded-card-md bg-accent text-primary"
-              >
-                <Icon icon={report.icon} size="md" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-body-b8 font-semibold">{t(`report.${report.id}.name`)}</h3>
-                <p className="mt-2 text-body-b10 leading-relaxed text-muted-foreground">{t(`report.${report.id}.description`)}</p>
+              <div className="flex min-w-0 flex-1 flex-col items-center justify-center text-center">
+                <span
+                  className="mb-4 flex size-10 shrink-0 items-center justify-center rounded-card-md bg-accent text-primary"
+                >
+                  <Icon icon={report.icon} size="md" />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-body-b8 font-semibold">{t(`report.${report.id}.name`)}</h3>
+                  <p className="mt-2 text-body-b10 leading-relaxed text-muted-foreground">{t(`report.${report.id}.description`)}</p>
+                </div>
               </div>
               <Button asChild variant="outline" size="sm" className="mt-5 w-full border-border text-foreground hover:border-primary hover:text-primary">
                 <a href={buildExportHref(report, from, to)} download aria-label={`${t("export")} ${t(`report.${report.id}.name`)}`}><Download className="size-4" aria-hidden="true" />{t("export")}</a>

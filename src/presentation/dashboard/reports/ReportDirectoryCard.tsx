@@ -8,11 +8,16 @@ export type ReportDirectoryItem = { id: string; title: string; description: stri
 type Props = { item: ReportDirectoryItem; openAria: string; fullWidth: boolean };
 
 export function ReportDirectoryCard({ item, openAria, fullWidth }: Props) {
-  return <Link href={item.href} aria-label={openAria} className={cn(focusRing, "group flex min-h-20 items-center gap-4 rounded-card-lg border border-border bg-background p-4 transition-colors hover:border-primary/30 hover:bg-surface-sunken/40", fullWidth && "md:col-span-2")}>
-    <span className={cn("flex size-14 shrink-0 items-center justify-center rounded-card-lg", toneClass(item.tone))}><Icon icon={item.icon} size="md" /></span>
-    <span className="min-w-0 flex-1"><span className="block text-body-b5 text-foreground">{item.title}</span><span className="mt-1 block text-body-b8 text-muted-foreground">{item.description}</span></span>
-    <Icon icon={ChevronRight} size="sm" className="shrink-0 text-muted-foreground rtl:rotate-180" />
+  return <Link href={item.href} aria-label={openAria} className={cn(focusRing, "group relative flex min-h-28 items-center gap-3 overflow-hidden rounded-card-lg border border-border/80 bg-background p-4 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-card sm:gap-4 sm:p-5", cardToneClass(item.tone), fullWidth && "md:col-span-2")}>
+    <span aria-hidden="true" className={cn("absolute inset-y-4 start-0 w-0.5 rounded-full opacity-0 transition-opacity group-hover:opacity-100", accentClass(item.tone))} />
+    <span className={cn("flex size-12 shrink-0 items-center justify-center rounded-card-lg ring-1 ring-inset sm:size-14", toneClass(item.tone))}><Icon icon={item.icon} size="md" /></span>
+    <span className="min-w-0 flex-1"><span className="block text-body-b5 text-foreground transition-colors group-hover:text-primary">{item.title}</span><span className="mt-1 block max-w-2xl text-body-b8 leading-relaxed text-muted-foreground">{item.description}</span></span>
+    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-muted-foreground transition-[color,background-color,transform] group-hover:translate-x-0.5 group-hover:bg-accent group-hover:text-primary rtl:group-hover:-translate-x-0.5"><Icon icon={ChevronRight} size="sm" className="rtl:rotate-180" /></span>
   </Link>;
 }
 
-function toneClass(tone: ReportDirectoryItem["tone"]): string { return { green: "bg-accent text-primary", red: "bg-error text-destructive", blue: "bg-info text-info-foreground", violet: "bg-muted text-secondary" }[tone]; }
+function toneClass(tone: ReportDirectoryItem["tone"]): string { return { green: "bg-accent text-primary ring-primary/10", red: "bg-error text-destructive ring-destructive/10", blue: "bg-info text-info-foreground ring-info-foreground/10", violet: "bg-muted text-secondary ring-secondary/10" }[tone]; }
+
+function cardToneClass(tone: ReportDirectoryItem["tone"]): string { return { green: "hover:border-primary/25", red: "hover:border-destructive/25", blue: "hover:border-info-foreground/25", violet: "hover:border-secondary/25" }[tone]; }
+
+function accentClass(tone: ReportDirectoryItem["tone"]): string { return { green: "bg-primary", red: "bg-destructive", blue: "bg-info-foreground", violet: "bg-secondary" }[tone]; }
