@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import {
@@ -12,6 +11,7 @@ import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
 import { ListSortHeader, ListSortSelect } from "@/src/presentation/dashboard/list";
+import { ProductThumbnail } from "@/src/presentation/dashboard/ProductThumbnail";
 import {
   Badge,
   DataTable,
@@ -21,7 +21,6 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  Thumbnail,
 } from "@/src/presentation/design-system";
 
 import { ProductRowActions } from "./ProductRowActions";
@@ -86,9 +85,7 @@ export async function ProductsTable({ products, categoryNames, canWrite, toolbar
             return (
               <li key={product.id} className="space-y-4 p-4">
                 <div className="flex items-start gap-3">
-                  <Thumbnail className="size-14 shrink-0">
-                    <Image src={product.imageUrl} alt="" width={56} height={56} className="size-full object-cover" />
-                  </Thumbnail>
+                  <ProductThumbnail src={product.imageUrl} size="card" />
                   <div className="min-w-0 flex-1">
                     <p className="break-words text-body-b8 text-foreground">{product.name}</p>
                     {product.unit ? <p className="mt-1 break-words text-body-b10 text-muted-foreground">{product.unit}</p> : null}
@@ -170,9 +167,7 @@ export async function ProductsTable({ products, categoryNames, canWrite, toolbar
 
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <Thumbnail className="size-11 shrink-0">
-                        <Image src={product.imageUrl} alt="" width={40} height={40} className="size-full object-cover" />
-                      </Thumbnail>
+                      <ProductThumbnail src={product.imageUrl} size="table" />
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-1.5">
                           <span className="max-w-64 break-words text-body-b8 text-foreground">{product.name}</span>

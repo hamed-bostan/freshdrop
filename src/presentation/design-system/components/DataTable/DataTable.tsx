@@ -93,7 +93,7 @@ TableHeader.displayName = "TableHeader";
 /** A column header. `scope="col"` is set here so no call site can forget it. */
 export const TableHead = React.forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCellElement>>(
   ({ className, scope = "col", ...props }, ref) => (
-    <th ref={ref} scope={scope} className={cn("px-4 py-3", className)} {...props} />
+    <th ref={ref} scope={scope} className={cn("px-4 py-3 text-start", className)} {...props} />
   ),
 );
 

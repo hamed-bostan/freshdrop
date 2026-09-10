@@ -1,14 +1,14 @@
 import { ChevronRight } from "lucide-react";
-import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import type { Product } from "@/src/domain/entities/Product";
 import { Link } from "@/src/i18n/navigation";
 import { formatNumber } from "@/src/lib/formatNumber";
 import { cn } from "@/src/lib/utils";
-import { focusRing, Icon, Thumbnail } from "@/src/presentation/design-system";
+import { focusRing, Icon } from "@/src/presentation/design-system";
 
 import { DashboardPanel, DashboardPanelHeader } from "./DashboardPanel";
+import { ProductThumbnail } from "./ProductThumbnail";
 
 type Props = {
   products: Product[];
@@ -39,9 +39,7 @@ export async function LowStockPanel({ products }: Props) {
               key={product.id}
               className="flex min-h-16 items-center gap-3 py-2"
             >
-              <Thumbnail as="span" className="size-12 shrink-0 sm:size-10">
-                <Image src={product.imageUrl} alt="" width={48} height={48} className="size-full object-contain" />
-              </Thumbnail>
+              <ProductThumbnail src={product.imageUrl} size="responsive" />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-body-b8">{product.name}</span>
                 <span className="block text-body-b10 text-muted-foreground">

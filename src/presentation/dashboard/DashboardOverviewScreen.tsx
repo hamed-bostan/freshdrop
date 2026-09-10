@@ -272,7 +272,7 @@ export async function DashboardOverviewScreen({
           </p>
         </div>
 
-        <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:shrink-0 md:flex-col md:items-end md:justify-end md:gap-4 xl:flex-row xl:items-center xl:gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:shrink-0 md:flex-row md:items-center md:justify-end">
           {/* The overview keeps the KPIs and the period chart; everything else
               analytics can show (the full status breakdown, exports, and the
               rankings past the top five) moved to its own page — this is the

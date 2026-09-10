@@ -1,5 +1,7 @@
 "use client";
 
+import { useRef } from "react";
+
 import { Select } from "@/src/presentation/design-system";
 
 import { useListParams } from "./useListParams";
@@ -29,13 +31,23 @@ type ListFilterSelectProps = {
  */
 export function ListFilterSelect({ paramName, label, options, className }: ListFilterSelectProps) {
   const { searchParams, setFilter } = useListParams();
+  const isPointerSelection = useRef(false);
 
   return (
     <Select
       size="sm"
       aria-label={label}
       value={searchParams.get(paramName) ?? ""}
-      onChange={(event) => setFilter(paramName, event.target.value || null)}
+      onPointerDown={() => { isPointerSelection.current = true; }}
+      onKeyDown={() => { isPointerSelection.current = false; }}
+      onChange={(event) => {
+        setFilter(paramName, event.target.value || null);
+        // Native selects can keep `:focus-visible` after their pointer-opened
+        // menu closes. Clear that transient ring for pointer users, but retain
+        // focus when the selection was made by keyboard so navigation can continue.
+        if (isPointerSelection.current) event.currentTarget.blur();
+        isPointerSelection.current = false;
+      }}
       className={className ?? "w-auto"}
     >
       {options.map((option) => (

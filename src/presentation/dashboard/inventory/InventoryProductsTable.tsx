@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import type { AdminProductSort } from "@/src/domain/entities/AdminProductFilters";
@@ -9,6 +8,7 @@ import { formatNumber } from "@/src/lib/formatNumber";
 import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
 import { ListSortHeader } from "@/src/presentation/dashboard/list";
 import { AdjustStockButton } from "@/src/presentation/dashboard/products/AdjustStockButton";
+import { ProductThumbnail } from "@/src/presentation/dashboard/ProductThumbnail";
 import {
   Badge,
   DataTable,
@@ -18,7 +18,6 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  Thumbnail,
 } from "@/src/presentation/design-system";
 
 import styles from "./inventory.module.css";
@@ -102,9 +101,7 @@ export async function InventoryProductsTable({
                 ) : null}
                 <TableCell className={styles.product}>
                   <div className="flex min-w-0 items-center gap-3">
-                    <Thumbnail className="size-10 shrink-0">
-                      <Image src={product.imageUrl} alt="" width={40} height={40} className="size-full object-cover" />
-                    </Thumbnail>
+                    <ProductThumbnail src={product.imageUrl} />
                     <div className="min-w-0">
                       <span className="block truncate text-body-b7 text-foreground">{product.name}</span>
                       {product.unit ? (

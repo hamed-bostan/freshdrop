@@ -8,6 +8,8 @@ import { cn } from "@/src/lib/utils";
 import { focusRing } from "../../shared/focusRing";
 import { baseFieldStyles } from "../shared/baseFieldStyles";
 
+import styles from "./Select.module.css";
+
 export type SelectProps = Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size"> &
   VariantProps<typeof baseFieldStyles>;
 
@@ -17,8 +19,9 @@ export type SelectProps = Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "s
  *
  * Deliberately a native `<select>` rather than a Radix listbox: this app is
  * mobile-first, and the OS picker is both faster to operate on touch and better
- * at long option lists than anything rendered in-page. That also means the
- * browser draws the chevron — no `appearance-none` here.
+ * at long option lists than anything rendered in-page. Only the trigger chevron
+ * is normalized here so its size and logical edge inset are consistent across
+ * browsers and writing directions.
  *
  * Options are passed as children; it owns no label, so wrap it in `<Field>`/
  * `<TextField>` or give it an `aria-label`.
@@ -27,7 +30,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   ({ className, size, variant, children, ...props }, ref) => (
     <select
       ref={ref}
-      className={cn(baseFieldStyles({ size, variant }), "cursor-pointer px-3", focusRing, className)}
+      className={cn(baseFieldStyles({ size, variant }), styles.select, "cursor-pointer ps-3", focusRing, className)}
       {...props}
     >
       {children}
