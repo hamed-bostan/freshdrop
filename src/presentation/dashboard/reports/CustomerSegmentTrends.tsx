@@ -40,9 +40,9 @@ export async function CustomerSegmentTrends({ transitions, locale }: { transitio
           </div>
         </div>
       </article>)}</div>}
-    <div className="mt-auto flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mt-auto flex flex-col items-start gap-3 border-t border-border pt-4 2xl:flex-row 2xl:items-center 2xl:justify-between">
       <p className="text-body-b10 text-muted-foreground">{t("higherValueMoved", { count: higherValueMoved })}</p>
-      <Link href="/dashboard/customers" className="flex items-center gap-2 text-body-b8 text-primary">{t("viewMovementDetails")}<Icon icon={ExternalLink} size="xs" /></Link>
+      <Link href="/dashboard/customers" className="inline-flex shrink-0 items-center gap-2 text-body-b8 font-medium whitespace-nowrap text-primary">{t("viewMovementDetails")}<Icon icon={ExternalLink} size="xs" /></Link>
     </div>
   </section>;
 }
