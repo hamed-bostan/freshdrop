@@ -49,8 +49,8 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
       <ActivityList
         entries={entries.items}
         toolbar={(
-          <section aria-label={t("heading")} className="grid gap-3 md:grid-cols-3 md:gap-4">
-            <label className="flex min-w-0 flex-col gap-1.5 text-body-b7 text-muted-foreground">
+          <section aria-label={t("heading")} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
+            <label className="flex min-w-0 flex-col gap-1.5 text-body-b8 font-medium text-muted-foreground">
               <span>{t("filterActor")}</span>
               <ListFilterSelect
                 className="h-11 w-full min-w-0 bg-surface text-body-b7 sm:h-10"
@@ -62,7 +62,7 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
                 ]}
               />
             </label>
-            <label className="flex min-w-0 flex-col gap-1.5 text-body-b7 text-muted-foreground">
+            <label className="flex min-w-0 flex-col gap-1.5 text-body-b8 font-medium text-muted-foreground">
               <span>{t("filterEntity")}</span>
               <ListFilterSelect
                 className="h-11 w-full min-w-0 bg-surface text-body-b7 sm:h-10"
@@ -81,7 +81,7 @@ export async function ActivityScreen({ entries, actors, isFiltered }: ActivitySc
                 stay one entry while "show me every price change" is still a
                 question with an answer. Backed by the GIN index on
                 `changed_fields`, so it's a real query rather than a scan. */}
-            <label className="flex min-w-0 flex-col gap-1.5 text-body-b7 text-muted-foreground">
+            <label className="flex min-w-0 flex-col gap-1.5 text-body-b8 font-medium text-muted-foreground">
               <span>{t("filterField")}</span>
               <ListFilterSelect
                 className="h-11 w-full min-w-0 bg-surface text-body-b7 sm:h-10"

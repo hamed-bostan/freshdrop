@@ -50,7 +50,10 @@ export const DataTableToolbar = React.forwardRef<HTMLDivElement, React.HTMLAttri
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("border-b border-border bg-background px-4 py-3", className)}
+      className={cn(
+        "border-b border-border bg-background px-4 py-3 [--radius-button:var(--radius-card-md)] [--radius-input:var(--radius-card-md)]",
+        className,
+      )}
       {...props}
     />
   ),

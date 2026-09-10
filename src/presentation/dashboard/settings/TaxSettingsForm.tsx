@@ -103,7 +103,7 @@ export function TaxSettingsForm({ settings }: TaxSettingsFormProps) {
           control={control}
           name="enabled"
           render={({ field }) => (
-            <label className="flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-card-md border border-border bg-muted/30 px-4 py-3">
+            <label className="flex h-11 cursor-pointer items-center justify-between gap-4 rounded-card-md border border-border bg-muted/30 px-4 sm:h-10">
               <span className="text-body-b7 text-foreground">{t("enabledLabel")}</span>
               <Switch id="tax-enabled" checked={field.value} onCheckedChange={field.onChange} />
             </label>

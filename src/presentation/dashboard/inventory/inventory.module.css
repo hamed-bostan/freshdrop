@@ -101,6 +101,7 @@
     height: auto;
     font-size: 0.875rem;
     line-height: 1.25rem;
+    white-space: nowrap;
   }
 }
 
@@ -155,11 +156,12 @@
 }
 
 .movementExport {
-  justify-self: end;
+  width: 100%;
 }
 
 .movementExport > a {
-  width: fit-content;
+  width: 100%;
+  justify-content: center;
   white-space: nowrap;
 }
 
@@ -186,6 +188,12 @@
   .movementExport {
     grid-column: 2;
     grid-row: 1;
+    width: auto;
+    justify-self: end;
+  }
+
+  .movementExport > a {
+    width: fit-content;
   }
 
   .movementFilters {

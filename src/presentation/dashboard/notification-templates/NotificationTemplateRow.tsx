@@ -98,13 +98,13 @@ export function NotificationTemplateRow({ kind, template, sampleVars }: Notifica
 
       <div className="flex min-w-0 flex-col gap-4">
       {channel === "push" ? (
-        <div className="flex flex-col gap-1.5">
+        <div className="flex min-w-0 flex-col gap-1.5">
           <label htmlFor={`${kind}-title`} className="text-body-b7 text-input-foreground">{t("titleLabel")}</label>
           <Input id={`${kind}-title`} {...register("title")} aria-invalid={!!errors.title} inputClassName="h-11 sm:h-10" />
           {errors.title?.message && <FormMessage size="sm">{templateErrorMessage(tFormErrors, errors.title.message)}</FormMessage>}
         </div>
       ) : (
-        <div className="flex flex-col gap-1.5">
+        <div className="flex min-w-0 flex-col gap-1.5">
           <label htmlFor={`${kind}-subject`} className="text-body-b7 text-input-foreground">{t("subjectLabel")}</label>
           <Input id={`${kind}-subject`} {...register("subject")} aria-invalid={!!errors.subject} inputClassName="h-11 sm:h-10" />
           {errors.subject?.message && (
@@ -113,18 +113,20 @@ export function NotificationTemplateRow({ kind, template, sampleVars }: Notifica
         </div>
       )}
 
-      <div className="flex flex-col gap-1.5">
+      <div className="flex min-w-0 flex-col gap-1.5">
         <label htmlFor={`${kind}-body`} className="text-body-b7 text-input-foreground">{t("bodyLabel")}</label>
         <Textarea id={`${kind}-body`} {...register("body")} aria-invalid={!!errors.body} rows={6} />
         {errors.body?.message && <FormMessage size="sm">{templateErrorMessage(tFormErrors, errors.body.message)}</FormMessage>}
       </div>
       </div>
 
-      <div className="flex min-w-0 flex-col gap-3 self-start break-words rounded-card-md border border-border bg-surface p-4 sm:p-5">
-        <h4 className="text-body-b8 text-foreground">{t("previewHeading")}</h4>
-        {previewTitle != null && <p className="text-body-b7 font-medium text-foreground">{previewTitle}</p>}
-        {previewSubject != null && <p className="text-body-b7 font-medium text-foreground">{previewSubject}</p>}
-        <p className="whitespace-pre-wrap text-body-b6 text-muted-foreground">{previewBody}</p>
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <h4 className="text-body-b7 text-input-foreground">{t("previewHeading")}</h4>
+        <div className="flex min-w-0 flex-1 flex-col gap-3 break-words rounded-card-md border border-border bg-surface p-4 sm:p-5">
+          {previewTitle != null && <p className="text-body-b7 font-medium text-foreground">{previewTitle}</p>}
+          {previewSubject != null && <p className="text-body-b7 font-medium text-foreground">{previewSubject}</p>}
+          <p className="whitespace-pre-wrap text-body-b6 text-muted-foreground">{previewBody}</p>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-end lg:col-span-2">
