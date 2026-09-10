@@ -59,7 +59,7 @@ export async function RefundsReturnsScreen({ report, customers, from, to, isCust
       <ReturnCasesTable rows={rows} labels={{ ...tableLabels, heading: t("recentCases") }} viewAllHref={viewHref(queryString, "items")} />
     </> : <>
       <ReturnMetricGrid report={report} locale={locale} />
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.9fr)_minmax(34rem,1.5fr)]"><RefundTrendChart points={report.series} previousPoints={report.previousSeries} granularity={report.granularity} range={report.range} previousRange={report.previousRange} title={t("returnedItemsProcessed")} /><RecoveryBreakdownPanels report={report} locale={locale} /></div>
+      <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_minmax(40rem,1fr)]"><RefundTrendChart points={report.series} previousPoints={report.previousSeries} granularity={report.granularity} range={report.range} previousRange={report.previousRange} title={t("returnedItemsProcessed")} /><RecoveryBreakdownPanels report={report} locale={locale} /></div>
       <ReturnInsightBanner report={report} locale={locale} recovery />
       <InspectionRecoveryQueue rows={rows} labels={recoveryLabels} viewAllHref="/dashboard/orders" />
     </>}
