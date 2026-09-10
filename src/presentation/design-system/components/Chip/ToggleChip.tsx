@@ -7,7 +7,10 @@ import { cn } from "@/src/lib/utils";
 
 import { chipShapeStyles, chipToggleStateStyles } from "./chipStyles";
 
-export type ToggleChipProps = React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root>;
+import type { VariantProps } from "class-variance-authority";
+
+export type ToggleChipProps = React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> &
+  VariantProps<typeof chipShapeStyles>;
 
 /**
  * An independently-toggleable chip, built on Radix Toggle (which supplies the
@@ -20,8 +23,8 @@ export type ToggleChipProps = React.ComponentPropsWithoutRef<typeof TogglePrimit
  * `defaultPressed`. Group them in a <fieldset> with a legend, or any container
  * carrying an accessible name.
  */
-export const ToggleChip = React.forwardRef<HTMLButtonElement, ToggleChipProps>(({ className, ...props }, ref) => (
-  <TogglePrimitive.Root ref={ref} className={cn(chipShapeStyles, chipToggleStateStyles, className)} {...props} />
+export const ToggleChip = React.forwardRef<HTMLButtonElement, ToggleChipProps>(({ className, size, ...props }, ref) => (
+  <TogglePrimitive.Root ref={ref} className={cn(chipShapeStyles({ size }), chipToggleStateStyles, className)} {...props} />
 ));
 
 ToggleChip.displayName = "ToggleChip";

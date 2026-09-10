@@ -7,7 +7,7 @@ import * as React from "react";
 import { Link } from "@/src/i18n/navigation";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
-import { DataTable, Icon, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
+import { Button, DataTable, Icon, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/presentation/design-system";
 
 import type { PaymentReportWire } from "./payment-report-response-schema";
 
@@ -37,7 +37,7 @@ export function PaymentIssuesTable({ issues }: { issues: Issue[] }) {
   return <section className="rounded-card-lg border border-border bg-background p-4 md:p-6">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <h2 className="max-w-2xl text-heading-h3">{t("recentTransactions")}</h2>
-      <Link href="/dashboard/orders?payment=failed" className="inline-flex min-h-9 shrink-0 items-center justify-center rounded-input bg-accent px-3 text-body-b10 font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground">{t("viewAll")}</Link>
+      <Button asChild variant="soft" size="sm" className="shrink-0 px-3 text-body-b10"><Link href="/dashboard/orders?payment=failed">{t("viewAll")}</Link></Button>
     </div>
     <div className="mt-4">
       <div className="grid w-full grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(11rem,.45fr)] lg:max-w-3xl">

@@ -1,3 +1,5 @@
+import { cva } from "class-variance-authority";
+
 import { focusRing } from "../shared/focusRing";
 
 /**
@@ -10,11 +12,23 @@ import { focusRing } from "../shared/focusRing";
  * below rather than generated from a template, because Tailwind discovers classes
  * by scanning source text — an interpolated class name is never emitted.
  */
-export const chipShapeStyles = [
-  "flex h-10 cursor-pointer items-center justify-center rounded-full px-4 text-button-btn4 transition-colors",
-  focusRing,
-  "disabled:cursor-not-allowed disabled:opacity-50",
-].join(" ");
+export const chipShapeStyles = cva(
+  [
+    "flex cursor-pointer items-center justify-center rounded-full text-button-btn4 transition-colors",
+    focusRing,
+    "disabled:cursor-not-allowed disabled:opacity-50",
+  ],
+  {
+    variants: {
+      size: {
+        sm: "h-9 px-3",
+        md: "h-10 px-4",
+        lg: "h-12 px-4",
+      },
+    },
+    defaultVariants: { size: "md" },
+  },
+);
 
 /** State colours for chips built on Radix RadioGroup (single-select). */
 export const chipRadioStateStyles = [

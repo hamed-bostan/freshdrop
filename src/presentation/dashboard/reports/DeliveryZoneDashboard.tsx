@@ -9,6 +9,7 @@ import { StatCardCarousel } from "@/src/presentation/dashboard/StatCardCarousel"
 import { Icon } from "@/src/presentation/design-system";
 
 import { DeliveryZoneCoverageCard } from "./DeliveryZoneCoverageCard";
+import { ReportStatusBadge } from "./ReportStatusBadge";
 import { SalesMetricCard } from "./SalesMetricCard";
 
 import type { DeliveryZonesWire } from "./delivery-zones-response-schema";
@@ -68,7 +69,7 @@ export async function DeliveryZoneAlerts({ report, locale }: Props) {
   ];
   return <section className="flex flex-col rounded-card-lg border border-border bg-background p-4 md:p-6">
     <h2 className="text-heading-h3">{t("zoneAlerts")}</h2>
-    {rows.length ? <div className="mt-4 divide-y divide-border rounded-card-md border border-border">{rows.map(({ key, title, detail, badge, icon, tone }) => <div key={key} className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-x-3 gap-y-2 p-3 text-body-b10 md:grid-cols-[2.5rem_minmax(0,1fr)_auto]"><span className={`flex size-10 items-center justify-center rounded-card-md ${tone}`}><Icon icon={icon} size="xs" /></span><span className="min-w-0"><span className="block font-semibold">{title}</span><span className="mt-0.5 block text-muted-foreground">{detail}</span></span><span className={`col-start-2 inline-flex h-8 w-fit items-center justify-self-end rounded-button border border-current/15 px-3 text-body-b10 font-semibold whitespace-nowrap md:col-start-3 md:row-start-1 ${tone}`}>{badge}</span></div>)}</div> : <p className="py-10 text-center text-body-b8 text-muted-foreground">{t("noAlerts")}</p>}
+    {rows.length ? <div className="mt-4 divide-y divide-border rounded-card-md border border-border">{rows.map(({ key, title, detail, badge, icon, tone }) => <div key={key} className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-x-3 gap-y-2 p-3 text-body-b10 md:grid-cols-[2.5rem_minmax(0,1fr)_auto]"><span className={`flex size-10 items-center justify-center rounded-card-md ${tone}`}><Icon icon={icon} size="xs" /></span><span className="min-w-0"><span className="block font-semibold">{title}</span><span className="mt-0.5 block text-muted-foreground">{detail}</span></span><ReportStatusBadge label={badge} tone={tone} className="col-start-2 justify-self-end md:col-start-3 md:row-start-1" /></div>)}</div> : <p className="py-10 text-center text-body-b8 text-muted-foreground">{t("noAlerts")}</p>}
     <Footer href="/dashboard/delivery-slots" label={t("viewAllAlerts")} />
   </section>;
 }

@@ -61,7 +61,7 @@ export function InspectionRecoveryQueue({ rows, labels, viewAllHref }: { rows: R
       <Input size="sm" type="search" value={query} onChange={(event) => updateFilter(setQuery, event.target.value)} placeholder={labels.search} aria-label={labels.search} className="min-w-0 w-full @[20rem]/queue:col-span-2 @[44rem]/queue:col-span-1" inputClassName="h-11 text-base" leftElement={<Icon icon={Search} size="xs" />} />
       <Select size="sm" value={condition} onChange={(event) => updateFilter(setCondition, event.target.value)} aria-label={labels.allConditions} className="h-11 min-w-0 w-full text-body-b10"><option value="all">{labels.allConditions}</option>{conditions.map((value) => <option key={value}>{value}</option>)}</Select>
       <Select size="sm" value={status} onChange={(event) => updateFilter(setStatus, event.target.value)} aria-label={labels.allStatuses} className="h-11 min-w-0 w-full text-body-b10"><option value="all">{labels.allStatuses}</option><option>{labels.awaitingInspection}</option><option>{labels.inspected}</option><option>{labels.inReview}</option></Select>
-      <Link href={viewAllHref} className={cn(focusRing, "inline-flex min-h-11 items-center justify-center rounded-input border border-primary/50 px-4 py-2 text-body-b10 font-semibold text-primary hover:bg-accent @[20rem]/queue:col-span-2 @[44rem]/queue:col-span-1")}>{labels.viewAll}</Link>
+      <Button asChild variant="outline" size="sm" className="h-11 border-primary/50 px-4 text-body-b10 @[20rem]/queue:col-span-2 @[44rem]/queue:col-span-1"><Link href={viewAllHref}>{labels.viewAll}</Link></Button>
     </div></div>
     <div className={cn("grid min-w-0 grid-cols-1 gap-3 @[36rem]/queue:grid-cols-2", pageRows.length > 0 && "@[48rem]/queue:hidden")}>
       {pageRows.length === 0 ? <div className="col-span-full flex flex-col items-center gap-3 rounded-card-lg border border-dashed border-border bg-surface-sunken/40 px-4 py-8 text-center">
@@ -83,7 +83,7 @@ export function InspectionRecoveryQueue({ rows, labels, viewAllHref }: { rows: R
         </dl>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border p-3">
           <div className="min-w-0"><p className="text-label-l1 text-muted-foreground">{labels.value}</p><p className="break-words text-body-b8 font-semibold tabular-nums">{row.amount}</p></div>
-          <Link href={`/dashboard/orders/${row.orderId}`} className={cn(focusRing, "inline-flex min-h-11 min-w-24 shrink-0 items-center justify-center rounded-input border border-primary/50 px-4 text-body-b10 font-semibold text-primary hover:bg-accent")}>{row.action}</Link>
+          <Button asChild variant="outline" size="sm" className="h-11 min-w-24 shrink-0 border-primary/50 px-4 text-body-b10"><Link href={`/dashboard/orders/${row.orderId}`}>{row.action}</Link></Button>
         </div>
       </article>)}
     </div>
@@ -94,7 +94,7 @@ export function InspectionRecoveryQueue({ rows, labels, viewAllHref }: { rows: R
         <TableCell><Badge variant={row.conditionTone.variant} appearance={row.conditionTone.appearance}>{row.conditionLabel}</Badge></TableCell><TableCell className="whitespace-nowrap text-body-b10 text-muted-foreground">{row.date}</TableCell>
         <TableCell><Badge variant={row.inspection === labels.awaitingInspection ? "warning" : row.inspection === labels.inReview ? "info" : "primary"} appearance="outline">{row.inspection}</Badge></TableCell>
         <TableCell><Badge variant="neutral" appearance="outline">{row.decision}</Badge></TableCell><TableCell className="text-end text-body-b10 font-semibold tabular-nums">{row.amount}</TableCell>
-        <TableCell className="text-center"><Link href={`/dashboard/orders/${row.orderId}`} className="inline-flex min-w-20 justify-center rounded-card-md border border-primary/50 px-3 py-1 text-label-l1 font-semibold text-primary hover:bg-accent">{row.action}</Link></TableCell><TableCell><Icon icon={MoreVertical} size="xs" /></TableCell>
+        <TableCell className="text-center"><Button asChild variant="outline" size="sm" className="h-8 min-w-20 rounded-card-md border-primary/50 px-3 text-label-l1"><Link href={`/dashboard/orders/${row.orderId}`}>{row.action}</Link></Button></TableCell><TableCell><Icon icon={MoreVertical} size="xs" /></TableCell>
       </TableRow>)}</TableBody></Table></DataTable>
     <div className={cn("flex flex-wrap items-center justify-between gap-3 px-1 pt-4 text-body-b10 text-muted-foreground", pageRows.length === 0 && "hidden")}>
       <span>{labels.showing.replace("{first}", String(visible.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1)).replace("{last}", String((currentPage - 1) * PAGE_SIZE + pageRows.length)).replace("{total}", String(visible.length))}</span>

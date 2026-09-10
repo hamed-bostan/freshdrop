@@ -7,6 +7,8 @@ import { cn } from "@/src/lib/utils";
 
 import { chipRadioStateStyles, chipShapeStyles } from "./chipStyles";
 
+import type { VariantProps } from "class-variance-authority";
+
 export type ChipGroupProps = React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>;
 
 /**
@@ -22,7 +24,8 @@ export const ChipGroup = React.forwardRef<HTMLDivElement, ChipGroupProps>(({ cla
 
 ChipGroup.displayName = "ChipGroup";
 
-export type ChipProps = React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>;
+export type ChipProps = React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item> &
+  VariantProps<typeof chipShapeStyles>;
 
 /**
  * A single-select chip; must live inside a <ChipGroup>. Filled (`primary`) when
@@ -30,10 +33,10 @@ export type ChipProps = React.ComponentPropsWithoutRef<typeof RadioGroupPrimitiv
  * controlled `selected` prop to keep in sync. For multi-select or clearable
  * groups use <ToggleChip> instead; both share `chipShapeStyles`.
  */
-export const Chip = React.forwardRef<HTMLButtonElement, ChipProps>(({ className, ...props }, ref) => (
+export const Chip = React.forwardRef<HTMLButtonElement, ChipProps>(({ className, size, ...props }, ref) => (
   <RadioGroupPrimitive.Item
     ref={ref}
-    className={cn(chipShapeStyles, chipRadioStateStyles, className)}
+    className={cn(chipShapeStyles({ size }), chipRadioStateStyles, className)}
     {...props}
   />
 ));

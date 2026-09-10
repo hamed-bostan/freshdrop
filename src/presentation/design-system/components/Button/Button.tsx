@@ -29,6 +29,7 @@ const buttonVariants = cva(
           "bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-pressed disabled:bg-disabled disabled:text-disabled-foreground",
         outline:
           "border border-primary text-primary bg-transparent hover:bg-accent active:bg-accent active:text-primary-pressed active:border-primary-pressed disabled:border-disabled-border disabled:text-disabled-foreground",
+        soft: "bg-accent text-primary hover:bg-primary hover:text-primary-foreground active:bg-primary-pressed disabled:bg-disabled disabled:text-disabled-foreground",
         ghost: "px-0 bg-transparent text-foreground hover:text-primary disabled:text-disabled-foreground",
         link: "px-0 bg-transparent text-primary hover:text-primary-hover hover:underline underline-offset-4 disabled:text-disabled-foreground disabled:no-underline",
       },

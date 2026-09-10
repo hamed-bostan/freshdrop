@@ -116,10 +116,10 @@ export function ScheduledExportForm({ reports, ...props }: Props) {
       {report.periodCapable && (
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t("rangeFromLabel")} description={t("rangeDescription")}>
-            <Input type="date" value={rangeFrom} onChange={(event) => setRangeFrom(event.target.value)} size="sm" />
+            <Input type="date" value={rangeFrom} onChange={(event) => setRangeFrom(event.target.value)} size="md" />
           </Field>
           <Field label={t("rangeToLabel")}>
-            <Input type="date" value={rangeTo} onChange={(event) => setRangeTo(event.target.value)} size="sm" />
+            <Input type="date" value={rangeTo} onChange={(event) => setRangeTo(event.target.value)} size="md" />
           </Field>
         </div>
       )}

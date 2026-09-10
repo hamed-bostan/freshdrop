@@ -1,8 +1,7 @@
 import { ChartNoAxesCombined, ClipboardList, CreditCard, FileSpreadsheet, MapPin, RefreshCcw, Truck, UserRound, UsersRound } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { cn } from "@/src/lib/utils";
-import { Icon, focusRing } from "@/src/presentation/design-system";
+import { Button, Icon } from "@/src/presentation/design-system";
 
 import { ReportDirectoryCard, type ReportDirectoryItem } from "./ReportDirectoryCard";
 
@@ -33,6 +32,6 @@ export async function ReportsScreen() {
   return <div className="mx-auto flex w-full max-w-6xl flex-col gap-7 md:gap-9">
     <header className="border-b border-border/70 pb-5 md:pb-6"><h1 className="dashboard-page-title">{t("heading")}</h1><p className="mt-1.5 max-w-2xl text-body-b7 text-muted-foreground">{t("subtitle")}</p></header>
     <div className="flex flex-col gap-6 md:gap-7">{groups.map((group) => <section key={group.id} aria-labelledby={`report-group-${group.id}`}><h2 id={`report-group-${group.id}`} className="mb-3 text-body-b5 text-foreground">{group.title}</h2><div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">{group.items.map((item) => <ReportDirectoryCard key={item.id} item={item} fullWidth={group.items.length === 1} openAria={t("openReportAria", { report: item.title })} />)}</div></section>)}</div>
-    <aside className="relative flex flex-col gap-4 overflow-hidden rounded-card-lg border border-primary/20 bg-accent/60 p-5 sm:flex-row sm:items-center md:p-6"><span aria-hidden="true" className="absolute -end-12 -top-16 size-40 rounded-full border-[24px] border-primary/5" /><span className="relative flex size-14 shrink-0 rotate-[-6deg] items-center justify-center rounded-card-lg border border-primary/20 bg-background text-primary shadow-card"><Icon icon={ClipboardList} size="md" /></span><div className="relative min-w-0 flex-1"><h2 className="text-heading-h3 text-foreground">{t("needSomethingElse")}</h2><p className="mt-1 text-body-b8 text-muted-foreground">{t("requestDescription")}</p></div><a href="mailto:support@yourapp.com?subject=Report%20request" className={cn(focusRing, "relative inline-flex h-11 shrink-0 items-center justify-center rounded-input border border-primary/30 bg-background px-6 text-body-b7 font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground sm:h-10")}>{t("requestReport")}</a></aside>
+    <aside className="relative flex flex-col gap-4 overflow-hidden rounded-card-lg border border-primary/20 bg-accent/60 p-5 sm:flex-row sm:items-center md:p-6"><span aria-hidden="true" className="absolute -end-12 -top-16 size-40 rounded-full border-[24px] border-primary/5" /><span className="relative flex size-14 shrink-0 rotate-[-6deg] items-center justify-center rounded-card-lg border border-primary/20 bg-background text-primary shadow-card"><Icon icon={ClipboardList} size="md" /></span><div className="relative min-w-0 flex-1"><h2 className="text-heading-h3 text-foreground">{t("needSomethingElse")}</h2><p className="mt-1 text-body-b8 text-muted-foreground">{t("requestDescription")}</p></div><Button asChild variant="outline" size="sm" className="relative shrink-0 border-primary/30 bg-background px-6 text-body-b7"><a href="mailto:support@yourapp.com?subject=Report%20request">{t("requestReport")}</a></Button></aside>
   </div>;
 }

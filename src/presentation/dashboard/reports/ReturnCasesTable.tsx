@@ -7,7 +7,7 @@ import * as React from "react";
 import type { ReturnItemCondition, ReturnRecoveryDecision, ReturnRequestStatus } from "@/src/domain/entities/Return";
 import { Link } from "@/src/i18n/navigation";
 import { cn } from "@/src/lib/utils";
-import { DataTable, Icon, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Thumbnail, focusRing } from "@/src/presentation/design-system";
+import { Button, DataTable, Icon, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Thumbnail, focusRing } from "@/src/presentation/design-system";
 
 type ReturnStatus = "return_requested" | "refunded" | "cancelled";
 export type ReturnCaseRow = {
@@ -74,7 +74,7 @@ export function ReturnCasesTable({ rows, labels, viewAllHref }: { rows: ReturnCa
           <option value="all">{labels.all}</option>
           {rows.map((row) => row.status).filter((value, index, values) => values.indexOf(value) === index).map((value) => <option key={value} value={value}>{rows.find((row) => row.status === value)?.statusLabel}</option>)}
         </Select>
-        <Link href={viewAllHref} className={cn(focusRing, "inline-flex h-11 items-center justify-center rounded-input border border-primary/45 px-4 text-body-b7 font-semibold text-primary hover:bg-accent sm:h-9 sm:text-body-b10")}>{labels.viewAll}</Link>
+        <Button asChild variant="outline" size="sm" className="h-11 border-primary/45 px-4 text-body-b7 sm:h-9 sm:text-body-b10"><Link href={viewAllHref}>{labels.viewAll}</Link></Button>
       </div>
     </div>
 

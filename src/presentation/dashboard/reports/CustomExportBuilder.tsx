@@ -195,7 +195,7 @@ export function CustomExportBuilder({ from, to, reports, canEmailDeliver, hasEma
           <p className="mt-1 text-body-b10 text-muted-foreground">{t("formatDescription")}</p>
           <ChipGroup value={format} onValueChange={(value) => setFormat(value as ExportFormat)} aria-label={t("formatLabel")} className="mt-3 grid grid-cols-3 gap-2">
             {FORMATS.map((value) => (
-              <Chip key={value} value={value} className="h-10 w-full justify-center gap-2 rounded-card-md px-3">
+              <Chip key={value} value={value} size="md" className="w-full justify-center gap-2 rounded-card-md">
                 <FileText className="size-4 shrink-0" aria-hidden="true" />
                 {EXPORT_FORMAT_LABEL[value]}
               </Chip>
@@ -227,8 +227,8 @@ export function CustomExportBuilder({ from, to, reports, canEmailDeliver, hasEma
           <p className="text-body-b10 font-medium">{t("deliveryLabel")}</p>
           <p className="mt-1 text-body-b10 text-muted-foreground">{canEmailDeliver ? t("deliveryDescription") : hasEmailOnFile ? t("deliverySmtpUnconfiguredHint") : t("deliveryNoEmailHint")}</p>
           <ChipGroup value={delivery} onValueChange={(value) => setDelivery(value as typeof delivery)} aria-label={t("deliveryLabel")} className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Chip value="download" className="h-10 justify-center gap-2 whitespace-normal rounded-card-md"><Download className="size-4 shrink-0" aria-hidden="true" />{t("deliveryDownload")}</Chip>
-            <Chip value="email" disabled={!canEmailDeliver} className="h-10 justify-center gap-2 whitespace-normal rounded-card-md">
+            <Chip value="download" size="md" className="justify-center gap-2 whitespace-normal rounded-card-md"><Download className="size-4 shrink-0" aria-hidden="true" />{t("deliveryDownload")}</Chip>
+            <Chip value="email" size="md" disabled={!canEmailDeliver} className="justify-center gap-2 whitespace-normal rounded-card-md">
               <Mail className="size-4 shrink-0" aria-hidden="true" />
               {t("deliveryEmail")}
             </Chip>
