@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import type { Product } from "@/src/domain/entities/Product";
@@ -8,6 +7,7 @@ import { formatNumber } from "@/src/lib/formatNumber";
 import { formatCompactDateTime } from "@/src/lib/formatOrderDate";
 import { ListSortHeader } from "@/src/presentation/dashboard/list";
 import type { StockMovementEntry } from "@/src/presentation/dashboard/products/stock-movement-response-schema";
+import { ProductThumbnail } from "@/src/presentation/dashboard/ProductThumbnail";
 import {
   Badge,
   DataTable,
@@ -17,7 +17,6 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  Thumbnail,
 } from "@/src/presentation/design-system";
 
 import styles from "./inventory.module.css";
@@ -85,9 +84,7 @@ export async function InventoryMovementsTable({
                 <TableCell className={styles.product}>
                   {product ? (
                     <Link href={`/dashboard/products/${product.id}/edit`} className="group flex items-center gap-3">
-                      <Thumbnail as="span" className="size-10 shrink-0">
-                        <Image src={product.imageUrl} alt="" width={40} height={40} className="size-full object-cover" />
-                      </Thumbnail>
+                      <ProductThumbnail src={product.imageUrl} />
                       <span className="min-w-0">
                         <span className="block truncate text-body-b7 text-foreground underline-offset-2 group-hover:underline">
                           {product.name}
