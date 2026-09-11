@@ -1,11 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { categoryFormSchema } from "@/src/contracts/category-schema";
+import { CreateCategory } from "@/src/domain/use-cases/categories/CreateCategory";
 import { GetCategories } from "@/src/domain/use-cases/categories/GetCategories";
 import { GetCategoryBySlug } from "@/src/domain/use-cases/categories/GetCategoryBySlug";
-import { CreateCategory } from "@/src/domain/use-cases/categories/CreateCategory";
 import { categoryRepository } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
-import { categoryFormSchema } from "@/src/presentation/dashboard/categories/category-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -13,6 +13,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Categories are read from Postgres per request — never statically cached.
 export const dynamic = "force-dynamic";
@@ -44,7 +45,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
  * delegate to the use-case → map domain errors to HTTP status codes.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  const session = await getSessionWith("catalog.write");
+  if (!session) return unauthorizedResponse();
 
   const body = await parseJsonBody(request);
   if (!body.ok) return errorResponse(400, { message: "Expected a JSON body.", code: "BAD_REQUEST" });
@@ -59,7 +61,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const created = await new CreateCategory(categoryRepository).execute(parsed.data);
+    const created = await new CreateCategory(categoryRepository).execute(parsed.data, { id: session.user.id, name: session.user.name ?? session.user.id });
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
     return errorResponseFromException(error, "POST /api/categories failed");

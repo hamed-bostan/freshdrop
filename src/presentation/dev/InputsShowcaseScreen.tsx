@@ -1,10 +1,10 @@
-import { ShowcaseSection } from "./ShowcaseSection";
 import { FieldGuide } from "./FieldGuide";
-import { InputUsage } from "./usages/InputUsage";
-import { TextareaUsage } from "./usages/TextareaUsage";
-import { PasswordInputUsage } from "./usages/PasswordInputUsage";
-import { OtpInputUsage } from "./usages/OtpInputUsage";
+import { ShowcaseSection } from "./ShowcaseSection";
 import { FieldUsage } from "./usages/FieldUsage";
+import { InputUsage } from "./usages/InputUsage";
+import { OtpInputUsage } from "./usages/OtpInputUsage";
+import { PasswordInputUsage } from "./usages/PasswordInputUsage";
+import { TextareaUsage } from "./usages/TextareaUsage";
 
 /** Kitchen-sink page: each control shown across the labelling modes. */
 export function InputsShowcaseScreen() {

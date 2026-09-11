@@ -1,11 +1,12 @@
 import { getTranslations } from "next-intl/server";
+
+import type { Product } from "@/src/domain/entities/Product";
 import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
 } from "@/src/presentation/design-system";
-import type { Product } from "@/src/domain/entities/Product";
 
 interface ProductInfoAccordionProps {
   product: Product;

@@ -1,8 +1,19 @@
-import type { GeoPoint } from "./Place";
+import { round2 } from "@/src/lib/money";
+
+import { refundedSoFar } from "./Refund";
+
 import type { TrackingMilestone } from "./OrderTracking";
+import type { GeoPoint } from "./Place";
+import type { Refund } from "./Refund";
+
+
 
 /**
  * Lifecycle status of an order — drives the status badge on the order card.
+ *
+ * Declared as an array with the union derived from it, so the statuses exist at
+ * runtime too: the admin list validates a `?status=` query param against them,
+ * and a union alone can't be checked against a string off the wire.
  *
  * - `processing` — placed and in flight (awaiting/undergoing delivery).
  * - `completed` — delivered.
@@ -13,12 +24,15 @@ import type { TrackingMilestone } from "./OrderTracking";
  * - `refunded` — a requested return an admin approved; items restocked and the
  *   total refunded to the wallet.
  */
-export type OrderStatus =
-  | "completed"
-  | "processing"
-  | "cancelled"
-  | "return_requested"
-  | "refunded";
+export const ORDER_STATUSES = [
+  "completed",
+  "processing",
+  "cancelled",
+  "return_requested",
+  "refunded",
+] as const;
+
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 /**
  * Which tab an order belongs under. Kept separate from `status` because the
@@ -37,8 +51,41 @@ export type OrderPhase = "current" | "previous";
  * - `substitute` — the customer is happy to receive a comparable replacement the
  *   picker chooses; they're only ever charged the lower of the two prices.
  * - `refund` — no substitution: the line is dropped and its value refunded.
+ * - `contact` — the picker holds the line and reaches out to the customer
+ *   before either substituting or refunding it.
  */
-export type SubstitutionPreference = "substitute" | "refund";
+export type SubstitutionPreference = "substitute" | "refund" | "contact";
+
+/**
+ * How the customer takes delivery of the order — the choice made at checkout.
+ *
+ * Declared as an array with the union derived from it, for the same reason as
+ * {@link ORDER_STATUSES}: the admin list validates a `?delivery=` param against
+ * it, which a bare union can't do at runtime.
+ *
+ * - `delivery` — couriered to the saved address; the trackable path.
+ * - `pickup` — collected by the customer from the store; no courier, so an order
+ *   on this path never leaves the `confirmed` milestone.
+ */
+export const DELIVERY_TYPES = ["delivery", "pickup"] as const;
+
+export type DeliveryType = (typeof DELIVERY_TYPES)[number];
+
+/**
+ * Where the money for an order stands — deliberately independent of
+ * {@link OrderStatus}, which tracks the *goods*. The two diverge in exactly the
+ * cases an operator cares about: a `processing` order whose payment `failed` is
+ * the "needs attention" case, and a `cancelled` order can sit at `pending`
+ * (never charged) or `refunded` (charged, then given back).
+ *
+ * - `paid` — settled; the normal state for an order that got placed at all.
+ * - `pending` — authorised but not captured, or cash-on-delivery not yet collected.
+ * - `failed` — the charge was declined or errored; nothing was taken.
+ * - `refunded` — captured and since returned to the customer's wallet.
+ */
+export const PAYMENT_STATUSES = ["paid", "pending", "failed", "refunded"] as const;
+
+export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
 /**
  * The outcome recorded once a picker resolves an out-of-stock line — absent while
@@ -56,11 +103,12 @@ export type ItemSubstitution = {
     imageUrl: string;
   };
   /**
-   * The exact amount credited to the customer's wallet for this line: the line
-   * refund when `refunded`, or the price saving when `substituted` for a cheaper
-   * item (0 when the swap wasn't cheaper). Already net of the line's pro-rata
-   * discount share (see {@link refundForLineValue}). The order `total` stays the
-   * original charge; this is what makes each wallet credit visible on the receipt.
+   * A per-line display label — the amount credited to the wallet for this line
+   * (the line refund when `refunded`, or the price saving when `substituted` for
+   * a cheaper item; 0 when the swap wasn't cheaper), already net of the line's
+   * pro-rata discount share (see {@link refundForLineValue}). Kept for the order
+   * card/receipt to show next to the line. No longer the source anything sums
+   * across an order from — that's the `Refund` ledger now (see `Refund.ts`).
    */
   refundAmount: number;
 }
@@ -71,6 +119,8 @@ export type ItemSubstitution = {
  * correct basis for substitution refunds — even if the catalog changes later.
  */
 export type OrderItem = {
+  /** The underlying row's id — the target of a line-item refund (see `RefundLine.orderItemId`). */
+  id: string;
   productId: string;
   name: string;
   imageUrl: string;
@@ -81,15 +131,41 @@ export type OrderItem = {
   substitutionPreference: SubstitutionPreference;
   /** The picker's resolution of an out-of-stock line; `undefined` while unresolved. */
   substitution?: ItemSubstitution;
+  /** Whether this line was VAT-exempt, snapshotted from the product at purchase time. */
+  taxExempt: boolean;
+  /**
+   * VAT this line contributes to the order's {@link Order.taxAmount}, net of its
+   * pro-rata discount share. `null` when tax wasn't in effect when the order was
+   * placed (not the same as 0, which means "taxable but the line was exempt").
+   */
+  taxAmount: number | null;
 }
 
 /** A placed order shown on the "My Order" screen. */
 export type Order = {
   id: string;
+  /**
+   * A short sequential number for humans — dashboard lists, order detail, support
+   * conversations — where `id` (the real key) is either too long to scan or, sliced
+   * down for space, indistinguishable from its neighbours. DB-assigned; nothing
+   * ever supplies one.
+   */
+  orderNumber: number;
   /** The user who placed the order — orders are read back scoped to their owner. */
   userId: string;
   status: OrderStatus;
   phase: OrderPhase;
+  /**
+   * How the order is handed over — couriered or collected. Legacy orders placed
+   * before the choice existed read as `delivery`, which is what they were.
+   */
+  deliveryType: DeliveryType;
+  /**
+   * Where the money stands, tracked separately from `status` (see
+   * {@link PAYMENT_STATUSES}). Legacy orders read as `paid`: they were placed
+   * under a flow that had no other outcome.
+   */
+  paymentStatus: PaymentStatus;
   /** ISO 8601 timestamp (UTC) the order was placed. Formatted in the presentation layer. */
   placedAt: string;
   /** Human-readable delivery address. */
@@ -107,6 +183,13 @@ export type Order = {
    * back to a default destination.
    */
   destination?: GeoPoint;
+  /**
+   * The settlement (city/town) the delivery address sits in, snapshotted from the
+   * selected location at checkout — the geographic dimension delivery-zone
+   * reporting groups by. `undefined` for legacy orders and whenever the geocoder
+   * couldn't resolve a city for the saved address.
+   */
+  city?: string;
   items: OrderItem[];
   /**
    * The order's price breakdown captured at checkout — the faithful record of what
@@ -123,6 +206,16 @@ export type Order = {
   /** Amount actually charged: `subtotal + shipping - discount`. */
   total: number;
   /**
+   * VAT portion of `total`, snapshotted at checkout (see `taxFromGross`) — never
+   * recomputed later, so a subsequent rate change can't retroactively alter a past
+   * order's reported tax. `null` means tax wasn't in effect when this order was
+   * placed, which is not the same as 0 (a taxable order where every line happened
+   * to be exempt still reads 0; a legacy order predating tax reads `null`).
+   */
+  taxAmount: number | null;
+  /** The rate `taxAmount` was computed with, so the record is self-describing. `null` alongside `taxAmount`. */
+  taxRate: number | null;
+  /**
    * The delivery milestone the order is currently at — the single field an admin
    * advances from the dashboard, and what the tracking stepper is derived from.
    * `undefined` when the order isn't trackable (archived or cancelled).
@@ -137,6 +230,28 @@ export type Order = {
   deliveryDate?: string;
   deliveryWindowId?: string;
   deliveryWindow?: string;
+  /**
+   * A note the shopper left for the courier at checkout (gate code, "leave with
+   * neighbour", …) — free text, capped at 150 characters by the checkout form.
+   * `undefined` when none was given, including every order placed before the
+   * field existed.
+   */
+  deliveryInstructions?: string;
+  /**
+   * How much of `total` was paid from the customer's wallet balance, captured at
+   * checkout — the rest (`total - walletApplied`) was charged to the payment
+   * method on the order. 0 when no wallet balance was applied, including every
+   * order placed before the wallet could be used this way.
+   */
+  walletApplied: number;
+  /**
+   * Every `Refund` recorded against this order, oldest first — the ledger, read
+   * alongside the order so the money functions below and the presentation layer
+   * both get it for free instead of each fetching it separately. `[]` for an
+   * order with no refund yet, never for "not loaded" (every read path populates
+   * it).
+   */
+  refunds: Refund[];
 }
 
 /**
@@ -185,7 +300,7 @@ export function orderDiscountRate(order: Order): number {
  */
 export function refundForLineValue(order: Order, grossLineValue: number): number {
   const net = grossLineValue * (1 - orderDiscountRate(order));
-  return Math.max(Math.round(net * 100) / 100, 0);
+  return Math.max(round2(net), 0);
 }
 
 /**
@@ -201,57 +316,57 @@ export function isPicking(order: Order): boolean {
 }
 
 /**
- * The delivery fee credited back for this order, if any. Non-zero only when the
- * order was cancelled because every line was out of stock ({@link isFullyRefunded})
- * — the empty-delivery case where the standard grocery rule refunds shipping too
- * (a partial out-of-stock never refunds it, since the delivery still happens).
- * Derived, not stored: `cancelled` + fully refunded uniquely identifies that path
- * (a customer cancellation has no per-line refunds, so it isn't fully refunded).
+ * The delivery fee credited back for this order, if any — a *display* helper only
+ * (not part of the revenue chain below; see `orderRefundedTotal`). Non-zero only
+ * when the order was cancelled because every line was out of stock
+ * ({@link isFullyRefunded}) — the empty-delivery case where the standard grocery
+ * rule refunds shipping too (a partial out-of-stock never refunds it, since the
+ * delivery still happens). Derived from the order alone (no ledger needed):
+ * `cancelled` + fully refunded uniquely identifies that path (a customer
+ * cancellation has no per-line refunds, so it isn't fully refunded).
  */
 export function orderShippingRefunded(order: Order): number {
   return order.status === "cancelled" && isFullyRefunded(order) ? order.shipping : 0;
 }
 
 /**
- * Total credited back to the customer's wallet for this order — the sum of each
- * resolved line's `refundAmount`, plus the delivery fee when the whole order was
- * refunded ({@link orderShippingRefunded}). 0 when nothing was refunded. The order
- * `total` is left as the original charge; this makes the wallet credits visible as
- * an itemized adjustment (the receipt shoppers expect).
- */
-export function orderRefundedTotal(order: Order): number {
-  const lineRefunds = order.items.reduce((sum, item) => sum + (item.substitution?.refundAmount ?? 0), 0);
-  return lineRefunds + orderShippingRefunded(order);
-}
-
-/**
- * What the customer actually paid after out-of-stock refunds: the original
- * `total` minus {@link orderRefundedTotal}. Equals `total` when nothing was
- * refunded.
- */
-export function orderNetPaid(order: Order): number {
-  return order.total - orderRefundedTotal(order);
-}
-
-/**
- * What this order contributes to revenue — 0 once the whole order was handed back
- * to the customer, otherwise {@link orderNetPaid}.
+ * Total credited back to the customer's wallet for this order — the sum of every
+ * `Refund` recorded against it (see `refundedSoFar`). 0 when nothing was refunded.
+ * The order `total` is left as the original charge; this makes the wallet credits
+ * visible as an itemized adjustment (the receipt shoppers expect).
  *
- * Distinct from `orderNetPaid`, which answers "what did this customer pay for what
- * they kept" and so is what a *receipt* shows. Revenue needs the wallet-level view:
- * `cancelled` and `refunded` orders return the full `total` to the wallet
- * (`CancelOrder`, `ResolveOrderReturn`) without writing per-line `refundAmount`s, so
- * `orderNetPaid` still reports their original charge. Summing that as revenue counts
- * money the business gave back. Per-line out-of-stock refunds are already netted out
- * by `orderNetPaid` for every other status.
+ * Ledger-derived, not order-derived: every wallet credit (cancellation, return,
+ * substitution, or a future discretionary refund) is backed by a `Refund` row, so
+ * summing the ledger is the one source of truth — no separate shipping term to add,
+ * since a cancellation's ledger row already includes it.
+ */
+export function orderRefundedTotal(refunds: Refund[]): number {
+  return refundedSoFar(refunds);
+}
+
+/**
+ * What the customer actually paid after refunds: the original `total` minus
+ * {@link orderRefundedTotal}. Equals `total` when nothing was refunded.
+ */
+export function orderNetPaid(order: Order, refunds: Refund[]): number {
+  return round2(order.total - orderRefundedTotal(refunds));
+}
+
+/**
+ * What this order contributes to revenue — {@link orderNetPaid}.
+ *
+ * Kept as its own name because it answers a different question than `orderNetPaid`
+ * ("what did the store earn" vs. "what did this customer pay for what they kept"),
+ * but the two are now the same computation: a `cancelled`/`refunded` order's ledger
+ * already sums to its full `total` (see `CancelOrder`, `ResolveOrderReturn`), so
+ * `orderNetPaid` reduces to 0 for them without a special case here.
  *
  * The single definition of "revenue-recognized" — use it for any figure that
  * aggregates money *earned* (the overview KPI, per-customer spend), not for
  * displaying one order's charge.
  */
-export function orderRecognizedRevenue(order: Order): number {
-  if (order.status === "cancelled" || order.status === "refunded") return 0;
-  return orderNetPaid(order);
+export function orderRecognizedRevenue(order: Order, refunds: Refund[]): number {
+  return orderNetPaid(order, refunds);
 }
 
 /**

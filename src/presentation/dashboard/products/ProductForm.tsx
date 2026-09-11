@@ -1,31 +1,36 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
-import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+
+import { productFormSchema, type ProductFormInput } from "@/src/contracts/product-schema";
 import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
-import type { ProductTranslationInput } from "@/src/domain/repositories/IProductRepository";
 import { DIETARY_TAGS, PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
+import type { ProductTranslationInput } from "@/src/domain/repositories/IProductRepository";
+import { Link, useRouter } from "@/src/i18n/navigation";
+import { ApiError } from "@/src/lib/api/ApiError";
+import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { formErrorMessage } from "@/src/lib/formErrorMessage";
 import {
   Button,
   Field,
+  FormMessage,
   Input,
+  RequiredMark,
+  Select,
   Switch,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-  TextField,
   Textarea,
+  TextField,
+  ToggleChip,
 } from "@/src/presentation/design-system";
-import { Link, useRouter } from "@/src/i18n/navigation";
-import { ApiError } from "@/src/lib/api/ApiError";
-import { localizeApiError } from "@/src/lib/api/localizeApiError";
-import { formErrorMessage } from "@/src/lib/formErrorMessage";
-import { cn } from "@/src/lib/utils";
-import { productFormSchema, type ProductFormInput } from "./product-schema";
+
 import { productsApi } from "./product-api";
 import { ProductImageUpload } from "./ProductImageUpload";
 
@@ -44,11 +49,8 @@ const FORM_FIELDS = [
   "origin",
   "brand",
   "dietary",
+  "taxExempt",
 ] as const satisfies readonly (keyof ProductFormInput)[];
-
-/** Native-select styling that matches the DS field family (no DS Select yet). */
-const SELECT_CLASSES =
-  "h-10 w-full rounded-input border border-border bg-input px-3 text-body-b6 text-input-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive disabled:cursor-not-allowed disabled:opacity-50";
 
 type ProductFormProps =
   | { mode: "create"; categories: Category[] }
@@ -65,6 +67,9 @@ function toDefaults(product?: Product, translations?: ProductTranslationInput[])
     stockQuantity: product != null ? String(product.stockQuantity) : "",
     imageUrl: product?.imageUrl ?? "",
     isFeatured: product?.isFeatured ?? false,
+    // A new product is live by default, matching the column — an operator who wants
+    // to stage one unpublishes it deliberately.
+    isPublished: product?.isPublished ?? true,
     badge: product?.badge ?? "",
     unit: product?.unit ?? "",
     description: product?.description ?? "",
@@ -72,6 +77,9 @@ function toDefaults(product?: Product, translations?: ProductTranslationInput[])
     origin: product?.origin ?? "",
     brand: product?.brand ?? "",
     dietary: product?.dietary ?? [],
+    // A new product is exempt by default, matching the column — an operator opts a
+    // product *in* to VAT deliberately.
+    taxExempt: product?.taxExempt ?? true,
     faName: fa?.name ?? "",
     faUnit: fa?.unit ?? "",
     faDescription: fa?.description ?? "",
@@ -230,11 +238,10 @@ export function ProductForm(props: ProductFormProps) {
           <>
             <label htmlFor={id} className="text-body-b7 text-input-foreground">
               {t("categoryLabel")}
-              <span aria-hidden className="text-destructive"> *</span>
+              <RequiredMark />
             </label>
-            <select
+            <Select
               id={id}
-              className={SELECT_CLASSES}
               aria-invalid={ariaInvalid}
               aria-describedby={ariaDescribedBy}
               {...register("categoryId")}
@@ -249,7 +256,7 @@ export function ProductForm(props: ProductFormProps) {
                   {category.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </>
         )}
       </Field>
@@ -293,7 +300,7 @@ export function ProductForm(props: ProductFormProps) {
           <>
             <label htmlFor={id} className="text-body-b7 text-input-foreground">
               {t("imageLabel")}
-              <span aria-hidden className="text-destructive"> *</span>
+              <RequiredMark />
             </label>
             <ProductImageUpload
               id={id}
@@ -321,10 +328,9 @@ export function ProductForm(props: ProductFormProps) {
             {/* Brands are Latin proper nouns, never translated, so the control reads LTR:
                 under RTL the trailing punctuation in a name like "Pantry Co." jumps to
                 the front (".Pantry Co"). */}
-            <select
+            <Select
               id={id}
               dir="ltr"
-              className={SELECT_CLASSES}
               aria-invalid={ariaInvalid}
               aria-describedby={ariaDescribedBy}
               {...register("brand")}
@@ -337,7 +343,7 @@ export function ProductForm(props: ProductFormProps) {
                   {brand}
                 </option>
               ))}
-            </select>
+            </Select>
           </>
         )}
       </Field>
@@ -355,30 +361,19 @@ export function ProductForm(props: ProductFormProps) {
               {DIETARY_TAGS.map((tag) => {
                 const checked = field.value?.includes(tag) ?? false;
                 return (
-                  <label
+                  <ToggleChip
                     key={tag}
-                    className={cn(
-                      "flex h-10 cursor-pointer items-center rounded-full border px-4 text-button-btn4 transition-colors",
-                      "focus-within:ring-2 focus-within:ring-ring",
-                      checked
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border text-muted-foreground",
-                    )}
+                    pressed={checked}
+                    onPressedChange={(pressed) =>
+                      field.onChange(
+                        pressed
+                          ? [...(field.value ?? []), tag]
+                          : (field.value ?? []).filter((item: string) => item !== tag),
+                      )
+                    }
                   >
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={checked}
-                      onChange={(event) =>
-                        field.onChange(
-                          event.target.checked
-                            ? [...(field.value ?? []), tag]
-                            : (field.value ?? []).filter((item: string) => item !== tag),
-                        )
-                      }
-                    />
                     {tDietary(tag)}
-                  </label>
+                  </ToggleChip>
                 );
               })}
             </div>
@@ -407,10 +402,50 @@ export function ProductForm(props: ProductFormProps) {
         )}
       />
 
+      <Controller
+        control={control}
+        name="isPublished"
+        render={({ field }) => (
+          <div className="flex items-center justify-between rounded-card-md border border-border px-4 py-3">
+            <div>
+              <label htmlFor="isPublished" className="text-body-b7 text-input-foreground">
+                {t("publishedLabel")}
+              </label>
+              <p className="text-body-b10 text-muted-foreground">{t("publishedDescription")}</p>
+            </div>
+            <Switch
+              id="isPublished"
+              checked={field.value}
+              onCheckedChange={field.onChange}
+              aria-label={t("publishedAria")}
+            />
+          </div>
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="taxExempt"
+        render={({ field }) => (
+          <div className="flex items-center justify-between rounded-card-md border border-border px-4 py-3">
+            <div>
+              <label htmlFor="taxExempt" className="text-body-b7 text-input-foreground">
+                {t("taxExemptLabel")}
+              </label>
+              <p className="text-body-b10 text-muted-foreground">{t("taxExemptDescription")}</p>
+            </div>
+            <Switch
+              id="taxExempt"
+              checked={field.value}
+              onCheckedChange={field.onChange}
+              aria-label={t("taxExemptAria")}
+            />
+          </div>
+        )}
+      />
+
       {errors.root?.message && (
-        <p role="alert" className="text-body-b8 text-destructive">
-          {errors.root.message}
-        </p>
+        <FormMessage size="md">{errors.root.message}</FormMessage>
       )}
 
       <div className="flex gap-3 pt-2">

@@ -1,16 +1,18 @@
 "use client";
 
-import * as React from "react";
 import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
-import { Button, Input, TextField, Textarea } from "@/src/presentation/design-system";
-import { PageHeader } from "@/src/presentation/components/PageHeader";
-import type { GeoPoint } from "@/src/domain/entities/Place";
+import * as React from "react";
+
 import type { DeliveryLocation, DeliveryLocationKind } from "@/src/domain/entities/DeliveryLocation";
-import { deliveryLocationsApi } from "@/src/presentation/delivery-location/delivery-location-api";
+import type { GeoPoint } from "@/src/domain/entities/Place";
 import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { deliveryLocationsApi } from "@/src/presentation/delivery-location/delivery-location-api";
+import { Button, FormMessage, Input, Skeleton, Textarea, TextField } from "@/src/presentation/design-system";
+
 import { AddressLabelChips } from "./components";
 import { useReverseGeocodedPlace } from "./hooks/use-reverse-geocode";
 import { reverseGeocode } from "./lib/geocoding-client";
@@ -20,7 +22,7 @@ const LocationPreviewMap = dynamic(
   () => import("./components/LocationPreviewMap").then((mod) => mod.LocationPreviewMap),
   {
     ssr: false,
-    loading: () => <div className="h-full w-full animate-pulse bg-muted-strong" />,
+    loading: () => <Skeleton className="h-full w-full" />,
   },
 );
 
@@ -28,7 +30,7 @@ const LocationRepinMap = dynamic(
   () => import("./components/LocationRepinMap").then((mod) => mod.LocationRepinMap),
   {
     ssr: false,
-    loading: () => <div className="h-full w-full animate-pulse bg-muted-strong" />,
+    loading: () => <Skeleton className="h-full w-full" />,
   },
 );
 
@@ -238,9 +240,7 @@ export default function LocationDetailScreen({
       </div>
 
       {error && (
-        <p role="alert" className="text-center text-body-b8 text-destructive">
-          {error}
-        </p>
+        <FormMessage size="md" className="text-center">{error}</FormMessage>
       )}
 
       <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full">

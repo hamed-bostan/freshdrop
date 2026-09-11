@@ -1,7 +1,8 @@
+import { InsufficientStockError } from "../../errors/InsufficientStockError";
+import { NotFoundError } from "../../errors/NotFoundError";
+
 import type { ICartRepository } from "../../repositories/ICartRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
-import { NotFoundError } from "../../errors/NotFoundError";
-import { InsufficientStockError } from "../../errors/InsufficientStockError";
 
 export type AddToCartRequest = {
   userId: string;
@@ -16,7 +17,7 @@ export class AddToCart {
   ) {}
 
   async execute({ userId, productId, quantity = 1 }: AddToCartRequest): Promise<void> {
-    const product = await this.productRepo.getById(productId);
+    const product = await this.productRepo.getPublishedById(productId);
     if (!product) throw new NotFoundError("product");
 
     // Fail fast at the door: the cart may never hold more units than are on hand.

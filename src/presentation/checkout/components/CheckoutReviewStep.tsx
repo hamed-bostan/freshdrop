@@ -1,0 +1,61 @@
+"use client";
+
+import { MapPin, Clock, Wallet, FileText, ShieldCheck, type LucideIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+
+import type { Cart, CartItem } from "@/src/domain/entities/Cart";
+import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
+import type { DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
+import type { SubstitutionPreference } from "@/src/domain/entities/Order";
+import { formatMoney } from "@/src/lib/formatMoney";
+import { Icon } from "@/src/presentation/design-system";
+
+import { slotDayLabel, slotName, slotTimeRange } from "../deliverySlotFormat";
+
+import { OrderTotals } from "./OrderTotals";
+import { SubstitutionPreferenceList } from "./SubstitutionPreferenceList";
+
+import type { CheckoutStepId } from "./CheckoutStepper";
+import type { SlotSelection } from "./DeliverySlotPicker";
+
+interface Props {
+  cart: Cart; items: CartItem[]; selectedAddress: DeliveryLocation | undefined; slot: SlotSelection | null;
+  deliverySlotDays: DeliverySlotDay[]; notes: string; paymentLabel: string; walletApplied: number;
+  promoCode?: string;
+  substitutions: Record<string, SubstitutionPreference>;
+  onEditStep: (step: CheckoutStepId) => void;
+}
+
+interface SummaryProps { icon: LucideIcon; title: string; editLabel: string; onEdit: () => void; children: React.ReactNode; }
+
+function ReviewSummaryCard({ icon, title, editLabel, onEdit, children }: SummaryProps) {
+  return <section className="flex gap-3 rounded-[18px] border border-border p-4 sm:gap-5 sm:rounded-[22px] sm:p-5">
+    <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:size-16"><Icon icon={icon} size="md" /></span>
+    <div className="min-w-0 flex-1"><h2 className="text-lg font-semibold">{title}</h2><div className="mt-1 text-sm text-muted-foreground sm:text-base">{children}</div></div>
+    <button type="button" onClick={onEdit} className="self-start font-medium text-primary">{editLabel}</button>
+  </section>;
+}
+
+export function CheckoutReviewStep({ cart, items, selectedAddress, slot, deliverySlotDays, notes, paymentLabel, walletApplied, promoCode, substitutions, onEditStep }: Props) {
+  const t = useTranslations("checkout");
+  const tSlots = useTranslations("checkout.slots");
+  const locale = useLocale();
+  const slotDay = slot ? deliverySlotDays.find((day) => day.date === slot.date) : undefined;
+  const slotWindow = slotDay?.slots.find((window) => window.windowId === slot?.windowId);
+  const slotDisplay = slotDay && slotWindow ? `${slotDayLabel(slotDay, locale, t)} · ${slotName(slotWindow.windowId, slotWindow.label, tSlots)} · ${slotTimeRange(slotWindow.windowId, slotWindow.timeRange, locale)}` : null;
+
+  return <>
+    <div className="pb-1 pt-2"><h2 className="text-2xl font-semibold sm:text-3xl">{t("reviewYourOrder")}</h2><p className="mt-2 text-sm text-muted-foreground sm:text-base">{t("reviewYourOrderHint")}</p></div>
+    <ReviewSummaryCard icon={MapPin} title={t("stepDelivery")} editLabel={t("edit")} onEdit={() => onEditStep("delivery")}>
+      <p className="font-medium text-foreground">{selectedAddress?.label ?? t("noAddress")}</p>
+      {selectedAddress && <p className="mt-1 line-clamp-2">{selectedAddress.address}</p>}
+      {slotDisplay && <p className="mt-1 flex items-center gap-1.5"><Icon icon={Clock} size="sm" />{slotDisplay}</p>}
+    </ReviewSummaryCard>
+    <ReviewSummaryCard icon={Wallet} title={t("stepPayment")} editLabel={t("edit")} onEdit={() => onEditStep("payment")}><p>{walletApplied > 0 ? `${t("walletName")} ${formatMoney(walletApplied, locale)} + ` : ""}{paymentLabel}</p></ReviewSummaryCard>
+    <SubstitutionPreferenceList items={items} value={substitutions} promoCode={promoCode} />
+    <ReviewSummaryCard icon={FileText} title={t("deliveryInstructions")} editLabel={t("edit")} onEdit={() => onEditStep("delivery")}><p>{notes.trim() || t("deliveryInstructionsNone")}</p></ReviewSummaryCard>
+    <OrderTotals subtotal={cart.subtotal} shipping={cart.shipping} discount={cart.discount} taxAmount={cart.taxAmount} walletApplied={walletApplied} paymentLabel={paymentLabel} />
+    <div className="flex items-center justify-center gap-3 rounded-[18px] bg-primary/[0.07] p-4 text-primary sm:rounded-[22px]"><Icon icon={ShieldCheck} size="md" /><div><p className="font-semibold text-foreground sm:text-lg">{t("satisfactionTitle")}</p><p className="text-sm sm:text-base">{t("satisfactionBody")}</p></div></div>
+    <p className="px-2 text-center text-sm text-muted-foreground">{t("termsText")}</p>
+  </>;
+}

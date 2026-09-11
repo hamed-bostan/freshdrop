@@ -1,4 +1,5 @@
 import { hasLocale } from "next-intl";
+
 import { routing, type Locale } from "./routing";
 
 /**

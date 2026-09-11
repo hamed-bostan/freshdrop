@@ -1,11 +1,13 @@
-import { cache } from "react";
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { productsServerApi } from "@/src/presentation/product/product-server-api";
-import { reviewsServerApi } from "@/src/presentation/product/review-server-api";
+import { cache } from "react";
+
 import { favoritesServerApi } from "@/src/presentation/favorites/favorite-server-api";
-import { stockAlertsServerApi } from "@/src/presentation/product/stock-alert-server-api";
+import { productsServerApi } from "@/src/presentation/product/product-server-api";
 import ProductDetailScreen from "@/src/presentation/product/ProductDetailScreen";
+import { reviewsServerApi } from "@/src/presentation/product/review-server-api";
+import { stockAlertsServerApi } from "@/src/presentation/product/stock-alert-server-api";
+
+import type { Metadata } from "next";
 
 interface ProductDetailPageProps {
   params: Promise<{ id: string }>;

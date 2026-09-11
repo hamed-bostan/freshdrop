@@ -1,11 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { GetProductById } from "@/src/domain/use-cases/products/GetProductById";
-import { UpdateProduct } from "@/src/domain/use-cases/products/UpdateProduct";
+
+import { productFormSchema } from "@/src/contracts/product-schema";
 import { DeleteProduct } from "@/src/domain/use-cases/products/DeleteProduct";
-import { productRepository, stockAlertRepository, stockAlertNotifier } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
+import { GetPublishedProduct } from "@/src/domain/use-cases/products/GetPublishedProduct";
+import { UpdateProduct } from "@/src/domain/use-cases/products/UpdateProduct";
+import {
+  productRepository,
+  stockAlertRepository,
+  stockAlertNotifier,
+} from "@/src/infrastructure/container";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
-import { productFormSchema } from "@/src/presentation/dashboard/products/product-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -13,18 +17,22 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 /**
- * GET /api/products/:id — fetch one product. Public. 404 when it doesn't exist.
+ * GET /api/products/:id — fetch one product. Public. 404 when it doesn't exist —
+ * or when it's unpublished, which to this endpoint is the same answer: a withdrawn
+ * product must not still be readable by anyone holding the link. The dashboard's
+ * `GET /api/admin/products/:id` is the read that sees every state.
  */
 export async function GET(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
   const { id } = await params;
   try {
-    const product = await new GetProductById(productRepository).execute(id, getRequestLocale(request));
+    const product = await new GetPublishedProduct(productRepository).execute(id, getRequestLocale(request));
     if (!product) return errorResponse(404, { message: "Product not found.", code: "NOT_FOUND" });
     return NextResponse.json(product);
   } catch (error) {
@@ -36,7 +44,8 @@ export async function GET(request: NextRequest, { params }: RouteContext): Promi
  * PUT /api/products/:id — update a product. Admin only.
  */
 export async function PUT(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  const session = await getSessionWith("catalog.write");
+  if (!session) return unauthorizedResponse();
 
   const { id } = await params;
   const body = await parseJsonBody(request);
@@ -52,10 +61,17 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
   }
 
   try {
-    const updated = await new UpdateProduct(productRepository, stockAlertRepository, stockAlertNotifier).execute(
-      id,
-      parsed.data,
-    );
+    // The actor is passed so a stock change made through the full form is
+    // recorded in the ledger like any other — the form is not a way around it —
+    // and so the activity entry names who saved the form.
+    const updated = await new UpdateProduct(
+      productRepository,
+      stockAlertRepository,
+      stockAlertNotifier,
+    ).execute(id, parsed.data, {
+      id: session.user.id,
+      name: session.user.name ?? session.user.id,
+    });
     return NextResponse.json(updated);
   } catch (error) {
     return errorResponseFromException(error, `PUT /api/products/${id} failed`);
@@ -66,11 +82,17 @@ export async function PUT(request: NextRequest, { params }: RouteContext): Promi
  * DELETE /api/products/:id — delete a product. Admin only. 204 on success.
  */
 export async function DELETE(_request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  const session = await getSessionWith("catalog.write");
+  if (!session) return unauthorizedResponse();
 
   const { id } = await params;
   try {
-    await new DeleteProduct(productRepository).execute(id);
+    // The actor comes from the session, never from the request — this is the one
+    // change whose activity entry is the only surviving record of the product.
+    await new DeleteProduct(productRepository).execute(id, {
+      id: session.user.id,
+      name: session.user.name ?? session.user.id,
+    });
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     return errorResponseFromException(error, `DELETE /api/products/${id} failed`);

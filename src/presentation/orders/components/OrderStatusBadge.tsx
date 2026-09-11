@@ -1,30 +1,29 @@
 import { useTranslations } from "next-intl";
+
 import type { OrderStatus } from "@/src/domain/entities/Order";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
-import { cn } from "@/src/lib/utils";
+import { Badge, type BadgeProps } from "@/src/presentation/design-system";
 
 /**
- * The visual tone of the status pill. `progress` (info blue) is the happy path
- * still in flight, `success` (brand green) a delivered/refunded terminal state,
- * `warning` (amber) an open return awaiting the admin, `error` (red) a cancellation.
+ * The visual tone of the status pill, named for what it means to an order rather
+ * than for its colour, then mapped onto a design-system Badge tone below:
+ * `progress` is the happy path still in flight, `success` a delivered/refunded
+ * terminal state, `warning` an open return awaiting the admin, `error` a
+ * cancellation.
  */
 type BadgeTone = "success" | "progress" | "warning" | "error";
 
-/** Fill (tint background + matching text) per tone — shared by both contexts. */
-const TONE_FILL: Record<BadgeTone, string> = {
-  success: "bg-accent text-primary",
-  progress: "bg-info text-info-foreground",
-  warning: "bg-warning text-warning-foreground",
-  error: "bg-error text-error-foreground",
-};
-
-/** Border colour per tone — only the storefront pill draws an outline. */
-const TONE_BORDER: Record<BadgeTone, string> = {
-  success: "border-primary",
-  progress: "border-info-foreground",
-  warning: "border-warning-foreground",
-  error: "border-error-foreground",
-};
+/**
+ * Order tone → Badge tone. `success` maps to the brand green (`primary`) rather
+ * than the Badge's own `success` tint, because a delivered order should read in
+ * the same green as the rest of the storefront.
+ */
+const TONE_VARIANT = {
+  success: "primary",
+  progress: "info",
+  warning: "warning",
+  error: "error",
+} as const satisfies Record<BadgeTone, BadgeProps["variant"]>;
 
 /** Translation key under the `orders` namespace for the pill's label. */
 type BadgeLabelKey =
@@ -84,22 +83,22 @@ type OrderStatusBadgeProps = {
   stage?: TrackingMilestone;
   /** Rendering context; defaults to the customer-facing storefront pill. */
   context?: BadgeContext;
+  /** Compact table rows use the small pill; detail views retain the default medium size. */
+  size?: BadgeProps["size"];
 };
 
-export function OrderStatusBadge({ status, stage, context = "storefront" }: OrderStatusBadgeProps) {
+export function OrderStatusBadge({ status, stage, context = "storefront", size = "md" }: OrderStatusBadgeProps) {
   const t = useTranslations("orders");
   const { labelKey, tone } = statusDisplay(status, stage, context);
 
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-badge-lg px-4 py-2 text-body-b10",
-        TONE_FILL[tone],
-        // The storefront pill is an outline over the tint; the admin pill is a solid tint.
-        context === "storefront" && cn("border", TONE_BORDER[tone]),
-      )}
+    <Badge
+      variant={TONE_VARIANT[tone]}
+      // The storefront pill is an outline over the tint; the admin pill is a solid tint.
+      appearance={context === "storefront" ? "outline" : "solid"}
+      size={size}
     >
       {t(labelKey)}
-    </span>
+    </Badge>
   );
 }

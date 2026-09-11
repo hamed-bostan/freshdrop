@@ -1,5 +1,7 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+
+import { EmptyState } from "@/src/presentation/design-system";
 import { emptyCart } from "@/src/shared/assets/images";
 
 /** Shown when the cart has no items (initially, or after the last item is removed). */
@@ -7,10 +9,10 @@ export function CartEmptyState() {
   const t = useTranslations("cart");
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6">
-      {/* Decorative — the heading conveys the meaning. */}
-      <Image src={emptyCart} alt="" sizes="208px" className="h-auto w-full max-w-52" />
-      <h2 className="text-heading-h3 text-primary">{t("empty")}</h2>
-    </div>
+    <EmptyState
+      className="flex-1 justify-center"
+      illustration={<Image src={emptyCart} alt="" sizes="208px" className="h-auto w-full max-w-52" />}
+      title={t("empty")}
+    />
   );
 }

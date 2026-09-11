@@ -31,6 +31,7 @@ Next.js (App Router) · TypeScript · Tailwind v4 · Radix UI · Prisma + Postgr
 ### Architecture
 
 - Clean Architecture — dependencies point inward: `domain` (entities, use-cases, repository ports) is framework-free; `infrastructure` and `presentation` depend on it, never the reverse
+- A schema used by **both** the route handler and the client form is a shared contract: it lives in `src/contracts/`, never inside one of its two consumers. `app/api/**` must never import from `src/presentation/**` — the BFF's two halves stay independently deployable. Schemas only the frontend uses (`*-response-schema.ts` describing what an endpoint returns) stay colocated with their feature
 - `infrastructure/container.ts` is the sole composition root: it binds repository interfaces to concrete impls (Prisma / Supabase / mocks). Everything else depends on the interfaces
 - Server Components default, `"use client"` only when needed
 - No business logic in components — REST route handlers (`app/api/<resource>/route.ts`) are thin controllers: authenticate → validate (Zod) → delegate to a use-case → map domain errors to HTTP. Components never call use-cases or the DB directly; they talk to the API through a typed Axios service
@@ -56,6 +57,7 @@ The frontend treats the backend as a separate service: it communicates over HTTP
 ```
 src/
 ├── domain/          # Entities, use-cases, repository ports (interfaces), errors — no framework imports
+├── contracts/       # Zod schemas shared by BOTH sides of the BFF (route handlers + client forms)
 ├── infrastructure/  # Adapter impls: Prisma + mock repos, Supabase, prisma client, container.ts
 ├── presentation/    # Feature UI modules + design-system/ (Radix-based)
 ├── lib/             # Cross-cutting config & helpers (auth, guards, slugify)

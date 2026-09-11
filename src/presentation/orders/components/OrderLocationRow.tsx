@@ -1,10 +1,12 @@
 "use client";
 
-import * as React from "react";
+import { ChevronDown, MapPin } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Collapsible } from "radix-ui";
-import { ChevronDown } from "lucide-react";
-import { Icon } from "@/src/presentation/design-system";
+import * as React from "react";
+
+import { cn } from "@/src/lib/utils";
+import { focusRing, Icon, stillWhenReduced } from "@/src/presentation/design-system";
 
 interface OrderLocationRowProps {
   location: string;
@@ -36,19 +38,29 @@ export function OrderLocationRow({ location, label }: OrderLocationRowProps) {
     <Collapsible.Root
       open={open}
       onOpenChange={setOpen}
+      data-order-location
       className="flex items-start justify-between gap-2 text-body-b6"
     >
       <dt className="text-muted-foreground">{t("locationLabel")}</dt>
       <dd className="flex min-w-0 flex-col items-end gap-1 text-end text-foreground">
-        <Collapsible.Trigger className="inline-flex items-center gap-0.5 rounded text-label-l1 text-primary transition-colors focus-visible:outline-none focus-visible:ring focus-visible:ring-ring">
-          {collapsedLabel(location, label)}
+        <Collapsible.Trigger
+          aria-label={`${t("locationLabel")} ${collapsedLabel(location, label)}`}
+          className={cn(
+            "inline-flex items-center gap-0.5 rounded text-label-l1 text-primary transition-colors",
+            focusRing,
+          )}
+        >
+          <Icon icon={MapPin} size="xs" className="shrink-0" />
+          <span>{collapsedLabel(location, label)}</span>
           <Icon
             icon={ChevronDown}
             size="xs"
-            className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+            className={cn("transition-transform duration-200", stillWhenReduced, open && "rotate-180")}
           />
         </Collapsible.Trigger>
-        <Collapsible.Content className="text-muted-foreground">{location}</Collapsible.Content>
+        <Collapsible.Content className="text-muted-foreground" data-order-address>
+          <p dir="auto">{location}</p>
+        </Collapsible.Content>
       </dd>
     </Collapsible.Root>
   );

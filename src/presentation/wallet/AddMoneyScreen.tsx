@@ -1,17 +1,19 @@
 "use client";
 
-import * as React from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { Button } from "@/src/presentation/design-system";
-import { PageHeader } from "@/src/presentation/components/PageHeader";
+import * as React from "react";
+
 import { usePathname, useRouter } from "@/src/i18n/navigation";
-import { formatMoney } from "@/src/lib/formatMoney";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { formatMoney } from "@/src/lib/formatMoney";
+import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { Button, FormMessage } from "@/src/presentation/design-system";
 import { addMoney } from "@/src/shared/assets/images";
-import { walletsApi } from "./wallet-api";
+
 import { NumericKeypad } from "./components";
+import { walletsApi } from "./wallet-api";
 
 const MAX_DIGITS = 6;
 
@@ -82,9 +84,7 @@ export default function AddMoneyScreen() {
             </Button>
           </div>
           {error && (
-            <p role="alert" className="text-body-b10 text-destructive">
-              {error}
-            </p>
+            <FormMessage>{error}</FormMessage>
           )}
         </div>
       </div>

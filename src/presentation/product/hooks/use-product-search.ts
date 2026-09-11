@@ -1,5 +1,7 @@
 import * as React from "react";
+
 import type { Product } from "@/src/domain/entities/Product";
+
 import { productSearchApi } from "../product-search-api";
 
 /** Below this many characters the query is treated as empty — no request, no suggestions. */
@@ -25,15 +27,17 @@ export function useProductSearch(query: string) {
     }
 
     const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      setIsLoading(true);
-      try {
-        setResults(await productSearchApi.search(trimmed, controller.signal));
-      } catch {
-        if (!controller.signal.aborted) setResults([]);
-      } finally {
-        if (!controller.signal.aborted) setIsLoading(false);
-      }
+    const timer = setTimeout(() => {
+      void (async (): Promise<void> => {
+        setIsLoading(true);
+        try {
+          setResults(await productSearchApi.search(trimmed, controller.signal));
+        } catch {
+          if (!controller.signal.aborted) setResults([]);
+        } finally {
+          if (!controller.signal.aborted) setIsLoading(false);
+        }
+      })();
     }, DEBOUNCE_MS);
 
     return () => {

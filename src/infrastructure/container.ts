@@ -1,52 +1,82 @@
-import type { ICategoryRepository } from "@/src/domain/repositories/ICategoryRepository";
-import type { IProductRepository } from "@/src/domain/repositories/IProductRepository";
-import type { IFavoriteRepository } from "@/src/domain/repositories/IFavoriteRepository";
-import type { IReviewRepository } from "@/src/domain/repositories/IReviewRepository";
-import type { IDeliveryLocationRepository } from "@/src/domain/repositories/IDeliveryLocationRepository";
-import type { IPaymentMethodRepository } from "@/src/domain/repositories/IPaymentMethodRepository";
-import type { IDeliverySlotRepository } from "@/src/domain/repositories/IDeliverySlotRepository";
-import type { IGeocodingRepository } from "@/src/domain/repositories/IGeocodingRepository";
-import type { IWalletRepository } from "@/src/domain/repositories/IWalletRepository";
-import type { IOrderRepository } from "@/src/domain/repositories/IOrderRepository";
-import type { IOrderTrackingRepository } from "@/src/domain/repositories/IOrderTrackingRepository";
-import type { ICartRepository } from "@/src/domain/repositories/ICartRepository";
-import type { IStockAlertRepository } from "@/src/domain/repositories/IStockAlertRepository";
-import type { IStockAlertNotifier } from "@/src/domain/repositories/IStockAlertNotifier";
-import type { IOrderNotifier } from "@/src/domain/repositories/IOrderNotifier";
-import type { INotificationChannel } from "@/src/domain/repositories/INotificationChannel";
-import type { IPromoCodeRepository } from "@/src/domain/repositories/IPromoCodeRepository";
+import type { IActivityLog } from "@/src/domain/repositories/IActivityLog";
+import type { IAdminNotificationRepository } from "@/src/domain/repositories/IAdminNotificationRepository";
+import type { IAnalyticsRepository } from "@/src/domain/repositories/IAnalyticsRepository";
 import type { IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
-import type { IImageStorageRepository } from "@/src/domain/repositories/IImageStorageRepository";
-import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
-import type { IRoleChangeLog } from "@/src/domain/repositories/IRoleChangeLog";
+import type { ICartRepository } from "@/src/domain/repositories/ICartRepository";
+import type { ICategoryRepository } from "@/src/domain/repositories/ICategoryRepository";
+import type { ICustomerSegmentSnapshotRepository } from "@/src/domain/repositories/ICustomerSegmentSnapshotRepository";
+import type { IDeliveryIssueRepository } from "@/src/domain/repositories/IDeliveryIssueRepository";
+import type { IDeliveryLocationRepository } from "@/src/domain/repositories/IDeliveryLocationRepository";
+import type { IDeliverySlotRepository } from "@/src/domain/repositories/IDeliverySlotRepository";
 import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
+import type { IExportJobRepository } from "@/src/domain/repositories/IExportJobRepository";
+import type { IFavoriteRepository } from "@/src/domain/repositories/IFavoriteRepository";
+import type { IFileStorageRepository } from "@/src/domain/repositories/IFileStorageRepository";
+import type { IGeocodingRepository } from "@/src/domain/repositories/IGeocodingRepository";
+import type { IImageStorageRepository } from "@/src/domain/repositories/IImageStorageRepository";
+import type { INotificationChannel } from "@/src/domain/repositories/INotificationChannel";
+import type { INotificationTemplateRepository } from "@/src/domain/repositories/INotificationTemplateRepository";
+import type { IOrderNoteRepository } from "@/src/domain/repositories/IOrderNoteRepository";
+import type { IOrderNotifier } from "@/src/domain/repositories/IOrderNotifier";
+import type { IOrderRepository } from "@/src/domain/repositories/IOrderRepository";
+import type { IOrderStatusEventLog } from "@/src/domain/repositories/IOrderStatusEventLog";
+import type { IOrderTrackingRepository } from "@/src/domain/repositories/IOrderTrackingRepository";
+import type { IPaymentMethodRepository } from "@/src/domain/repositories/IPaymentMethodRepository";
+import type { IProductRepository } from "@/src/domain/repositories/IProductRepository";
+import type { IPromoCodeRepository } from "@/src/domain/repositories/IPromoCodeRepository";
+import type { IRefundRepository } from "@/src/domain/repositories/IRefundRepository";
+import type { IReturnRepository } from "@/src/domain/repositories/IReturnRepository";
+import type { IReviewRepository } from "@/src/domain/repositories/IReviewRepository";
+import type { IScheduledExportRepository } from "@/src/domain/repositories/IScheduledExportRepository";
+import type { IStockAlertNotifier } from "@/src/domain/repositories/IStockAlertNotifier";
+import type { IStockAlertRepository } from "@/src/domain/repositories/IStockAlertRepository";
+import type { IStockMovementLog } from "@/src/domain/repositories/IStockMovementLog";
+import type { ITaxSettingsRepository } from "@/src/domain/repositories/ITaxSettingsRepository";
 import type { ITeamNotifier } from "@/src/domain/repositories/ITeamNotifier";
+import type { IUnitOfWork } from "@/src/domain/repositories/IUnitOfWork";
+import type { IUserRepository } from "@/src/domain/repositories/IUserRepository";
+import type { IWalletRepository } from "@/src/domain/repositories/IWalletRepository";
 
-import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepository";
-import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
-import { PrismaUserRepository } from "./repositories/PrismaUserRepository";
-import { PrismaRoleChangeLog } from "./repositories/PrismaRoleChangeLog";
-import { MockFavoriteRepository } from "./repositories/mock/MockFavoriteRepository";
-import { PrismaReviewRepository } from "./repositories/PrismaReviewRepository";
-import { PrismaDeliveryLocationRepository } from "./repositories/PrismaDeliveryLocationRepository";
-import { PrismaPaymentMethodRepository } from "./repositories/PrismaPaymentMethodRepository";
-import { PrismaDeliverySlotRepository } from "./repositories/PrismaDeliverySlotRepository";
-import { PrismaWalletRepository } from "./repositories/PrismaWalletRepository";
-import { PrismaOrderRepository } from "./repositories/PrismaOrderRepository";
-import { MockOrderTrackingRepository } from "./repositories/mock/MockOrderTrackingRepository";
-import { PrismaCartRepository } from "./repositories/PrismaCartRepository";
-import { PrismaStockAlertRepository } from "./repositories/PrismaStockAlertRepository";
-import { LoggingStockAlertNotifier } from "./notifications/LoggingStockAlertNotifier";
-import { OrderNotifier } from "./notifications/OrderNotifier";
-import { LoggingNotificationChannel } from "./notifications/LoggingNotificationChannel";
-import { SmsIrNotificationChannel } from "./notifications/SmsIrNotificationChannel";
-import { TeamNotifier } from "./notifications/TeamNotifier";
 import { LoggingEmailSender } from "./email/LoggingEmailSender";
 import { SmtpEmailSender } from "./email/SmtpEmailSender";
-import { PrismaPromoCodeRepository } from "./repositories/PrismaPromoCodeRepository";
+import { LoggingNotificationChannel } from "./notifications/LoggingNotificationChannel";
+import { LoggingStockAlertNotifier } from "./notifications/LoggingStockAlertNotifier";
+import { OrderNotifier } from "./notifications/OrderNotifier";
+import { SmsIrNotificationChannel } from "./notifications/SmsIrNotificationChannel";
+import { TeamNotifier } from "./notifications/TeamNotifier";
 import { MockAuthRepository } from "./repositories/mock/MockAuthRepository";
-import { SmsIrAuthRepository } from "./repositories/SmsIrAuthRepository";
+import { MockFavoriteRepository } from "./repositories/mock/MockFavoriteRepository";
+import { MockOrderTrackingRepository } from "./repositories/mock/MockOrderTrackingRepository";
 import { NominatimGeocodingRepository } from "./repositories/NominatimGeocodingRepository";
+import { PrismaActivityLog } from "./repositories/PrismaActivityLog";
+import { PrismaAdminNotificationRepository } from "./repositories/PrismaAdminNotificationRepository";
+import { PrismaAnalyticsRepository } from "./repositories/PrismaAnalyticsRepository";
+import { PrismaCartRepository } from "./repositories/PrismaCartRepository";
+import { PrismaCategoryRepository } from "./repositories/PrismaCategoryRepository";
+import { PrismaCustomerSegmentSnapshotRepository } from "./repositories/PrismaCustomerSegmentSnapshotRepository";
+import { PrismaDeliveryIssueRepository } from "./repositories/PrismaDeliveryIssueRepository";
+import { PrismaDeliveryLocationRepository } from "./repositories/PrismaDeliveryLocationRepository";
+import { PrismaDeliverySlotRepository } from "./repositories/PrismaDeliverySlotRepository";
+import { PrismaExportJobRepository } from "./repositories/PrismaExportJobRepository";
+import { PrismaNotificationTemplateRepository } from "./repositories/PrismaNotificationTemplateRepository";
+import { PrismaOrderNoteRepository } from "./repositories/PrismaOrderNoteRepository";
+import { PrismaOrderRepository } from "./repositories/PrismaOrderRepository";
+import { PrismaOrderStatusEventLog } from "./repositories/PrismaOrderStatusEventLog";
+import { PrismaPaymentMethodRepository } from "./repositories/PrismaPaymentMethodRepository";
+import { PrismaProductRepository } from "./repositories/PrismaProductRepository";
+import { PrismaPromoCodeRepository } from "./repositories/PrismaPromoCodeRepository";
+import { PrismaRefundRepository } from "./repositories/PrismaRefundRepository";
+import { PrismaReturnRepository } from "./repositories/PrismaReturnRepository";
+import { PrismaReviewRepository } from "./repositories/PrismaReviewRepository";
+import { PrismaScheduledExportRepository } from "./repositories/PrismaScheduledExportRepository";
+import { PrismaStockAlertRepository } from "./repositories/PrismaStockAlertRepository";
+import { PrismaStockMovementLog } from "./repositories/PrismaStockMovementLog";
+import { PrismaTaxSettingsRepository } from "./repositories/PrismaTaxSettingsRepository";
+import { PrismaUnitOfWork } from "./repositories/PrismaUnitOfWork";
+import { PrismaUserRepository } from "./repositories/PrismaUserRepository";
+import { PrismaWalletRepository } from "./repositories/PrismaWalletRepository";
+import { SmsIrAuthRepository } from "./repositories/SmsIrAuthRepository";
+import { SupabaseFileStorageRepository } from "./repositories/SupabaseFileStorageRepository";
 import { SupabaseImageStorageRepository } from "./repositories/SupabaseImageStorageRepository";
 
 const SMS_IR_DEFAULT_TEMPLATE_ID = 562447;
@@ -79,10 +109,41 @@ export const productRepository: IProductRepository = new PrismaProductRepository
 // Users are real data — PostgreSQL via Prisma. Rows are created on first sign-in
 // (auth `authorize` → GetOrCreateUser) and edited via the profile feature.
 export const userRepository: IUserRepository = new PrismaUserRepository();
-// Append-only audit trail for dashboard access changes. Real storage from the
+// Append-only audit trail for every admin-visible change — catalog, orders,
+// reviews, campaigns, stock and dashboard access alike. Real storage from the
 // start (no logging stub): an audit trail that only existed in stdout would be
 // worse than none, because it would read as one without being queryable.
-export const roleChangeLog: IRoleChangeLog = new PrismaRoleChangeLog();
+//
+// Read-only here: entries are written by the repositories that make the changes
+// they describe, inside the same transaction, from a `NewActivityEntry` the
+// use-case built. That split is what makes the log both unbypassable from the API
+// (route handlers only call use-cases) and impossible to lose (the entry commits
+// with its change). See `IActivityLog` and `AuditHook`.
+export const activityLog: IActivityLog = new PrismaActivityLog();
+// The bell's stored, per-admin notifications — a separate table from the log
+// above, for the events it structurally can't hold (see `AdminNotification`).
+// Best-effort by design, unlike the log: fanned out after the triggering
+// write already committed, the same standing every outbound notifier here has.
+export const adminNotificationRepository: IAdminNotificationRepository = new PrismaAdminNotificationRepository();
+// Runs several repositories' writes as one transaction, for the operations that
+// move an order, its stock and the customer's money together — cancellation,
+// returns, and out-of-stock resolutions. Each of those was three transactions
+// with two gaps in which the store could end up owing a refund it had no record
+// of. See `IUnitOfWork`.
+export const unitOfWork: IUnitOfWork = new PrismaUnitOfWork();
+// Append-only ledger of every stock movement, real storage for the same reason the
+// role log is: entries are written by `PrismaProductRepository` inside the same
+// transaction as the quantity they explain, which a logging stub could not be.
+export const stockMovementLog: IStockMovementLog = new PrismaStockMovementLog();
+// Store aggregates — revenue, order mix, product and category rankings — computed
+// in PostgreSQL rather than in the app. Not a data source of its own: it reads the
+// same orders, items and catalog rows the repositories above write, so there is no
+// second copy of the numbers to fall out of sync. See `IAnalyticsRepository` for
+// why this is a port rather than more methods on `IOrderRepository`.
+export const analyticsRepository: IAnalyticsRepository = new PrismaAnalyticsRepository();
+// Write side of the daily customer-segment snapshot — kept off `IAnalyticsRepository`,
+// which promises read-only aggregates (see `ICustomerSegmentSnapshotRepository`).
+export const customerSegmentSnapshotRepository: ICustomerSegmentSnapshotRepository = new PrismaCustomerSegmentSnapshotRepository();
 export const favoriteRepository: IFavoriteRepository = new MockFavoriteRepository(productRepository);
 // Reviews are real data now — PostgreSQL via Prisma. The demo reviews live on in
 // the seed migration that backfilled the table; new reviews are written by
@@ -108,6 +169,10 @@ export const walletRepository: IWalletRepository = new PrismaWalletRepository();
 // on in the seed migration that backfilled the table; orders advance through
 // delivery stages from the dashboard.
 export const orderRepository: IOrderRepository = new PrismaOrderRepository();
+// Internal, staff-facing notes on an order — append-only, and never shown to the
+// customer (see `OrderNote`).
+export const orderNoteRepository: IOrderNoteRepository = new PrismaOrderNoteRepository();
+export const deliveryIssueRepository: IDeliveryIssueRepository = new PrismaDeliveryIssueRepository();
 // Tracking composes the real order (its persisted stage drives the stepper) with
 // a SIMULATED courier feed. The stage and the destination (snapshotted from the
 // address at checkout) are production data; the movement is a stand-in — the
@@ -135,6 +200,33 @@ export const promoCodeRepository: IPromoCodeRepository = new PrismaPromoCodeRepo
 // channel is available — no use-case changes.
 export const stockAlertRepository: IStockAlertRepository = new PrismaStockAlertRepository();
 export const stockAlertNotifier: IStockAlertNotifier = new LoggingStockAlertNotifier();
+// The store's VAT configuration — real data, PostgreSQL via Prisma. A single row,
+// created lazily with its schema defaults (rate 0, disabled) on first read.
+export const taxSettingsRepository: ITaxSettingsRepository = new PrismaTaxSettingsRepository();
+// The refund ledger — real storage from the start, PostgreSQL via Prisma. No
+// writers yet: `CancelOrder`, `ResolveOrderReturn` and the substitution flow keep
+// crediting wallets directly until phase 5 has them emit a `Refund` row alongside
+// each credit. Exported standalone (like `orderNoteRepository`) for read paths
+// outside a unit of work; `PrismaUnitOfWork` binds its own instance for writers
+// that need it in the same transaction as the order/wallet change it accompanies.
+export const refundRepository: IRefundRepository = new PrismaRefundRepository();
+// The return/RMA ledger — real storage from the start, PostgreSQL via Prisma.
+// `RequestOrderReturn` and `ResolveOrderReturn` write it inside the same unit of
+// work as the order transition it accompanies; exported standalone here (like
+// `refundRepository`) for read paths outside one — the admin detail screen
+// reading a pending request's items to inspect.
+export const returnRepository: IReturnRepository = new PrismaReturnRepository();
+// The order status event ledger — real storage from the start, PostgreSQL via
+// Prisma. `PrismaOrderRepository` binds its own instance inside its own
+// transaction to write from `transitionStatus`/`setTrackingStage`; exported
+// standalone here for read paths (an order's history) outside that write path.
+export const orderStatusEventLog: IOrderStatusEventLog = new PrismaOrderStatusEventLog();
+// Editable copy for order-lifecycle notifications and admin-alert emails —
+// real storage from the start, PostgreSQL via Prisma. All 12 rows are seeded
+// by the migration; `buildOrderMessage`/`NotifyAdmins` fall back to their
+// hardcoded copy if a row is ever missing (see `NotificationTemplate`).
+export const notificationTemplateRepository: INotificationTemplateRepository =
+  new PrismaNotificationTemplateRepository();
 
 // Real SMS OTP when an SMS.ir key is configured; the in-memory mock otherwise so
 // local dev works without credentials (the mock surfaces the code in the UI).
@@ -179,7 +271,11 @@ const notificationChannels: INotificationChannel[] = [
     : new LoggingNotificationChannel("sms"),
   new LoggingNotificationChannel("push"),
 ];
-export const orderNotifier: IOrderNotifier = new OrderNotifier(userRepository, notificationChannels);
+export const orderNotifier: IOrderNotifier = new OrderNotifier(
+  userRepository,
+  notificationChannels,
+  notificationTemplateRepository,
+);
 
 // Transactional email. Real SMTP when a host is configured, a logging stub
 // otherwise — the same real-or-mock switch used for `authRepository`, so local dev
@@ -239,3 +335,22 @@ export const imageStorageRepository: IImageStorageRepository = new SupabaseImage
   serviceRoleKey: process.env.SUPABASE_SECRET_KEY!,
   bucket: process.env.SUPABASE_IMAGES_BUCKET ?? "images",
 });
+
+// Export job persistence — real storage from the start, PostgreSQL via Prisma.
+// Backs the custom export builder and scheduled reports; the four quick-export
+// routes stream directly and never touch this.
+export const exportJobRepository: IExportJobRepository = new PrismaExportJobRepository();
+
+// Supabase Storage for generated export files, in a separate **private** bucket
+// from images — see `SupabaseFileStorageRepository` for why this isn't the same
+// repository as `imageStorageRepository`. Every read goes through a signed URL.
+export const exportFileStorage: IFileStorageRepository = new SupabaseFileStorageRepository({
+  url: process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  serviceRoleKey: process.env.SUPABASE_SECRET_KEY!,
+  bucket: process.env.SUPABASE_EXPORTS_BUCKET ?? "exports",
+});
+
+// Scheduled-export persistence — real storage from the start, PostgreSQL via
+// Prisma. Backs the Export center's Scheduled reports panel; `RunDueSchedules`
+// reads it to find what's due and turns each into an `exportJobRepository` row.
+export const scheduledExportRepository: IScheduledExportRepository = new PrismaScheduledExportRepository();

@@ -1,6 +1,6 @@
 import { requireAuth } from "@/src/lib/require-auth";
-import { ordersServerApi } from "@/src/presentation/orders/order-server-api";
 import OrderConfirmedScreen from "@/src/presentation/checkout/OrderConfirmedScreen";
+import { ordersServerApi } from "@/src/presentation/orders/order-server-api";
 
 // The just-placed order is read from the REST API at request time (BFF) so the
 // receipt can itemize any out-of-stock refunds — render dynamically.

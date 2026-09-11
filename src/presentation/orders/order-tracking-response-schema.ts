@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { OrderTracking } from "@/src/domain/entities/OrderTracking";
 
 /**
@@ -26,15 +27,15 @@ export const orderTrackingResponseSchema = z.object({
   route: z.array(geoPointResponseSchema),
   steps: z.array(
     z.object({
+      // No `label`: the milestone is the machine key, and the copy is localized in
+      // the presentation layer. Same for the rider's job title below.
       milestone: z.enum(["confirmed", "shipped", "arrived"]),
-      label: z.string(),
       occurredAt: z.string().optional(),
       status: z.enum(["done", "current", "pending"]),
     }),
   ),
   rider: z.object({
     name: z.string(),
-    role: z.string(),
     avatarUrl: z.string(),
     phone: z.string(),
   }),

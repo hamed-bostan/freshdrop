@@ -60,3 +60,11 @@ export const warning = {
 export const amber = {
   500: "#FFC107",
 };
+
+// Light gradient stops for the wallet card brand gradients — off-ramp hues
+// paired with primary[700]/secondary[700] as the dark stop. Kept separate from
+// the primary/secondary ramps since they don't fit the numeric shade ordering.
+export const walletGradient = {
+  primaryFrom: "#2EC16E",
+  secondaryFrom: "#C42E9D",
+};

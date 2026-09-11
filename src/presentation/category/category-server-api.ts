@@ -1,6 +1,7 @@
 import type { Category } from "@/src/domain/entities/Category";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
+
 import { categoryListResponseSchema, categoryResponseSchema } from "./category-response-schema";
 
 /**

@@ -1,8 +1,9 @@
-import type { User } from "../../entities/User";
-import type { IUserRepository } from "../../repositories/IUserRepository";
-import type { IImageStorageRepository } from "../../repositories/IImageStorageRepository";
-import { ValidationError } from "../../errors/ValidationError";
 import { NotFoundError } from "../../errors/NotFoundError";
+import { ValidationError } from "../../errors/ValidationError";
+
+import type { User } from "../../entities/User";
+import type { IImageStorageRepository } from "../../repositories/IImageStorageRepository";
+import type { IUserRepository } from "../../repositories/IUserRepository";
 
 /** The profile fields a user may change. `email`/`avatarUrl` clear when omitted/blank. */
 export type UpdateProfileInput = {

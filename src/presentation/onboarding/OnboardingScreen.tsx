@@ -1,18 +1,22 @@
 "use client";
 
-import * as React from "react";
+import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
+import * as React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import type { Swiper as SwiperType } from "swiper";
+
 import "swiper/css";
-import { ArrowRight } from "lucide-react";
-import { Button, Icon } from "@/src/presentation/design-system";
-import { routing } from "@/src/i18n/routing";
+
 import { getLangDir } from "@/src/i18n/direction";
+import { routing } from "@/src/i18n/routing";
+import { Button, Icon } from "@/src/presentation/design-system";
 import { onboarding1, onboarding2, onboarding3, onboarding4 } from "@/src/shared/assets/images";
-import { OnboardingDots } from "./components";
+
 import { completeOnboarding } from "./actions";
+import { OnboardingDots } from "./components";
+
+import type { Swiper as SwiperType } from "swiper";
 
 const SPLASH_MS = 1800;
 

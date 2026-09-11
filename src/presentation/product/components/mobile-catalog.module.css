@@ -1,0 +1,119 @@
+.cards article {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #e8ede8;
+  border-radius: 20px;
+  background: linear-gradient(#f5f8f3 0 144px, #fff 144px);
+  box-shadow: 0 2px 5px #18382004;
+}
+
+.cards article > button {
+  top: 8px;
+  inset-inline-start: auto;
+  inset-inline-end: 8px;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffffed;
+}
+
+.cards article > button svg {
+  width: 19px;
+  height: 19px;
+}
+
+.cards [data-card-part="image"] {
+  width: 100%;
+  height: 108px;
+  object-fit: contain;
+  padding: 12px 14px 0;
+  margin: 0 0 30px;
+}
+
+.cards [data-card-part$="badge"] {
+  position: absolute;
+  top: 119px;
+  inset-inline: 12px auto;
+  max-width: calc(100% - 24px);
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 10px;
+  line-height: 16px;
+  font-weight: 600;
+  background: #dff2e3;
+  color: #176336;
+}
+
+.cards [data-card-part="stock-badge"] {
+  background: #eef0ed;
+  color: #646b62;
+}
+
+.cards [data-card-part="title"] {
+  min-height: 40px;
+  margin: 0 0 6px;
+  padding: 0;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.cards [data-card-part="stock"],
+.cards [data-card-part="rating"] {
+  padding: 0;
+  margin: 0 0 8px;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.cards [data-card-part="stock"] {
+  color: #956215;
+}
+
+.cards [data-card-part="footer"] {
+  align-items: flex-start;
+  min-height: 44px;
+  margin-top: auto;
+  padding: 0;
+  gap: 4px;
+}
+
+.cards [data-card-part="footer"] > div:first-child {
+  padding-top: 2px;
+}
+
+.cards [data-card-part="footer"] > div:first-child > div > span:first-child {
+  width: auto;
+  height: auto;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: #fff0e8;
+  color: #b54720;
+  font-size: 10px;
+  line-height: 14px;
+}
+
+.cards [data-card-part="footer"] > div:first-child > div > span:last-child {
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.cards [data-card-part="footer"] > div > span {
+  font-size: 18px;
+  letter-spacing: -0.5px;
+}
+
+.cards [data-card-part="footer"] button {
+  width: 44px;
+  height: 44px;
+}
+
+.cards [data-card-part="footer"] button svg {
+  width: 22px;
+  height: 22px;
+}
+

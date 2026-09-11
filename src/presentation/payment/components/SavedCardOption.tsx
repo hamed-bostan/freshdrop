@@ -1,9 +1,12 @@
 "use client";
 
-import { CreditCard } from "lucide-react";
-import { Icon } from "@/src/presentation/design-system";
-import { cn } from "@/src/lib/utils";
+import { useTranslations } from "next-intl";
+
 import type { SavedCard } from "@/src/domain/entities/Wallet";
+import { cn } from "@/src/lib/utils";
+import { SelectableTile } from "@/src/presentation/design-system";
+
+import styles from "../PaymentMethodScreen.module.css";
 
 interface SavedCardOptionProps {
   card: SavedCard;
@@ -11,34 +14,20 @@ interface SavedCardOptionProps {
   onSelect: (id: string) => void;
 }
 
-/**
- * A saved card rendered as a selectable payment option — the same radio treatment
- * as `PaymentMethodOption`, so cards and the fixed options form one keyboard-
- * navigable group. The label shows the brand and the masked last-four only.
- */
 export function SavedCardOption({ card, selected, onSelect }: SavedCardOptionProps) {
+  const t = useTranslations("checkout");
   const lastFour = card.number.replace(/\D/g, "").slice(-4);
 
   return (
-    <label
-      className={cn(
-        "flex cursor-pointer items-center gap-2 rounded-card-xl border bg-muted px-4 py-2 transition-colors",
-        "has-focus-visible:ring-2 has-focus-visible:ring-ring",
-        selected ? "border-foreground" : "border-transparent",
-      )}
-    >
-      <input
-        type="radio"
-        name="payment-method"
-        value={card.id}
-        checked={selected}
-        onChange={() => onSelect(card.id)}
-        className="sr-only"
-      />
-      <Icon icon={CreditCard} className="text-foreground" />
-      <span className="text-body-b6 text-foreground">
-        {card.brand} •••• {lastFour}
+    <SelectableTile name="payment-method" value={card.id} selected={selected} onSelect={() => onSelect(card.id)} size="md"
+      className={cn(styles.option, styles.savedOption, "min-h-[82px] gap-4 rounded-2xl border-border bg-background px-4 sm:min-h-[102px] sm:px-6", selected && "border-primary bg-primary/[0.025]")}>
+      <span aria-hidden className={cn("flex size-7 shrink-0 items-center justify-center rounded-full border-2 border-muted-strong", selected && "border-primary")}>{selected && <span className="size-3.5 rounded-full bg-primary" />}</span>
+      <span aria-hidden className={card.brand === "Visa" ? "w-14 text-center text-xl font-black italic tracking-tight text-blue-700" : "relative flex w-14 justify-center"}>
+        {card.brand === "Visa" ? "VISA" : <><span className="size-8 rounded-full bg-red-500" /><span className="-ms-3 size-8 rounded-full bg-amber-400/90" /></>}
       </span>
-    </label>
+      <span className="min-w-0 flex-1 text-base font-medium text-foreground sm:text-lg">{card.brand} •••• {lastFour}</span>
+      {selected && <span className="hidden rounded-lg bg-primary/10 px-3 py-1 text-sm font-medium text-primary min-[430px]:inline">{t("defaultPayment")}</span>}
+      <span className="hidden shrink-0 text-sm text-muted-foreground sm:inline sm:text-base">{t("expires", { date: card.expiry })}</span>
+    </SelectableTile>
   );
 }

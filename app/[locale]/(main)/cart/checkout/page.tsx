@@ -1,13 +1,14 @@
 import { cartsServerApi } from "@/src/presentation/cart/cart-server-api";
 import { promoCodesServerApi } from "@/src/presentation/cart/promo-code-server-api";
-import { deliveryLocationsServerApi } from "@/src/presentation/delivery-location/delivery-location-server-api";
-import { deliverySlotsServerApi } from "@/src/presentation/checkout/delivery-slot-server-api";
-import { paymentMethodsServerApi } from "@/src/presentation/payment/payment-method-server-api";
-import { walletsServerApi } from "@/src/presentation/wallet/wallet-server-api";
 import CheckoutScreen from "@/src/presentation/checkout/CheckoutScreen";
+import { deliverySlotsServerApi } from "@/src/presentation/checkout/delivery-slot-server-api";
+import { deliveryLocationsServerApi } from "@/src/presentation/delivery-location/delivery-location-server-api";
+import { paymentMethodsServerApi } from "@/src/presentation/payment/payment-method-server-api";
+import { profilesServerApi } from "@/src/presentation/profile/profile-server-api";
+import { walletsServerApi } from "@/src/presentation/wallet/wallet-server-api";
 
 interface CheckoutPageProps {
-  searchParams: Promise<{ promo?: string }>;
+  searchParams: Promise<{ promo?: string; step?: string }>;
 }
 
 // Cart, promo, delivery locations/slots, the payment-option catalog, the caller's
@@ -15,19 +16,20 @@ interface CheckoutPageProps {
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
-  const { promo: code } = await searchParams;
+  const { promo: code, step } = await searchParams;
 
   // Carry any promo applied in the cart through to checkout so the totals match:
   // the cart is fetched with it applied, and resolved separately for the summary.
-  const [cart, appliedPromo, deliveryLocations, deliverySlotDays, paymentMethods, savedCards, selectedPaymentMethodId] =
+  const [cart, appliedPromo, deliveryLocations, deliverySlotDays, paymentMethods, wallet, selectedPaymentMethodId, profile] =
     await Promise.all([
       cartsServerApi.get({ promo: code }),
       code ? promoCodesServerApi.getByCode(code) : Promise.resolve(null),
       deliveryLocationsServerApi.list(),
       deliverySlotsServerApi.list(),
       paymentMethodsServerApi.list(),
-      walletsServerApi.listCards(),
+      walletsServerApi.get(),
       paymentMethodsServerApi.getSelectedId(),
+      profilesServerApi.getMe(),
     ]);
 
   return (
@@ -36,9 +38,12 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
       deliveryLocations={deliveryLocations}
       deliverySlotDays={deliverySlotDays}
       paymentMethods={paymentMethods}
-      savedCards={savedCards}
+      savedCards={wallet.cards}
       selectedPaymentMethodId={selectedPaymentMethodId}
       promoCode={appliedPromo?.code}
+      walletBalance={wallet.balance}
+      initialStep={step === "review" ? "review" : step === "payment" ? "payment" : "delivery"}
+      customerPhone={profile.phone}
     />
   );
 }

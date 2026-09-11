@@ -1,8 +1,9 @@
-import { apiPut } from "@/src/lib/api/client";
+import type { ProfileUpdateValues } from "@/src/contracts/profile-schema";
+import { apiDelete, apiPut } from "@/src/lib/api/client";
 import { AVATAR_IMAGE_FOLDER } from "@/src/lib/imageFolders";
 import { imagesApi } from "@/src/presentation/images/image-api";
+
 import { userResponseSchema, type UserProfile } from "./profile-response-schema";
-import type { ProfileUpdateValues } from "./profile-schema";
 
 /**
  * Typed client for the profile REST endpoint. UI components call these instead of
@@ -22,5 +23,10 @@ export const profilesApi = {
    */
   uploadAvatar(file: File): Promise<string> {
     return imagesApi.upload(file, AVATAR_IMAGE_FOLDER);
+  },
+
+  /** Permanently delete the signed-in user's own account. */
+  remove(): Promise<void> {
+    return apiDelete("/profile");
   },
 };

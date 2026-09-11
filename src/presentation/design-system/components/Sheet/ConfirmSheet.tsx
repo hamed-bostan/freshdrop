@@ -2,10 +2,12 @@
 
 import { useTranslations } from "next-intl";
 import { Dialog } from "radix-ui";
-import { Sheet, SheetClose, SheetContent } from "./Sheet";
+
 import { Button } from "../Button";
 
-interface ConfirmSheetProps {
+import { Sheet, SheetClose, SheetContent } from "./Sheet";
+
+type ConfirmSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** The question — becomes the dialog title (start-aligned). */
@@ -15,7 +17,7 @@ interface ConfirmSheetProps {
   cancelLabel?: string;
   confirmLabel?: string;
   onConfirm: () => void;
-}
+};
 
 /**
  * Confirmation bottom sheet: a start-aligned question + message and a

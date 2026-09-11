@@ -1,7 +1,9 @@
-import type { IUserRepository } from "../../repositories/IUserRepository";
-import type { IPaymentMethodRepository } from "../../repositories/IPaymentMethodRepository";
-import type { IWalletRepository } from "../../repositories/IWalletRepository";
 import { ValidationError } from "../../errors/ValidationError";
+
+import type { IPaymentMethodRepository } from "../../repositories/IPaymentMethodRepository";
+import type { IUserRepository } from "../../repositories/IUserRepository";
+import type { IWalletRepository } from "../../repositories/IWalletRepository";
+
 
 /**
  * Persist the payment method the signed-in user selected for checkout. The id must

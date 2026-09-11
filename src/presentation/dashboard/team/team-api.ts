@@ -1,6 +1,6 @@
+import { teamMemberResponseSchema, type TeamMember } from "@/src/contracts/team-response-schema";
+import type { GrantAdminInput } from "@/src/contracts/team-schema";
 import { apiDelete, apiPost, apiPut } from "@/src/lib/api/client";
-import { teamMemberResponseSchema, type TeamMember } from "./team-response-schema";
-import type { GrantAdminInput } from "./team-schema";
 
 /**
  * Typed client for the team REST *mutations*. UI components call these instead of

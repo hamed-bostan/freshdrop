@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
+
 import { Input, type InputProps } from "../Input";
+
 import { PasswordToggle } from "./PasswordToggle";
 
 export type PasswordInputProps = Omit<InputProps, "type" | "rightElement">;

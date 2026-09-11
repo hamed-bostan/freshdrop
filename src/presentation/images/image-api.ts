@@ -1,5 +1,6 @@
 import { apiPost } from "@/src/lib/api/client";
 import type { ImageFolder } from "@/src/lib/imageFolders";
+
 import { imageUploadResponseSchema } from "./image-response-schema";
 
 /**

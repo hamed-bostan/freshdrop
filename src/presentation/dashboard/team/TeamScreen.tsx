@@ -1,15 +1,17 @@
 import { useTranslations } from "next-intl";
-import type { TeamMember } from "./team-response-schema";
-import type { RoleChangeEntry } from "./team-history-response-schema";
+
+import type { TeamMember } from "@/src/contracts/team-response-schema";
+import type { ActivityEntryWire } from "@/src/presentation/dashboard/activity/activity-response-schema";
+
 import { GrantAdminForm } from "./GrantAdminForm";
-import { TeamTable } from "./TeamTable";
 import { TeamActivity } from "./TeamActivity";
+import { TeamTable } from "./TeamTable";
 
 type TeamScreenProps = {
   /** Everyone who can reach the dashboard, fetched over the BFF during server render. */
   members: TeamMember[];
-  /** Recent access changes, newest first. */
-  changes: RoleChangeEntry[];
+  /** Recent access changes from the activity log, newest first. */
+  changes: ActivityEntryWire[];
 };
 
 /**
@@ -22,10 +24,10 @@ export function TeamScreen({ members, changes }: TeamScreenProps) {
   const t = useTranslations("dashTeam");
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-4 sm:gap-6">
       <div>
-        <h1 className="text-heading-h2 text-foreground">{t("heading")}</h1>
-        <p className="text-body-b6 text-muted-foreground">
+        <h1 className="dashboard-page-title">{t("heading")}</h1>
+        <p className="mt-1 text-body-b6 leading-relaxed text-muted-foreground">
           {t("summary", { count: members.length })}
         </p>
       </div>

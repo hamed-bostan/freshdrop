@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+
 import OtpScreen from "@/src/presentation/auth/OtpScreen";
 
 interface VerifyPageProps {

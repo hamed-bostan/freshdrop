@@ -1,6 +1,6 @@
 import { cartsServerApi } from "@/src/presentation/cart/cart-server-api";
-import { promoCodesServerApi } from "@/src/presentation/cart/promo-code-server-api";
 import CartScreen from "@/src/presentation/cart/CartScreen";
+import { promoCodesServerApi } from "@/src/presentation/cart/promo-code-server-api";
 
 interface CartPageProps {
   searchParams: Promise<{ promo?: string }>;

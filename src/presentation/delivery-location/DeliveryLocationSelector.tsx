@@ -1,7 +1,9 @@
-import { getTranslations } from "next-intl/server";
 import { MapPin, ChevronDown } from "lucide-react";
-import { Icon } from "@/src/presentation/design-system";
+import { getTranslations } from "next-intl/server";
+
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
+import { Icon } from "@/src/presentation/design-system";
+
 import { DeliveryLocationPickerSheet } from "./DeliveryLocationPickerSheet";
 
 /**

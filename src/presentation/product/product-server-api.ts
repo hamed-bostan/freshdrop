@@ -3,6 +3,7 @@ import type { ProductFilters } from "@/src/domain/entities/ProductFilters";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { buildProductFilterParams } from "@/src/lib/api/product-search-params";
 import { serverApiGet } from "@/src/lib/api/server-client";
+
 import { productListResponseSchema, productResponseSchema } from "./product-response-schema";
 
 /**

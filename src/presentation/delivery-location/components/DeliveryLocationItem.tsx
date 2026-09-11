@@ -1,12 +1,15 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Pencil } from "lucide-react";
-import { Link } from "@/src/i18n/navigation";
-import { Button, Icon } from "@/src/presentation/design-system";
-import { cn } from "@/src/lib/utils";
+import { useTranslations } from "next-intl";
+
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
+import { Link } from "@/src/i18n/navigation";
+import { cn } from "@/src/lib/utils";
+import { Button, Icon } from "@/src/presentation/design-system";
+
 import { ADDRESS_PRESET_LABEL_KEY } from "../addressLabel";
+
 import { DeliveryLocationSummary } from "./DeliveryLocationSummary";
 
 interface DeliveryLocationItemProps {

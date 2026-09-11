@@ -1,13 +1,15 @@
 "use client";
 
+import { ChevronRight, Ticket } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Dialog, VisuallyHidden } from "radix-ui";
-import { ChevronRight, Ticket } from "lucide-react";
+
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
 import { Link } from "@/src/i18n/navigation";
-import { Button, Icon } from "@/src/presentation/design-system";
-import { cn } from "@/src/lib/utils";
 import { formatMoney } from "@/src/lib/formatMoney";
+import { cn } from "@/src/lib/utils";
+import { Button, Icon } from "@/src/presentation/design-system";
+
 import { isLocalizedPromo } from "../localizedPromos";
 
 interface SummaryRowProps {
@@ -80,9 +82,13 @@ export function CheckoutSheet({
         <Dialog.Content
           className={cn(
             "fixed inset-x-0 bottom-20 z-40 mx-auto w-full max-w-md",
-            "rounded-t-card-xl bg-popover px-6 pb-8 pt-3 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] focus:outline-none",
-            "data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom",
-            "data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom",
+            "rounded-t-card-xl bg-popover px-6 pb-8 pt-3 shadow-[var(--shadow-sheet)] focus:outline-none",
+            "data-[state=open]:animate-in data-[state=closed]:animate-out",
+            // Matches the DS Sheet: the slide goes under reduced motion, a fade replaces it.
+            "motion-safe:data-[state=open]:slide-in-from-bottom",
+            "motion-safe:data-[state=closed]:slide-out-to-bottom",
+            "motion-reduce:data-[state=open]:fade-in-0",
+            "motion-reduce:data-[state=closed]:fade-out-0",
             "duration-300",
           )}
         >

@@ -1,5 +1,6 @@
 import type { Cart } from "@/src/domain/entities/Cart";
 import { serverApiGet } from "@/src/lib/api/server-client";
+
 import { cartResponseSchema } from "./cart-response-schema";
 
 /**

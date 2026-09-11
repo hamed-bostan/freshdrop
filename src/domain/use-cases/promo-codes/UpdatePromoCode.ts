@@ -1,0 +1,49 @@
+import { diffFields } from "../../entities/ActivityEntry";
+import { NotFoundError } from "../../errors/NotFoundError";
+import { UniqueConstraintError } from "../../errors/UniqueConstraintError";
+import { ValidationError } from "../../errors/ValidationError";
+
+import { promoCodeSnapshot } from "./promoCodeActivity";
+import { assertValidPromoCode, normalizePromoCode } from "./promoCodeRules";
+
+import type { ActivityActor } from "../../entities/ActivityEntry";
+import type { AdminPromoCode } from "../../entities/PromoCode";
+import type { IPromoCodeRepository, NewPromoCode } from "../../repositories/IPromoCodeRepository";
+
+/** Edit an existing campaign — its code, copy, discount, window and on/off switch. */
+export class UpdatePromoCode {
+  constructor(
+    private readonly promoRepo: IPromoCodeRepository,
+  ) {}
+
+  async execute(id: string, input: NewPromoCode, actor: ActivityActor): Promise<AdminPromoCode> {
+    if (!id) throw new ValidationError("id", "Missing promo code id.");
+
+    const promo = normalizePromoCode(input);
+    assertValidPromoCode(promo);
+
+    const existing = await this.promoRepo.getById(id);
+    if (!existing) throw new NotFoundError("promo code", id);
+
+    // Reject a code already owned by a *different* campaign; keeping your own is
+    // fine. The DB's unique constraint still guards the check-to-update race.
+    const clash = await this.promoRepo.getByCode(promo.code);
+    if (clash && clash.id !== id) throw new UniqueConstraintError(["code"]);
+
+    // Diffed against the stored row rather than the form's initial values, and
+    // skipped entirely when nothing moved — the same rules `UpdateProduct` follows.
+    return this.promoRepo.update(id, promo, (saved) => {
+      const changes = diffFields(promoCodeSnapshot(existing), promoCodeSnapshot(saved));
+      if (changes.length === 0) return null;
+      return {
+        actorId: actor.id,
+        actorName: actor.name,
+        action: "promoCode.updated",
+        entityType: "promoCode",
+        entityId: saved.id,
+        entityLabel: saved.code,
+        changes,
+      };
+    });
+  }
+}

@@ -1,4 +1,5 @@
 import { orderRecognizedRevenue } from "../../entities/Order";
+
 import type { CustomerOrderSummary } from "../../entities/CustomerOrderSummary";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IUserRepository } from "../../repositories/IUserRepository";
@@ -37,7 +38,7 @@ export class GetCustomerOrderSummaries {
     // that's their history, independent of what was refunded.
     const byUser = new Map<string, CustomerStats>();
     for (const order of orders) {
-      const spent = orderRecognizedRevenue(order);
+      const spent = orderRecognizedRevenue(order, order.refunds);
       const stats = byUser.get(order.userId);
       if (stats) {
         stats.orderCount += 1;
@@ -65,14 +66,21 @@ export class GetCustomerOrderSummaries {
         userId,
         name: user?.name ?? userId,
         phone: user?.phone ?? "",
+        email: user?.email ?? null,
         avatarUrl: user?.avatarUrl ?? null,
         orderCount: stats.orderCount,
         totalSpent: stats.totalSpent,
         lastOrderAt: stats.lastOrderAt,
+        // Replaced below, once the list is ranked.
+        rank: 0,
       };
     });
 
-    // Rank by total spend, highest first — the "most buying" ordering.
-    return summaries.sort((a, b) => b.totalSpent - a.totalSpent);
+    // Rank by total spend, highest first — the "most buying" ordering — and stamp
+    // each summary with its position here, while the list is still complete. A
+    // rank assigned later couldn't survive a search or a page boundary.
+    return summaries
+      .sort((a, b) => b.totalSpent - a.totalSpent)
+      .map((summary, index) => ({ ...summary, rank: index + 1 }));
   }
 }

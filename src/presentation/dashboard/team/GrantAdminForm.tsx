@@ -1,14 +1,17 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, TextField } from "@/src/presentation/design-system";
+
+import { grantAdminSchema, type GrantAdminInput } from "@/src/contracts/team-schema";
+import { GRANTABLE_ROLES } from "@/src/domain/entities/User";
 import { useRouter } from "@/src/i18n/navigation";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
 import { formErrorMessage } from "@/src/lib/formErrorMessage";
-import { grantAdminSchema, type GrantAdminInput } from "./team-schema";
+import { Button, FormMessage, Input, Select, TextField } from "@/src/presentation/design-system";
+
 import { teamApi } from "./team-api";
 
 /**
@@ -33,7 +36,9 @@ export function GrantAdminForm() {
     formState: { errors, isSubmitting },
   } = useForm<GrantAdminInput>({
     resolver: zodResolver(grantAdminSchema, undefined, { raw: true }),
-    defaultValues: { phone: "", email: "" },
+    // Least privilege by default — the person adding someone has to choose to give
+    // them more than read access.
+    defaultValues: { phone: "", email: "", role: "support" },
   });
 
   const onSubmit = handleSubmit(async (values) => {
@@ -68,17 +73,17 @@ export function GrantAdminForm() {
     <form
       onSubmit={onSubmit}
       noValidate
-      className="flex flex-col gap-4 rounded-card-lg border border-border p-5"
+      className="flex flex-col gap-4 rounded-card-lg border border-border bg-background p-4 sm:p-6"
     >
       <div>
         <h2 className="text-body-b4 text-foreground">{t("grantHeading")}</h2>
-        <p className="mt-1 text-body-b6 text-muted-foreground">{t("grantDescription")}</p>
+        <p className="mt-1 max-w-2xl text-body-b6 text-muted-foreground">{t("grantDescription")}</p>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+      <div className="grid min-w-0 grid-cols-1 items-start gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem_auto]">
         {/* TextField drops extra props when a render-prop control is used, so the
             row's sizing lives on a wrapper rather than on the field itself. */}
-        <div className="sm:flex-1">
+        <div className="min-w-0">
           <TextField
             label={t("phoneLabel")}
             required
@@ -92,12 +97,13 @@ export function GrantAdminForm() {
                 dir="ltr"
                 autoComplete="off"
                 placeholder={t("phonePlaceholder")}
+                inputClassName="h-11 sm:h-10"
               />
             )}
           </TextField>
         </div>
 
-        <div className="sm:flex-1">
+        <div className="min-w-0">
           <TextField
             label={t("emailLabel")}
             description={t("emailHint")}
@@ -111,20 +117,37 @@ export function GrantAdminForm() {
                 dir="ltr"
                 autoComplete="off"
                 placeholder={t("emailPlaceholder")}
+                inputClassName="h-11 sm:h-10"
               />
             )}
           </TextField>
         </div>
 
-        <Button type="submit" disabled={isSubmitting} className="sm:mt-7">
+        <div className="min-w-0">
+          {/* The role goes beside the phone rather than behind an "advanced"
+              disclosure: choosing what someone may do is part of adding them, and
+              defaulting quietly to the most powerful option is how everyone ends
+              up an admin. */}
+          <TextField label={t("roleLabel")} description={t("roleHint")}>
+            {(control) => (
+              <Select {...control} {...register("role")} className="h-11 sm:h-10">
+                {GRANTABLE_ROLES.map((role) => (
+                  <option key={role} value={role}>
+                    {t(`role.${role}`)}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </TextField>
+        </div>
+
+        <Button type="submit" disabled={isSubmitting} className="w-full self-start text-body-b7 sm:mt-7 xl:w-auto">
           {isSubmitting ? t("granting") : t("grantSubmit")}
         </Button>
       </div>
 
       {errors.root?.message && (
-        <p role="alert" className="text-body-b6 text-destructive">
-          {errors.root.message}
-        </p>
+        <FormMessage size="md">{errors.root.message}</FormMessage>
       )}
     </form>
   );

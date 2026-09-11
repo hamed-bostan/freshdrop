@@ -5,6 +5,7 @@ import {
 } from "@/src/domain/entities/WalletTransactionDescription";
 import type { IWalletRepository } from "@/src/domain/repositories/IWalletRepository";
 import { prisma } from "@/src/infrastructure/prisma/client";
+import { inTransaction, type PrismaDb } from "@/src/infrastructure/prisma/transaction";
 
 /**
  * A user's wallet backed by PostgreSQL via Prisma. The aggregate is assembled from
@@ -13,11 +14,18 @@ import { prisma } from "@/src/infrastructure/prisma/client";
  * through the container, never imported by client code.
  */
 export class PrismaWalletRepository implements IWalletRepository {
+  /**
+   * The root client normally, a transaction client when a unit of work handed this
+   * repository out — see `PrismaUnitOfWork`. This is what lets a refund credit the
+   * wallet in the same transaction that cancels the order it refunds.
+   */
+  constructor(private readonly db: PrismaDb = prisma) {}
+
   async getWallet(userId: string): Promise<Wallet> {
     const [account, cards, transactions] = await Promise.all([
-      prisma.walletAccount.findUnique({ where: { userId } }),
+      this.db.walletAccount.findUnique({ where: { userId } }),
       this.listCards(userId),
-      prisma.walletTransaction.findMany({
+      this.db.walletTransaction.findMany({
         where: { userId },
         // Most recent first; the synthetic id breaks ties deterministically.
         orderBy: [{ date: "desc" }, { id: "asc" }],
@@ -25,7 +33,7 @@ export class PrismaWalletRepository implements IWalletRepository {
     ]);
 
     return {
-      balance: account?.balance ?? 0,
+      balance: account?.balance.toNumber() ?? 0,
       cards,
       transactions: transactions.map((row) => ({
         id: row.id,
@@ -33,14 +41,14 @@ export class PrismaWalletRepository implements IWalletRepository {
         reason: row.reason,
         reasonItem: row.reasonItem,
         date: row.date.toISOString(),
-        amount: row.amount,
+        amount: row.amount.toNumber(),
         type: row.type as TransactionType,
       })),
     };
   }
 
   async listCards(userId: string): Promise<SavedCard[]> {
-    const rows = await prisma.walletCard.findMany({
+    const rows = await this.db.walletCard.findMany({
       where: { userId },
       // Insertion order (with a deterministic tiebreak) so the carousel stays stable.
       orderBy: [{ createdAt: "asc" }, { id: "asc" }],
@@ -55,7 +63,7 @@ export class PrismaWalletRepository implements IWalletRepository {
   }
 
   async addCard(userId: string, card: Omit<SavedCard, "id">): Promise<SavedCard> {
-    const row = await prisma.walletCard.create({
+    const row = await this.db.walletCard.create({
       data: { userId, brand: card.brand, holderName: card.holderName, number: card.number, expiry: card.expiry },
     });
     return {
@@ -75,13 +83,13 @@ export class PrismaWalletRepository implements IWalletRepository {
     // Balance change and its transaction are written together so the two never
     // drift; the account row is created on first top-up (upsert). The row stores
     // the machine reason plus the English description snapshot derived from it.
-    await prisma.$transaction([
-      prisma.walletAccount.upsert({
+    await inTransaction(this.db, async (tx) => {
+      await tx.walletAccount.upsert({
         where: { userId },
         create: { userId, balance: amount },
         update: { balance: { increment: amount } },
-      }),
-      prisma.walletTransaction.create({
+      });
+      await tx.walletTransaction.create({
         data: {
           userId,
           description: describeTransaction(reason),
@@ -91,7 +99,37 @@ export class PrismaWalletRepository implements IWalletRepository {
           type: "credit",
           date: new Date(),
         },
-      }),
-    ]);
+      });
+    });
+  }
+
+  async deductFunds(
+    userId: string,
+    amount: number,
+    reason: WalletTransactionReason = { kind: "appliedToOrder" },
+  ): Promise<boolean> {
+    return inTransaction(this.db, async (tx) => {
+      // `balance >= amount` is folded into the WHERE clause, so the check and the
+      // decrement are one atomic statement — the same oversell guard the delivery
+      // slot claim uses. `count` is 1 only when this call actually took the funds.
+      const result = await tx.walletAccount.updateMany({
+        where: { userId, balance: { gte: amount } },
+        data: { balance: { decrement: amount } },
+      });
+      if (result.count === 0) return false;
+
+      await tx.walletTransaction.create({
+        data: {
+          userId,
+          description: describeTransaction(reason),
+          reason: reason.kind,
+          reasonItem: "item" in reason ? reason.item : null,
+          amount,
+          type: "debit",
+          date: new Date(),
+        },
+      });
+      return true;
+    });
   }
 }

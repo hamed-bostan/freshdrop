@@ -10,37 +10,45 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Cart } from "@/src/domain/entities/Cart";
+
+import { priceCart, type Cart } from "@/src/domain/entities/Cart";
 import type { Product } from "@/src/domain/entities/Product";
+
 import { cartsApi } from "./cart-api";
 
-/** Flat delivery fee — mirrors the server's `GetCart`. Optimistic only; the server stays authoritative. */
-const SHIPPING_FEE = 5;
-
-/** Re-derive the base cart's computed fields after an optimistic line change (no promo). */
-function recomputeCart(items: Cart["items"]): Cart {
-  const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  const shipping = items.length > 0 ? SHIPPING_FEE : 0;
-  return {
-    items,
-    subtotal,
-    shipping,
-    discount: 0,
-    total: subtotal + shipping,
-    itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
-  };
+/**
+ * Re-derive the base cart's computed fields after an optimistic line change.
+ *
+ * Runs the server's own pricing rule rather than a copy of it, so the number that
+ * flashes up optimistically is the number that comes back — a local mirror of the
+ * delivery fee is exactly the kind of duplicate that drifts one release later and
+ * shows the customer a total that changes when the response lands.
+ *
+ * No promo: the optimistic path never has one to hand (it isn't in the client's
+ * line state), so a discounted cart's total is the server's to correct.
+ *
+ * `taxRate` is carried over from the cart being replaced — it doesn't change
+ * between requests, and re-deriving it here would mean threading tax settings
+ * into the client store just to recompute a figure the next server response
+ * corrects anyway.
+ */
+function recomputeCart(items: Cart["items"], taxRate: number | null): Cart {
+  return priceCart(items, null, taxRate);
 }
 
 /** Apply an absolute quantity for one product to a cart snapshot (insert / update / remove). */
 function applyQuantity(cart: Cart, product: Product, quantity: number): Cart {
   if (quantity <= 0) {
-    return recomputeCart(cart.items.filter((item) => item.product.id !== product.id));
+    return recomputeCart(
+      cart.items.filter((item) => item.product.id !== product.id),
+      cart.taxRate,
+    );
   }
   const exists = cart.items.some((item) => item.product.id === product.id);
   const items = exists
     ? cart.items.map((item) => (item.product.id === product.id ? { ...item, quantity } : item))
     : [...cart.items, { product, quantity }];
-  return recomputeCart(items);
+  return recomputeCart(items, cart.taxRate);
 }
 
 type CartStore = {

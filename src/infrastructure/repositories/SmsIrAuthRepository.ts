@@ -1,5 +1,7 @@
 import type { AuthIdentity, IAuthRepository } from "@/src/domain/repositories/IAuthRepository";
+
 import { normalizePhone, sendPatternSms } from "../sms/smsIrClient";
+
 import { getOtpStore } from "./otpStore";
 
 const MIN_PHONE_DIGITS = 8;

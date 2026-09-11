@@ -1,69 +1,55 @@
+import { Star } from "lucide-react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { Star } from "lucide-react";
-import type { Locale } from "@/src/i18n/routing";
-import type { Review, ReviewStatus } from "@/src/domain/entities/Review";
+
 import type { Product } from "@/src/domain/entities/Product";
-import { formatNumber } from "@/src/lib/formatNumber";
-import { Badge, Icon } from "@/src/presentation/design-system";
+import type { PublicReview, ReviewStatus } from "@/src/domain/entities/Review";
 import { Link } from "@/src/i18n/navigation";
-import { ReviewStatusSelect } from "./ReviewStatusSelect";
+import type { Locale } from "@/src/i18n/routing";
+import { formatNumber } from "@/src/lib/formatNumber";
+import { formatCompactDateTime } from "@/src/lib/formatOrderDate";
+import { BulkRowCheckbox, BulkSelectAllCheckbox } from "@/src/presentation/dashboard/bulk";
+import {
+  Avatar,
+  Badge,
+  DataTable,
+  Icon,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Thumbnail,
+} from "@/src/presentation/design-system";
+
+import { ReviewModerationActions } from "./ReviewModerationActions";
+
+import type { ReactNode } from "react";
 
 type ReviewsTableProps = {
-  reviews: Review[];
+  reviews: PublicReview[];
   /** Product id → product, for the Product column's name + thumbnail. */
   productsById: Map<string, Product>;
+  /**
+   * Whether the viewer may decide reviews. Drops the per-row control *and* the
+   * selection checkboxes — there's nothing to select for without the bulk actions.
+   */
+  canModerate: boolean;
+  /** Search controls attached to the table's upper edge. */
+  toolbar?: ReactNode;
+  /** Selection actions attached inside the same table frame. */
+  bulkActions?: ReactNode;
+  /** Content shown inside the shared frame when the active queue has no rows. */
+  emptyState?: ReactNode;
+  /** Pagination attached to the table frame, matching the other dashboard lists. */
+  footer?: ReactNode;
 };
-
-// Fixed UTC formatters → deterministic output (identical on server and client), so
-// the server-rendered submission date doesn't trigger a hydration mismatch — unlike
-// relative time ("5 seconds ago"), which is computed against a moving "now". A
-// moderation queue also reads better with the exact date than a relative one. Under
-// `fa` the date is Jalali with Persian numerals (`fa-IR-u-ca-persian`). Built once
-// per locale, then reused.
-const DATE_TAG: Record<Locale, string> = { en: "en-GB", fa: "fa-IR-u-ca-persian" };
-const TIME_TAG: Record<Locale, string> = { en: "en-US", fa: "fa-IR-u-ca-persian" };
-
-const cache = new Map<Locale, { date: Intl.DateTimeFormat; time: Intl.DateTimeFormat }>();
-
-function getFormatters(locale: Locale): { date: Intl.DateTimeFormat; time: Intl.DateTimeFormat } {
-  const cached = cache.get(locale);
-  if (cached) return cached;
-
-  const formatters = {
-    date: new Intl.DateTimeFormat(DATE_TAG[locale], {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      timeZone: "UTC",
-    }),
-    time: new Intl.DateTimeFormat(TIME_TAG[locale], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: locale === "en",
-      timeZone: "UTC",
-    }),
-  };
-  cache.set(locale, formatters);
-  return formatters;
-}
 
 /** "1 Jul 2026, 3:22 PM" (en, UTC) — Jalali + Persian numerals under `fa`. */
 function formatReviewDate(iso: string, locale: Locale): string {
-  const date = new Date(iso);
-  const f = getFormatters(locale);
-  return `${f.date.format(date)}, ${f.time.format(date)}`;
-}
-
-/** Two leading initials, e.g. "Leonardo DiCaprio" → "LD". */
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+  const { date, time } = formatCompactDateTime(iso, locale);
+  return `${date}, ${time}`;
 }
 
 const STATUS_BADGE: Record<ReviewStatus, { variant: "success" | "warning" | "destructive"; labelKey: "statusPending" | "statusApproved" | "statusRejected" }> = {
@@ -73,49 +59,112 @@ const STATUS_BADGE: Record<ReviewStatus, { variant: "success" | "warning" | "des
 };
 
 /** Admin moderation table: one row per review with its status and a moderation control. */
-export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
+export function ReviewsTable({ reviews, productsById, canModerate, toolbar, bulkActions, emptyState, footer }: ReviewsTableProps) {
   const t = useTranslations("dashReviews");
   const locale = useLocale();
 
   return (
-    <div className="overflow-x-auto rounded-card-lg border border-border">
-      <table className="w-full min-w-[48rem] border-collapse text-start">
-        <thead className="bg-surface-sunken text-body-b8 text-muted-foreground">
+    <DataTable className="min-w-0" toolbar={toolbar} footer={reviews.length > 0 ? footer : undefined}>
+      {bulkActions ? (
+        <div className="[&:has(>div)]:border-b [&:has(>div)]:border-border [&:has(>div)]:p-4">
+          {bulkActions}
+        </div>
+      ) : null}
+      {reviews.length > 0 ? <>
+    <div className="space-y-3 p-3 @min-[64rem]:hidden">
+      {canModerate ? (
+        <label className="flex min-h-11 w-fit items-center gap-3 text-body-b7 text-muted-foreground">
+          <BulkSelectAllCheckbox label={t("selectAllAria")} />
+          {t("selectAllAria")}
+        </label>
+      ) : null}
+      {reviews.map((review) => {
+        const badge = STATUS_BADGE[review.status];
+        const product = productsById.get(review.productId);
+        return (
+          <article key={review.id} className="min-w-0 rounded-card-lg border border-border bg-background p-4 sm:p-5">
+            <div className="flex items-start gap-3">
+              {canModerate ? (
+                <label className="flex size-11 shrink-0 cursor-pointer items-center justify-center">
+                  <BulkRowCheckbox id={review.id} label={t("selectRowAria", { name: review.authorName })} />
+                </label>
+              ) : null}
+              <Avatar name={review.authorName} className="size-9 shrink-0">
+                {review.authorAvatarUrl ? <Image src={review.authorAvatarUrl} alt="" width={36} height={36} className="size-full object-cover" /> : null}
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <p className="break-words text-body-b7 text-foreground">{review.authorName}</p>
+                <time dateTime={review.createdAt} className="text-body-b10 text-muted-foreground">{formatReviewDate(review.createdAt, locale)}</time>
+              </div>
+            </div>
+            <div className="my-4 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface-sunken px-2.5 py-1" aria-label={t("ratingAria", { rating: formatNumber(review.rating, locale, 1) })}>
+                <Icon icon={Star} size="xs" className="fill-rating text-rating" />
+                <span className="text-body-b8 text-foreground">{formatNumber(review.rating, locale, 1)}</span>
+              </span>
+              <Badge variant={badge.variant}>{t(badge.labelKey)}</Badge>
+            </div>
+            <p className="whitespace-pre-wrap break-words text-body-b6 leading-relaxed text-foreground [overflow-wrap:anywhere]">{review.comment || t("noComment")}</p>
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-4">
+              {product ? (
+                <Link href={`/dashboard/products/${product.id}/edit`} className="flex min-w-0 max-w-full items-center gap-2.5 rounded-card-md hover:underline focus-visible:outline-2 focus-visible:outline-primary">
+                  <Thumbnail as="span" className="size-9 shrink-0"><Image src={product.imageUrl} alt="" width={36} height={36} className="size-full object-cover" /></Thumbnail>
+                  <span className="min-w-0 break-words text-body-b7 text-foreground">{product.name}</span>
+                </Link>
+              ) : <span className="text-body-b8 text-muted-foreground">{t("unknownProduct")}</span>}
+              {canModerate ? <div className="ms-auto"><ReviewModerationActions id={review.id} status={review.status} authorName={review.authorName} /></div> : null}
+            </div>
+          </article>
+        );
+      })}
+    </div>
+    <div className="hidden overflow-x-auto @min-[64rem]:block">
+      <div className="min-w-[64rem]">
+      <Table className="table-fixed border-collapse">
+        <TableHeader>
           <tr>
-            <th scope="col" className="px-4 py-3">{t("colAuthor")}</th>
-            <th scope="col" className="px-4 py-3">{t("colProduct")}</th>
-            <th scope="col" className="px-4 py-3">{t("colRating")}</th>
-            <th scope="col" className="px-4 py-3">{t("colReview")}</th>
-            <th scope="col" className="px-4 py-3">{t("colStatus")}</th>
-            <th scope="col" className="px-4 py-3 text-end">{t("colAction")}</th>
+            {canModerate ? (
+              <TableHead className="w-10">
+                <label className="flex size-8 cursor-pointer items-center justify-center">
+                  <BulkSelectAllCheckbox label={t("selectAllAria")} />
+                </label>
+              </TableHead>
+            ) : null}
+            <TableHead className="w-[22%]">{t("colAuthor")}</TableHead>
+            <TableHead className="w-[28%]">{t("colReview")}</TableHead>
+            <TableHead className="w-[20%]">{t("colProduct")}</TableHead>
+            <TableHead className="w-[12%]">{t("colStatus")}</TableHead>
+            {canModerate ? <TableHead className="w-[18%] text-end">{t("colAction")}</TableHead> : null}
           </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
+        </TableHeader>
+        <TableBody>
           {reviews.map((review) => {
             const badge = STATUS_BADGE[review.status];
             const product = productsById.get(review.productId);
             return (
-              <tr key={review.id} className="bg-background align-top transition-colors hover:bg-surface-sunken/50">
-                <td className="px-4 py-4">
+              <TableRow key={review.id} className="align-top">
+                {canModerate ? (
+                  <TableCell className="py-4">
+                    <label className="flex size-8 cursor-pointer items-center justify-center">
+                      <BulkRowCheckbox id={review.id} label={t("selectRowAria", { name: review.authorName })} />
+                    </label>
+                  </TableCell>
+                ) : null}
+                <TableCell className="py-4">
                   <div className="flex items-center gap-3">
-                    {review.authorAvatarUrl ? (
-                      <Image
-                        src={review.authorAvatarUrl}
-                        alt=""
-                        width={36}
-                        height={36}
-                        className="size-9 shrink-0 rounded-full object-cover"
-                      />
-                    ) : (
-                      <span
-                        aria-hidden
-                        className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-body-b9 text-accent-foreground"
-                      >
-                        {getInitials(review.authorName)}
-                      </span>
-                    )}
+                    <Avatar name={review.authorName} className="size-9">
+                      {review.authorAvatarUrl && (
+                        <Image
+                          src={review.authorAvatarUrl}
+                          alt=""
+                          width={36}
+                          height={36}
+                          className="size-full object-cover"
+                        />
+                      )}
+                    </Avatar>
                     <div className="flex min-w-0 flex-col">
-                      <span className="truncate text-body-b7 text-foreground">{review.authorName}</span>
+                      <span className="line-clamp-2 text-body-b7 text-foreground">{review.authorName}</span>
                       <time
                         dateTime={review.createdAt}
                         className="text-body-b10 text-muted-foreground"
@@ -124,14 +173,32 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
                       </time>
                     </div>
                   </div>
-                </td>
-                <td className="px-4 py-4">
+                </TableCell>
+                <TableCell className="py-4">
+                  <div className="flex items-start gap-3">
+                    <span
+                      className="inline-flex w-fit shrink-0 items-center gap-1 rounded-full bg-surface-sunken px-2 py-0.5"
+                      aria-label={t("ratingAria", { rating: formatNumber(review.rating, locale, 1) })}
+                    >
+                      <Icon icon={Star} size="xs" className="fill-rating text-rating" />
+                      <span className="text-body-b8 text-foreground">{formatNumber(review.rating, locale, 1)}</span>
+                    </span>
+                    {review.comment ? (
+                      <p className="min-w-0 whitespace-pre-wrap break-words text-body-b6 leading-relaxed text-foreground [overflow-wrap:anywhere]">
+                        {review.comment}
+                      </p>
+                    ) : (
+                      <span className="text-body-b8 italic text-muted-foreground/70">{t("noComment")}</span>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="py-4">
                   {product ? (
                     <Link
                       href={`/dashboard/products/${product.id}/edit`}
                       className="group flex items-center gap-3"
                     >
-                      <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
+                      <Thumbnail as="span" className="size-9">
                         <Image
                           src={product.imageUrl}
                           alt=""
@@ -139,7 +206,7 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
                           height={36}
                           className="size-full object-cover"
                         />
-                      </span>
+                      </Thumbnail>
                       <span className="line-clamp-2 max-w-[12rem] text-body-b7 text-foreground underline-offset-2 group-hover:underline">
                         {product.name}
                       </span>
@@ -147,33 +214,27 @@ export function ReviewsTable({ reviews, productsById }: ReviewsTableProps) {
                   ) : (
                     <span className="text-body-b8 text-muted-foreground">{t("unknownProduct")}</span>
                   )}
-                </td>
-                <td className="px-4 py-4">
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-surface-sunken px-2 py-0.5">
-                    <Icon icon={Star} size="xs" className="fill-rating text-rating" />
-                    <span className="text-body-b8 text-foreground">{formatNumber(review.rating, locale, 1)}</span>
-                  </span>
-                </td>
-                <td className="px-4 py-4">
-                  {review.comment ? (
-                    <p className="line-clamp-3 max-w-sm text-body-b6 text-muted-foreground">
-                      {review.comment}
-                    </p>
-                  ) : (
-                    <span className="text-body-b8 italic text-muted-foreground/70">{t("noComment")}</span>
-                  )}
-                </td>
-                <td className="px-4 py-4">
+                </TableCell>
+                <TableCell className="py-4">
                   <Badge variant={badge.variant}>{t(badge.labelKey)}</Badge>
-                </td>
-                <td className="px-4 py-4">
-                  <ReviewStatusSelect id={review.id} status={review.status} />
-                </td>
-              </tr>
+                </TableCell>
+                {canModerate ? (
+                  <TableCell className="py-4">
+                    <ReviewModerationActions
+                      id={review.id}
+                      status={review.status}
+                      authorName={review.authorName}
+                    />
+                  </TableCell>
+                ) : null}
+              </TableRow>
             );
           })}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
+      </div>
     </div>
+      </> : emptyState}
+    </DataTable>
   );
 }

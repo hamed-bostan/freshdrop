@@ -1,8 +1,11 @@
 "use client";
 
-import * as React from "react";
 import { Tabs as TabsPrimitive } from "radix-ui";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
+
+import { focusRing } from "../shared/focusRing";
 
 /**
  * Segmented tabs built on Radix Tabs. Composable parts:
@@ -43,7 +46,8 @@ export const TabsTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       "rounded-card-md px-4 py-1.5 text-body-b7 text-muted-foreground transition-colors",
-      "hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+      "hover:text-foreground",
+      focusRing,
       "data-[state=active]:bg-background data-[state=active]:text-foreground",
       className,
     )}
@@ -59,7 +63,7 @@ export const TabsContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <TabsPrimitive.Content
     ref={ref}
-    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", className)}
+    className={cn(focusRing, className)}
     {...props}
   />
 ));

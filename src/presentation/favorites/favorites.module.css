@@ -1,0 +1,52 @@
+/* Favorites is designed for the 390px mobile canvas. These styles are scoped
+   here so shared catalog cards keep their existing presentation elsewhere. */
+.page {
+  min-height: 100dvh;
+  padding: 0 16px 104px;
+  background: #fff;
+}
+
+.page > header {
+  min-height: 72px;
+  padding-top: 4px;
+  border-bottom: 1px solid #edf0ed;
+}
+
+.page > header h1 {
+  font-size: 21px;
+  letter-spacing: -0.6px;
+}
+
+.browser {
+  composes: cards from "../product/components/mobile-catalog.module.css";
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 18px;
+}
+
+.filters {
+  flex-wrap: wrap;
+  gap: 8px;
+  overflow: visible;
+}
+
+.filters > button {
+  height: 36px;
+  padding: 0 13px;
+  border: 1px solid #e8ece8;
+  background: #f7f9f7;
+  color: #59645b;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.filters > button[data-state="checked"] {
+  background: #0b9c49;
+  border-color: #0b9c49;
+  color: white;
+}
+
+.browser > div:last-child {
+  gap: 12px;
+}

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { useLocale } from "next-intl";
+
 import type { Product } from "@/src/domain/entities/Product";
 import { formatMoney } from "@/src/lib/formatMoney";
 

@@ -1,8 +1,9 @@
 "use client";
 
-import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Button, RatingStars, Sheet, SheetContent, Textarea } from "@/src/presentation/design-system";
+import * as React from "react";
+
+import { Button, FormMessage, RatingStars, Sheet, SheetContent, Textarea } from "@/src/presentation/design-system";
 
 export interface ReviewDraft {
   rating: number;
@@ -66,9 +67,7 @@ export function AddReviewSheet({ open, onOpenChange, onSubmit, pending = false, 
           />
 
           {error && (
-            <p role="alert" className="text-center text-body-b8 text-destructive">
-              {error}
-            </p>
+            <FormMessage size="md" className="text-center">{error}</FormMessage>
           )}
 
           <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>

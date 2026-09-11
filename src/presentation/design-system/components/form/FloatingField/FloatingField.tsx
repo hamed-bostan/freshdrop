@@ -1,6 +1,8 @@
 import * as React from "react";
+
 import { Field } from "../Field";
 import { Input, type InputProps } from "../Input";
+
 import { FloatingLabel } from "./FloatingLabel";
 
 /**
@@ -8,7 +10,7 @@ import { FloatingLabel } from "./FloatingLabel";
  * this onto the control supplies the a11y attributes, the invisible placeholder
  * that drives `:placeholder-shown`, and the floating label in the overlay slot.
  */
-export interface FloatingControlProps {
+export type FloatingControlProps = {
   id: string;
   "aria-describedby"?: string;
   "aria-invalid"?: boolean;
@@ -17,7 +19,7 @@ export interface FloatingControlProps {
   required?: boolean;
   leftElement?: React.ReactNode;
   children: React.ReactNode;
-}
+};
 
 export interface FloatingFieldProps extends Omit<InputProps, "placeholder" | "inputClassName" | "children"> {
   /** Label that rests in the control and floats to the border on focus/value. */

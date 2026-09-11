@@ -14,6 +14,8 @@ export const WALLET_STATIC_DESCRIPTIONS = {
   refundCancelledOrder: "Refund for cancelled order",
   refundCancelledOrderDelivery: "Refund for cancelled order delivery",
   refundReturnedOrder: "Refund for returned order",
+  manualRefund: "Refund issued by support",
+  appliedToOrder: "Applied to order at checkout",
 } as const;
 
 /** Prefixes for descriptions that carry an item name. Keys mirror `wallet.transactions.*`. */

@@ -1,9 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { reviewSubmissionSchema } from "@/src/contracts/review-schema";
+import { toPublicReview } from "@/src/domain/entities/Review";
 import { GetProductReviews } from "@/src/domain/use-cases/reviews/GetProductReviews";
 import { SubmitReview } from "@/src/domain/use-cases/reviews/SubmitReview";
-import { reviewRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
-import { reviewSubmissionSchema } from "@/src/presentation/product/components/review-schema";
+import {
+  reviewRepository,
+  userRepository,
+  adminNotificationRepository,
+  emailSender,
+  notificationTemplateRepository,
+} from "@/src/infrastructure/container";
 import {
   errorResponse,
   errorResponseFromException,
@@ -11,6 +18,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Read from Postgres per request — never statically cached.
 export const dynamic = "force-dynamic";
@@ -27,7 +35,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   try {
     const reviews = await new GetProductReviews(reviewRepository).execute(productId);
-    return NextResponse.json(reviews);
+    // `toPublicReview` on the way out: the stored `authorId` is the reviewer's
+    // account id, which in this app is their phone digits. This list is public.
+    return NextResponse.json(reviews.map(toPublicReview));
   } catch (error) {
     return errorResponseFromException(error, "GET /api/reviews failed");
   }
@@ -56,14 +66,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const review = await new SubmitReview(reviewRepository).execute({
+    const review = await new SubmitReview(
+      reviewRepository,
+      userRepository,
+      adminNotificationRepository,
+      emailSender,
+      notificationTemplateRepository,
+    ).execute({
       productId: parsed.data.productId,
+      // The identity, alongside the display snapshot below — both from the session,
+      // neither from the client. It's what lets the dashboard list a customer's
+      // reviews without matching on a name they can change.
+      authorId: session.user.id,
       authorName: session.user.name ?? "Anonymous",
       authorAvatarUrl: session.user.image ?? undefined,
       rating: parsed.data.rating,
       comment: parsed.data.comment,
     });
-    return NextResponse.json(review, { status: 201 });
+    return NextResponse.json(toPublicReview(review), { status: 201 });
   } catch (error) {
     return errorResponseFromException(error, "POST /api/reviews failed");
   }

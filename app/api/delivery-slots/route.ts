@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { GetDeliverySlots } from "@/src/domain/use-cases/delivery-slots/GetDeliverySlots";
 import { deliverySlotRepository } from "@/src/infrastructure/container";
 import { errorResponseFromException } from "@/src/lib/api/responses";

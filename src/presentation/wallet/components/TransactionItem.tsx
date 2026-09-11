@@ -1,8 +1,10 @@
 import { useLocale, useTranslations } from "next-intl";
-import type { Locale } from "@/src/i18n/routing";
+
 import type { WalletTransaction } from "@/src/domain/entities/Wallet";
-import { cn } from "@/src/lib/utils";
+import type { Locale } from "@/src/i18n/routing";
 import { formatMoney } from "@/src/lib/formatMoney";
+import { cn } from "@/src/lib/utils";
+
 import { resolveTransaction } from "../localizedTransaction";
 
 // Fixed UTC formatters → deterministic output (same on server and client). Under

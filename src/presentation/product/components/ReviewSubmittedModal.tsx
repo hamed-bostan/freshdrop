@@ -1,7 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Check } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { Icon, Modal, ModalContent, RatingStars } from "@/src/presentation/design-system";
 
 interface ReviewSubmittedModalProps {

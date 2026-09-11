@@ -1,9 +1,15 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { cn } from "@/src/lib/utils";
+
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
+import { cn } from "@/src/lib/utils";
+import { SelectableTile } from "@/src/presentation/design-system";
+
+import styles from "../PaymentMethodScreen.module.css";
+
 import { PaymentMethodIcon } from "./PaymentMethodIcon";
+
 
 interface PaymentMethodOptionProps {
   method: PaymentMethod;
@@ -26,34 +32,33 @@ const LABEL_KEYS: Record<
 };
 
 /**
- * A single selectable payment method, modelled as a native radio so the whole
- * list behaves as one keyboard-navigable group (arrow keys, form semantics).
- * The radio is visually hidden; selection is conveyed by the highlighted
- * border, and keyboard focus by the ring (driven via `has-[:focus-visible]`).
+ * The display label for a fixed catalog payment method, localized. Exported so
+ * screens that reference a selected method outside the option list itself (the
+ * checkout wallet toggle's "charged to X" line) render the same label.
  */
+export function paymentMethodLabel(method: PaymentMethod, t: ReturnType<typeof useTranslations<"payment">>): string {
+  const labelKey = LABEL_KEYS[method.id];
+  return labelKey ? t(labelKey) : method.label;
+}
+
+/** A single selectable payment method, rendered as a design-system radio tile. */
 export function PaymentMethodOption({ method, selected, onSelect }: PaymentMethodOptionProps) {
   const t = useTranslations("payment");
-  const labelKey = LABEL_KEYS[method.id];
-  const label = labelKey ? t(labelKey) : method.label;
+  const tCheckout = useTranslations("checkout");
+  const label = paymentMethodLabel(method, t);
 
   return (
-    <label
-      className={cn(
-        "flex cursor-pointer items-center gap-2 rounded-card-xl border bg-muted px-4 py-2 transition-colors",
-        "has-focus-visible:ring-2 has-focus-visible:ring-ring",
-        selected ? "border-foreground" : "border-transparent",
-      )}
+    <SelectableTile
+      name="payment-method"
+      value={method.id}
+      selected={selected}
+      onSelect={() => onSelect(method.id)}
+      size="md"
+      className={cn(styles.option, "min-h-[74px] gap-4 rounded-2xl border-border bg-background px-4 sm:min-h-[88px] sm:px-6", selected && "border-primary bg-primary/[0.025]")}
     >
-      <input
-        type="radio"
-        name="payment-method"
-        value={method.id}
-        checked={selected}
-        onChange={() => onSelect(method.id)}
-        className="sr-only"
-      />
-      <PaymentMethodIcon methodId={method.id} />
-      <span className="text-body-b6 text-foreground">{label}</span>
-    </label>
+      <span aria-hidden className={cn("flex size-7 shrink-0 items-center justify-center rounded-full border-2 border-muted-strong", selected && "border-primary")}>{selected && <span className="size-3.5 rounded-full bg-primary" />}</span>
+      <PaymentMethodIcon methodId={method.id} className="size-9" />
+      <span className="flex flex-col text-base font-medium text-foreground sm:text-lg">{label}{method.id === "cash-on-delivery" && <span className="text-sm font-medium text-primary sm:text-base">{tCheckout("availableForOrder")}</span>}</span>
+    </SelectableTile>
   );
 }

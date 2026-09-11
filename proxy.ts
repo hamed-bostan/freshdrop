@@ -1,5 +1,6 @@
-import createMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
+import createMiddleware from "next-intl/middleware";
+
 import { routing } from "@/src/i18n/routing";
 import { ONBOARDED_COOKIE } from "@/src/lib/onboarding";
 

@@ -1,9 +1,10 @@
+import { NotFoundError } from "../../errors/NotFoundError";
+
 import type { DeliveryLocation } from "../../entities/DeliveryLocation";
 import type {
   IDeliveryLocationRepository,
   NewDeliveryLocation,
 } from "../../repositories/IDeliveryLocationRepository";
-import { NotFoundError } from "../../errors/NotFoundError";
 
 /**
  * Overwrite an existing delivery address for a user. Both the ownership check and

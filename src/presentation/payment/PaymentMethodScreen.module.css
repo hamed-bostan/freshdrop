@@ -1,0 +1,206 @@
+.footer {
+  margin-top: auto;
+}
+
+/* Share one visual language across phones and tablets. */
+@media (max-width: 1024px) {
+  .screen {
+    gap: 24px;
+    padding: 0 20px;
+  }
+
+  .screen > header {
+    min-height: 72px;
+    padding-top: 4px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .screen > header h1 {
+    font-size: 19px;
+    font-weight: 650;
+    letter-spacing: -0.5px;
+  }
+
+  .screen .methods {
+    min-width: 0;
+    gap: 20px;
+  }
+
+  .methods > section {
+    gap: 8px;
+  }
+
+  .methods h2 {
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 600;
+    color: var(--color-muted-foreground);
+    letter-spacing: 0.3px;
+  }
+
+  .screen .option,
+  .screen .addCard {
+    min-height: 62px;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+  }
+
+  .screen .option:has(input:checked) {
+    background: color-mix(in srgb, var(--color-primary) 6%, var(--color-background));
+    border-color: var(--color-primary);
+  }
+
+  .option > span:first-of-type {
+    order: 3;
+    margin-inline-start: auto;
+    width: 20px;
+    height: 20px;
+    border-width: 1.5px;
+    border-color: color-mix(in srgb, var(--color-foreground) 22%, var(--color-background));
+  }
+
+  .option:has(input:checked) > span:first-of-type {
+    border-color: var(--color-primary);
+  }
+
+  .option > span:first-of-type > span {
+    width: 10px;
+    height: 10px;
+  }
+
+  .option > svg,
+  .option > img,
+  .addCard > svg:first-of-type {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+
+  .option > span:last-of-type,
+  .addCard > span:nth-of-type(2) {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 550;
+    letter-spacing: -0.15px;
+  }
+
+  .option > span:last-of-type > span,
+  .addCard > span:nth-of-type(2) > span {
+    margin-top: 3px;
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .addCard > span:first-of-type {
+    display: none;
+  }
+
+  .screen .savedOption {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 20px;
+    column-gap: 12px;
+    row-gap: 2px;
+  }
+
+  .savedOption > span:first-of-type {
+    grid-column: 3;
+    grid-row: 1 / 3;
+  }
+
+  .savedOption > span:nth-of-type(2) {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    width: 48px;
+  }
+
+  .savedOption > span:nth-of-type(3) {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .savedOption > span:nth-of-type(4):not(:last-of-type) {
+    display: none;
+  }
+
+  .savedOption > span:last-of-type {
+    display: block;
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 400;
+  }
+
+  .screen .footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    margin-inline: -20px;
+    padding: 14px 20px max(18px, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--color-border);
+    background: var(--color-background);
+  }
+
+  .footer > button {
+    min-height: 50px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+}
+
+@media (min-width: 431px) and (max-width: 1024px) {
+  .screen {
+    width: 100%;
+    max-width: 608px;
+    margin-inline: auto;
+    padding-inline: 24px;
+    gap: 28px;
+  }
+
+  .screen > header {
+    min-height: 80px;
+  }
+
+  .screen > header h1 {
+    font-size: 22px;
+  }
+
+  .screen .methods {
+    gap: 24px;
+  }
+
+  .methods h2 {
+    font-size: 13px;
+    line-height: 20px;
+  }
+
+  .screen .option,
+  .screen .addCard {
+    min-height: 72px;
+    padding: 16px 18px;
+    gap: 16px;
+  }
+
+  .option > span:last-of-type,
+  .addCard > span:nth-of-type(2) {
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .option > span:last-of-type > span,
+  .addCard > span:nth-of-type(2) > span {
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .screen .footer {
+    margin-inline: -24px;
+    padding-inline: 24px;
+  }
+}

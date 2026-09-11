@@ -1,4 +1,4 @@
-import { primary, secondary, neutral, success, error, warning, info, amber } from "../primitives/colors";
+import { primary, secondary, neutral, success, error, warning, info, amber, walletGradient } from "../primitives/colors";
 
 export const colors = {
   background: neutral[0],
@@ -19,7 +19,10 @@ export const colors = {
   primary: {
     DEFAULT: primary[500],
     foreground: neutral[0],
-    pressed: primary[600],
+    // Rest → hover → pressed is a three-step ladder, so a pointer user gets
+    // feedback on hover that still visibly deepens on press.
+    hover: primary[600],
+    pressed: primary[700],
   },
 
   disabled: {
@@ -91,6 +94,28 @@ export const colors = {
     foreground: neutral[0],
   },
 
+  // Categorical ramp for data visualization. Charts pick a color by position
+  // (`chart[1]` first), so a single-series chart renders in the same brand color
+  // used everywhere else, and multi-series charts stay legible without repeating a
+  // hue. Built from existing brand hues rather than new ones, so a chart's palette
+  // is never a system of its own — see `presentation/design-system/chart/`.
+  chart: {
+    1: primary[500],
+    2: info[500],
+    3: secondary[400],
+    4: warning[700],
+    5: error[500],
+    6: neutral[500],
+  },
+
   border: neutral[200],
   ring: primary[300],
+
+  // Wallet card brand gradients (green / magenta), cycled per card.
+  wallet: {
+    primaryFrom: walletGradient.primaryFrom,
+    primaryTo: primary[700],
+    secondaryFrom: walletGradient.secondaryFrom,
+    secondaryTo: secondary[700],
+  },
 } as const;

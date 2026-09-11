@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+
 import { TransferOwnership } from "@/src/domain/use-cases/team/TransferOwnership";
 import { teamNotifier, userRepository } from "@/src/infrastructure/container";
-import { getOwnerSession } from "@/src/lib/require-admin";
-import { getAppUrl } from "@/src/lib/appUrl";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getAppUrl } from "@/src/lib/appUrl";
+import { getOwnerSession } from "@/src/lib/require-admin";
 
 // Ownership must take effect immediately — never statically cached.
 export const dynamic = "force-dynamic";

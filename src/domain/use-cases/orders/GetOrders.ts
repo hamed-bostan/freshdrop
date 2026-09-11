@@ -1,7 +1,8 @@
+import { localizeOrderItems } from "./localizeOrderItems";
+
 import type { Order } from "../../entities/Order";
 import type { IOrderRepository } from "../../repositories/IOrderRepository";
 import type { IProductRepository } from "../../repositories/IProductRepository";
-import { localizeOrderItems } from "./localizeOrderItems";
 
 export class GetOrders {
   constructor(

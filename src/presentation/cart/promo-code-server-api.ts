@@ -1,5 +1,6 @@
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
 import { serverApiGet } from "@/src/lib/api/server-client";
+
 import { promoCodeListResponseSchema } from "./promo-code-response-schema";
 
 /**

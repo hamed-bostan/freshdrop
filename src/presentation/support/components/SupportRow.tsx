@@ -1,9 +1,11 @@
 import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
+import { focusRing } from "@/src/presentation/design-system";
 
 const rowClass =
   "flex items-center gap-2 rounded-card-xl bg-background px-4 h-12 text-body-b6 text-foreground transition-colors " +
-  "hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  `hover:bg-muted ${focusRing}`;
 
 interface SupportRowProps {
   icon: React.ReactNode;

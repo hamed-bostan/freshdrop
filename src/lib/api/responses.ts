@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
-import type { ZodError } from "zod";
+import { ZodError } from "zod";
+
+import { AdminRevokeError } from "@/src/domain/errors/AdminRevokeError";
+import { ExportNotReadyError } from "@/src/domain/errors/ExportNotReadyError";
+import { InsufficientStockError } from "@/src/domain/errors/InsufficientStockError";
+import { InsufficientWalletBalanceError } from "@/src/domain/errors/InsufficientWalletBalanceError";
+import { NotFoundError } from "@/src/domain/errors/NotFoundError";
+import { ResourceInUseError } from "@/src/domain/errors/ResourceInUseError";
+import { SlotUnavailableError } from "@/src/domain/errors/SlotUnavailableError";
 import { UniqueConstraintError } from "@/src/domain/errors/UniqueConstraintError";
 import { ValidationError } from "@/src/domain/errors/ValidationError";
-import { NotFoundError } from "@/src/domain/errors/NotFoundError";
-import { InsufficientStockError } from "@/src/domain/errors/InsufficientStockError";
-import { SlotUnavailableError } from "@/src/domain/errors/SlotUnavailableError";
-import { AdminRevokeError } from "@/src/domain/errors/AdminRevokeError";
 
 /**
  * Server-side helpers for REST route handlers (Next.js `app/api/**` only — never
@@ -39,6 +43,17 @@ export function unauthorizedResponse(): NextResponse {
  * and is logged server-side (its detail is never leaked to the client).
  */
 export function errorResponseFromException(error: unknown, context: string): NextResponse {
+  // A query-param or body schema rejected the request — the client's fault, not
+  // an unexpected failure, so it's a 400 with per-field detail rather than a
+  // logged 500.
+  if (error instanceof ZodError) {
+    return errorResponse(400, {
+      message: "One or more query parameters are invalid.",
+      code: "VALIDATION",
+      fieldErrors: firstFieldErrors(error),
+    });
+  }
+
   if (error instanceof UniqueConstraintError) {
     const message = error.fields.length
       ? `That ${error.fields.join(", ")} is already taken.`
@@ -76,6 +91,19 @@ export function errorResponseFromException(error: unknown, context: string): Nex
     return errorResponse(409, { message: error.message, code: "SLOT_UNAVAILABLE" });
   }
 
+  // The wallet balance the shopper applied at checkout no longer covers it
+  // (raced another spend, or it changed since the screen loaded). 409 Conflict.
+  if (error instanceof InsufficientWalletBalanceError) {
+    return errorResponse(409, { message: error.message, code: "INSUFFICIENT_WALLET_BALANCE" });
+  }
+
+  // Something still depends on the record being removed (e.g. a delivery window
+  // with orders booked into it). Well-formed request, refusing state → 409, and the
+  // message names what's in the way.
+  if (error instanceof ResourceInUseError) {
+    return errorResponse(409, { message: error.message, code: "IN_USE" });
+  }
+
   // Removing an admin was refused to keep the dashboard reachable (self-removal,
   // or the last remaining admin). The input was fine, the state wasn't → 409, and
   // `reason` picks the precise copy client-side.
@@ -84,6 +112,13 @@ export function errorResponseFromException(error: unknown, context: string): Nex
       message: error.message,
       code: error.reason === "self" ? "REVOKE_SELF" : "REVOKE_OWNER",
     });
+  }
+
+  // An export job exists but isn't a downloadable file right now — still
+  // generating, failed, or expired. 409 Conflict, and `reason` picks the
+  // precise copy client-side (retry later vs. regenerate).
+  if (error instanceof ExportNotReadyError) {
+    return errorResponse(409, { message: error.message, code: `EXPORT_${error.reason.toUpperCase()}` });
   }
 
   console.error(`${context}:`, error);

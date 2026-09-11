@@ -8,6 +8,14 @@ export type ReviewStatus = "pending" | "approved" | "rejected";
 export type Review = {
   id: string;
   productId: string;
+  /**
+   * The id of the user who wrote it — the identity behind {@link Review.authorName},
+   * which is only a display snapshot. `null` on reviews written before reviews were
+   * linked to accounts (and on any the backfill couldn't attribute unambiguously),
+   * so the admin's per-customer review list is "linked reviews", not "all reviews
+   * bearing this name".
+   */
+  authorId: string | null;
   authorName: string;
   /** Optional avatar; the UI falls back to the author's initials when omitted. */
   authorAvatarUrl?: string;
@@ -18,4 +26,38 @@ export type Review = {
   comment: string;
   /** Moderation state; drives the admin queue and storefront visibility. */
   status: ReviewStatus;
+}
+
+/**
+ * A review as it goes over the wire — everything except who wrote it.
+ *
+ * `authorId` is a user id, and a user id in this app is the account's normalized
+ * phone digits. Serving it alongside a public product review would publish every
+ * reviewer's phone number to anyone who opens the network tab. It exists to be
+ * *queried* on the server (see `IReviewRepository.listByAuthor`), never to be sent,
+ * so every route projects it away with {@link toPublicReview} — including the admin
+ * ones, where the caller already knows whose reviews they asked for.
+ */
+export type PublicReview = Omit<Review, "authorId">;
+
+/**
+ * Drop the author's identity, leaving the display snapshot. See {@link PublicReview}.
+ *
+ * Written as an explicit list rather than a rest-spread that omits `authorId`,
+ * because the two fail in opposite directions. A spread publishes every field added
+ * to `Review` from then on, silently; this one publishes nothing it wasn't told to,
+ * and the return type makes forgetting a field a compile error. For a projection
+ * whose job is to keep something off the wire, opt-in is the only safe default.
+ */
+export function toPublicReview(review: Review): PublicReview {
+  return {
+    id: review.id,
+    productId: review.productId,
+    authorName: review.authorName,
+    authorAvatarUrl: review.authorAvatarUrl,
+    rating: review.rating,
+    createdAt: review.createdAt,
+    comment: review.comment,
+    status: review.status,
+  };
 }

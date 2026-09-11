@@ -16,9 +16,11 @@ model Category {
   name      String
   slug      String   @unique
   iconUrl   String   @map("icon_url")
+  isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@index([isActive])
   @@map("categories")
 }
 
@@ -40,15 +42,32 @@ model CategoryTranslation {
   @@map("category_translations")
 }
 
+// The store's tax configuration — a typed singleton (`id` is always the literal
+// "singleton"), not a generic key-value settings table: validation belongs at
+// the type boundary, not scattered across every reader. Single VAT rate, no
+// per-region variants (Iran VAT only). Ships with `enabled = false`; nothing
+// reads this table yet.
+model TaxSetting {
+  id          String   @id @default("singleton")
+  ratePercent Float    @default(0) @map("rate_percent")
+  enabled     Boolean  @default(false)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  // Plain reference to `users.id`, loose-coupled like the rest of the schema —
+  // who last changed the rate, for the settings screen's "last updated by" line.
+  updatedById String?  @map("updated_by_id")
+
+  @@map("tax_settings")
+}
+
 model User {
   // id is the user's normalized phone digits — the stable identifier carried on
   // the Auth.js session (and matched against ADMIN_USER_IDS), so it is supplied
   // at creation rather than database-generated.
-  id        String   @id
-  phone     String
-  name      String
-  email     String?
-  avatarUrl String?  @map("avatar_url")
+  id                      String    @id
+  phone                   String
+  name                    String
+  email                   String?
+  avatarUrl               String?   @map("avatar_url")
   // Access level: "customer" (default), "admin", or "owner" — stored as a plain
   // string matching the domain union, the schema's enum-free style. This is the
   // source of truth for dashboard access; ADMIN_USER_IDS remains only as a
@@ -56,7 +75,7 @@ model User {
   // holds "owner" (enforced by TransferOwnership, not by the schema — Postgres
   // can't express it without a partial unique index the app would still have to
   // honour). Indexed for the team listing.
-  role      String   @default("customer")
+  role                    String    @default("customer")
   // The payment method the user last selected for checkout — a single per-user
   // preference, so it lives here as a nullable scalar rather than a per-row flag
   // like a default address. The id references either the payment_methods catalog
@@ -64,41 +83,128 @@ model User {
   // reference, not a DB foreign key (the same loose coupling the rest of the schema
   // uses), so a stale id (e.g. a card later removed) is tolerated and falls back to
   // the first catalog option at read time. Null until the user picks one.
-  selectedPaymentMethodId String?  @map("selected_payment_method_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  selectedPaymentMethodId String?   @map("selected_payment_method_id")
+  // When this user last opened the notification bell — the one column the
+  // derived feed needs. Unread is "activity newer than this", not a per-row
+  // flag: the feed has no rows of its own to flag, only a read of the activity
+  // log plus the attention counts already computed elsewhere. Null until the
+  // first open, so a brand-new admin sees everything as unread rather than
+  // nothing.
+  lastSeenNotificationsAt DateTime? @map("last_seen_notifications_at")
+  // Which of the bell's stored-notification categories (`AdminNotificationAction`
+  // strings) this admin also wants emailed — opt-in, empty by default. Where the
+  // inbound bell and the outbound `IEmailSender` finally meet (Track B3);
+  // `NotifyAdmins` checks this against the same row it already read to resolve
+  // recipients, no second query per person in the fan-out.
+  notifiedCategories      String[]  @default([]) @map("notified_categories")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
 
   @@index([role])
   @@map("users")
 }
 
-// An append-only record of who changed whose dashboard access, and when. Never
-// updated or deleted: notifications tell the affected people at the time, this
-// answers "who has held ownership this year" afterwards — and it is the only
-// thing that does, since a notice with no email address on file simply never
-// arrives.
+// An append-only record of every admin-visible change: who did what to which
+// thing, and what the value was before. Never updated or deleted.
+//
+// This is the generalisation of what used to be `role_changes`, which covered
+// dashboard-access grants and nothing else. Those entries live on here as
+// `user.roleChanged` rows (the migration backfilled them), so there is one log to
+// query rather than one per feature.
 //
 // Names are snapshotted rather than joined, the same faithful-historical-record
 // treatment orders give product names: the entry must still read correctly after
-// someone is renamed, and must survive a user row being removed entirely.
-// `userId`/`actorId` are plain references (not DB foreign keys), matching the
-// loose coupling used throughout.
-model RoleChange {
-  id         String   @id @default(uuid())
-  // Whose access changed.
-  userId     String   @map("user_id")
-  userName   String   @map("user_name")
-  // Who changed it. Snapshotted the same way; an actor may later be removed.
-  actorId    String   @map("actor_id")
-  actorName  String   @map("actor_name")
-  // Roles as plain strings matching the domain union (enum-free schema).
-  fromRole   String   @map("from_role")
-  toRole     String   @map("to_role")
-  createdAt  DateTime @default(now()) @map("created_at")
+// a product or a person is renamed, and must survive the row being removed
+// entirely. `actorId`/`entityId` are plain references (not DB foreign keys),
+// matching the loose coupling used throughout — and necessarily so, since an
+// entry outlives the thing it describes (`product.deleted` is the clearest case).
+model ActivityEntry {
+  id            String   @id @default(uuid())
+  // Who made the change, and their name at the time.
+  actorId       String   @map("actor_id")
+  actorName     String   @map("actor_name")
+  // Action and entity type as plain strings matching the domain unions
+  // (enum-free schema) — the adapter narrows them on read.
+  action        String
+  entityType    String   @map("entity_type")
+  entityId      String   @map("entity_id")
+  // How the entity read at the time: a product name, a promo code, a person.
+  entityLabel   String?  @map("entity_label")
+  // The fields that moved, as `[{ field, before, after }]` with string values.
+  // Json rather than a child table: the diff is read whole with its entry, so a
+  // join would buy nothing and cost a table. Filtering by field goes through
+  // `changedFields` below instead.
+  changes       Json
+  // Just the field names from `changes`, denormalized so "every price change" is
+  // an index scan rather than a scan of every JSON blob. Derived by the store on
+  // write, never set independently — see `changedFields()`.
+  changedFields String[] @map("changed_fields")
+  createdAt     DateTime @default(now()) @map("created_at")
 
-  // The listing reads newest-first across the whole table.
+  // The unfiltered log, newest first.
   @@index([createdAt])
-  @@map("role_changes")
+  // One entity's own history — the panels on the order and product screens.
+  @@index([entityType, entityId, createdAt])
+  // The actor filter, and the "what did this person do" question behind it.
+  @@index([actorId, createdAt])
+  // The field filter ("show me every price change"). GIN, declared in the
+  // migration — Prisma's schema DSL can't express an index type.
+  @@map("activity_log")
+}
+
+// One admin's copy of a notification-worthy event the activity log can't hold:
+// order placement, a return request, a new review, stock hitting zero — all
+// customer- (or self-) initiated, so none of them produce an `ActivityEntry`
+// (see that model's own note on why customer actions aren't audited). Fanned
+// out at write time, one row per recipient — this is what makes per-admin
+// targeting and a per-row `readAt` possible, neither of which a derived read of
+// another table could offer. `userId` is a plain reference, not a DB foreign
+// key, matching the rest of the schema's loose coupling.
+//
+// Named `AdminNotification` rather than `Notification`: that name is already
+// the outbound, customer-facing message the app sends about an order (see
+// `NotificationMessage` in the domain) — a different concept fanning out to a
+// different audience over different channels. This is its own, unrelated
+// inbound record.
+model AdminNotification {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  action      String
+  entityType  String    @map("entity_type")
+  entityId    String    @map("entity_id")
+  entityLabel String?   @map("entity_label")
+  actorId     String?   @map("actor_id")
+  actorName   String?   @map("actor_name")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  // Null = unread. Set once, by the recipient dismissing it (or "mark all
+  // read") — nobody else's row, nobody else's write.
+  readAt      DateTime? @map("read_at")
+
+  // One admin's feed, newest first.
+  @@index([userId, createdAt])
+  // The unread count/badge — matches rows where `readAt` is null.
+  @@index([userId, readAt])
+  @@map("admin_notifications")
+}
+
+// Editable copy for order-lifecycle push notifications, admin-alert emails,
+// and the ad hoc customer-message form's starting subject/body — see
+// `NotificationTemplate` for the 12 `kind` values and their `{{VAR}}`
+// allowlists. Seeded by the `add_notification_templates` migration from the
+// exact strings previously hardcoded in `messages.ts`/`NotifyAdmins.ts`, so
+// shipping this table changes no send until an admin edits a row. A missing
+// row (never happens post-seed, but guards a future manual delete) falls
+// back to that same hardcoded copy rather than sending something broken.
+model NotificationTemplate {
+  kind      String   @id
+  // Push/SMS-style copy (the 7 lifecycle kinds). Null for email-style kinds.
+  title     String?
+  // Email-style copy (the 4 admin-alert kinds + the message-default row). Null for push-style kinds.
+  subject   String?
+  body      String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("notification_templates")
 }
 
 // An order is a faithful historical record: each line snapshots the product's
@@ -108,68 +214,316 @@ model RoleChange {
 // plain strings matching the domain unions (the app validates them), consistent
 // with the rest of the schema's enum-free style.
 model Order {
-  id        String      @id @default(uuid())
+  id                   String      @id @default(uuid())
+  // A short sequential number for humans (dashboard lists, support conversations)
+  // — `id` stays the real key (checkout mints it, stock movements reference it),
+  // this is purely a friendlier label. DB-assigned; nothing ever supplies one.
+  orderNumber          Int         @unique @default(autoincrement()) @map("order_number")
   // The user who placed the order. A plain reference (not a DB foreign key),
   // same loose coupling as the rest of the schema. Indexed for the per-user read.
-  userId    String      @map("user_id")
-  status    String
-  phase     String
-  placedAt  DateTime    @map("placed_at")
-  location  String
+  userId               String      @map("user_id")
+  status               String
+  phase                String
+  // How the order is handed over ("delivery" | "pickup") and where the money stands
+  // ("paid" | "pending" | "failed" | "refunded"). Plain strings matching the domain
+  // unions, the schema's enum-free style. The defaults are what legacy rows truly
+  // were: every order placed before these columns existed was couriered, and was
+  // placed through a flow with no outcome other than paid.
+  deliveryType         String      @default("delivery") @map("delivery_type")
+  paymentStatus        String      @default("paid") @map("payment_status")
+  placedAt             DateTime    @map("placed_at")
+  location             String
   // Short saved-address label ("Home", "Gym") captured at checkout, so the order
   // card can collapse the address to its label. Nullable: seeded/legacy orders
   // predate it and read as NULL (the card falls back to the address's city).
-  locationLabel String? @map("location_label")
+  locationLabel        String?     @map("location_label")
+  // The settlement (city/town) the delivery address sits in, snapshotted from the
+  // selected `DeliveryLocation.city` at checkout — the geographic dimension
+  // delivery-zone reporting groups by. Nullable: seeded/legacy orders predate it,
+  // and the geocoder doesn't always resolve a city for the saved address either.
+  city                 String?
   // The delivery coordinate snapshotted from the selected address at checkout, so
   // tracking can map the order to its real destination. Nullable: seeded/legacy
   // orders predate it, and a saved address may carry no coordinate — tracking then
   // falls back to a default point.
-  destinationLat Float? @map("destination_lat")
-  destinationLng Float? @map("destination_lng")
+  destinationLat       Float?      @map("destination_lat")
+  destinationLng       Float?      @map("destination_lng")
   // Price breakdown captured at checkout — the faithful record of what was charged
   // and the basis for pro-rating a partial (out-of-stock) refund. `total = subtotal
   // + shipping - discount`. `subtotal`/`shipping`/`discount` default to 0 so orders
   // placed before the breakdown was recorded stay valid.
-  subtotal  Float       @default(0)
-  shipping  Float       @default(0)
-  discount  Float       @default(0)
-  total     Float
+  subtotal             Decimal     @default(0) @db.Decimal(12, 2)
+  shipping             Decimal     @default(0) @db.Decimal(12, 2)
+  discount             Decimal     @default(0) @db.Decimal(12, 2)
+  total                Decimal     @db.Decimal(12, 2)
+  // VAT portion of `total`, snapshotted at checkout alongside the rate it was
+  // computed with — nullable, no backfill: NULL means tax wasn't in effect when
+  // the order was placed (see `taxFromGross`/phase 3), not that it was 0.
+  taxAmount            Decimal?    @map("tax_amount") @db.Decimal(12, 2)
+  // A percentage, not money — stays Float (phase 9 only converts money columns).
+  taxRate              Float?      @map("tax_rate")
   // Current delivery milestone (confirmed/shipped/arrived). Null when the order
   // isn't trackable (archived or cancelled). Advanced from the admin dashboard.
-  stage     String?
+  stage                String?
   // The delivery slot the shopper booked at checkout. Nullable so seeded/legacy
   // orders (placed before slot booking existed) stay valid. `deliveryWindow` is a
   // display snapshot ("Tomorrow, 6:00 – 8:00 PM") captured at purchase time, so the
   // order reads correctly even if the window catalog changes later; the date/id are
   // the machine references (delivery calendar date `YYYY-MM-DD` + window slug).
-  deliveryDate     String? @map("delivery_date")
-  deliveryWindowId String? @map("delivery_window_id")
-  deliveryWindow   String? @map("delivery_window")
-  items     OrderItem[]
-  createdAt DateTime    @default(now()) @map("created_at")
-  updatedAt DateTime    @updatedAt @map("updated_at")
+  deliveryDate         String?     @map("delivery_date")
+  deliveryWindowId     String?     @map("delivery_window_id")
+  deliveryWindow       String?     @map("delivery_window")
+  // The driver assigned to fulfil the delivery, set from the admin dashboard.
+  // A plain reference (not a DB foreign key), same loose coupling as `userId`.
+  // Nullable: most orders predate driver assignment, and pickup orders never get one.
+  driverId             String?     @map("driver_id")
+  // Free-text courier note captured at checkout (gate code, "leave with
+  // neighbour", …). Null for legacy orders and whenever the shopper left it blank.
+  deliveryInstructions String?     @map("delivery_instructions")
+  // How much of `total` was paid from the customer's wallet balance, captured at
+  // checkout; the rest was charged to the payment method on the order. Defaults
+  // to 0 so orders placed before the wallet could be used this way stay valid.
+  walletApplied        Decimal     @default(0) @map("wallet_applied") @db.Decimal(12, 2)
+  items                OrderItem[]
+  createdAt            DateTime    @default(now()) @map("created_at")
+  updatedAt            DateTime    @updatedAt @map("updated_at")
 
   @@index([userId])
+  // Every analytics aggregate is a scan of one date range (see
+  // `PrismaAnalyticsRepository`), so this is what keeps the dashboard's cost
+  // proportional to the period being asked about rather than to the store's
+  // whole history.
+  @@index([placedAt])
+  // The admin list's shape: narrow by status, then read newest-first. Leading with
+  // `status` lets the same index serve both halves — the equality seek and the
+  // ordering — where the `placedAt` index alone would sort the whole table and
+  // discard most of it. The other filters (stage, delivery type, payment) ride
+  // along as row checks: they're too low-cardinality to earn their own index.
+  @@index([status, placedAt])
   @@map("orders")
 }
 
-model OrderItem {
-  id        String @id @default(uuid())
-  orderId   String @map("order_id")
-  productId String @map("product_id")
-  // Display snapshot captured at purchase time (see Order).
+// A delivery driver, referenced loosely from `Order.driverId` (see that field's
+// doc). `rating` is an admin-maintained figure (there's no per-delivery rating
+// capture yet — reviews are product reviews, not delivery ones) rather than a
+// computed average; nullable until the admin sets one.
+model Driver {
+  id        String   @id @default(uuid())
   name      String
-  imageUrl  String @map("image_url")
-  quantity  Int
+  rating    Float?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("drivers")
+}
+
+// A logged delivery incident (customer unavailable, traffic delay, …), worked
+// through `open -> investigating -> resolved`. `orderId` is a plain reference,
+// same loose coupling as `Order.userId`/`driverId`. `driverId` is a snapshot of
+// the order's assigned driver *at the moment the issue was logged* — not a live
+// lookup — so the record still reads correctly if the order is later reassigned.
+// `delayMinutes` is entered by whoever logs the issue (an observed fact, like
+// `Driver.rating`), not derived from the order's own timestamps.
+model DeliveryIssue {
+  id           String   @id @default(uuid())
+  orderId      String   @map("order_id")
+  type         String
+  status       String   @default("open")
+  driverId     String?  @map("driver_id")
+  delayMinutes Int      @map("delay_minutes")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([orderId])
+  @@index([status])
+  @@map("delivery_issues")
+}
+
+// An internal note left on an order by whoever is working it — "customer called,
+// wants it left with the neighbour", "second delivery attempt failed". Staff-facing
+// only: nothing here is ever shown to the customer, which is what distinguishes a
+// note from the messages `NotifyOrderCustomer` sends.
+//
+// Append-only, like the activity log and the stock ledger, and for the same reason:
+// these are read later by someone reconstructing what happened, and a note that can
+// be quietly edited afterwards can't be relied on for that. There is no update and
+// no delete — not here, and none in the repository.
+//
+// `orderId` and `authorId` are plain references, not foreign keys — the same loose
+// coupling the rest of the schema uses. The author's name is snapshotted alongside
+// their id so the note still reads correctly after they're renamed or removed.
+model OrderNote {
+  id         String   @id @default(uuid())
+  orderId    String   @map("order_id")
+  authorId   String   @map("author_id")
+  authorName String   @map("author_name")
+  body       String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // The only query: one order's notes, newest first.
+  @@index([orderId, createdAt])
+  @@map("order_notes")
+}
+
+// Append-only history of every lifecycle transition an order goes through —
+// `processing → completed`, `completed → return_requested`, a stage advance,
+// and so on. Written by `PrismaOrderRepository.transitionStatus`/
+// `setTrackingStage` themselves (not by individual use-cases), inside the same
+// transaction as the change, so every caller is covered without having to
+// remember to record one — including customer-initiated moves (`CancelOrder`,
+// `RequestOrderReturn`) that the admin activity log never captured.
+//
+// This is what makes "when was this order actually delivered" an answered
+// question instead of a guess at `orders.updated_at`, which any later edit to
+// the row would silently move. Analytics reads the first `completed` event as
+// the real delivery timestamp (see `PrismaAnalyticsRepository`).
+//
+// `actorId`/`actorName` are null for a transition the customer triggered
+// themselves — same convention as `Refund`. `reason` is free text, except for
+// the sentinel `"backfill"` used by the rows the introducing migration
+// synthesized from pre-existing orders (from `updated_at`, since no real event
+// existed yet); reporting that wants only recorded, not reconstructed, history
+// can filter those out.
+model OrderStatusEvent {
+  id         String   @id @default(uuid())
+  orderId    String   @map("order_id")
+  fromStatus String?  @map("from_status")
+  toStatus   String   @map("to_status")
+  fromStage  String?  @map("from_stage")
+  toStage    String?  @map("to_stage")
+  actorId    String?  @map("actor_id")
+  actorName  String?  @map("actor_name")
+  reason     String?
+  occurredAt DateTime @default(now()) @map("occurred_at")
+
+  // One order's history, oldest first.
+  @@index([orderId, occurredAt])
+  // Delivery/analytics reads narrow by the status being reported on, then range
+  // over time — the same shape `orders`' `[status, placedAt]` index serves.
+  @@index([toStatus, occurredAt])
+  @@map("order_status_events")
+}
+
+// The auditable record of every wallet credit issued for an order —
+// cancellation, return, substitution, or a discretionary partial refund
+// (phase 7). `CancelOrder`, `ResolveOrderReturn` and the substitution flow all
+// emit a row here in the same transaction as the wallet credit it accompanies.
+model Refund {
+  id        String       @id @default(uuid())
+  orderId   String       @map("order_id")
+  userId    String       @map("user_id")
+  kind      String
+  // Total credited to the wallet — matches the `addFunds` amount it accompanies.
+  amount    Decimal      @db.Decimal(12, 2)
+  taxAmount Decimal      @default(0) @map("tax_amount") @db.Decimal(12, 2)
+  reason    String?
+  actorId   String?      @map("actor_id")
+  actorName String?      @map("actor_name")
+  createdAt DateTime     @default(now()) @map("created_at")
+  lines     RefundLine[]
+
+  // One order's refund history, in the order they were issued.
+  @@index([orderId, createdAt])
+  // Report queries (refundTotals, refundSeries, refundReasons) range-scan
+  // created_at with no order_id predicate — unusable against the composite
+  // index above, which needs order_id as its leading column.
+  @@index([createdAt])
+  @@map("refunds")
+}
+
+model RefundLine {
+  id          String  @id @default(uuid())
+  refundId    String  @map("refund_id")
+  orderItemId String  @map("order_item_id")
+  productId   String  @map("product_id")
+  quantity    Int?
+  amount      Decimal @db.Decimal(12, 2)
+  taxAmount   Decimal @default(0) @map("tax_amount") @db.Decimal(12, 2)
+  refund      Refund  @relation(fields: [refundId], references: [id], onDelete: Cascade)
+
+  @@index([refundId])
+  @@map("refund_lines")
+}
+
+// A customer's return request on a delivered order — the RMA. Distinct from
+// `Order.status = "return_requested"` (which just says a decision is pending):
+// this is the granular record of what's actually being returned, since a return
+// today has no reason, no per-item selection, and no inspection state — only an
+// order-wide status flip. `rmaNumber` is a friendly sequential label, the same
+// role `Order.orderNumber` plays. `status` covers the full lifecycle
+// (`requested | in_transit | received | inspected | resolved | rejected`), though
+// only `requested`, `inspected` (via `RecordReturnInspection`) and
+// `resolved`/`rejected` (via `ResolveOrderReturn`) are written today —
+// `in_transit`/`received` are modelled for a future courier-pickup flow. Stored
+// as a plain string matching the domain union, the schema's enum-free style.
+// `orderId`/`userId` are plain references, not DB foreign keys, the same loose
+// coupling the rest of the schema uses. `actorId`/`actorName` are null for a
+// request the customer opened themselves — same convention as `Refund`.
+model ReturnRequest {
+  id          String       @id @default(uuid())
+  rmaNumber   Int          @unique @default(autoincrement()) @map("rma_number")
+  orderId     String       @map("order_id")
+  userId      String       @map("user_id")
+  status      String       @default("requested")
+  reason      String?
+  requestedAt DateTime     @default(now()) @map("requested_at")
+  receivedAt  DateTime?    @map("received_at")
+  inspectedAt DateTime?    @map("inspected_at")
+  resolvedAt  DateTime?    @map("resolved_at")
+  actorId     String?      @map("actor_id")
+  actorName   String?      @map("actor_name")
+  items       ReturnItem[]
+
+  // One order's return history (an order can be requested, rejected, and
+  // requested again).
+  @@index([orderId])
+  // The admin queue and reporting both narrow by status, then read chronologically.
+  @@index([status, requestedAt])
+  @@index([requestedAt])
+  @@map("return_requests")
+}
+
+// One line of a `ReturnRequest` — which order item, how many units, and (once
+// inspected) what condition they came back in and what happened to them.
+// `condition`/`recoveryDecision` are null until `RecordReturnInspection` sets
+// them — null means "not recorded", not a default value, and reporting must
+// render it that way rather than inventing one (see the reporting-audit note on
+// `RecoveryBreakdownPanels`). `refundAmount`/`taxAmount` are computed once, at
+// request time, from the order's pro-rata discount share (see
+// `refundForLineValue`) — the amount `ResolveOrderReturn` actually credits.
+// `orderItemId`/`productId` are plain references, like `RefundLine`'s.
+model ReturnItem {
+  id               String        @id @default(uuid())
+  returnRequestId  String        @map("return_request_id")
+  orderItemId      String        @map("order_item_id")
+  productId        String        @map("product_id")
+  quantity         Int
+  condition        String?
+  recoveryDecision String?       @map("recovery_decision")
+  refundAmount     Decimal       @map("refund_amount") @db.Decimal(12, 2)
+  taxAmount        Decimal       @default(0) @map("tax_amount") @db.Decimal(12, 2)
+  returnRequest    ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
+
+  @@index([returnRequestId])
+  @@map("return_items")
+}
+
+model OrderItem {
+  id                       String   @id @default(uuid())
+  orderId                  String   @map("order_id")
+  productId                String   @map("product_id")
+  // Display snapshot captured at purchase time (see Order).
+  name                     String
+  imageUrl                 String   @map("image_url")
+  quantity                 Int
   // Unit price snapshot at purchase — the basis for a substitution refund, so it
   // reflects what was charged rather than today's catalog price. Defaults to 0 so
   // pre-substitution rows stay valid.
-  price     Float  @default(0)
+  price                    Decimal  @default(0) @db.Decimal(12, 2)
   // Preserves the authored line order for the thumbnails on the order card.
-  position  Int
+  position                 Int
   // Grocery substitutions. `substitutionPreference` is the customer's out-of-stock
-  // pre-approval captured at checkout ("substitute" | "refund"); it defaults to
-  // "substitute" (the grocery norm) so legacy rows stay valid. The `substitution*`
+  // pre-approval captured at checkout ("substitute" | "refund" | "contact"); it
+  // defaults to "substitute" (the grocery norm) so legacy rows stay valid. The `substitution*`
   // columns record a picker's resolution and are null until a line is resolved:
   // `substitutionStatus` is "substituted" | "refunded"; the `replacement*` snapshot
   // is set only when substituted. `substitutionRefundAmount` is the exact amount
@@ -177,13 +531,19 @@ model OrderItem {
   // swap — may be 0), null until resolved; it makes the wallet credit visible on the
   // receipt while the order `total` stays the original charge. Plain strings/floats
   // matching the domain unions, the schema's enum-free style.
-  substitutionPreference   String  @default("substitute") @map("substitution_preference")
-  substitutionStatus       String? @map("substitution_status")
-  substitutionRefundAmount Float?  @map("substitution_refund_amount")
-  replacementProductId     String? @map("replacement_product_id")
-  replacementName          String? @map("replacement_name")
-  replacementImageUrl      String? @map("replacement_image_url")
-  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  substitutionPreference   String   @default("substitute") @map("substitution_preference")
+  substitutionStatus       String?  @map("substitution_status")
+  substitutionRefundAmount Decimal? @map("substitution_refund_amount") @db.Decimal(12, 2)
+  replacementProductId     String?  @map("replacement_product_id")
+  replacementName          String?  @map("replacement_name")
+  replacementImageUrl      String?  @map("replacement_image_url")
+  // VAT snapshot for this line (phase 3). `taxExempt` mirrors the product's flag at
+  // purchase time, defaulting true (the safe direction, matching `Product.taxExempt`).
+  // `taxAmount` is nullable, no backfill: NULL means tax wasn't in effect for this
+  // order, not that the line was exempt (that reads 0).
+  taxExempt                Boolean  @default(true) @map("tax_exempt")
+  taxAmount                Decimal? @map("tax_amount") @db.Decimal(12, 2)
+  order                    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
   @@map("order_items")
@@ -192,8 +552,8 @@ model OrderItem {
 model Product {
   id            String   @id @default(uuid())
   name          String
-  price         Float
-  originalPrice Float?   @map("original_price")
+  price         Decimal  @db.Decimal(12, 2)
+  originalPrice Decimal? @map("original_price") @db.Decimal(12, 2)
   rating        Float    @default(0)
   ratingCount   Int      @default(0) @map("rating_count")
   // Units on hand. Defaults to 0 so a row without an explicit value is treated as
@@ -207,6 +567,12 @@ model Product {
   // never cascades into or is blocked by its products. Indexed for category reads.
   categoryId    String   @map("category_id")
   isFeatured    Boolean  @default(false) @map("is_featured")
+  // Whether the storefront may show it at all. Defaults to true so every existing
+  // row (and every product created before there was a choice) stays visible —
+  // "unpublished" has to be something an operator did on purpose, never a state a
+  // product drifts into. Distinct from `isFeatured`, which is about promotion
+  // *within* the storefront; this is about being in it.
+  isPublished   Boolean  @default(true) @map("is_published")
   badge         String?
   unit          String?
   description   String?
@@ -217,11 +583,87 @@ model Product {
   // filter; defaults to empty so existing writes need no change.
   brand         String?
   dietary       String[] @default([])
+  // Whether this product is exempt from VAT. Defaults to true — the safe direction
+  // for a grocer, since most unprocessed groceries are exempt and a store must
+  // never claim VAT it didn't actually collect. An operator opts a product *in* to
+  // taxation, never the other way around.
+  taxExempt     Boolean  @default(true) @map("tax_exempt")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@index([categoryId])
+  @@index([isPublished])
   @@map("products")
+}
+
+// Append-only ledger of every change to a product's on-hand quantity: how many
+// units moved, what it left behind, why, and who to attribute it to. Never
+// updated or deleted.
+//
+// Rows are written in the same transaction as the `products.stock_quantity`
+// change they explain (see PrismaProductRepository), so the ledger and the level
+// can't drift. `quantity_after` is stored rather than derived so the history
+// reads without replaying every entry.
+//
+// Attribution is exactly one of `actor_id` (an operator's adjustment, with the
+// name snapshotted the way role_changes and order lines snapshot theirs) or
+// `order_id` (a sale, cancellation, return or substitution). Both are plain
+// references, not foreign keys — the same loose coupling the rest of the schema
+// uses, so a deleted account or order never takes its history with it.
+model StockMovement {
+  id            String   @id @default(uuid())
+  productId     String   @map("product_id")
+  // Signed: positive went onto the shelf, negative came off. Never 0.
+  delta         Int
+  quantityAfter Int      @map("quantity_after")
+  // Reason as a plain string matching the domain union (enum-free schema).
+  reason        String
+  note          String?
+  actorId       String?  @map("actor_id")
+  actorName     String?  @map("actor_name")
+  orderId       String?  @map("order_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // The history panel reads one product's entries newest-first.
+  @@index([productId, createdAt])
+  // The store-wide inventory ledger reads newest-first and commonly narrows by reason.
+  @@index([createdAt])
+  @@index([reason, createdAt])
+  @@map("stock_movements")
+}
+
+// One row per customer per day a snapshot job ran — which of the six
+// `CustomerSegmentId`s (`CustomerSegmentsReport.ts`) that customer belonged to,
+// and their trailing 30-day order count/revenue at the time. Written once daily
+// by `SnapshotCustomerSegments`, never mutated after.
+//
+// `customerSegmentPerformance` reclassifies every customer fresh from `orders`
+// on every report request — accurate for "what segment is X in right now", but
+// it has no memory, so "how many customers moved from at-risk to reactivated
+// this month" has nothing to compute from. This table is that memory: comparing
+// the row nearest a range's start to the row nearest its end is what makes a
+// real segment-transition count possible instead of an invented one (see the
+// reporting-audit note on `CustomerSegmentTrends`).
+//
+// `segment` is a plain string matching `CustomerSegmentId`, the schema's
+// enum-free style. `userId` is a plain reference, not a DB foreign key, like
+// the rest of the schema. Unique per (user, day) so a rerun of the job for a
+// day already captured is a no-op rather than a duplicate.
+model CustomerSegmentSnapshot {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  segment    String
+  capturedOn DateTime @map("captured_on") @db.Date
+  orders     Int
+  revenue    Float
+
+  // One customer's segment history, and the "nearest snapshot on/before a date"
+  // lookup `customerSegmentTransitions` runs twice per report request.
+  @@unique([userId, capturedOn])
+  // Reads narrow by date first (was a segment captured that day at all, and how
+  // did the store's mix look), then by segment.
+  @@index([capturedOn, segment])
+  @@map("customer_segment_snapshots")
 }
 
 // Localized overrides for a Product's user-facing text. The base `products` row holds
@@ -249,14 +691,26 @@ model ProductTranslation {
 // A redeemable promo code — reference/catalog data (like products/categories),
 // not user data. `discountPercent` is a whole-number percentage taken off the
 // subtotal. `code` is unique and matched case-insensitively at redemption time.
+//
+// The campaign columns decide whether the code is redeemable *right now*:
+// `active` is the operator's on/off switch (codes are deactivated rather than
+// deleted, so past orders keep referring to something that exists), and
+// `startsAt`/`endsAt` bound the campaign — either may be NULL for an open-ended
+// end. `usageCount` is a redemption counter incremented when an order is placed
+// with the code; it counts redemptions from the day the column shipped, so
+// historical orders (which never recorded their promo) aren't in it.
 model PromoCode {
-  id              String   @id @default(uuid())
-  code            String   @unique
+  id              String    @id @default(uuid())
+  code            String    @unique
   title           String
   description     String
-  discountPercent Int      @map("discount_percent")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  discountPercent Int       @map("discount_percent")
+  active          Boolean   @default(true)
+  startsAt        DateTime? @map("starts_at")
+  endsAt          DateTime? @map("ends_at")
+  usageCount      Int       @default(0) @map("usage_count")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   @@map("promo_codes")
 }
@@ -267,7 +721,7 @@ model PromoCode {
 // users start without a row (treated as a $0 balance) until they add money.
 model WalletAccount {
   userId    String   @id @map("user_id")
-  balance   Float    @default(0)
+  balance   Decimal  @default(0) @db.Decimal(12, 2)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -288,7 +742,7 @@ model WalletTransaction {
   // that predate the columns (the reader falls back to matching the description).
   reason      String?
   reasonItem  String?  @map("reason_item")
-  amount      Float
+  amount      Decimal  @db.Decimal(12, 2)
   type        String
   date        DateTime
   createdAt   DateTime @default(now()) @map("created_at")
@@ -375,6 +829,13 @@ model DeliverySlotBooking {
 model Review {
   id              String   @id @default(uuid())
   productId       String   @map("product_id")
+  // Who wrote it, as a plain reference to `users.id` — the identity behind the
+  // snapshot, so the dashboard can answer "what has this customer reviewed?"
+  // without matching on a display name that two people can share and either can
+  // change. Nullable: reviews written before the column existed are only linked
+  // where the backfill found exactly one user with that name, and a review always
+  // outlives the profile it came from.
+  authorId        String?  @map("author_id")
   authorName      String   @map("author_name")
   authorAvatarUrl String?  @map("author_avatar_url")
   rating          Int
@@ -387,6 +848,7 @@ model Review {
 
   @@index([productId])
   @@index([status])
+  @@index([authorId])
   @@map("reviews")
 }
 
@@ -454,4 +916,111 @@ model StockAlert {
   @@unique([userId, productId])
   @@index([productId])
   @@map("stock_alerts")
+}
+
+// A generated export file and the async job that produced it — the Export
+// center's "Recent exports" history and the state a custom export moves
+// through on its way from "processing" to a downloadable file. The four
+// quick-export routes (`/api/admin/exports/<resource>`) stream straight to
+// the browser and never create a row here; this table exists for the custom
+// builder and scheduled reports, where generation is genuinely asynchronous
+// and multi-format. `requestedById`/`requestedByName` are a plain reference +
+// snapshot, the same loose coupling and "record what it read at the time"
+// `ActivityEntry` uses — a job outlives the admin who requested it.
+model ExportJob {
+  id     String @id @default(uuid())
+  // The report catalog id ("orders" | "inventory" | "customers" | "products")
+  // and the chosen output format, as plain strings matching the domain unions
+  // (enum-free schema) — the adapter narrows them on read.
+  reportId String @map("report_id")
+  format   String
+  // "processing" | "ready" | "failed" | "expired" — see `ExportJobStatus`.
+  status String @default("processing")
+  // "manual" (the builder) | "schedule" (a due `ScheduledExport`).
+  source String
+
+  requestedById   String @map("requested_by_id")
+  requestedByName String @map("requested_by_name")
+
+  // Email to send a secure download link to once the job is ready. Null
+  // means download-only. See `ExportJob.deliverTo`.
+  deliverTo String? @map("deliver_to")
+
+  // The builder's selection (date range, compare-with, sections), captured
+  // verbatim so a failed or expired job can be regenerated with the same
+  // inputs. See `ExportJobParams`.
+  params Json
+
+  // The report's period, if it has one — null for snapshot-style reports
+  // (inventory, products). Stored as text (already-formatted, like an
+  // `ActivityChange` value) since a job never queries by date, only displays it.
+  periodFrom String? @map("period_from")
+  periodTo   String? @map("period_to")
+
+  rowCount    Int?    @map("row_count")
+  byteSize    Int?    @map("byte_size")
+  storagePath String? @map("storage_path")
+  error       String?
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+  // `createdAt + 7 days`, set at creation regardless of when generation
+  // finishes — a job that failed still occupies its slot in the history
+  // until the same sweep that expires successful ones clears it out.
+  expiresAt DateTime @map("expires_at")
+
+  // The Recent exports table, newest first.
+  @@index([createdAt])
+  // The sweep's two passes: ready jobs past their expiry, and processing jobs
+  // stranded by a restart (see `EXPORT_JOB_STRANDED_MINUTES`).
+  @@index([status, createdAt])
+  // "My exports" / who has been generating what.
+  @@index([requestedById, createdAt])
+  @@map("export_jobs")
+}
+
+// A standing "generate this export automatically" rule — the Export center's
+// Scheduled reports panel. `RunDueSchedules` turns a due row into an
+// `ExportJob` with source "schedule"; this table only holds the recurring
+// configuration, never a generated file.
+model ScheduledExport {
+  id String @id @default(uuid())
+
+  reportId String @map("report_id")
+  format   String
+  // The builder's selection this schedule replays on every run. See `ExportJobParams`.
+  params Json
+
+  // "weekly" | "monthly" — see `ScheduleCadence`.
+  cadence String
+  // 0 (Sunday) – 6 (Saturday), set for "weekly". Null for "monthly".
+  dayOfWeek Int? @map("day_of_week")
+  // 1–28, set for "monthly". Null for "weekly" — see `ScheduledExport.dayOfMonth`.
+  dayOfMonth Int? @map("day_of_month")
+  // 0–23, the hour of day in `timezone` the schedule fires.
+  hour Int
+  // IANA zone name, e.g. "Asia/Tehran".
+  timezone String
+
+  // Email to send the secure link to when a run completes. Null disables
+  // delivery — the run still generates and lists the job, just with nobody notified.
+  deliverTo String? @map("deliver_to")
+
+  active Boolean @default(true)
+
+  createdById   String @map("created_by_id")
+  createdByName String @map("created_by_name")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  lastRunAt DateTime? @map("last_run_at")
+  // When this schedule next fires — advanced by `RunDueSchedules` after each
+  // run, recomputed by `SaveScheduledExport` whenever the timing fields change.
+  nextRunAt DateTime @map("next_run_at")
+
+  // The management list, newest first.
+  @@index([createdAt])
+  // `RunDueSchedules`'s query: active schedules whose time has come.
+  @@index([active, nextRunAt])
+  @@map("scheduled_exports")
 }

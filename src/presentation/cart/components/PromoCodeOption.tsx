@@ -1,6 +1,9 @@
 import { useTranslations } from "next-intl";
+
 import type { PromoCode } from "@/src/domain/entities/PromoCode";
 import { cn } from "@/src/lib/utils";
+import { focusRing } from "@/src/presentation/design-system";
+
 import { isLocalizedPromo } from "../localizedPromos";
 
 interface PromoCodeOptionProps {
@@ -32,7 +35,7 @@ export function PromoCodeOption({ promo, selected, onSelect }: PromoCodeOptionPr
       aria-pressed={selected}
       className={cn(
         "flex w-full flex-col gap-1 rounded-card-xl border bg-surface px-4 py-3 text-start transition-colors",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        focusRing,
         selected ? "border-foreground" : "border-transparent",
       )}
     >

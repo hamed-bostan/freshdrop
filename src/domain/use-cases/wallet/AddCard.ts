@@ -1,6 +1,7 @@
+import { ValidationError } from "../../errors/ValidationError";
+
 import type { CardBrand, NewCard, SavedCard } from "../../entities/Wallet";
 import type { IWalletRepository } from "../../repositories/IWalletRepository";
-import { ValidationError } from "../../errors/ValidationError";
 
 /**
  * Save a payment card. The domain owns the rules the persisted card must satisfy —

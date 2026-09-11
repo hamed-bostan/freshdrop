@@ -1,24 +1,14 @@
+import { Star } from "lucide-react";
 import Image from "next/image";
 import { useLocale } from "next-intl";
-import { Star } from "lucide-react";
-import { Icon } from "@/src/presentation/design-system";
-import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
+
+import type { PublicReview } from "@/src/domain/entities/Review";
 import { formatRating } from "@/src/lib/formatNumber";
-import type { Review } from "@/src/domain/entities/Review";
+import { formatRelativeTime } from "@/src/lib/formatRelativeTime";
+import { Avatar, Icon } from "@/src/presentation/design-system";
 
 interface ReviewItemProps {
-  review: Review;
-}
-
-/** Two leading initials, e.g. "Leonardo DiCaprio" → "LD". */
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+  review: PublicReview;
 }
 
 export function ReviewItem({ review }: ReviewItemProps) {
@@ -27,22 +17,17 @@ export function ReviewItem({ review }: ReviewItemProps) {
     <article className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
-          {review.authorAvatarUrl ? (
-            <Image
-              src={review.authorAvatarUrl}
-              alt=""
-              width={40}
-              height={40}
-              className="size-10 rounded-full object-cover"
-            />
-          ) : (
-            <span
-              aria-hidden
-              className="grid size-10 place-items-center rounded-full bg-accent text-body-b8 text-accent-foreground"
-            >
-              {getInitials(review.authorName)}
-            </span>
-          )}
+          <Avatar name={review.authorName} className="size-10">
+            {review.authorAvatarUrl && (
+              <Image
+                src={review.authorAvatarUrl}
+                alt=""
+                width={40}
+                height={40}
+                className="size-full object-cover"
+              />
+            )}
+          </Avatar>
 
           <div className="flex flex-col">
             <span className="text-body-b8 text-foreground">{review.authorName}</span>

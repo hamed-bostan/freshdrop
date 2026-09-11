@@ -1,21 +1,27 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { GetOrders } from "@/src/domain/use-cases/orders/GetOrders";
-import { CreateOrder } from "@/src/domain/use-cases/orders/CreateOrder";
+
+import { placeOrderSchema } from "@/src/contracts/checkout-schema";
 import { GetCart } from "@/src/domain/use-cases/cart/GetCart";
 import { GetDeliveryLocations } from "@/src/domain/use-cases/delivery-locations/GetDeliveryLocations";
+import { CreateOrder } from "@/src/domain/use-cases/orders/CreateOrder";
+import { GetOrders } from "@/src/domain/use-cases/orders/GetOrders";
 import { FindPromoCode } from "@/src/domain/use-cases/promo-codes/FindPromoCode";
 import {
   orderRepository,
+  unitOfWork,
   cartRepository,
   productRepository,
   deliveryLocationRepository,
   deliverySlotRepository,
   promoCodeRepository,
   orderNotifier,
+  userRepository,
+  adminNotificationRepository,
+  emailSender,
+  taxSettingsRepository,
+  notificationTemplateRepository,
 } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
-import { placeOrderSchema } from "@/src/presentation/checkout/checkout-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -23,6 +29,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Per-user data, read per request — never statically cached.
 export const dynamic = "force-dynamic";
@@ -88,12 +95,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const promo = parsed.data.promo
       ? await new FindPromoCode(promoCodeRepository).execute(parsed.data.promo)
       : null;
+    const taxSettings = await taxSettingsRepository.get();
     const cart = await new GetCart(cartRepository).execute({
       userId: session.user.id,
       promo,
       // Snapshot the order in the locale the shopper is checking out in — matches
       // what they saw, and is the fallback the order-history re-resolve falls back to.
       locale: getRequestLocale(request),
+      taxRatePercent: taxSettings.enabled ? taxSettings.ratePercent : null,
     });
 
     // Collapse the per-line substitution choices into a productId→preference map
@@ -103,11 +112,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       : undefined;
 
     const order = await new CreateOrder(
-      orderRepository,
+      unitOfWork,
       cartRepository,
-      productRepository,
       deliverySlotRepository,
       orderNotifier,
+      promoCodeRepository,
+      userRepository,
+      adminNotificationRepository,
+      emailSender,
+      notificationTemplateRepository,
     ).execute({
       userId: session.user.id,
       location: address.address,
@@ -118,10 +131,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         address.latitude != null && address.longitude != null
           ? { latitude: address.latitude, longitude: address.longitude }
           : undefined,
+      city: address.city ?? undefined,
       cart,
+      // The code the totals above were computed from, so the redemption is counted
+      // against the campaign the shopper actually checked out under.
+      promo: promo ?? undefined,
       deliveryDate: parsed.data.deliveryDate,
       deliveryWindowId: parsed.data.deliveryWindowId,
       substitutionPreferences,
+      deliveryInstructions: parsed.data.deliveryInstructions,
+      walletApplied: parsed.data.walletApplied,
     });
     return NextResponse.json(order, { status: 201 });
   } catch (error) {

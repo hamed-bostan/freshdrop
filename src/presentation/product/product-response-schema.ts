@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { Product } from "@/src/domain/entities/Product";
 
 /**
@@ -24,6 +25,7 @@ export const productResponseSchema = z.object({
   imageUrl: z.string(),
   categoryId: z.string(),
   isFeatured: z.boolean(),
+  isPublished: z.boolean(),
   badge: z.string().optional(),
   images: z.array(z.string()).optional(),
   unit: z.string().optional(),
@@ -32,6 +34,7 @@ export const productResponseSchema = z.object({
   origin: z.string().optional(),
   brand: z.string().optional(),
   dietary: z.array(z.string()).optional(),
+  taxExempt: z.boolean(),
 }) satisfies z.ZodType<Product>;
 
 export const productListResponseSchema = z.array(productResponseSchema);

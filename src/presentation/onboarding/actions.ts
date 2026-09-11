@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+
 import { ONBOARDED_COOKIE } from "@/src/lib/onboarding";
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;

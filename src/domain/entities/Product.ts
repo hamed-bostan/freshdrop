@@ -11,6 +11,17 @@ export type Product = {
   imageUrl: string;
   categoryId: string;
   isFeatured: boolean;
+  /**
+   * Whether the storefront may show it. `false` takes the product out of the
+   * catalog, search, every rail and add-to-cart, without touching its stock ledger
+   * or the order lines that already reference it — the difference between
+   * withdrawing a product and deleting one.
+   *
+   * Orthogonal to {@link Product.isFeatured}: that promotes a product *within* the
+   * storefront, this decides whether it's in it at all. An unpublished product can
+   * still carry `isFeatured`, and gets it back when it's published again.
+   */
+  isPublished: boolean;
   badge?: string;
   /** Gallery shots for the product-detail carousel. Falls back to `[imageUrl]` when omitted. */
   images?: string[];
@@ -26,4 +37,10 @@ export type Product = {
   brand?: string;
   /** Dietary tags the product satisfies (see `DIETARY_TAGS`); drives the dietary filter. */
   dietary?: string[];
+  /**
+   * Whether this product is exempt from VAT. Defaults to `true` — most unprocessed
+   * groceries are exempt, and a store must never claim VAT it didn't collect. An
+   * operator opts a product *in* to taxation, never the other way around.
+   */
+  taxExempt: boolean;
 }

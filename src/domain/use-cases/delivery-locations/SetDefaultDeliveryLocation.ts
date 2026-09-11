@@ -1,6 +1,7 @@
+import { NotFoundError } from "../../errors/NotFoundError";
+
 import type { DeliveryLocation } from "../../entities/DeliveryLocation";
 import type { IDeliveryLocationRepository } from "../../repositories/IDeliveryLocationRepository";
-import { NotFoundError } from "../../errors/NotFoundError";
 
 /**
  * Make one of a user's saved addresses their checkout default. Both the ownership

@@ -1,7 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronDown, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { Button, Icon, Input } from "@/src/presentation/design-system";
 
 interface LocationSearchBarProps {

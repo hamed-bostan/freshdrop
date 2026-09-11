@@ -1,8 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Button } from "@/src/presentation/design-system";
-import { Modal, ModalClose, ModalContent } from "@/src/presentation/design-system";
+
+import { Button , Modal, ModalClose, ModalContent } from "@/src/presentation/design-system";
+
 
 interface ConfirmDialogProps {
   /** Controlled open state. */

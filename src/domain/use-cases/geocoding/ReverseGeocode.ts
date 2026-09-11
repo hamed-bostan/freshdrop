@@ -1,4 +1,5 @@
 import { isValidGeoPoint, type GeoPoint, type Place } from "../../entities/Place";
+
 import type { GeocodingOptions, IGeocodingRepository } from "../../repositories/IGeocodingRepository";
 
 export class ReverseGeocode {

@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { Cart } from "@/src/domain/entities/Cart";
 import { productResponseSchema } from "@/src/presentation/product/product-response-schema";
 
@@ -23,4 +24,6 @@ export const cartResponseSchema = z.object({
   discount: z.number(),
   total: z.number(),
   itemCount: z.number(),
+  taxAmount: z.number().nullable(),
+  taxRate: z.number().nullable(),
 }) satisfies z.ZodType<Cart>;

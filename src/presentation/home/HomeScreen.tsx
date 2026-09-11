@@ -1,11 +1,13 @@
 import { getTranslations } from "next-intl/server";
+
 import type { Category } from "@/src/domain/entities/Category";
-import type { Product } from "@/src/domain/entities/Product";
 import type { DeliveryLocation } from "@/src/domain/entities/DeliveryLocation";
-import { HomeHeader } from "./components/HomeHeader";
-import { HeroBanner } from "./components/HeroBanner";
+import type { Product } from "@/src/domain/entities/Product";
 import { CategoryGrid } from "@/src/presentation/category/components";
+
 import { FeaturedProducts } from "./components/FeaturedProducts";
+import { HeroBanner } from "./components/HeroBanner";
+import { HomeHeader } from "./components/HomeHeader";
 import { SpecialOffers } from "./components/SpecialOffers";
 
 interface HomeScreenProps {

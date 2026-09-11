@@ -1,6 +1,8 @@
-import * as React from "react";
 import { useLocale } from "next-intl";
+import * as React from "react";
+
 import type { Place } from "@/src/domain/entities/Place";
+
 import { searchPlaces } from "../lib/geocoding-client";
 
 const MIN_QUERY_LENGTH = 3;
@@ -25,15 +27,17 @@ export function usePlaceSearch(query: string) {
     }
 
     const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      setIsLoading(true);
-      try {
-        setResults(await searchPlaces(trimmed, locale, controller.signal));
-      } catch {
-        if (!controller.signal.aborted) setResults([]);
-      } finally {
-        if (!controller.signal.aborted) setIsLoading(false);
-      }
+    const timer = setTimeout(() => {
+      void (async (): Promise<void> => {
+        setIsLoading(true);
+        try {
+          setResults(await searchPlaces(trimmed, locale, controller.signal));
+        } catch {
+          if (!controller.signal.aborted) setResults([]);
+        } finally {
+          if (!controller.signal.aborted) setIsLoading(false);
+        }
+      })();
     }, DEBOUNCE_MS);
 
     return () => {

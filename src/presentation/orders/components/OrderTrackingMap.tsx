@@ -2,9 +2,10 @@
 
 import "leaflet/dist/leaflet.css";
 
-import * as React from "react";
 import L from "leaflet";
+import * as React from "react";
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
+
 import type { GeoPoint } from "@/src/domain/entities/Place";
 
 const toLatLng = (point: GeoPoint): [number, number] => [point.latitude, point.longitude];
@@ -16,7 +17,7 @@ const toLatLng = (point: GeoPoint): [number, number] => [point.latitude, point.l
 function badgeIcon(background: string, glyph: string): L.DivIcon {
   return L.divIcon({
     className: "",
-    html: `<span style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9999px;background:${background};color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.25)">${glyph}</span>`,
+    html: `<span style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9999px;background:${background};color:var(--color-primary-foreground);box-shadow:var(--shadow-marker)">${glyph}</span>`,
     iconSize: [36, 36],
     iconAnchor: [18, 18],
   });
@@ -27,8 +28,8 @@ const SVG_ATTRS =
 const HOME_GLYPH = `<svg xmlns="http://www.w3.org/2000/svg" ${SVG_ATTRS}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`;
 const BIKE_GLYPH = `<svg xmlns="http://www.w3.org/2000/svg" ${SVG_ATTRS}><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg>`;
 
-const destinationIcon = badgeIcon("#11A94D", HOME_GLYPH);
-const courierIcon = badgeIcon("#A9116D", BIKE_GLYPH);
+const destinationIcon = badgeIcon("var(--color-primary)", HOME_GLYPH);
+const courierIcon = badgeIcon("var(--color-secondary)", BIKE_GLYPH);
 
 /**
  * Frames the map to the whole route once, on mount. The route is fixed, so the
@@ -104,7 +105,7 @@ export function OrderTrackingMap({ destination, courier, route }: OrderTrackingM
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         maxZoom={19}
       />
-      <Polyline positions={line} pathOptions={{ color: "#11A94D", weight: 4, dashArray: "6 10" }} />
+      <Polyline positions={line} pathOptions={{ color: "var(--color-primary)", weight: 4, dashArray: "6 10" }} />
       <Marker position={toLatLng(destination)} icon={destinationIcon} />
       <CourierMarker position={courier} />
       <FitToRoute line={line} />

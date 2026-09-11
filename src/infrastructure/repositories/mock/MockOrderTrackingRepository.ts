@@ -4,9 +4,9 @@ import type {
   TrackingStep,
   TrackingStepStatus,
 } from "@/src/domain/entities/OrderTracking";
-import type { IOrderTrackingRepository, TrackingViewer } from "@/src/domain/repositories/IOrderTrackingRepository";
-import type { IOrderRepository } from "@/src/domain/repositories/IOrderRepository";
 import type { GeoPoint } from "@/src/domain/entities/Place";
+import type { IOrderRepository } from "@/src/domain/repositories/IOrderRepository";
+import type { IOrderTrackingRepository, TrackingViewer } from "@/src/domain/repositories/IOrderTrackingRepository";
 import { pointAtFraction } from "@/src/lib/geo";
 
 /** Courier used for every tracked order in the mock. */
@@ -140,11 +140,11 @@ export class MockOrderTrackingRepository implements IOrderTrackingRepository {
   async getByOrderId(orderId: string, viewer: TrackingViewer): Promise<OrderTracking | null> {
     const order = await this.orders.getById(orderId);
 
-    if (!order || order.phase !== "current" || order.status === "cancelled") {
+    if (order?.phase !== "current" || order.status === "cancelled") {
       return null;
     }
 
-    if (!viewer.isAdmin && order.userId !== viewer.userId) {
+    if (!viewer.canViewAnyOrder && order.userId !== viewer.userId) {
       return null;
     }
 

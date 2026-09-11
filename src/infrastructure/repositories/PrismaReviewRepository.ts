@@ -1,8 +1,24 @@
 import { Prisma } from "@prisma/client";
+
+import type {
+  AdminReviewFilters,
+  AdminReviewSort,
+  ReviewPage,
+  ReviewStatusCounts,
+} from "@/src/domain/entities/AdminReviewFilters";
+import { DEFAULT_ADMIN_REVIEW_DIRECTION } from "@/src/domain/entities/AdminReviewFilters";
+import { createPage, toSkipTake, type PageRequest } from "@/src/domain/entities/Pagination";
 import type { Review, ReviewStatus } from "@/src/domain/entities/Review";
-import type { IReviewRepository, NewReview } from "@/src/domain/repositories/IReviewRepository";
 import { NotFoundError } from "@/src/domain/errors/NotFoundError";
+import type { AuditHook } from "@/src/domain/repositories/AuditHook";
+import type {
+  BulkReviewUpdate,
+  IReviewRepository,
+  NewReview,
+} from "@/src/domain/repositories/IReviewRepository";
 import { prisma } from "@/src/infrastructure/prisma/client";
+
+import { recordAudit } from "./writeActivityEntry";
 
 /**
  * Product reviews backed by PostgreSQL via Prisma. Server-side only (it opens a DB
@@ -19,11 +35,59 @@ export class PrismaReviewRepository implements IReviewRepository {
     return rows.map(toReview);
   }
 
-  async listByStatus(status?: ReviewStatus): Promise<Review[]> {
-    // Admin moderation queue: every review across products, newest first, optionally
-    // narrowed to one status.
+  async listPage(filters: AdminReviewFilters, page: PageRequest<AdminReviewSort>): Promise<ReviewPage> {
+    // The text clause is shared by the page query and the tab counts, so the two
+    // can't drift into searching different columns.
+    const queryClause: Prisma.ReviewWhereInput | null = filters.query
+      ? {
+          OR: [
+            { comment: { contains: filters.query, mode: "insensitive" } },
+            { authorName: { contains: filters.query, mode: "insensitive" } },
+          ],
+        }
+      : null;
+
+    const and: Prisma.ReviewWhereInput[] = [];
+    if (queryClause) and.push(queryClause);
+    if (filters.status) and.push({ status: filters.status });
+    const where: Prisma.ReviewWhereInput = and.length ? { AND: and } : {};
+
+    const direction = page.direction ?? DEFAULT_ADMIN_REVIEW_DIRECTION;
+    const orderBy: Prisma.ReviewOrderByWithRelationInput =
+      page.sort === "rating" ? { rating: direction } : { createdAt: direction };
+
+    const { skip, take } = toSkipTake(page);
+    // The tab counts deliberately ignore `status` (they'd zero out the other tabs)
+    // but do honour the search term, so searching narrows every tab consistently.
+    // One transaction keeps rows, total and counts on the same snapshot.
+    const countWhere: Prisma.ReviewWhereInput = queryClause ?? {};
+    // A count per status rather than one `groupBy`: inside a `$transaction` array
+    // Prisma widens the groupBy argument, and its `_count` payload type degrades
+    // with it. Three counts on an indexed column are cheap and unambiguous.
+    const [rows, total, pending, approved, rejected] = await prisma.$transaction([
+      prisma.review.findMany({ where, orderBy, skip, take }),
+      prisma.review.count({ where }),
+      prisma.review.count({ where: { AND: [countWhere, { status: "pending" }] } }),
+      prisma.review.count({ where: { AND: [countWhere, { status: "approved" }] } }),
+      prisma.review.count({ where: { AND: [countWhere, { status: "rejected" }] } }),
+    ]);
+
+    const counts: ReviewStatusCounts = {
+      pending,
+      approved,
+      rejected,
+      all: pending + approved + rejected,
+    };
+
+    return { ...createPage(rows.map(toReview), total, page), counts };
+  }
+
+  async listByAuthor(authorId: string): Promise<Review[]> {
+    // Every status, unlike the storefront list: on a customer's detail page a
+    // pending or rejected review is the interesting one. Served by
+    // `reviews_author_id_idx`.
     const rows = await prisma.review.findMany({
-      where: status ? { status } : undefined,
+      where: { authorId },
       orderBy: { createdAt: "desc" },
     });
     return rows.map(toReview);
@@ -37,6 +101,7 @@ export class PrismaReviewRepository implements IReviewRepository {
       const created = await tx.review.create({
         data: {
           productId: input.productId,
+          authorId: input.authorId,
           authorName: input.authorName,
           authorAvatarUrl: input.authorAvatarUrl ?? null,
           rating: input.rating,
@@ -49,7 +114,55 @@ export class PrismaReviewRepository implements IReviewRepository {
     return toReview(row);
   }
 
-  async updateStatus(id: string, status: ReviewStatus): Promise<Review> {
+  async getById(id: string): Promise<Review | null> {
+    const row = await prisma.review.findUnique({ where: { id } });
+    return row ? toReview(row) : null;
+  }
+
+  async updateStatusMany(
+    ids: readonly string[],
+    status: ReviewStatus,
+    audit?: AuditHook<BulkReviewUpdate>,
+  ): Promise<BulkReviewUpdate[]> {
+    if (ids.length === 0) return [];
+
+    return prisma.$transaction(async (tx) => {
+      // Only the reviews the change would actually move: re-approving an approved
+      // review is not an event, and the "before" each audit entry needs is only
+      // available from this read.
+      const targets = await tx.review.findMany({
+        where: { id: { in: [...ids] }, NOT: { status } },
+      });
+      if (targets.length === 0) return [];
+
+      await tx.review.updateMany({
+        where: { id: { in: targets.map((row) => row.id) } },
+        data: { status },
+      });
+
+      // Every product any of these reviews belongs to, each recomputed once — the
+      // same single-source-of-truth rule `updateStatus` follows, but a bulk approve
+      // routinely touches several reviews of one product, and recomputing per
+      // review would repeat identical work inside the transaction.
+      const productIds = [...new Set(targets.map((row) => row.productId))];
+      for (const productId of productIds) {
+        await recomputeProductRating(tx, productId);
+      }
+
+      const updates: BulkReviewUpdate[] = targets.map((row) => ({
+        review: toReview({ ...row, status }),
+        previousStatus: row.status as ReviewStatus,
+      }));
+
+      for (const update of updates) {
+        await recordAudit(tx, update, audit);
+      }
+
+      return updates;
+    });
+  }
+
+  async updateStatus(id: string, status: ReviewStatus, audit?: AuditHook<Review>): Promise<Review> {
     // Moderation: flip the status and recompute the product's rating in one
     // transaction so the derived rating/ratingCount can never drift from what's
     // approved (same single-source-of-truth pattern as `create`).
@@ -57,6 +170,7 @@ export class PrismaReviewRepository implements IReviewRepository {
       const row = await prisma.$transaction(async (tx) => {
         const updated = await tx.review.update({ where: { id }, data: { status } });
         await recomputeProductRating(tx, updated.productId);
+        await recordAudit(tx, toReview(updated), audit);
         return updated;
       });
       return toReview(row);
@@ -92,6 +206,7 @@ async function recomputeProductRating(tx: Prisma.TransactionClient, productId: s
 type ReviewRow = {
   id: string;
   productId: string;
+  authorId: string | null;
   authorName: string;
   authorAvatarUrl: string | null;
   rating: number;
@@ -104,6 +219,7 @@ function toReview(row: ReviewRow): Review {
   return {
     id: row.id,
     productId: row.productId,
+    authorId: row.authorId,
     authorName: row.authorName,
     authorAvatarUrl: row.authorAvatarUrl ?? undefined,
     rating: row.rating,

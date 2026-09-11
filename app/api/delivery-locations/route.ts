@@ -1,12 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { GetDeliveryLocations } from "@/src/domain/use-cases/delivery-locations/GetDeliveryLocations";
-import { CreateDeliveryLocation } from "@/src/domain/use-cases/delivery-locations/CreateDeliveryLocation";
-import { deliveryLocationRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
+
 import {
   deliveryLocationSchema,
   DELIVERY_LOCATION_LABELS,
-} from "@/src/presentation/delivery-location/delivery-location-schema";
+} from "@/src/contracts/delivery-location-schema";
+import { CreateDeliveryLocation } from "@/src/domain/use-cases/delivery-locations/CreateDeliveryLocation";
+import { GetDeliveryLocations } from "@/src/domain/use-cases/delivery-locations/GetDeliveryLocations";
+import { deliveryLocationRepository } from "@/src/infrastructure/container";
 import {
   errorResponse,
   errorResponseFromException,
@@ -14,6 +14,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Per-user data, read per request — never statically cached.
 export const dynamic = "force-dynamic";

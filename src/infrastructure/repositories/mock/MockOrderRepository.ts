@@ -1,11 +1,18 @@
+import type { AdminOrderFilters, AdminOrderSort } from "@/src/domain/entities/AdminOrderFilters";
+import { DEFAULT_ADMIN_ORDER_DIRECTION } from "@/src/domain/entities/AdminOrderFilters";
 import type {
+  DeliveryType,
   ItemSubstitution,
   Order,
   OrderItem,
   OrderPhase,
   OrderStatus,
+  PaymentStatus,
 } from "@/src/domain/entities/Order";
+import { pipelinePredicate } from "@/src/domain/entities/OrderPipelineStage";
 import type { TrackingMilestone } from "@/src/domain/entities/OrderTracking";
+import { paginateArray, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
+import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import type {
   IOrderRepository,
   NewOrder,
@@ -13,7 +20,6 @@ import type {
   OrderTrackingUpdate,
 } from "@/src/domain/repositories/IOrderRepository";
 import type { IProductRepository } from "@/src/domain/repositories/IProductRepository";
-import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 
 /** The seeded demo orders predate real accounts, so they belong to a sentinel owner. */
 const DEMO_USER_ID = "demo";
@@ -25,6 +31,8 @@ const DEMO_USER_ID = "demo";
  */
 type OrderSeed = {
   id: string;
+  /** The seed's human-facing number — assigned in placement order (oldest first), same as the real backfill. */
+  orderNumber: number;
   status: OrderStatus;
   phase: OrderPhase;
   placedAt: string;
@@ -32,6 +40,14 @@ type OrderSeed = {
   /** Saved-address label the order card collapses the address to ("Home", "Gym"). */
   locationLabel: string;
   total: number;
+  /**
+   * How it's handed over and where its money stands. Both omitted on most seeds
+   * and defaulted to the ordinary case (couriered, paid) — a seed only states
+   * them when it exists to demonstrate the *unusual* case, so reading the list
+   * shows at a glance which orders are the interesting ones.
+   */
+  deliveryType?: DeliveryType;
+  paymentStatus?: PaymentStatus;
   /** Starting delivery milestone. Omitted for orders that aren't trackable. */
   stage?: TrackingMilestone;
   lines: { productId: string; quantity: number }[];
@@ -40,6 +56,7 @@ type OrderSeed = {
 const ORDER_SEEDS: OrderSeed[] = [
   {
     id: "FD-10231",
+    orderNumber: 1004,
     status: "completed",
     phase: "current",
     placedAt: "2023-10-09T15:22:00Z",
@@ -57,6 +74,7 @@ const ORDER_SEEDS: OrderSeed[] = [
   },
   {
     id: "FD-10219",
+    orderNumber: 1003,
     status: "processing",
     phase: "current",
     placedAt: "2023-10-08T11:05:00Z",
@@ -74,6 +92,7 @@ const ORDER_SEEDS: OrderSeed[] = [
   },
   {
     id: "FD-09984",
+    orderNumber: 1002,
     status: "completed",
     phase: "previous",
     placedAt: "2023-09-21T18:40:00Z",
@@ -90,6 +109,7 @@ const ORDER_SEEDS: OrderSeed[] = [
   },
   {
     id: "FD-09870",
+    orderNumber: 1001,
     status: "cancelled",
     phase: "previous",
     placedAt: "2023-09-03T09:15:00Z",
@@ -127,16 +147,72 @@ export class MockOrderRepository implements IOrderRepository {
   );
   /** Phase overrides written by lifecycle transitions (cancel/refund archive the order). */
   private readonly phases = new Map<string, OrderPhase>();
+  /** Payment-status overrides written by lifecycle transitions (a refund moves it to `refunded`). */
+  private readonly paymentStatuses = new Map<string, PaymentStatus>();
   /** Picker substitution resolutions, keyed `${orderId}::${productId}`. */
   private readonly substitutions = new Map<string, ItemSubstitution>();
   /** Orders placed at runtime (via checkout), newest appended last. */
   private readonly created: Order[] = [];
   private nextId = 1;
+  /** Continues the seeds' numbering (highest seeded is 1004) for runtime-created orders. */
+  private nextOrderNumber = 1005;
 
   constructor(private readonly products: IProductRepository) {}
 
   async getOrders(userId: string): Promise<Order[]> {
     return (await this.getAllOrders()).filter((order) => order.userId === userId);
+  }
+
+  async listPage(filters: AdminOrderFilters, page: PageRequest<AdminOrderSort>): Promise<Page<Order>> {
+    // Mirrors `toOrderWhere` in the Prisma repo, predicate for predicate: an id
+    // substring (case-insensitive), the pipeline stage's (status, stage) pair,
+    // exact delivery/payment, and inclusive date and total bounds — all AND-ed,
+    // so an empty filter matches every order.
+    const needle = filters.query?.toLowerCase() ?? "";
+    const needleAsOrderNumber = Number.parseInt(needle.replace(/^#/, ""), 10);
+    const customerIds = filters.userIds?.length ? new Set(filters.userIds) : null;
+    const matched = (await this.getAllOrders()).filter((order) => {
+      // Id, order number, *or* customer — see the OR-group in `toOrderWhere`.
+      if (
+        needle &&
+        !order.id.toLowerCase().includes(needle) &&
+        order.orderNumber !== needleAsOrderNumber &&
+        !customerIds?.has(order.userId)
+      ) {
+        return false;
+      }
+
+      if (filters.pipeline) {
+        const predicate = pipelinePredicate(filters.pipeline);
+        if (order.status !== predicate.status) return false;
+        // `null` means "no stage set"; `undefined` means the stage is unconstrained.
+        if (predicate.stage !== undefined && (order.stage ?? null) !== predicate.stage) return false;
+      }
+
+      if (filters.deliveryType && order.deliveryType !== filters.deliveryType) return false;
+      if (filters.paymentStatus && order.paymentStatus !== filters.paymentStatus) return false;
+
+      // Compared as instants, not strings: the seeds are written without
+      // milliseconds and the filters arrive from `toISOString()` with them, and
+      // lexicographic order disagrees with chronological order across the two
+      // spellings of the same moment.
+      const placedAt = Date.parse(order.placedAt);
+      if (filters.placedFrom && placedAt < Date.parse(filters.placedFrom)) return false;
+      if (filters.placedTo && placedAt > Date.parse(filters.placedTo)) return false;
+      if (filters.minTotal != null && order.total < filters.minTotal) return false;
+      if (filters.maxTotal != null && order.total > filters.maxTotal) return false;
+
+      return true;
+    });
+
+    const sign = (page.direction ?? DEFAULT_ADMIN_ORDER_DIRECTION) === "asc" ? 1 : -1;
+    const sorted = [...matched].sort((a, b) =>
+      page.sort === "total"
+        ? sign * (a.total - b.total)
+        : sign * (new Date(a.placedAt).getTime() - new Date(b.placedAt).getTime()),
+    );
+
+    return paginateArray(sorted, page);
   }
 
   async getAllOrders(): Promise<Order[]> {
@@ -149,21 +225,29 @@ export class MockOrderRepository implements IOrderRepository {
           const product = byId.get(productId);
           if (!product) return null;
           return this.withSubstitution(seed.id, {
+            id: `${seed.id}-${productId}`,
             productId,
             name: product.name,
             imageUrl: product.imageUrl,
             quantity,
             price: product.price,
             substitutionPreference: "substitute",
+            // Seeded demo orders predate tax (phase 3) — `null` reads as "not in
+            // effect", matching every other legacy order.
+            taxExempt: product.taxExempt,
+            taxAmount: null,
           });
         })
         .filter((item): item is OrderItem => item != null);
 
       return {
         id: seed.id,
+        orderNumber: seed.orderNumber,
         userId: DEMO_USER_ID,
         status: this.statuses.get(seed.id) ?? seed.status,
         phase: this.phases.get(seed.id) ?? seed.phase,
+        deliveryType: seed.deliveryType ?? "delivery",
+        paymentStatus: this.paymentStatuses.get(seed.id) ?? seed.paymentStatus ?? "paid",
         placedAt: seed.placedAt,
         location: seed.location,
         locationLabel: seed.locationLabel,
@@ -173,17 +257,25 @@ export class MockOrderRepository implements IOrderRepository {
         shipping: 0,
         discount: 0,
         total: seed.total,
+        taxAmount: null,
+        taxRate: null,
         stage: this.stages.get(seed.id) ?? undefined,
         items,
+        // Seeded demo orders predate wallet-at-checkout — none of them used it.
+        walletApplied: 0,
+        // Seeded/mock orders carry no refund ledger — there's nothing behind them.
+        refunds: [],
       };
     });
 
-    // Runtime orders honour the same status/phase/stage overrides as the seeds.
-    // `stages.has` distinguishes a cleared stage (mapped to null) from no override.
+    // Runtime orders honour the same status/phase/stage/payment overrides as the
+    // seeds. `stages.has` distinguishes a cleared stage (mapped to null) from no
+    // override.
     const runtime: Order[] = this.created.map((order) => ({
       ...order,
       status: this.statuses.get(order.id) ?? order.status,
       phase: this.phases.get(order.id) ?? order.phase,
+      paymentStatus: this.paymentStatuses.get(order.id) ?? order.paymentStatus,
       stage: this.stages.has(order.id) ? (this.stages.get(order.id) ?? undefined) : order.stage,
       items: order.items.map((item) => this.withSubstitution(order.id, item)),
     }));
@@ -196,8 +288,24 @@ export class MockOrderRepository implements IOrderRepository {
     return (await this.getAllOrders()).find((order) => order.id === orderId) ?? null;
   }
 
+  // Single-threaded JS makes every mock method atomic already — no lock to take.
+  async lockById(orderId: string): Promise<Order | null> {
+    return this.getById(orderId);
+  }
+
   async createOrder(input: NewOrder): Promise<Order> {
-    const order: Order = { ...input, id: `FD-${String(this.nextId++).padStart(5, "0")}` };
+    // Honour a caller-minted id (checkout mints one so its stock movements can
+    // name the order); fall back to the mock's own sequence otherwise. The order
+    // number is always assigned here — nothing ever supplies one, same as the
+    // real DB's autoincrement default.
+    const orderId = input.id ?? `FD-${String(this.nextId++).padStart(5, "0")}`;
+    const order: Order = {
+      ...input,
+      id: orderId,
+      orderNumber: this.nextOrderNumber++,
+      items: input.items.map((item, index) => ({ ...item, id: `${orderId}-${index}` })),
+      refunds: [],
+    };
     this.created.push(order);
     return order;
   }
@@ -228,6 +336,7 @@ export class MockOrderRepository implements IOrderRepository {
     if (to.phase !== undefined) this.phases.set(orderId, to.phase);
     // `null` clears the stage; `undefined` leaves the existing override untouched.
     if (to.stage !== undefined) this.stages.set(orderId, to.stage);
+    if (to.paymentStatus !== undefined) this.paymentStatuses.set(orderId, to.paymentStatus);
 
     return this.getById(orderId);
   }

@@ -1,16 +1,24 @@
 import { randomUUID } from "node:crypto";
+
+import type { AdminProductFilters, AdminProductSort } from "@/src/domain/entities/AdminProductFilters";
+import { DEFAULT_ADMIN_PRODUCT_DIRECTION } from "@/src/domain/entities/AdminProductFilters";
 import type { Category } from "@/src/domain/entities/Category";
+import { paginateArray, type Page, type PageRequest } from "@/src/domain/entities/Pagination";
 import type { Product } from "@/src/domain/entities/Product";
 import type { ProductFilters, ProductSort } from "@/src/domain/entities/ProductFilters";
 import { PRODUCT_BRANDS } from "@/src/domain/entities/ProductFilters";
+import { getStockStatus } from "@/src/domain/entities/stock";
+import { InsufficientStockError, type StockShortfall } from "@/src/domain/errors/InsufficientStockError";
+import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import type {
+  BulkProductChange,
+  BulkProductUpdate,
   IProductRepository,
   NewProduct,
   ProductTranslationInput,
   StockAdjustment,
 } from "@/src/domain/repositories/IProductRepository";
-import { NotFoundError } from "@/src/domain/errors/NotFoundError";
-import { InsufficientStockError, type StockShortfall } from "@/src/domain/errors/InsufficientStockError";
+
 import { MOCK_CATEGORIES } from "./MockCategoryRepository";
 
 /**
@@ -201,6 +209,33 @@ const CATALOG: Record<string, ProductSeed[]> = {
 
 const CATEGORY_BY_ID = new Map(MOCK_CATEGORIES.map((category) => [category.id, category]));
 
+/**
+ * Mirror the Prisma repo's `adminOrderBy` for the management list.
+ *
+ * `createdAt` has no counterpart on the `Product` entity — it's a DB-only column
+ * — so the catalog's own array order stands in for it: `PRODUCTS` is built once
+ * in insertion order, which is the order the rows would have been created in.
+ * Sorting a copy, since `PRODUCTS` is shared module state.
+ */
+function sortAdminProducts(products: Product[], page: PageRequest<AdminProductSort>): Product[] {
+  const direction = page.direction ?? DEFAULT_ADMIN_PRODUCT_DIRECTION;
+  const sign = direction === "asc" ? 1 : -1;
+  const positions = new Map(PRODUCTS.map((product, index) => [product.id, index]));
+
+  return [...products].sort((a, b) => {
+    switch (page.sort) {
+      case "name":
+        return sign * a.name.localeCompare(b.name);
+      case "price":
+        return sign * (a.price - b.price);
+      case "stock":
+        return sign * (a.stockQuantity - b.stockQuantity);
+      default:
+        return sign * ((positions.get(a.id) ?? 0) - (positions.get(b.id) ?? 0));
+    }
+  });
+}
+
 /** Mirror the Prisma repo's `orderByFor`: map a sort option to a comparator. */
 function comparatorFor(sort: ProductSort | undefined): (a: Product, b: Product) => number {
   switch (sort) {
@@ -255,6 +290,9 @@ function buildProduct(seed: ProductSeed, category: Category, index: number, seri
     imageUrl: category.iconUrl,
     categoryId: category.id,
     isFeatured: seed.featured ?? false,
+    // The mock catalog is a demo storefront: everything in it is on sale. Matches
+    // the column's `DEFAULT true` — unpublished is a state someone chooses.
+    isPublished: true,
     badge: seed.badge,
     unit: seed.unit,
     // Assigned from the same pool + rule the DB backfill uses: brand by per-category
@@ -269,6 +307,9 @@ function buildProduct(seed: ProductSeed, category: Category, index: number, seri
     description: seed.description,
     nutrition: seed.nutrition,
     origin: seed.origin,
+    // Matches the column's `DEFAULT true`: the demo catalog is unprocessed
+    // groceries, exempt by default like every new product.
+    taxExempt: true,
   };
 }
 
@@ -293,19 +334,28 @@ const PRODUCTS: Product[] = buildCatalog();
 
 export class MockProductRepository implements IProductRepository {
   async getAll(): Promise<Product[]> {
-    return PRODUCTS;
+    return PRODUCTS.filter((p) => p.isPublished);
   }
 
   async getById(id: string): Promise<Product | null> {
     return PRODUCTS.find((p) => p.id === id) ?? null;
   }
 
+  async getPublishedById(id: string): Promise<Product | null> {
+    return PRODUCTS.find((p) => p.id === id && p.isPublished) ?? null;
+  }
+
+  async getByIds(ids: readonly string[]): Promise<Product[]> {
+    const wanted = new Set(ids);
+    return PRODUCTS.filter((p) => wanted.has(p.id));
+  }
+
   async getFeatured(): Promise<Product[]> {
-    return PRODUCTS.filter((p) => p.isFeatured);
+    return PRODUCTS.filter((p) => p.isPublished && p.isFeatured);
   }
 
   async getSpecialOffers(): Promise<Product[]> {
-    return PRODUCTS.filter((p) => p.badge != null);
+    return PRODUCTS.filter((p) => p.isPublished && p.badge != null);
   }
 
   async search(filters: ProductFilters): Promise<Product[]> {
@@ -314,6 +364,9 @@ export class MockProductRepository implements IProductRepository {
     const needle = filters.query?.toLowerCase() ?? "";
 
     return PRODUCTS.filter((p) => {
+      // Published only, like the Prisma repo's `PUBLISHED` clause — no query
+      // reaches a withdrawn product.
+      if (!p.isPublished) return false;
       if (
         needle &&
         !p.name.toLowerCase().includes(needle) &&
@@ -334,14 +387,49 @@ export class MockProductRepository implements IProductRepository {
     }).sort(comparatorFor(filters.sort));
   }
 
+  async listPage(filters: AdminProductFilters, page: PageRequest<AdminProductSort>): Promise<Page<Product>> {
+    // Mirrors `adminWhere`/`adminOrderBy` in the Prisma repo: every supplied
+    // filter must match (AND), an empty filter matches the whole catalog.
+    const needle = filters.query?.toLowerCase() ?? "";
+
+    const matched = PRODUCTS.filter((p) => {
+      if (
+        needle &&
+        !p.name.toLowerCase().includes(needle) &&
+        !(p.description?.toLowerCase().includes(needle) ?? false)
+      ) {
+        return false;
+      }
+      if (filters.categoryId && p.categoryId !== filters.categoryId) return false;
+      // Classified through the domain helper rather than re-deriving the
+      // threshold, so this can't drift from the Prisma repo's bounds.
+      if (filters.stock) {
+        const level = getStockStatus(p.stockQuantity).level;
+        // `needsRestock` is the union of "low" and "out" — see AdminProductFilters.
+        const matches = filters.stock === "needsRestock" ? level !== "in" : level === filters.stock;
+        if (!matches) return false;
+      }
+      // Absent means both states — the management list shows withdrawn products
+      // alongside live ones (see `ADMIN_VISIBILITY_FILTERS`).
+      if (filters.visibility && p.isPublished !== (filters.visibility === "published")) return false;
+      return true;
+    });
+
+    return paginateArray(sortAdminProducts(matched, page), page);
+  }
+
   async getSimilar(productId: string): Promise<Product[]> {
     const product = PRODUCTS.find((p) => p.id === productId);
     if (!product) return [];
 
     // Same-category siblings first, then top up with other products so the rail
     // always has something to show in the mock dataset.
-    const sameCategory = PRODUCTS.filter((p) => p.id !== productId && p.categoryId === product.categoryId);
-    const others = PRODUCTS.filter((p) => p.id !== productId && p.categoryId !== product.categoryId);
+    const sameCategory = PRODUCTS.filter(
+      (p) => p.isPublished && p.id !== productId && p.categoryId === product.categoryId,
+    );
+    const others = PRODUCTS.filter(
+      (p) => p.isPublished && p.id !== productId && p.categoryId !== product.categoryId,
+    );
 
     return [...sameCategory, ...others].slice(0, SIMILAR_LIMIT);
   }
@@ -380,6 +468,53 @@ export class MockProductRepository implements IProductRepository {
   async delete(id: string): Promise<void> {
     const index = PRODUCTS.findIndex((p) => p.id === id);
     if (index !== -1) PRODUCTS.splice(index, 1);
+  }
+
+  /**
+   * Mirrors the Prisma repo's contract: ids that don't exist are skipped, products
+   * already holding the target value are left out of the result, and the returned
+   * pairs carry the "before". Records no audit entries, for the same reason
+   * `adjustStock` records no movements — the log is a table this mock doesn't have.
+   */
+  async applyBulkChange(ids: readonly string[], change: BulkProductChange): Promise<BulkProductUpdate[]> {
+    const wanted = new Set(ids);
+    const updates: BulkProductUpdate[] = [];
+
+    PRODUCTS.forEach((product, index) => {
+      if (!wanted.has(product.id) || product[change.field] === change.value) return;
+      const updated = { ...product, [change.field]: change.value };
+      PRODUCTS[index] = updated;
+      updates.push({ product: updated, previous: product });
+    });
+
+    return updates;
+  }
+
+  /**
+   * Applies the delta with the same non-negative guard the Prisma repo enforces,
+   * but records nothing: the ledger is a table, and this mock has only the
+   * in-memory catalog array. The write paths here are consistent about that —
+   * `create`/`update` ignore their `actor` for the same reason — so a caller that
+   * relies on movements being readable back is exercising the Prisma repository,
+   * which is what the container binds.
+   */
+  async adjustStock(productId: string, delta: number): Promise<Product> {
+    const product = PRODUCTS.find((p) => p.id === productId);
+    if (!product) throw new NotFoundError("product", productId);
+
+    if (delta < 0 && product.stockQuantity < -delta) {
+      throw new InsufficientStockError([
+        {
+          productId,
+          name: product.name,
+          available: product.stockQuantity,
+          requested: -delta,
+        },
+      ]);
+    }
+
+    product.stockQuantity += delta;
+    return product;
   }
 
   // The mock catalog is single-locale (English only); no stored translations.

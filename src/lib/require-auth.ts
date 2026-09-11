@@ -1,7 +1,9 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import type { Session } from "next-auth";
+
 import { auth } from "@/auth";
+
+import type { Session } from "next-auth";
 
 /**
  * Server-side guard for account routes. Returns the session when signed in;

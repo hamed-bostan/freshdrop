@@ -1,6 +1,7 @@
+import { hasProductSearchCriteria } from "../../entities/ProductFilters";
+
 import type { Product } from "../../entities/Product";
 import type { ProductFilters } from "../../entities/ProductFilters";
-import { hasProductSearchCriteria } from "../../entities/ProductFilters";
 import type { IProductRepository } from "../../repositories/IProductRepository";
 
 /**

@@ -1,8 +1,13 @@
 "use client";
 
-import * as React from "react";
 import { RadioGroup as RadioGroupPrimitive } from "radix-ui";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
+
+import { chipRadioStateStyles, chipShapeStyles } from "./chipStyles";
+
+import type { VariantProps } from "class-variance-authority";
 
 export type ChipGroupProps = React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>;
 
@@ -19,23 +24,19 @@ export const ChipGroup = React.forwardRef<HTMLDivElement, ChipGroupProps>(({ cla
 
 ChipGroup.displayName = "ChipGroup";
 
-export type ChipProps = React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>;
+export type ChipProps = React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item> &
+  VariantProps<typeof chipShapeStyles>;
 
 /**
- * A selectable chip; must live inside a <ChipGroup>. Filled (`primary`) when
+ * A single-select chip; must live inside a <ChipGroup>. Filled (`primary`) when
  * selected, outlined when not — driven by Radix's `data-state`, so there is no
- * controlled `selected` prop to keep in sync.
+ * controlled `selected` prop to keep in sync. For multi-select or clearable
+ * groups use <ToggleChip> instead; both share `chipShapeStyles`.
  */
-export const Chip = React.forwardRef<HTMLButtonElement, ChipProps>(({ className, ...props }, ref) => (
+export const Chip = React.forwardRef<HTMLButtonElement, ChipProps>(({ className, size, ...props }, ref) => (
   <RadioGroupPrimitive.Item
     ref={ref}
-    className={cn(
-      "flex h-10 cursor-pointer items-center justify-center rounded-full px-4 text-button-btn4 transition-colors",
-      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-      "data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
-      "data-[state=unchecked]:border data-[state=unchecked]:border-border data-[state=unchecked]:text-muted-foreground",
-      className,
-    )}
+    className={cn(chipShapeStyles({ size }), chipRadioStateStyles, className)}
     {...props}
   />
 ));

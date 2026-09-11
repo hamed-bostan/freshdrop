@@ -1,9 +1,12 @@
 import { getTranslations } from "next-intl/server";
+
 import type { Category } from "@/src/domain/entities/Category";
 import type { Product } from "@/src/domain/entities/Product";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { SearchBar } from "@/src/presentation/components/SearchBar";
 import { ProductGrid } from "@/src/presentation/product/components";
+
+import styles from "./category-detail.module.css";
 
 interface CategoryDetailScreenProps {
   category: Category;
@@ -14,17 +17,20 @@ export default async function CategoryDetailScreen({ category, products }: Categ
   const t = await getTranslations("search");
 
   return (
-    <div className="flex flex-col gap-6 px-6 pb-24">
+    <div className={styles.page}>
       {/* category.name is catalog content, localized per-locale by the repository. */}
-      <PageHeader title={category.name} />
+      <PageHeader title={category.name} backHref="/category" />
 
-      <SearchBar
-        placeholder={t.rich("brandHint", {
-          brand: (chunks) => <span className="text-body-b2 text-primary">{chunks}</span>,
-        })}
-      />
+      <div className={styles.content}>
+        <SearchBar
+          hideFilter
+          placeholder={t.rich("brandHint", {
+            brand: (chunks) => <span className="text-body-b2 text-primary">{chunks}</span>,
+          })}
+        />
 
-      <ProductGrid products={products} addOnly />
+        <ProductGrid products={products} addOnly />
+      </div>
     </div>
   );
 }

@@ -1,12 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import type { TeamMember } from "@/src/contracts/team-response-schema";
+import { grantAdminSchema } from "@/src/contracts/team-schema";
 import type { User } from "@/src/domain/entities/User";
 import { GrantAdmin } from "@/src/domain/use-cases/team/GrantAdmin";
 import { ListTeam } from "@/src/domain/use-cases/team/ListTeam";
 import { teamNotifier, userRepository } from "@/src/infrastructure/container";
-import { breakGlassAdminIds, getOwnerSession, isBreakGlassAdmin } from "@/src/lib/require-admin";
-import { getAppUrl } from "@/src/lib/appUrl";
-import { grantAdminSchema } from "@/src/presentation/dashboard/team/team-schema";
-import type { TeamMember } from "@/src/presentation/dashboard/team/team-response-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -14,6 +13,9 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getAppUrl } from "@/src/lib/appUrl";
+import { getOwnerSession } from "@/src/lib/require-admin";
+import { breakGlassAdminIds, isBreakGlassAdmin } from "@/src/lib/require-permission";
 
 // Who holds dashboard access is read per request — never statically cached.
 export const dynamic = "force-dynamic";

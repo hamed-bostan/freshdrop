@@ -1,5 +1,6 @@
-import type { Review } from "@/src/domain/entities/Review";
+import type { PublicReview } from "@/src/domain/entities/Review";
 import { serverApiGet } from "@/src/lib/api/server-client";
+
 import { reviewListResponseSchema } from "./review-response-schema";
 
 /**
@@ -7,7 +8,7 @@ import { reviewListResponseSchema } from "./review-response-schema";
  * the browser `reviewsApi` — same REST endpoint, fetched during server render.
  */
 export const reviewsServerApi = {
-  listByProduct(productId: string): Promise<Review[]> {
+  listByProduct(productId: string): Promise<PublicReview[]> {
     return serverApiGet("/reviews", reviewListResponseSchema, { params: { productId } });
   },
 };

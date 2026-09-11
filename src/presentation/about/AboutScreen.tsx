@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+
 import { PageHeader } from "@/src/presentation/components/PageHeader";
 import { aboutFreshDrop } from "@/src/shared/assets/images";
 

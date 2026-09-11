@@ -1,8 +1,10 @@
+import type { OrderReturnRequestInput } from "@/src/contracts/order-return-schema";
 import type { Order } from "@/src/domain/entities/Order";
 import type { OrderTracking } from "@/src/domain/entities/OrderTracking";
 import type { ReorderItemsResult } from "@/src/domain/use-cases/orders/ReorderItems";
-import { apiGet, apiPost } from "@/src/lib/api/client";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { apiGet, apiPost } from "@/src/lib/api/client";
+
 import { orderResponseSchema, reorderResultResponseSchema } from "./order-response-schema";
 import { orderTrackingResponseSchema } from "./order-tracking-response-schema";
 
@@ -40,7 +42,7 @@ export const ordersApi = {
   },
 
   /** Open a return request on a delivered order; resolves with the updated order. */
-  requestReturn(orderId: string): Promise<Order> {
-    return apiPost(`/orders/${orderId}/return`, undefined, orderResponseSchema);
+  requestReturn(orderId: string, values: OrderReturnRequestInput): Promise<Order> {
+    return apiPost(`/orders/${orderId}/return`, values, orderResponseSchema);
   },
 };

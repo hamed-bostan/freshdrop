@@ -1,6 +1,7 @@
+import type { SelectPaymentMethodInput } from "@/src/contracts/payment-method-schema";
 import { apiPut } from "@/src/lib/api/client";
+
 import { storedPaymentMethodResponseSchema } from "./payment-method-response-schema";
-import type { SelectPaymentMethodInput } from "./payment-method-schema";
 
 /**
  * Typed client for the payment-method REST *mutations*. UI components call these

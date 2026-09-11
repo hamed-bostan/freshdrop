@@ -1,9 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { profileUpdateSchema } from "@/src/contracts/profile-schema";
+import { DeleteAccount } from "@/src/domain/use-cases/profile/DeleteAccount";
 import { GetOrCreateUser } from "@/src/domain/use-cases/profile/GetOrCreateUser";
 import { UpdateProfile } from "@/src/domain/use-cases/profile/UpdateProfile";
 import { userRepository, imageStorageRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
-import { profileUpdateSchema } from "@/src/presentation/profile/profile-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -11,6 +12,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // Per-user data, read per request — never statically cached.
 export const dynamic = "force-dynamic";
@@ -67,5 +69,22 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(updated);
   } catch (error) {
     return errorResponseFromException(error, "PUT /api/profile failed");
+  }
+}
+
+/**
+ * DELETE /api/profile — permanently delete the signed-in user's own account.
+ * Auth required; always scoped to the caller's own id. 204 on success — the
+ * client signs the user out immediately after (their session is now dangling).
+ */
+export async function DELETE(): Promise<NextResponse> {
+  const session = await getUserSession();
+  if (!session?.user?.id) return unauthorizedResponse();
+
+  try {
+    await new DeleteAccount(userRepository).execute(session.user.id);
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    return errorResponseFromException(error, "DELETE /api/profile failed");
   }
 }

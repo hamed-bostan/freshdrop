@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+
 import { VerifyOtp } from "@/src/domain/use-cases/auth/VerifyOtp";
 import { GetOrCreateUser } from "@/src/domain/use-cases/profile/GetOrCreateUser";
 import { authRepository, userRepository } from "@/src/infrastructure/container";

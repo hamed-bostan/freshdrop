@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { SearchPlaces } from "@/src/domain/use-cases/geocoding/SearchPlaces";
-import { geocodingRepository } from "@/src/infrastructure/container";
 import { parseLocale } from "@/src/i18n/parseLocale";
+import { geocodingRepository } from "@/src/infrastructure/container";
 
 const MAX_LIMIT = 10;
 const DEFAULT_LIMIT = 5;

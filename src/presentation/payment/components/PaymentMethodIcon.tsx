@@ -1,7 +1,8 @@
-import Image, { type StaticImageData } from "next/image";
 import { Coins, Wallet, CreditCard, type LucideIcon } from "lucide-react";
-import { Icon } from "@/src/presentation/design-system";
+import Image, { type StaticImageData } from "next/image";
+
 import { cn } from "@/src/lib/utils";
+import { Icon } from "@/src/presentation/design-system";
 import { paypalIcon, applePayIcon, googlePayIcon } from "@/src/shared/assets/images";
 
 /**

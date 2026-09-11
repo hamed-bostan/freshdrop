@@ -1,10 +1,14 @@
 "use client";
 
-import * as React from "react";
-import { Accordion as AccordionPrimitive } from "radix-ui";
 import { ChevronDown } from "lucide-react";
-import { Icon } from "../Icon";
+import { Accordion as AccordionPrimitive } from "radix-ui";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
+
+import { Icon } from "../Icon";
+import { focusRing } from "../shared/focusRing";
+import { stillWhenReduced } from "../shared/motion";
 
 /**
  * Disclosure list built on Radix Accordion. Composable parts:
@@ -38,14 +42,19 @@ export const AccordionTrigger = React.forwardRef<
       ref={ref}
       className={cn(
         "flex h-12 w-full items-center justify-between px-4 text-body-b4 text-foreground",
-        "transition-colors focus-visible:outline-none focus-visible:ring focus-visible:ring-ring",
+        "transition-colors",
+        focusRing,
         "[&[data-state=open]>svg]:rotate-180",
         className,
       )}
       {...props}
     >
       {children}
-      <Icon icon={ChevronDown} size="sm" className="shrink-0 text-foreground transition-transform duration-200" />
+      <Icon
+        icon={ChevronDown}
+        size="sm"
+        className={cn("shrink-0 text-foreground transition-transform duration-200", stillWhenReduced)}
+      />
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));

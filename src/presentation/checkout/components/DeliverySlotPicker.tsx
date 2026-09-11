@@ -1,21 +1,15 @@
 "use client";
 
-import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { cn } from "@/src/lib/utils";
+import * as React from "react";
+
 import type { DeliverySlot, DeliverySlotDay } from "@/src/domain/entities/DeliverySlot";
-import { faJalaliDate, faWindowRange } from "@/src/lib/deliveryWindowFormat";
-import { Chip, ChipGroup } from "@/src/presentation/design-system";
+import { SelectableTile } from "@/src/presentation/design-system";
+
+import { slotDayLabel, slotName, slotTimeRange } from "../deliverySlotFormat";
 
 /** The shopper's chosen slot — a day plus a window within it. */
 export type SlotSelection = { date: string; windowId: string };
-
-/** Window ids with a localized name under `checkout.slots`; others fall back to the stored name. */
-const SLOT_NAME_KEYS = ["morning", "midday", "afternoon", "evening"] as const;
-type SlotNameKey = (typeof SLOT_NAME_KEYS)[number];
-
-const isSlotNameKey = (windowId: string): windowId is SlotNameKey =>
-  (SLOT_NAME_KEYS as readonly string[]).includes(windowId);
 
 interface DeliverySlotPickerProps {
   days: DeliverySlotDay[];
@@ -35,16 +29,6 @@ export function DeliverySlotPicker({ days, selected, onSelect }: DeliverySlotPic
   // Which day's windows are shown. Follows the selected slot's day, else the first.
   const [activeDate, setActiveDate] = React.useState(() => selected?.date ?? days[0]?.date ?? "");
 
-  // English shows the domain's snapshot as-is; `fa` localizes the relative label and
-  // re-derives dated days as a Jalali date (the today/tomorrow standing is decided
-  // server-side, so no store-relative date math runs on the client).
-  const dayLabel = (day: DeliverySlotDay): string => {
-    if (locale !== "fa") return day.label;
-    if (day.relativeDay === "today") return t("today");
-    if (day.relativeDay === "tomorrow") return t("tomorrow");
-    return faJalaliDate(day.date);
-  };
-
   // When the selection's day changes on its own — e.g. a slot restored from a
   // previous session lands on a different day than the default — bring that day's
   // tab into view so the restored window is visibly selected. During normal use the
@@ -62,20 +46,19 @@ export function DeliverySlotPicker({ days, selected, onSelect }: DeliverySlotPic
 
   return (
     <div className="flex flex-col gap-4">
-      <ChipGroup
-        aria-label={t("dayAria")}
-        value={activeDay.date}
-        onValueChange={setActiveDate}
-        className="flex-nowrap overflow-x-auto"
-      >
+      <div role="tablist" aria-label={t("dayAria")} className="scrollbar-hide -mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:grid sm:grid-cols-5 sm:gap-3 sm:overflow-visible sm:px-0">
         {days.map((day) => (
-          <Chip key={day.date} value={day.date} className="shrink-0">
-            {dayLabel(day)}
-          </Chip>
+          <button key={day.date} type="button" role="tab" aria-selected={day.date === activeDay.date}
+            onClick={() => setActiveDate(day.date)}
+            className={day.date === activeDay.date
+              ? "min-h-20 w-[92px] shrink-0 snap-start rounded-xl border border-primary bg-primary/5 px-2 py-3 text-center text-sm font-semibold text-primary sm:min-h-24 sm:w-auto sm:rounded-2xl sm:px-3 sm:py-4 sm:text-base"
+              : "min-h-20 w-[92px] shrink-0 snap-start rounded-xl border border-border bg-background px-2 py-3 text-center text-sm font-medium text-foreground sm:min-h-24 sm:w-auto sm:rounded-2xl sm:px-3 sm:py-4 sm:text-base"}>
+            {slotDayLabel(day, locale, t)}
+          </button>
         ))}
-      </ChipGroup>
+      </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         {activeDay.slots.map((slot) => (
           <SlotOption
             key={slot.windowId}
@@ -98,12 +81,11 @@ interface SlotOptionProps {
 }
 
 /**
- * One bookable window, modelled as a native radio (the day's windows form one
- * keyboard-navigable group). Mirrors the payment-method option: the radio is
- * hidden, selection shown by the highlighted border, focus by the ring. A full
- * window is disabled and dimmed. Availability is only surfaced when it matters —
- * "Full" when booked out, an "Only N left" nudge when low (same scarcity cue as
- * the product cards), nothing when there's plenty.
+ * One bookable window, rendered as a design-system radio tile (the day's windows
+ * form one keyboard-navigable group). A full window is disabled and dimmed.
+ * Availability is only surfaced when it matters — "Full" when booked out, an
+ * "Only N left" nudge when low (the same scarcity cue as the product cards),
+ * nothing when there's plenty.
  */
 function SlotOption({ slot, selected, onSelect, disabled }: SlotOptionProps) {
   const t = useTranslations("checkout");
@@ -113,33 +95,23 @@ function SlotOption({ slot, selected, onSelect, disabled }: SlotOptionProps) {
 
   // Window name from the localized catalog (keyed by the stable window id, like the
   // payment-method labels); an unknown id falls back to the stored English name.
-  const name = isSlotNameKey(slot.windowId) ? tSlots(slot.windowId) : slot.label;
-  // English keeps the domain's range snapshot; `fa` re-derives a Persian-numeral 24h range.
-  const timeRange = locale === "fa" ? (faWindowRange(slot.windowId) ?? slot.timeRange) : slot.timeRange;
+  const name = slotName(slot.windowId, slot.label, tSlots);
+  const timeRange = slotTimeRange(slot.windowId, slot.timeRange, locale);
 
   return (
-    <label
-      className={cn(
-        "flex cursor-pointer items-center justify-between gap-3 rounded-card-xl border bg-surface px-4 py-3 transition-colors",
-        "has-focus-visible:ring-2 has-focus-visible:ring-ring",
-        selected ? "border-foreground" : "border-transparent",
-        disabled && "cursor-not-allowed opacity-50",
-      )}
+    <SelectableTile
+      name="delivery-slot"
+      value={slot.windowId}
+      selected={selected}
+      onSelect={onSelect}
+      disabled={disabled}
+      align="between"
+      className={selected ? "min-h-24 border-primary bg-primary/5 px-4 text-center sm:min-h-28 sm:px-6" : "min-h-24 border-border bg-background px-4 text-center sm:min-h-28 sm:px-6"}
     >
-      <span className="flex flex-col gap-1">
-        <span className="text-body-b6 text-foreground">{name}</span>
-        <span className="text-body-b10 text-muted-foreground">{timeRange}</span>
+      <span className="flex w-full flex-col gap-2">
+        <span className={selected ? "text-lg font-semibold text-primary" : "text-lg font-semibold text-foreground"}>{name}</span>
+        <span className="text-base text-muted-foreground">{timeRange}</span>
       </span>
-
-      <input
-        type="radio"
-        name="delivery-slot"
-        value={slot.windowId}
-        checked={selected}
-        disabled={disabled}
-        onChange={onSelect}
-        className="sr-only"
-      />
 
       {availability.level === "full" ? (
         <span className="shrink-0 text-body-b10 text-destructive">{t("full")}</span>
@@ -148,6 +120,6 @@ function SlotOption({ slot, selected, onSelect, disabled }: SlotOptionProps) {
           {t("slotOnlyLeft", { count: availability.remaining })}
         </span>
       ) : null}
-    </label>
+    </SelectableTile>
   );
 }

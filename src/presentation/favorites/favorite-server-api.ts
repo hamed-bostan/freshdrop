@@ -2,6 +2,7 @@ import type { Product } from "@/src/domain/entities/Product";
 import { ApiError } from "@/src/lib/api/ApiError";
 import { serverApiGet } from "@/src/lib/api/server-client";
 import { productListResponseSchema } from "@/src/presentation/product/product-response-schema";
+
 import { favoriteStatusResponseSchema } from "./favorite-response-schema";
 
 /**

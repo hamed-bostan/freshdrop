@@ -1,6 +1,7 @@
 import { MapPin } from "lucide-react";
-import { Icon } from "@/src/presentation/design-system";
+
 import type { Place } from "@/src/domain/entities/Place";
+import { Icon } from "@/src/presentation/design-system";
 
 interface PlaceSearchResultsProps {
   results: Place[];

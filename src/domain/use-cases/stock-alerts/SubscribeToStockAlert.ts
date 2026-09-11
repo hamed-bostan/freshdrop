@@ -1,6 +1,7 @@
-import type { IStockAlertRepository } from "../../repositories/IStockAlertRepository";
-import type { IProductRepository } from "../../repositories/IProductRepository";
 import { NotFoundError } from "../../errors/NotFoundError";
+
+import type { IProductRepository } from "../../repositories/IProductRepository";
+import type { IStockAlertRepository } from "../../repositories/IStockAlertRepository";
 
 /**
  * Register the user to be notified when a product is back in stock. The product
@@ -15,7 +16,7 @@ export class SubscribeToStockAlert {
   ) {}
 
   async execute(userId: string, productId: string): Promise<void> {
-    const product = await this.productRepo.getById(productId);
+    const product = await this.productRepo.getPublishedById(productId);
     if (!product) throw new NotFoundError("product", productId);
 
     await this.stockAlerts.subscribe(userId, productId);

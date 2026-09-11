@@ -1,8 +1,8 @@
+import type { Place } from "@/src/domain/entities/Place";
 import { ReverseGeocode } from "@/src/domain/use-cases/geocoding/ReverseGeocode";
 import { geocodingRepository } from "@/src/infrastructure/container";
-import LocationPickerScreen from "@/src/presentation/map/LocationPickerScreen";
 import { DEFAULT_CENTER } from "@/src/presentation/map/constants";
-import type { Place } from "@/src/domain/entities/Place";
+import LocationPickerScreen from "@/src/presentation/map/LocationPickerScreen";
 
 export default async function NewAddressPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

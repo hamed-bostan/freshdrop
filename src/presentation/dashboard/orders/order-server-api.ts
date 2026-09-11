@@ -1,7 +1,18 @@
 import type { Order } from "@/src/domain/entities/Order";
+import type { Page } from "@/src/domain/entities/Pagination";
+import type { ReturnRequest } from "@/src/domain/entities/Return";
+import type { OrderPipelineCounts } from "@/src/domain/use-cases/orders/GetOrderPipelineCounts";
 import { ApiError } from "@/src/lib/api/ApiError";
+import { pageResponseSchema } from "@/src/lib/api/page-response-schema";
 import { serverApiGet } from "@/src/lib/api/server-client";
-import { orderListResponseSchema, orderResponseSchema } from "@/src/presentation/orders/order-response-schema";
+import { orderResponseSchema } from "@/src/presentation/orders/order-response-schema";
+
+import { orderCountsResponseSchema } from "./order-counts-response-schema";
+import { orderMessageDefaultResponseSchema, type OrderMessageDefaultWire } from "./order-message-default-response-schema";
+import { returnRequestOrNullResponseSchema } from "./order-return-response-schema";
+
+/** What `GET /api/admin/orders` promises: a page of orders plus the total behind it. */
+const orderPageResponseSchema = pageResponseSchema(orderResponseSchema);
 
 /**
  * Server-side order reads for the admin dashboard (BFF). Unlike the storefront's
@@ -9,8 +20,26 @@ import { orderListResponseSchema, orderResponseSchema } from "@/src/presentation
  * the cross-user view. `serverApiGet` forwards the admin's session cookie.
  */
 export const ordersServerApi = {
-  listAll(): Promise<Order[]> {
-    return serverApiGet("/admin/orders", orderListResponseSchema);
+  // There is no `listAll`. The overview's KPIs were the only thing that ever needed
+  // every order, and they now come from `GET /api/admin/analytics` as aggregates
+  // computed in the database — so `/admin/orders/all` was deleted along with the
+  // use-case behind it rather than left as a whole-table read anyone could reach for.
+
+  /** One page of the order list, with the filters and ordering the caller's query string carries. */
+  listPage(params: URLSearchParams): Promise<Page<Order>> {
+    return serverApiGet("/admin/orders", orderPageResponseSchema, {
+      params: Object.fromEntries(params),
+    });
+  },
+
+  /**
+   * How many orders sit at each pipeline stage, and how many there are overall —
+   * the list's summary cards and its status-filter counts.
+   *
+   * Takes no params: these are unfiltered counts by design (see the route).
+   */
+  counts(): Promise<OrderPipelineCounts> {
+    return serverApiGet("/admin/orders/counts", orderCountsResponseSchema);
   },
 
   /** A single order by id; returns `null` for a missing order (404) so callers can `notFound()`. */
@@ -21,5 +50,15 @@ export const ordersServerApi = {
       if (error instanceof ApiError && error.status === 404) return null;
       throw error;
     }
+  },
+
+  /** The ad hoc customer-message form's starting subject/body for this order (phase 4). */
+  messageDefault(id: string): Promise<OrderMessageDefaultWire> {
+    return serverApiGet(`/admin/orders/${id}/message-default`, orderMessageDefaultResponseSchema);
+  },
+
+  /** The order's most recent return request, or `null` if it has never had one. */
+  getReturnRequest(id: string): Promise<ReturnRequest | null> {
+    return serverApiGet(`/orders/${id}/return`, returnRequestOrNullResponseSchema);
   },
 };

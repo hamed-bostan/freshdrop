@@ -1,63 +1,31 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
+import { ChevronDown, ShoppingBasket } from "lucide-react";
 import { useTranslations } from "next-intl";
+
 import type { CartItem } from "@/src/domain/entities/Cart";
 import type { SubstitutionPreference } from "@/src/domain/entities/Order";
-import { Switch } from "@/src/presentation/design-system";
+import { Link } from "@/src/i18n/navigation";
+import { Icon } from "@/src/presentation/design-system";
 
-type SubstitutionPreferenceListProps = {
-  items: CartItem[];
-  /** Per-product preference; a product absent from the map defaults to `substitute`. */
-  value: Record<string, SubstitutionPreference>;
-  onChange: (productId: string, preference: SubstitutionPreference) => void;
-};
+import { checkoutItemsHref } from "../checkoutSession";
 
-/**
- * Per-line out-of-stock pre-approval for checkout — the grocery "substitutions"
- * choice. Each item defaults to allowing a comparable replacement (the grocery
- * norm); toggling off asks for a refund instead if the picker can't find it. The
- * choices are lifted to the checkout screen and sent with the order.
- */
-export function SubstitutionPreferenceList({ items, value, onChange }: SubstitutionPreferenceListProps) {
+import { CheckoutItemRow } from "./CheckoutItemRow";
+
+type Props = { items: CartItem[]; value: Record<string, SubstitutionPreference>; promoCode?: string; };
+
+export function SubstitutionPreferenceList({ items, value, promoCode }: Props) {
   const t = useTranslations("checkout");
+  const count = items.reduce((sum, item) => sum + item.quantity, 0);
+  const itemsHref = checkoutItemsHref(promoCode);
 
-  return (
-    <ul className="flex w-full flex-col gap-3 rounded-card-xl bg-surface px-4 py-3">
-      {items.map((item) => {
-        const preference = value[item.product.id] ?? "substitute";
-        const allowSubstitute = preference === "substitute";
-        const switchId = `substitution-${item.product.id}`;
-
-        return (
-          <li key={item.product.id} className="flex items-center gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken">
-              <Image
-                src={item.product.imageUrl}
-                alt=""
-                width={40}
-                height={40}
-                className="size-full object-contain"
-              />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-body-b6 text-foreground">{item.product.name}</p>
-              <label htmlFor={switchId} className="text-body-b8 text-muted-foreground">
-                {allowSubstitute ? t("replaceWith") : t("refundIf")}
-              </label>
-            </div>
-            <Switch
-              id={switchId}
-              checked={allowSubstitute}
-              onCheckedChange={(checked) =>
-                onChange(item.product.id, checked ? "substitute" : "refund")
-              }
-              aria-label={t("subAria", { name: item.product.name })}
-            />
-          </li>
-        );
-      })}
-    </ul>
-  );
+  return <section className="rounded-[18px] border border-border p-4 sm:rounded-[22px] sm:p-5">
+    <div className="flex items-start gap-3">
+      <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:size-16"><Icon icon={ShoppingBasket} size="md" /></span>
+      <h2 className="min-w-0 flex-1 text-lg font-semibold">{t("itemsHeading", { count })}</h2>
+      <Link href={itemsHref} className="font-medium text-primary">{t("edit")}</Link>
+    </div>
+    <ul className="mt-2 sm:ms-[76px]">{items.slice(0, 3).map((item) => <CheckoutItemRow key={item.product.id} item={item} preference={value[item.product.id] ?? "substitute"} mode="preview" />)}</ul>
+    <Link href={itemsHref} className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-primary/50 font-medium text-primary">{t("viewAllItems", { count })}<Icon icon={ChevronDown} size="sm" /></Link>
+  </section>;
 }

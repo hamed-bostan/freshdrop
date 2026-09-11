@@ -1,15 +1,17 @@
+import { ArrowLeftRight, RotateCcw } from "lucide-react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { ArrowLeftRight, RotateCcw } from "lucide-react";
+
 import type { Order, OrderItem } from "@/src/domain/entities/Order";
-import { Icon } from "@/src/presentation/design-system";
-import { formatMoney } from "@/src/lib/formatMoney";
-import { formatOrderDate, formatOrderTime } from "@/src/lib/formatOrderDate";
 import { formatDeliveryWindow } from "@/src/lib/formatDeliveryWindow";
-import { OrderStatusBadge } from "./OrderStatusBadge";
-import { OrderCardActions } from "./OrderCardActions";
+import { formatMoney } from "@/src/lib/formatMoney";
+import { formatOrderDateShort, formatOrderTime } from "@/src/lib/formatOrderDate";
+import { Icon, Thumbnail } from "@/src/presentation/design-system";
+
 import { OrderAdjustments } from "./OrderAdjustments";
+import { OrderCardActions } from "./OrderCardActions";
 import { OrderLocationRow } from "./OrderLocationRow";
+import { OrderStatusBadge } from "./OrderStatusBadge";
 
 /** Thumbnails shown before collapsing the rest into a "+N" count. */
 const MAX_VISIBLE_THUMBNAILS = 4;
@@ -74,29 +76,31 @@ export function OrderCard({ order }: OrderCardProps) {
 
       <dl className="flex flex-col gap-2">
         <OrderInfoRow label={t("timeLabel")} value={formatOrderTime(order.placedAt, locale)} />
-        <OrderInfoRow label={t("dateLabel")} value={formatOrderDate(order.placedAt, locale)} />
-        {deliveryWindow && <OrderInfoRow label={t("deliveryLabel")} value={deliveryWindow} />}
+        <OrderInfoRow label={t("dateLabel")} value={formatOrderDateShort(order.placedAt, locale)} />
+        {deliveryWindow && <div data-order-delivery><OrderInfoRow label={t("deliveryLabel")} value={deliveryWindow} /></div>}
         <OrderLocationRow location={order.location} label={order.locationLabel} />
       </dl>
 
       <div className="flex items-center justify-between gap-2">
         <ul className="flex items-center gap-1">
           {visibleItems.map((item) => (
-            <li
-              key={item.productId}
-              className="flex size-13 shrink-0 items-center justify-center overflow-hidden rounded-card-md bg-surface-sunken"
-            >
+            <Thumbnail as="li" key={item.productId} className="size-13">
               <Image src={item.imageUrl} alt={item.name} width={40} height={40} className="object-contain" />
-            </li>
+            </Thumbnail>
           ))}
           {extraCount > 0 && (
             <li className="text-label-l1 text-foreground">+{extraCount}</li>
           )}
         </ul>
 
-        <p className="shrink-0 text-body-b9 text-foreground">
-          {formatMoney(order.total, locale)}
-        </p>
+        <div className="shrink-0 text-end">
+          <p className="text-body-b9 text-foreground">{formatMoney(order.total, locale)}</p>
+          {order.taxAmount != null && (
+            <p className="text-body-b9 text-muted-foreground">
+              {t("includesVat", { amount: formatMoney(order.taxAmount, locale) })}
+            </p>
+          )}
+        </div>
       </div>
 
       {substituted.length > 0 && (

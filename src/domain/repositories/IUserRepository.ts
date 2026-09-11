@@ -1,5 +1,6 @@
+import type { NewActivityEntry } from "../entities/ActivityEntry";
+import type { AdminNotificationAction } from "../entities/AdminNotification";
 import type { User, UserRole } from "../entities/User";
-import type { NewRoleChange } from "./IRoleChangeLog";
 
 /** One user's new access level, as part of a {@link RoleChangeBatch}. */
 export type RoleAssignment = {
@@ -23,10 +24,15 @@ export type RoleAssignment = {
  * applied separately, a failure between them leaves two. The audit entries ride
  * along for the same reason: a record that can be lost independently of the
  * change it describes isn't a record.
+ *
+ * The entries are ordinary `activity_log` rows (`user.roleChanged`), the same log
+ * every other admin change lands in — role changes just keep a stronger guarantee
+ * than the rest, because here the log and the change share a transaction. See
+ * `IActivityLog` for why the others can't.
  */
 export type RoleChangeBatch = {
   assignments: RoleAssignment[];
-  entries: NewRoleChange[];
+  entries: NewActivityEntry[];
 };
 
 /** A user about to be created — the id is the caller's stable identifier (phone digits). */
@@ -53,6 +59,19 @@ export type IUserRepository = {
   /** Every user holding one of `roles`, oldest first — the team is small enough to read whole. */
   listByRoles(roles: readonly UserRole[]): Promise<User[]>;
   /**
+   * Ids of users whose name or phone contains `term`, at most `limit` of them.
+   *
+   * Exists so a list keyed by `userId` can be searched by *who* rather than by id
+   * — the orders list, which references a user with no DB foreign key and so
+   * can't join its way to a name.
+   *
+   * Returns ids rather than users because the caller only ever feeds them back
+   * into another query, and `limit` is required rather than optional so that the
+   * caller has to have thought about what happens when a term matches half the
+   * store. See `resolveOrderSearch` for what that decision looks like.
+   */
+  findIdsMatching(term: string, limit: number): Promise<string[]>;
+  /**
    * Apply a batch of role changes and their audit entries atomically — all of it
    * commits or none of it does.
    *
@@ -67,4 +86,16 @@ export type IUserRepository = {
   getSelectedPaymentMethodId(userId: string): Promise<string | null>;
   /** Persist the user's selected checkout payment method (a catalog option or saved card id). */
   setSelectedPaymentMethodId(userId: string, methodId: string): Promise<void>;
+  /** When this user last opened the notification bell, or `null` if they never have. */
+  getLastSeenNotificationsAt(userId: string): Promise<Date | null>;
+  /** Record that the user has seen every notification up to `at`. */
+  setLastSeenNotificationsAt(userId: string, at: Date): Promise<void>;
+  /** Replace which stored-notification categories this admin also wants emailed (see `User.notifiedCategories`). */
+  setNotifiedCategories(userId: string, categories: readonly AdminNotificationAction[]): Promise<void>;
+  /**
+   * Permanently remove a user's account and their personal data (addresses, cart,
+   * stock alerts, wallet). Order and review history is kept — those are the
+   * store's transactional/audit records, not the user's own data to delete.
+   */
+  deleteAccount(userId: string): Promise<void>;
 }

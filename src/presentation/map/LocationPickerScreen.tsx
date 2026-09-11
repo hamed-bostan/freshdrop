@@ -1,13 +1,15 @@
 "use client";
 
-import * as React from "react";
 import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
-import { Button } from "@/src/presentation/design-system";
+import * as React from "react";
+
 import type { GeoPoint, Place } from "@/src/domain/entities/Place";
 import { useRouter } from "@/src/i18n/navigation";
-import { DEFAULT_ZOOM, FOCUS_ZOOM, type MapViewCommand } from "./constants";
+import { Button, Skeleton } from "@/src/presentation/design-system";
+
 import { LocationSearchBar, PlaceSearchResults, CenterPin, LocateButton } from "./components";
+import { DEFAULT_ZOOM, FOCUS_ZOOM, type MapViewCommand } from "./constants";
 import { usePlaceSearch } from "./hooks/use-place-search";
 import { useReverseGeocodedPlace } from "./hooks/use-reverse-geocode";
 import { reverseGeocode } from "./lib/geocoding-client";
@@ -16,7 +18,7 @@ import { reverseGeocode } from "./lib/geocoding-client";
 // this import here (not in the barrel) keeps Leaflet out of the SSR bundle.
 const LocationMap = dynamic(() => import("./components/LocationMap").then((mod) => mod.LocationMap), {
   ssr: false,
-  loading: () => <div className="h-full w-full animate-pulse bg-muted-strong" />,
+  loading: () => <Skeleton className="h-full w-full" />,
 });
 
 interface LocationPickerScreenProps {

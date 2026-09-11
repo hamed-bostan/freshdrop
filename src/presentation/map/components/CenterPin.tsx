@@ -5,7 +5,7 @@
  */
 export function CenterPin() {
   return (
-    <div className="pointer-events-none absolute left-1/2 top-1/2 z-[500] -translate-x-1/2 -translate-y-full">
+    <div className="pointer-events-none absolute start-1/2 top-1/2 z-[500] -translate-x-1/2 -translate-y-full">
       <svg width="40" height="40" viewBox="0 0 24 24" className="drop-shadow-md" aria-hidden>
         <path
           className="fill-primary"

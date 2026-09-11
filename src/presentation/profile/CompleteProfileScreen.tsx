@@ -1,15 +1,19 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import { UserPen, Phone, MessageSquareText, type LucideIcon } from "lucide-react";
-import type { UserProfile } from "./profile-response-schema";
-import { Button, Icon, TextField } from "@/src/presentation/design-system";
-import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
+
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { Button, FormMessage, Icon, TextField } from "@/src/presentation/design-system";
+
 import { ProfileAvatarUploader } from "./components/ProfileAvatarUploader";
 import { profilesApi } from "./profile-api";
+
+import type { UserProfile } from "./profile-response-schema";
 
 const ICON = "text-icon-muted";
 
@@ -114,7 +118,7 @@ export default function CompleteProfileScreen({ user }: CompleteProfileScreenPro
         })}
       </div>
 
-      {error ? <p className="text-body-b8 text-destructive">{error}</p> : null}
+      {error ? <FormMessage size="md">{error}</FormMessage> : null}
 
       <Button type="submit" size="lg" disabled={saving} className="mt-auto w-full rounded-button-lg">
         {saving ? t("saving") : t("saveContinue")}

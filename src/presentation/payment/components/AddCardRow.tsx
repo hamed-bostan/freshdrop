@@ -1,6 +1,15 @@
+import { ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
+
 import { Link } from "@/src/i18n/navigation";
+import { cn } from "@/src/lib/utils";
+import { focusRing , Icon } from "@/src/presentation/design-system";
+
+import styles from "../PaymentMethodScreen.module.css";
+
 import { PaymentMethodIcon } from "./PaymentMethodIcon";
+
+
 
 /**
  * The "Add Card" entry under the Credit Card section. Unlike the other rows it
@@ -13,12 +22,15 @@ export function AddCardRow() {
   return (
     <Link
       href="/profile/payment-methods/add-card"
-      className={
-        "flex items-center gap-2 rounded-card-xl border border-transparent bg-muted px-4 py-2 text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      }
+      className={cn(styles.addCard,
+        "flex min-h-[82px] items-center gap-4 rounded-2xl border border-border bg-background px-4 text-foreground transition-colors hover:border-primary sm:min-h-[102px] sm:px-6",
+        focusRing,
+      )}
     >
-      <PaymentMethodIcon methodId="add-card" />
-      <span className="text-body-b6 text-foreground">{t("addCard")}</span>
+      <span aria-hidden className="size-7 shrink-0 rounded-full border-2 border-muted-strong" />
+      <PaymentMethodIcon methodId="add-card" className="size-9 text-muted-foreground" />
+      <span className="flex min-w-0 flex-1 flex-col text-base font-medium text-foreground sm:text-lg">{t("addCard")}<span className="truncate text-sm font-normal text-muted-foreground sm:text-base">{t("cardBrandsHint")}</span></span>
+      <Icon icon={ChevronRight} size="sm" className="text-muted-foreground rtl:-scale-x-100" />
     </Link>
   );
 }

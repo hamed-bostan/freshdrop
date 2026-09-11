@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { CategoryTranslationInput } from "@/src/domain/repositories/ICategoryRepository";
 
 /**

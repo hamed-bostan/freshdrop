@@ -1,9 +1,9 @@
 import type { DeliveryLocation, DeliveryLocationKind } from "@/src/domain/entities/DeliveryLocation";
+import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import type {
   IDeliveryLocationRepository,
   NewDeliveryLocation,
 } from "@/src/domain/repositories/IDeliveryLocationRepository";
-import { NotFoundError } from "@/src/domain/errors/NotFoundError";
 import { prisma } from "@/src/infrastructure/prisma/client";
 
 /**

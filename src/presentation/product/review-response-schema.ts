@@ -1,5 +1,6 @@
 import { z } from "zod";
-import type { Review } from "@/src/domain/entities/Review";
+
+import type { PublicReview } from "@/src/domain/entities/Review";
 
 /**
  * The shape a review endpoint promises to return, validated at the typed-service
@@ -10,6 +11,9 @@ import type { Review } from "@/src/domain/entities/Review";
  * Distinct from the review *input* schemas (`components/review-schema.ts`,
  * `dashboard/reviews/review-moderation-schema.ts`): those describe what a customer
  * or admin may submit; this describes what the API sends back.
+ *
+ * A {@link PublicReview}, not a `Review`: the author's id never leaves the server
+ * (it's their phone digits), so no endpoint sends it and nothing here parses it.
  */
 export const reviewResponseSchema = z.object({
   id: z.string(),
@@ -22,6 +26,6 @@ export const reviewResponseSchema = z.object({
   createdAt: z.string(),
   comment: z.string(),
   status: z.enum(["pending", "approved", "rejected"]),
-}) satisfies z.ZodType<Review>;
+}) satisfies z.ZodType<PublicReview>;
 
 export const reviewListResponseSchema = z.array(reviewResponseSchema);

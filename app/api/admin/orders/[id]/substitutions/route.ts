@@ -1,13 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { orderSubstitutionSchema } from "@/src/contracts/order-substitution-schema";
 import { ResolveItemSubstitution } from "@/src/domain/use-cases/orders/ResolveItemSubstitution";
 import {
   orderRepository,
   productRepository,
-  walletRepository,
+  unitOfWork,
   orderNotifier,
 } from "@/src/infrastructure/container";
-import { getAdminSession } from "@/src/lib/require-admin";
-import { orderSubstitutionSchema } from "@/src/presentation/dashboard/orders/order-substitution-schema";
 import {
   errorResponse,
   errorResponseFromException,
@@ -15,6 +15,7 @@ import {
   parseJsonBody,
   unauthorizedResponse,
 } from "@/src/lib/api/responses";
+import { getSessionWith } from "@/src/lib/require-permission";
 
 // Mutates order/stock/wallet state — never statically cached.
 export const dynamic = "force-dynamic";
@@ -30,7 +31,8 @@ type RouteContext = { params: Promise<{ id: string }> };
  * substitution to 400, and a replacement that's also out of stock to 409.
  */
 export async function POST(request: NextRequest, { params }: RouteContext): Promise<NextResponse> {
-  if (!(await getAdminSession())) return unauthorizedResponse();
+  const session = await getSessionWith("orders.fulfill");
+  if (!session) return unauthorizedResponse();
 
   const { id } = await params;
   const body = await parseJsonBody(request);
@@ -54,9 +56,15 @@ export async function POST(request: NextRequest, { params }: RouteContext): Prom
     const order = await new ResolveItemSubstitution(
       orderRepository,
       productRepository,
-      walletRepository,
+      unitOfWork,
       orderNotifier,
-    ).execute({ orderId: id, productId: parsed.data.productId, resolution });
+    ).execute({
+      orderId: id,
+      productId: parsed.data.productId,
+      resolution,
+      // The picker comes from the session, never from the body.
+      actor: { id: session.user.id, name: session.user.name ?? session.user.id },
+    });
     return NextResponse.json(order);
   } catch (error) {
     return errorResponseFromException(error, `POST /api/admin/orders/${id}/substitutions failed`);

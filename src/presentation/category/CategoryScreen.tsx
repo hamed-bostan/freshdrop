@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+
 import type { Category } from "@/src/domain/entities/Category";
 import { CategoryGrid } from "@/src/presentation/category/components";
 import { PageHeader } from "@/src/presentation/components/PageHeader";

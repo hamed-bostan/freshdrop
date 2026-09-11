@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { isValidGeoPoint } from "@/src/domain/entities/Place";
 import { ReverseGeocode } from "@/src/domain/use-cases/geocoding/ReverseGeocode";
-import { geocodingRepository } from "@/src/infrastructure/container";
 import { parseLocale } from "@/src/i18n/parseLocale";
+import { geocodingRepository } from "@/src/infrastructure/container";
 
 /**
  * Reverse geocoding endpoint: `GET /api/geocoding/reverse?lat=...&lon=...`.

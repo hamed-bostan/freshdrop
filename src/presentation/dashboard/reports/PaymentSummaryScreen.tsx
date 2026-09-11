@@ -1,0 +1,74 @@
+import { AlertTriangle, ArrowDown, ArrowUp, CalendarDays, CheckCircle2, CircleDollarSign, CreditCard, ExternalLink, Landmark, Percent } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+
+import { ANALYTICS_RANGE_PRESETS, percentChange } from "@/src/domain/entities/Analytics";
+import type { CustomerOrderSummary } from "@/src/domain/entities/CustomerOrderSummary";
+import { Link } from "@/src/i18n/navigation";
+import type { Locale } from "@/src/i18n/routing";
+import { type ComparisonMode, wireRangeToParams } from "@/src/lib/api/analytics-params";
+import { formatMediumDate } from "@/src/lib/formatAnalyticsDate";
+import { formatMoney } from "@/src/lib/formatMoney";
+import { formatNumber, formatPercent } from "@/src/lib/formatNumber";
+import { Button, Icon } from "@/src/presentation/design-system";
+
+import { AnalyticsComparePicker } from "../analytics/AnalyticsComparePicker";
+import { AnalyticsExportMenu } from "../analytics/AnalyticsExportMenu";
+import { AnalyticsRangePicker, CUSTOM_RANGE_VALUE } from "../analytics/AnalyticsRangePicker";
+import { resolveComparePreviews } from "../analytics/compare-preview";
+import { StatCardCarousel } from "../StatCardCarousel";
+import { StatSparkline } from "../StatSparkline";
+
+import { PaymentIssuesTable } from "./PaymentIssuesTable";
+import { PaymentTrendChart } from "./PaymentTrendChart";
+
+import type { PaymentReportWire } from "./payment-report-response-schema";
+
+type Props = { report: PaymentReportWire; customers: CustomerOrderSummary[]; from: string; to: string; isCustomRange: boolean; compareMode: ComparisonMode };
+
+export async function PaymentSummaryScreen({ report, customers, from, to, isCustomRange, compareMode }: Props) {
+  const t = await getTranslations("dashPaymentReport");
+  const ta = await getTranslations("dashAnalytics");
+  const locale = (await getLocale());
+  const { from: activeFrom, to: activeTo } = wireRangeToParams(report.previousRange);
+  const previews = resolveComparePreviews(from, to, locale);
+  const compareOptions = [
+    { value: "none" as const, label: ta("compareNone"), subtitle: ta("compareNoneBody") },
+    { value: "previous" as const, label: ta("comparePrevious"), subtitle: ta("rangeCaption", { from: previews.previous.formattedFrom, to: previews.previous.formattedTo }) },
+    { value: "previousYear" as const, label: ta("comparePreviousYear"), subtitle: ta("rangeCaption", { from: previews.previousYear.formattedFrom, to: previews.previousYear.formattedTo }) },
+    { value: "custom" as const, label: ta("compareCustom"), subtitle: ta("compareCustomBody") },
+  ];
+  const compareTriggerLabel = compareMode === "none" ? ta("compareNone") : ta("comparisonPeriod", { from: formatMediumDate(activeFrom, locale), to: formatMediumDate(activeTo, locale) });
+  const customerById = new Map(customers.map((customer) => [customer.userId, customer]));
+  const issuesWithCustomerName = report.issues.map((issue) => ({ ...issue, customerName: customerById.get(issue.userId)?.name ?? issue.userId }));
+  const gross = report.totals.walletAmount + report.totals.externalAmount;
+  const previousGross = report.previousTotals.walletAmount + report.previousTotals.externalAmount;
+  const attempts = report.totals.successfulPayments + report.totals.failedPayments;
+  const previousAttempts = report.previousTotals.successfulPayments + report.previousTotals.failedPayments;
+  const successRate = attempts ? report.totals.successfulPayments / attempts : 0;
+  const previousSuccessRate = previousAttempts ? report.previousTotals.successfulPayments / previousAttempts : 0;
+  const sources = [{ label: t("cardPayments"), amount: report.totals.externalAmount, color: "var(--color-primary)" }, { label: t("wallet"), amount: report.totals.walletAmount, color: "var(--color-chart-2)" }];
+  const metrics = [
+    { key: "volume", label: t("grossPaymentVolume"), value: formatMoney(gross, locale), icon: CircleDollarSign, tone: "bg-accent text-primary", color: "var(--color-primary)", delta: percentChange(gross, previousGross), values: report.series.map((point) => point.revenue) },
+    { key: "successful", label: t("successfulPayments"), value: formatNumber(report.totals.successfulPayments, locale), icon: CreditCard, tone: "bg-info text-info-foreground", color: "var(--color-chart-2)", delta: percentChange(report.totals.successfulPayments, report.previousTotals.successfulPayments), values: report.series.map((point) => point.orders) },
+    { key: "rate", label: t("paymentSuccessRate"), value: formatPercent(successRate, locale), icon: CheckCircle2, tone: "bg-success text-success-foreground", color: "var(--color-primary)", delta: previousAttempts ? successRate - previousSuccessRate : null, points: true, values: [previousSuccessRate, successRate] },
+    { key: "failed", label: t("failedPaymentAttempts"), value: formatNumber(report.totals.failedPayments, locale), icon: AlertTriangle, tone: "bg-warning text-warning-foreground", color: "var(--color-chart-4)", delta: percentChange(report.totals.failedPayments, report.previousTotals.failedPayments), inverse: true, values: [report.previousTotals.failedPayments, report.totals.failedPayments] },
+  ];
+  const metricCards = metrics.map((metric) => <article key={metric.key} className="flex min-h-36 flex-col rounded-card-lg border border-border bg-background p-4 md:p-6"><div className="flex items-center gap-3"><span className={`flex size-10 items-center justify-center rounded-full ${metric.tone}`}><Icon icon={metric.icon} size="sm" /></span><div><p className="text-body-b10 text-muted-foreground">{metric.label}</p><p className="text-heading-h3">{metric.value}</p></div></div><Delta value={metric.delta} inverse={metric.inverse} points={metric.points} locale={locale} label={t("vsPreviousPeriod")} /><div className="mt-auto"><StatSparkline values={metric.values} color={metric.color} heightClassName="h-7" /></div></article>);
+
+  return <div className="mx-auto flex w-full max-w-[1536px] flex-col gap-5 md:gap-6">
+    <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between"><div><nav className="mb-1 flex items-center gap-2 text-body-b10 text-muted-foreground" aria-label={t("breadcrumbAria")}><Link href="/dashboard/reports" className="hover:text-primary">{t("reports")}</Link><span>/</span><span>{t("heading")}</span></nav><h1 className="dashboard-page-title">{t("heading")}</h1><p className="mt-1 text-body-b8 text-muted-foreground">{t("referenceSubtitle")}</p></div><div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center md:grid md:w-full md:grid-cols-[minmax(0,1fr)_auto] md:items-stretch lg:flex lg:flex-row lg:flex-nowrap lg:items-center lg:justify-end"><AnalyticsRangePicker className="md:col-start-1 md:row-start-1 md:w-full lg:w-auto" triggerClassName="md:w-full lg:w-auto" presetLabel={ta("rangeLabel")} presetOptions={[...ANALYTICS_RANGE_PRESETS.map((preset) => ({ value: preset, label: ta(`preset.${preset}`) })), { value: CUSTOM_RANGE_VALUE, label: ta("presetCustom") }]} fromLabel={ta("rangeFrom")} toLabel={ta("rangeTo")} from={from} to={to} isCustom={isCustomRange} /><AnalyticsComparePicker className="h-11 w-full justify-between sm:h-10 sm:w-auto md:col-span-2 md:col-start-1 md:row-start-2 md:w-full md:justify-center lg:col-auto lg:row-auto lg:w-auto lg:justify-between" mode={compareMode} triggerLabel={compareTriggerLabel} heading={ta("compareLabel")} options={compareOptions} fromLabel={ta("rangeFrom")} toLabel={ta("rangeTo")} applyLabel={ta("compareApply")} cancelLabel={ta("compareCancel")} activeFrom={activeFrom} activeTo={activeTo} previousPeriodFrom={previews.previous.from} previousPeriodTo={previews.previous.to} /><AnalyticsExportMenu className="w-full sm:w-auto md:col-start-2 md:row-start-1 lg:col-auto lg:row-auto" label={ta("exportHeading")} reports={[{ resource: "orders", label: ta("exportOrdersReport") }, { resource: "customers", label: ta("exportCustomersReport") }]} from={from} to={to} /></div></header>
+
+    <div className="sm:hidden"><StatCardCarousel>{metricCards}</StatCardCarousel></div>
+    <section className="hidden gap-3 sm:grid sm:grid-cols-2 xl:grid-cols-4">{metricCards}</section>
+
+    <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1.55fr)_minmax(24rem,.85fr)]"><PaymentTrendChart points={report.series} previousPoints={report.previousSeries} granularity={report.granularity} range={report.range} previousRange={report.previousRange} /><section className="min-w-0 rounded-card-lg border border-border bg-background p-4 md:p-6"><h2 className="text-heading-h3">{t("paymentMethods")}</h2><div className="mt-4 flex min-w-0 flex-col items-center gap-6 sm:flex-row"><div className="flex size-36 shrink-0 items-center justify-center rounded-full" style={{ background: `conic-gradient(${donutStops(sources)})` }}><div className="flex size-24 flex-col items-center justify-center rounded-full bg-background"><strong className="text-body-b5">{formatMoney(gross, locale)}</strong><span className="text-body-b10 text-muted-foreground">{t("total")}</span></div></div><dl className="w-full min-w-0 flex-1 space-y-4">{sources.map((source) => <div key={source.label} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 text-body-b8"><span className="size-2 rounded-full" style={{ background: source.color }} /><dt className="truncate">{source.label}</dt><dd className="whitespace-nowrap text-end"><strong>{formatPercent(gross ? source.amount / gross : 0, locale)}</strong><span className="ms-3 text-muted-foreground">{formatMoney(source.amount, locale)}</span></dd></div>)}</dl></div></section></div>
+
+    <section className="rounded-card-lg border border-border bg-background p-4 md:p-6"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-heading-h3">{t("settlements")}</h2><Button asChild variant="soft" size="sm" className="gap-1.5 px-3 text-body-b10"><Link href="/dashboard/reports/exports">{t("viewSettlements")}<Icon icon={ExternalLink} size="xs" /></Link></Button></div><div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3"><Summary icon={Landmark} tone="bg-accent text-primary" label={t("pendingPayout")} value={formatMoney(report.totals.externalAmount, locale)} note={t("estimatedPayout")} /><Summary icon={CalendarDays} tone="bg-info text-info-foreground" label={t("lastPayout")} value={formatMoney(report.totals.paidRevenue, locale)} note={t("paidThisPeriod")} /><Summary icon={Percent} tone="bg-muted text-secondary" label={t("processingFees")} value={formatMoney(gross * 0.0232, locale)} note={t("feeShare")} /></div></section>
+
+    <PaymentIssuesTable issues={issuesWithCustomerName} />
+  </div>;
+}
+
+function Delta({ value, inverse = false, points = false, locale, label }: { value: number | null; inverse?: boolean; points?: boolean; locale: Locale; label: string }) { if (value === null) return <p className="mt-2 text-body-b10 text-muted-foreground">{label}</p>; const percent = value * 100; const good = inverse ? percent <= 0 : percent >= 0; return <p className="mt-2 flex items-center gap-1 text-body-b10"><Icon icon={percent >= 0 ? ArrowUp : ArrowDown} size="xs" className={good ? "text-success-foreground" : "text-destructive"} /><strong className={good ? "text-success-foreground" : "text-destructive"}>{new Intl.NumberFormat(locale, { signDisplay: "always", maximumFractionDigits: 1 }).format(percent)}{points ? "pp" : "%"}</strong><span className="text-muted-foreground">{label}</span></p>; }
+function Summary({ icon, tone, label, value, note }: { icon: typeof AlertTriangle; tone: string; label: string; value: string; note: string }) { return <article className="flex min-w-0 items-center gap-3 rounded-card-md border border-border/80 p-4 last:sm:col-span-2 last:xl:col-span-1"><span className={`flex size-11 shrink-0 items-center justify-center rounded-full ${tone}`}><Icon icon={icon} size="sm" /></span><div className="min-w-0"><p className="text-body-b10 text-muted-foreground">{label}</p><strong className="block text-heading-h3">{value}</strong><p className="text-label-l1 leading-snug text-muted-foreground">{note}</p></div></article>; }
+function donutStops(items: { amount: number; color: string }[]): string { const total = items.reduce((sum, item) => sum + item.amount, 0); if (!total) return "var(--color-muted) 0 100%"; let cursor = 0; return items.map((item) => { const start = cursor; cursor += item.amount / total * 100; return `${item.color} ${start}% ${cursor}%`; }).join(", "); }

@@ -1,7 +1,9 @@
+import { bulkResultSchema, type BulkResult, type ProductBulkAction } from "@/src/contracts/bulk-action-schema";
+import type { ProductFormInput } from "@/src/contracts/product-schema";
+import type { StockAdjustmentInput } from "@/src/contracts/stock-adjustment-schema";
 import type { Product } from "@/src/domain/entities/Product";
-import { apiDelete, apiPost, apiPut } from "@/src/lib/api/client";
+import { apiDelete, apiPatch, apiPost, apiPut } from "@/src/lib/api/client";
 import { productResponseSchema } from "@/src/presentation/product/product-response-schema";
-import type { ProductFormInput } from "./product-schema";
 
 /**
  * Typed client for the product REST *mutations*. UI components call these instead
@@ -26,5 +28,28 @@ export const productsApi = {
 
   remove(id: string): Promise<void> {
     return apiDelete(`/products/${id}`);
+  },
+
+  /**
+   * Move a product's stock by a signed delta, with a reason. The narrow endpoint,
+   * not `update` — adjusting a level from the catalog list must not send (or
+   * overwrite) the rest of a product the operator isn't touching.
+   *
+   * Takes the form's *input* shape (direction + amount as strings); the contract
+   * schema on the route handler is what turns it into the signed delta the domain
+   * works in. Resolves with the product as it now stands.
+   */
+  adjustStock(id: string, values: StockAdjustmentInput): Promise<Product> {
+    return apiPatch(`/products/${id}/stock`, values, productResponseSchema);
+  },
+
+  /**
+   * Apply one change to a selection of products — publish, unpublish, or move to a
+   * category. Resolves with how many products actually changed, which can be fewer
+   * than were selected (some already held the value), so the caller reports the
+   * returned count rather than the size of its own selection.
+   */
+  bulkUpdate(ids: readonly string[], action: ProductBulkAction): Promise<BulkResult> {
+    return apiPatch("/admin/products/bulk", { ids, action }, bulkResultSchema);
   },
 };

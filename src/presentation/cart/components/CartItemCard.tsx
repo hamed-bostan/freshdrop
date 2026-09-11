@@ -1,10 +1,11 @@
+import { Minus, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { Minus, Plus, Trash2 } from "lucide-react";
+
 import type { CartItem } from "@/src/domain/entities/Cart";
-import { Icon } from "@/src/presentation/design-system";
 import { formatMoney } from "@/src/lib/formatMoney";
 import { formatNumber } from "@/src/lib/formatNumber";
+import { Icon } from "@/src/presentation/design-system";
 
 interface CartItemCardProps {
   item: CartItem;

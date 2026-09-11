@@ -1,11 +1,13 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
-import { Button, ConfirmSheet, Icon } from "@/src/presentation/design-system";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
+import { Button, ConfirmSheet, Icon } from "@/src/presentation/design-system";
+
 import { teamApi } from "./team-api";
 
 type RevokeAdminButtonProps = {
@@ -61,7 +63,7 @@ export function RevokeAdminButton({ id, name }: RevokeAdminButtonProps) {
         aria-label={t("revokeAria", { name })}
         onClick={() => setOpen(true)}
         disabled={pending}
-        className="text-destructive"
+        className="size-11 text-destructive sm:size-10"
       >
         <Icon icon={Trash2} size="sm" />
       </Button>

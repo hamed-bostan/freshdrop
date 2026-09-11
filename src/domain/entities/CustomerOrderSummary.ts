@@ -11,6 +11,15 @@ export type CustomerOrderSummary = {
   name: string;
   /** Contact phone from the profile; empty string when unknown. */
   phone: string;
+  /**
+   * Contact email from the profile, when they've given one.
+   *
+   * Carried because it's the difference between a channel being available and not:
+   * the dashboard's order comms can email a customer a one-off note, and the panel
+   * needs to know whether to offer that before the admin has typed anything. The
+   * user row is already read to build this summary, so it costs nothing extra.
+   */
+  email: string | null;
   /** Profile avatar URL, when set. */
   avatarUrl: string | null;
   /** How many orders the customer has placed. */
@@ -19,4 +28,23 @@ export type CustomerOrderSummary = {
   totalSpent: number;
   /** ISO 8601 timestamp (UTC) of the customer's most recent order. */
   lastOrderAt: string;
+  /**
+   * 1-based position in the *full* spend ranking, assigned before any search or
+   * paging narrows the list — so customer #4 stays #4 on page 2 and in a filtered
+   * result. Carried on the summary rather than derived from the row's index,
+   * which only equals the rank on an unfiltered first page.
+   */
+  rank: number;
+}
+
+/**
+ * Mean recognized spend per order for a customer summary.
+ *
+ * Kept beside the summary rather than recalculated in each table or card so the
+ * zero-order invariant has one answer everywhere. A summary normally exists
+ * because at least one order exists, but imports and future CRM-created records
+ * must not turn an empty history into `NaN` in the UI.
+ */
+export function customerAverageOrderValue(customer: CustomerOrderSummary): number {
+  return customer.orderCount > 0 ? customer.totalSpent / customer.orderCount : 0;
 }

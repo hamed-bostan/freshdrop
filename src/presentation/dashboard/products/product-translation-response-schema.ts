@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { ProductTranslationInput } from "@/src/domain/repositories/IProductRepository";
 
 /**

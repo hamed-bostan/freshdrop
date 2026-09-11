@@ -1,20 +1,21 @@
 "use client";
 
-import * as React from "react";
+import { ImagePlus } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { ImagePlus, Loader2 } from "lucide-react";
-import { Button, Icon } from "@/src/presentation/design-system";
+import * as React from "react";
+
+import { Button, FormMessage, Icon, Thumbnail } from "@/src/presentation/design-system";
 import { imagesApi } from "@/src/presentation/images/image-api";
 
-interface IconUploadProps {
+type IconUploadProps = {
   value?: string;
   onChange: (url: string) => void;
   /** A11y wiring forwarded from the surrounding <Field>. */
   id?: string;
   "aria-invalid"?: boolean;
   "aria-describedby"?: string;
-}
+};
 
 const ACCEPT = "image/png,image/jpeg,image/webp,image/avif";
 
@@ -50,13 +51,13 @@ export function IconUpload({ value, onChange, id, ...aria }: IconUploadProps) {
 
   return (
     <div className="flex items-center gap-4">
-      <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-card-lg bg-surface-sunken">
+      <Thumbnail radius="lg" className="size-20">
         {value ? (
           <Image src={value} alt={t("iconPreviewAlt")} width={64} height={64} className="object-contain" />
         ) : (
           <Icon icon={ImagePlus} size="md" className="text-icon-muted" />
         )}
-      </div>
+      </Thumbnail>
 
       <div className="flex flex-col items-start gap-1.5">
         <input
@@ -72,24 +73,15 @@ export function IconUpload({ value, onChange, id, ...aria }: IconUploadProps) {
           type="button"
           variant="outline"
           size="sm"
-          disabled={uploading}
+          loading={uploading}
           onClick={() => inputRef.current?.click()}
         >
-          {uploading ? (
-            <>
-              <Icon icon={Loader2} size="sm" className="me-2 animate-spin" />
-              {t("uploading")}
-            </>
-          ) : value ? (
-            t("replaceImage")
-          ) : (
-            t("uploadImage")
-          )}
+          {uploading ? t("uploading") : value ? t("replaceImage") : t("uploadImage")}
         </Button>
         {error ? (
-          <p className="text-body-b10 text-destructive">{error}</p>
+          <FormMessage>{error}</FormMessage>
         ) : (
-          <p className="text-body-b10 text-muted-foreground">{t("uploadHint")}</p>
+          <FormMessage tone="hint">{t("uploadHint")}</FormMessage>
         )}
       </div>
     </div>

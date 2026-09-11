@@ -1,12 +1,15 @@
 "use client";
 
-import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
+
+import { focusRing } from "../../shared/focusRing";
 import { baseFieldStyles } from "../shared/baseFieldStyles";
 
 const inputVariants = cva(
-  "px-5 focus-visible:ring-2 focus-visible:ring-ring",
+  ["px-5", focusRing],
   {
     variants: {
       hasLeftElement: {
@@ -90,7 +93,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         />
 
         {hasRight && (
-          <div className="absolute end-5 top-1/2 z-20 -translate-y-1/2 text-icon-muted">{rightElement}</div>
+          // Same inset as the left adornment, so the two sides read as a pair —
+          // and so the 40px text padding clears the icon by the same 8px on both
+          // sides. At the old 20px inset a long value ran flush into it.
+          // Not `pointer-events-none` like the left slot: right adornments are
+          // the interactive ones (the password toggle, a clear button).
+          <div className="absolute end-3 top-1/2 z-20 -translate-y-1/2 text-icon-muted">{rightElement}</div>
         )}
 
         {children}

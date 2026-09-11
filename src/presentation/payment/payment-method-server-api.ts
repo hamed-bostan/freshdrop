@@ -1,5 +1,6 @@
 import type { PaymentMethod } from "@/src/domain/entities/PaymentMethod";
 import { serverApiGet } from "@/src/lib/api/server-client";
+
 import {
   paymentMethodListResponseSchema,
   selectedPaymentMethodResponseSchema,

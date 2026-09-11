@@ -1,8 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+
 import type { OrderTracking } from "@/src/domain/entities/OrderTracking";
 import { PageHeader } from "@/src/presentation/components/PageHeader";
+
 import { TrackingMap, TrackingEta, DeliveryAddressRow, TrackingStepper, RiderCard } from "./components";
 import { useLiveTracking } from "./useLiveTracking";
 
@@ -23,9 +25,11 @@ export default function OrderTrackScreen({ initialTracking }: OrderTrackScreenPr
 
       <TrackingMap destination={tracking.destination} courier={tracking.courier} route={tracking.route} />
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-7 py-2">
         <DeliveryAddressRow address={tracking.deliveryAddress} />
-        <TrackingStepper steps={tracking.steps} />
+        <div className="border-t border-border pt-7 pb-2">
+          <TrackingStepper steps={tracking.steps} />
+        </div>
       </div>
 
       <RiderCard rider={tracking.rider} />

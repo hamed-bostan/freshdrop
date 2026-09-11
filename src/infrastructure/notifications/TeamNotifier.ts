@@ -1,5 +1,6 @@
 import type { IEmailSender } from "@/src/domain/repositories/IEmailSender";
 import type { ITeamNotifier, TeamRecipient } from "@/src/domain/repositories/ITeamNotifier";
+
 import { normalizePhone, sendPatternSms, type SmsIrClientConfig } from "../sms/smsIrClient";
 
 /** The team events that can be delivered by SMS, each needing its own approved template. */

@@ -1,15 +1,18 @@
 "use client";
 
-import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/src/presentation/design-system";
-import { PageHeader } from "@/src/presentation/components/PageHeader";
+import * as React from "react";
+
 import type { PaymentMethod, PaymentMethodGroup } from "@/src/domain/entities/PaymentMethod";
 import type { SavedCard } from "@/src/domain/entities/Wallet";
 import { useRouter } from "@/src/i18n/navigation";
 import { localizeApiError } from "@/src/lib/api/localizeApiError";
-import { paymentMethodsApi } from "./payment-method-api";
+import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { Button, FormMessage } from "@/src/presentation/design-system";
+
 import { PaymentMethodOption, SavedCardOption, AddCardRow } from "./components";
+import { paymentMethodsApi } from "./payment-method-api";
+import styles from "./PaymentMethodScreen.module.css";
 
 /** Sections render in this fixed order; the title is a UI concern, not domain data. */
 const SECTIONS: { group: PaymentMethodGroup; titleKey: "sectionCash" | "sectionWallet" | "sectionCard" | "sectionOptions" }[] = [
@@ -62,10 +65,10 @@ export default function PaymentMethodScreen({ methods, cards, selectedId }: Paym
   };
 
   return (
-    <form onSubmit={handleConfirm} className="flex min-h-dvh flex-col gap-6 px-6 pb-10">
+    <form onSubmit={handleConfirm} className={`${styles.screen} flex min-h-dvh flex-col gap-6 px-6 pb-10`}>
       <PageHeader title={t("title")} />
 
-      <fieldset className="flex flex-col gap-6">
+      <fieldset className={`${styles.methods} flex flex-col gap-6`}>
         <legend className="sr-only">{t("selectLegend")}</legend>
 
         {SECTIONS.map(({ group, titleKey }) => {
@@ -105,15 +108,15 @@ export default function PaymentMethodScreen({ methods, cards, selectedId }: Paym
         })}
       </fieldset>
 
+      <div className={styles.footer}>
       {error && (
-        <p role="alert" className="text-center text-body-b8 text-destructive">
-          {error}
-        </p>
+        <FormMessage size="md" className="text-center">{error}</FormMessage>
       )}
 
       <Button type="submit" size="lg" disabled={pending} className="mt-auto w-full rounded-button-lg">
         {pending ? t("saving") : t("confirm")}
       </Button>
+      </div>
     </form>
   );
 }

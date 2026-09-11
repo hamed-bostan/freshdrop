@@ -1,4 +1,5 @@
 import type { Product } from "@/src/domain/entities/Product";
+
 import { ProductCard } from "./ProductCard";
 
 interface ProductGridProps {

@@ -1,11 +1,13 @@
 "use client";
 
-import * as React from "react";
 import { useTranslations } from "next-intl";
-import { cn } from "@/src/lib/utils";
-import { Button, OTPInput } from "@/src/presentation/design-system";
-import { PageHeader } from "@/src/presentation/components/PageHeader";
+import * as React from "react";
+
 import { Link } from "@/src/i18n/navigation";
+import { cn } from "@/src/lib/utils";
+import { PageHeader } from "@/src/presentation/components/PageHeader";
+import { Button, OTPInput } from "@/src/presentation/design-system";
+
 import { peekDevOtp, requestOtp, verifyOtp } from "./actions";
 
 const CODE_LENGTH = 4;
@@ -33,7 +35,9 @@ export default function OtpScreen({ phone, callbackUrl = "/" }: OtpScreenProps) 
   // Dev only: pull the mock code (generated when it was "sent") to show on screen.
   React.useEffect(() => {
     let active = true;
-    peekDevOtp(phone).then((c) => active && setDevCode(c));
+    peekDevOtp(phone)
+      .then((c) => active && setDevCode(c))
+      .catch(() => undefined);
     return () => {
       active = false;
     };

@@ -1,7 +1,8 @@
 "use client";
 
-import * as React from "react";
 import { Dialog, VisuallyHidden } from "radix-ui";
+import * as React from "react";
+
 import { cn } from "@/src/lib/utils";
 
 /**
@@ -45,8 +46,14 @@ export const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
         className={cn(
           "fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-md",
           "rounded-t-sheet bg-popover px-6 pb-10 pt-3 shadow-lg focus:outline-none",
-          "data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom",
-          "data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out",
+          // Travelling the full height of the viewport is the largest movement in
+          // the app, so it's the first thing to go under reduced motion — the
+          // sheet fades instead, which still reads as arriving and leaving.
+          "motion-safe:data-[state=open]:slide-in-from-bottom",
+          "motion-safe:data-[state=closed]:slide-out-to-bottom",
+          "motion-reduce:data-[state=open]:fade-in-0",
+          "motion-reduce:data-[state=closed]:fade-out-0",
           "duration-300",
           className,
         )}

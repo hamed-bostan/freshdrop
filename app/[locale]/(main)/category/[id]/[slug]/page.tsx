@@ -1,12 +1,14 @@
-import { cache } from "react";
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
+import { cache } from "react";
+
 import { permanentRedirect } from "@/src/i18n/navigation";
-import { categoriesServerApi } from "@/src/presentation/category/category-server-api";
-import { productsServerApi } from "@/src/presentation/product/product-server-api";
 import { categorySlug, categoryHref, decodeSlug } from "@/src/presentation/category/category-path";
+import { categoriesServerApi } from "@/src/presentation/category/category-server-api";
 import CategoryDetailScreen from "@/src/presentation/category/CategoryDetailScreen";
+import { productsServerApi } from "@/src/presentation/product/product-server-api";
+
+import type { Metadata } from "next";
 
 interface CategoryDetailPageProps {
   params: Promise<{ id: string; slug: string }>;

@@ -1,18 +1,28 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import type { Cart } from "@/src/domain/entities/Cart";
-import { GetCart } from "@/src/domain/use-cases/cart/GetCart";
 import { ClearCart } from "@/src/domain/use-cases/cart/ClearCart";
+import { GetCart } from "@/src/domain/use-cases/cart/GetCart";
 import { FindPromoCode } from "@/src/domain/use-cases/promo-codes/FindPromoCode";
-import { cartRepository, promoCodeRepository } from "@/src/infrastructure/container";
-import { getUserSession } from "@/src/lib/require-auth";
+import { cartRepository, promoCodeRepository, taxSettingsRepository } from "@/src/infrastructure/container";
 import { getRequestLocale } from "@/src/lib/api/request-locale";
 import { errorResponseFromException, unauthorizedResponse } from "@/src/lib/api/responses";
+import { getUserSession } from "@/src/lib/require-auth";
 
 // The cart (and any applied discount) is per-user, read per request — never cached.
 export const dynamic = "force-dynamic";
 
 /** A signed-out visitor has no cart yet; the public cart page renders this as empty. */
-const EMPTY_CART: Cart = { items: [], subtotal: 0, shipping: 0, discount: 0, total: 0, itemCount: 0 };
+const EMPTY_CART: Cart = {
+  items: [],
+  subtotal: 0,
+  shipping: 0,
+  discount: 0,
+  total: 0,
+  itemCount: 0,
+  taxAmount: null,
+  taxRate: null,
+};
 
 /**
  * GET /api/cart — the signed-in user's cart with server-computed totals.
@@ -29,10 +39,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const code = request.nextUrl.searchParams.get("promo");
     const promo = code ? await new FindPromoCode(promoCodeRepository).execute(code) : null;
+    const taxSettings = await taxSettingsRepository.get();
     const cart = await new GetCart(cartRepository).execute({
       userId: session.user.id,
       promo,
       locale: getRequestLocale(request),
+      taxRatePercent: taxSettings.enabled ? taxSettings.ratePercent : null,
     });
     return NextResponse.json(cart);
   } catch (error) {

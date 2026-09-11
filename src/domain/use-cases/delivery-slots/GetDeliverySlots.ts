@@ -1,10 +1,11 @@
-import type { DeliverySlot, DeliverySlotDay, RelativeDay } from "../../entities/DeliverySlot";
 import { getSlotAvailability } from "../../entities/DeliverySlot";
 import { formatWindowRange } from "../../entities/DeliveryWindow";
 import {
   bookedCountKey,
   type IDeliverySlotRepository,
 } from "../../repositories/IDeliverySlotRepository";
+
+import type { DeliverySlot, DeliverySlotDay, RelativeDay } from "../../entities/DeliverySlot";
 
 /** How many days ahead (including today) the storefront offers booking for. */
 export const SLOT_HORIZON_DAYS = 7;

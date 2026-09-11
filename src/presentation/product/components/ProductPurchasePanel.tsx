@@ -1,14 +1,16 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
 import { Star } from "lucide-react";
-import { Icon } from "@/src/presentation/design-system";
-import { formatMoney } from "@/src/lib/formatMoney";
-import { formatRating } from "@/src/lib/formatNumber";
+import { useLocale, useTranslations } from "next-intl";
+
 import type { Product } from "@/src/domain/entities/Product";
 import { getStockStatus } from "@/src/domain/entities/stock";
-import { CartQuantityControl } from "./CartQuantityControl";
+import { formatMoney } from "@/src/lib/formatMoney";
+import { formatRating } from "@/src/lib/formatNumber";
+import { Icon } from "@/src/presentation/design-system";
+
 import { BackInStockButton } from "./BackInStockButton";
+import { CartQuantityControl } from "./CartQuantityControl";
 
 interface ProductPurchasePanelProps {
   product: Product;
