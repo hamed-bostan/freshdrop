@@ -20,13 +20,17 @@ export { default as onboarding2 } from "@/public/images/onboarding-2.png";
 export { default as onboarding3 } from "@/public/images/onboarding-3.png";
 export { default as onboarding4 } from "@/public/images/onboarding-4.png";
 
-// Next types `*.svg` imports as `any` (to stay compatible with the `@svgr/webpack`
-// plugin nobody uses here) — cast once at this boundary so the `any` never leaks
-// into consumers.
-export const facebookIcon = facebookIconSrc as StaticImageData;
-export const XIcon = xIconSrc as StaticImageData;
-export const linkedinIcon = linkedinIconSrc as StaticImageData;
+// Next's generated declarations type SVG imports as `any`, while our fresh-CI
+// declarations use StaticImageData. Normalize through unknown so this boundary
+// stays typed in both environments without redundant assertions at each export.
+function staticImage(source: unknown): StaticImageData {
+  return source as StaticImageData;
+}
 
-export const paypalIcon = paypalIconSrc as StaticImageData;
-export const applePayIcon = applePayIconSrc as StaticImageData;
-export const googlePayIcon = googlePayIconSrc as StaticImageData;
+export const facebookIcon = staticImage(facebookIconSrc);
+export const XIcon = staticImage(xIconSrc);
+export const linkedinIcon = staticImage(linkedinIconSrc);
+
+export const paypalIcon = staticImage(paypalIconSrc);
+export const applePayIcon = staticImage(applePayIconSrc);
+export const googlePayIcon = staticImage(googlePayIconSrc);
